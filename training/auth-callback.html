@@ -74,44 +74,38 @@
         // Initialize Supabase
         const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                flowType: 'implicit'
+            }
+        });
 
         async function handleCallback() {
             const statusDiv = document.getElementById('status');
             
             try {
-                // Get URL parameters from both hash and query
-                const hashParams = new URLSearchParams(window.location.hash.substring(1));
-                const queryParams = new URLSearchParams(window.location.search);
+                // Wait a moment for Supabase to process the URL
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                // Check for token_hash (email confirmation format)
-                const tokenHash = hashParams.get('token_hash') || queryParams.get('token_hash');
-                const type = hashParams.get('type') || queryParams.get('type') || 'signup';
+                // Check if we have a session (Supabase should handle the URL automatically)
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                 
-                if (tokenHash) {
-                    // This is an email confirmation - verify the token
-                    const { data, error } = await supabase.auth.verifyOtp({
-                        token_hash: tokenHash,
-                        type: type === 'signup' ? 'signup' : 'email'
-                    });
+                if (sessionError) throw sessionError;
+                
+                if (!session) {
+                    // If no session, try manual verification for edge cases
+                    const queryParams = new URLSearchParams(window.location.search);
+                    const hashParams = new URLSearchParams(window.location.hash.substring(1));
                     
-                    if (error) throw error;
-                } else {
-                    // Check for access_token (legacy format)
-                    const accessToken = hashParams.get('access_token');
-                    const refreshToken = hashParams.get('refresh_token');
+                    // Check for various token formats
+                    const error = hashParams.get('error') || queryParams.get('error');
+                    const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
                     
-                    if (accessToken && refreshToken) {
-                        // Legacy format - set session directly
-                        const { data, error } = await supabase.auth.setSession({
-                            access_token: accessToken,
-                            refresh_token: refreshToken
-                        });
-                        
-                        if (error) throw error;
-                    } else {
-                        throw new Error('No authentication token found in URL. Expected token_hash parameter.');
+                    if (error) {
+                        throw new Error(errorDescription || error);
                     }
+                    
+                    throw new Error('Email verification failed. Please try again or contact support.');
                 }
 
                 // Success!
