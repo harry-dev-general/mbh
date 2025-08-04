@@ -25,6 +25,19 @@ mbh-staff-portal/
 └── README.md
 ```
 
+## ⚠️ Critical Configuration: Supabase Email Templates
+
+After deploying, you MUST update the Supabase email templates to use the default format:
+
+```html
+<!-- Example: Confirm Signup Template -->
+<h2>Confirm your signup</h2>
+<p>Follow this link to confirm your user:</p>
+<p><a href="{{ .ConfirmationURL }}">Confirm your email</a></p>
+```
+
+**See [docs/SUPABASE_EMAIL_QUICK_REFERENCE.md](docs/SUPABASE_EMAIL_QUICK_REFERENCE.md) for all required templates.**
+
 ## 🔧 Current Status
 
 ### ✅ Completed
