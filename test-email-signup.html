@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Email Signup</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px;">
+    <h1>Test Email Signup</h1>
+    
+    <div id="result" style="margin: 20px 0; padding: 10px; border-radius: 5px;"></div>
+    
+    <form id="testForm">
+        <input type="email" id="email" placeholder="Enter email" required style="width: 100%; padding: 10px; margin: 10px 0;">
+        <input type="password" id="password" placeholder="Enter password" required style="width: 100%; padding: 10px; margin: 10px 0;">
+        <button type="submit" style="padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer;">Test Signup</button>
+    </form>
+    
+    <h2>Debug Info:</h2>
+    <pre id="debug" style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;"></pre>
+
+    <script>
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhf';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const resultDiv = document.getElementById('result');
+        const debugDiv = document.getElementById('debug');
+        
+        function showResult(message, isError = false) {
+            resultDiv.style.background = isError ? '#fee' : '#efe';
+            resultDiv.style.color = isError ? '#c33' : '#3c3';
+            resultDiv.style.border = isError ? '1px solid #fcc' : '1px solid #cfc';
+            resultDiv.textContent = message;
+        }
+        
+        function updateDebug(info) {
+            debugDiv.textContent = JSON.stringify(info, null, 2);
+        }
+        
+        document.getElementById('testForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            showResult('Attempting signup...');
+            
+            const debugInfo = {
+                timestamp: new Date().toISOString(),
+                email: email,
+                redirectTo: `${window.location.origin}/auth-callback.html`,
+                supabaseUrl: SUPABASE_URL
+            };
+            
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        emailRedirectTo: `${window.location.origin}/auth-callback.html`
+                    }
+                });
+                
+                debugInfo.response = { data, error };
+                updateDebug(debugInfo);
+                
+                if (error) {
+                    showResult(`Error: ${error.message}`, true);
+                } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+                    showResult('User already exists. Try logging in instead.', true);
+                } else {
+                    showResult('Success! Check your email for confirmation link. Note: Only 2 emails per hour are allowed.');
+                }
+            } catch (err) {
+                debugInfo.catchError = err.message;
+                updateDebug(debugInfo);
+                showResult(`Unexpected error: ${err.message}`, true);
+            }
+        });
+        
+        // Check auth configuration on load
+        (async () => {
+            const authConfig = {
+                currentUrl: window.location.href,
+                origin: window.location.origin,
+                supabaseConfigured: !!supabase,
+                authCallbackUrl: `${window.location.origin}/auth-callback.html`
+            };
+            
+            // Check if we can reach Supabase
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                authConfig.canReachSupabase = true;
+                authConfig.existingSession = !!session;
+            } catch (err) {
+                authConfig.canReachSupabase = false;
+                authConfig.supabaseError = err.message;
+            }
+            
+            updateDebug(authConfig);
+        })();
+    </script>
+</body>
+</html>
