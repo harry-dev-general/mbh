@@ -84,28 +84,56 @@
             const statusDiv = document.getElementById('status');
             
             try {
-                // Wait a moment for Supabase to process the URL
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Get URL parameters
+                const queryParams = new URLSearchParams(window.location.search);
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
                 
-                // Check if we have a session (Supabase should handle the URL automatically)
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                // Check for token_hash in query params (email confirmation format)
+                const tokenHash = queryParams.get('token_hash');
+                const type = queryParams.get('type');
                 
-                if (sessionError) throw sessionError;
-                
-                if (!session) {
-                    // If no session, try manual verification for edge cases
-                    const queryParams = new URLSearchParams(window.location.search);
-                    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                if (tokenHash && type) {
+                    console.log('Found token_hash, verifying OTP...');
                     
-                    // Check for various token formats
-                    const error = hashParams.get('error') || queryParams.get('error');
-                    const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
-                    
-                    if (error) {
-                        throw new Error(errorDescription || error);
+                    // Map the type correctly
+                    let otpType = 'email';
+                    if (type === 'signup' || type === 'email') {
+                        otpType = 'email';
+                    } else if (type === 'recovery') {
+                        otpType = 'recovery';
+                    } else if (type === 'email_change') {
+                        otpType = 'email_change';
                     }
                     
-                    throw new Error('Email verification failed. Please try again or contact support.');
+                    // Verify the OTP
+                    const { data, error } = await supabase.auth.verifyOtp({
+                        token_hash: tokenHash,
+                        type: otpType
+                    });
+                    
+                    if (error) throw error;
+                    
+                    console.log('OTP verified successfully');
+                } else {
+                    // Wait for Supabase to process any other URL formats
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Check if we have a session
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                    
+                    if (sessionError) throw sessionError;
+                    
+                    if (!session) {
+                        // Check for error in URL
+                        const error = hashParams.get('error') || queryParams.get('error');
+                        const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
+                        
+                        if (error) {
+                            throw new Error(errorDescription || error);
+                        }
+                        
+                        throw new Error('Email verification failed. No session found.');
+                    }
                 }
 
                 // Success!
