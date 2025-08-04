@@ -76,7 +76,8 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
-                flowType: 'implicit'
+                flowType: 'implicit',
+                detectSessionInUrl: true
             }
         });
 
@@ -88,12 +89,33 @@
                 const queryParams = new URLSearchParams(window.location.search);
                 const hashParams = new URLSearchParams(window.location.hash.substring(1));
                 
-                // Check for token_hash in query params (email confirmation format)
-                const tokenHash = queryParams.get('token_hash');
-                const type = queryParams.get('type');
+                // Log what we received for debugging
+                console.log('Query params:', Object.fromEntries(queryParams));
+                console.log('Hash params:', Object.fromEntries(hashParams));
                 
-                if (tokenHash && type) {
-                    console.log('Found token_hash, verifying OTP...');
+                // Check for implicit flow (access_token in hash) - OnboardingRE solution
+                const accessToken = hashParams.get('access_token');
+                const tokenType = hashParams.get('token_type');
+                const type = hashParams.get('type') || queryParams.get('type');
+                
+                if (accessToken && tokenType) {
+                    console.log('Found access_token in hash (implicit flow)');
+                    // Supabase should automatically handle this, wait for it
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Check if session was created
+                    const { data: { session }, error } = await supabase.auth.getSession();
+                    if (error) throw error;
+                    if (!session) throw new Error('Session not created after implicit flow');
+                    
+                    console.log('Session created successfully via implicit flow');
+                    
+                } else if (queryParams.get('token_hash')) {
+                    // Fallback for token_hash format (current emails)
+                    const tokenHash = queryParams.get('token_hash');
+                    const type = queryParams.get('type');
+                    
+                    console.log('Found token_hash in query (PKCE flow), attempting verification...');
                     
                     // Map the type correctly
                     let otpType = 'email';
@@ -115,25 +137,15 @@
                     
                     console.log('OTP verified successfully');
                 } else {
-                    // Wait for Supabase to process any other URL formats
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    // No recognizable auth parameters
+                    const error = hashParams.get('error') || queryParams.get('error');
+                    const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
                     
-                    // Check if we have a session
-                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                    
-                    if (sessionError) throw sessionError;
-                    
-                    if (!session) {
-                        // Check for error in URL
-                        const error = hashParams.get('error') || queryParams.get('error');
-                        const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
-                        
-                        if (error) {
-                            throw new Error(errorDescription || error);
-                        }
-                        
-                        throw new Error('Email verification failed. No session found.');
+                    if (error) {
+                        throw new Error(errorDescription || error);
                     }
+                    
+                    throw new Error('No authentication parameters found. Please check your email link.');
                 }
 
                 // Success!
