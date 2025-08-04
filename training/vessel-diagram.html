@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manly Boat Hire - Interactive Vessel Diagram</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .vessel-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        
+        .vessel-svg {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .info-panel {
+            background: #F8F9F9;
+            border: 2px solid #E5E7E9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .info-panel.active {
+            display: block;
+        }
+        
+        .info-panel h3 {
+            color: #2E86AB;
+            margin-bottom: 1rem;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background: #F8F9F9;
+            border-radius: 5px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .safety-equipment {
+            background: #E74C3C;
+        }
+        
+        .navigation {
+            background: #3498DB;
+        }
+        
+        .engine {
+            background: #F39C12;
+        }
+        
+        .deck {
+            background: #27AE60;
+        }
+        
+        .hotspot {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .hotspot:hover {
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #2E86AB;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #1B4F72;
+        }
+        
+        .btn.active {
+            background: #1B4F72;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .vessel-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-ship"></i> Interactive Vessel Diagram</h1>
+            <p>Click on highlighted areas to learn about vessel components and safety equipment</p>
+        </div>
+        
+        <div class="vessel-container">
+            <div class="controls">
+                <button class="btn active" onclick="showAll()">Show All</button>
+                <button class="btn" onclick="filterByType('safety')">Safety Equipment</button>
+                <button class="btn" onclick="filterByType('navigation')">Navigation</button>
+                <button class="btn" onclick="filterByType('engine')">Engine & Fuel</button>
+                <button class="btn" onclick="filterByType('deck')">Deck Equipment</button>
+            </div>
+            
+            <svg class="vessel-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+                <!-- Boat Hull -->
+                <path d="M 100 200 Q 100 250 150 280 L 650 280 Q 700 250 700 200 L 700 150 Q 700 120 650 100 L 150 100 Q 100 120 100 150 Z" 
+                      fill="#D5D8DC" stroke="#2C3E50" stroke-width="3"/>
+                
+                <!-- Deck -->
+                <rect x="120" y="120" width="560" height="130" fill="#ECF0F1" stroke="#34495E" stroke-width="2"/>
+                
+                <!-- Console -->
+                <rect x="350" y="140" width="100" height="80" fill="#7F8C8D" stroke="#2C3E50" stroke-width="2"/>
+                
+                <!-- Engine Area -->
+                <rect x="550" y="160" width="100" height="60" fill="#95A5A6" stroke="#2C3E50" stroke-width="2"/>
+                
+                <!-- Safety Equipment Locations -->
+                <!-- Life Jackets -->
+                <circle cx="200" cy="180" r="25" fill="#E74C3C" class="hotspot safety" 
+                        onclick="showInfo('lifejackets')" opacity="0.8">
+                    <title>Life Jackets</title>
+                </circle>
+                <text x="200" y="185" text-anchor="middle" fill="white" font-weight="bold" 
+                      pointer-events="none">LJ</text>
+                
+                <!-- Fire Extinguisher -->
+                <circle cx="300" cy="180" r="25" fill="#E74C3C" class="hotspot safety" 
+                        onclick="showInfo('fire')" opacity="0.8">
+                    <title>Fire Extinguisher</title>
+                </circle>
+                <text x="300" y="185" text-anchor="middle" fill="white" font-weight="bold" 
+                      pointer-events="none">FE</text>
+                
+                <!-- First Aid Kit -->
+                <circle cx="250" cy="230" r="25" fill="#E74C3C" class="hotspot safety" 
+                        onclick="showInfo('firstaid')" opacity="0.8">
+                    <title>First Aid Kit</title>
+                </circle>
+                <text x="250" y="235" text-anchor="middle" fill="white" font-weight="bold" 
+                      pointer-events="none">FA</text>
+                
+                <!-- Navigation Lights -->
+                <circle cx="150" cy="150" r="20" fill="#3498DB" class="hotspot navigation" 
+                        onclick="showInfo('navlights')" opacity="0.8">
+                    <title>Navigation Lights</title>
+                </circle>
+                <text x="150" y="155" text-anchor="middle" fill="white" font-weight="bold" 
+                      pointer-events="none">NL</text>
+                
+                <!-- Horn -->
+                <circle cx="400" cy="160" r="20" fill="#3498DB" class="hotspot navigation" 
+                        onclick="showInfo('horn')" opacity="0.8">
+                    <title>Sound Signal</title>
+                </circle>
+                <text x="400" y="165" text-anchor="middle" fill="white" font-weight="bold" 
+                      pointer-events="none">H</text>
+                
+                <!-- Engine -->
+                <circle cx="600" cy="190" r="30" fill="#F39C12" class="hotspot engine" 
+                        onclick="showInfo('engine')" opacity="0.8">
+                    <title>Engine</title>
+                </circle>
+                <text x="600" y="195" text-anchor="middle" fill="white" font-weight="bold" 
+                      pointer-events="none">ENG</text>
+                
+                <!-- Fuel Tank -->
+                <rect x="480" y="200" width="60" height="30" fill="#F39C12" class="hotspot engine" 
+                      onclick="showInfo('fuel')" opacity="0.8" rx="5">
+                    <title>Fuel Tank</title>
+                </rect>
+                <text x="510" y="220" text-anchor="middle" fill="white" font-weight="bold" 
+                      pointer-events="none">FUEL</text>
+                
+                <!-- Anchor -->
+                <circle cx="170" cy="200" r="25" fill="#27AE60" class="hotspot deck" 
+                        onclick="showInfo('anchor')" opacity="0.8">
+                    <title>Anchor</title>
+                </circle>
+                <text x="170" y="205" text-anchor="middle" fill="white" font-weight="bold" 
+                      pointer-events="none">A</text>
+                
+                <!-- Bilge Pump -->
+                <rect x="350" y="230" width="50" height="20" fill="#27AE60" class="hotspot deck" 
+                      onclick="showInfo('bilge')" opacity="0.8" rx="5">
+                    <title>Bilge Pump</title>
+                </rect>
+                <text x="375" y="245" text-anchor="middle" fill="white" font-size="12" 
+                      pointer-events="none">BILGE</text>
+            </svg>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color safety-equipment"></div>
+                    <span>Safety Equipment</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color navigation"></div>
+                    <span>Navigation</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color engine"></div>
+                    <span>Engine & Fuel</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color deck"></div>
+                    <span>Deck Equipment</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Information Panels -->
+        <div id="lifejackets" class="info-panel">
+            <h3><i class="fas fa-life-ring"></i> Life Jackets</h3>
+            <p><strong>Location:</strong> Forward storage compartment</p>
+            <p><strong>Requirements:</strong></p>
+            <ul>
+                <li>One jacket per person on board</li>
+                <li>Appropriate sizes for all passengers</li>
+                <li>Children must have properly fitted child-size jackets</li>
+                <li>Check condition before each trip</li>
+            </ul>
+            <p><strong>Inspection Points:</strong> Straps, buckles, flotation material, reflective tape</p>
+        </div>
+        
+        <div id="fire" class="info-panel">
+            <h3><i class="fas fa-fire-extinguisher"></i> Fire Extinguisher</h3>
+            <p><strong>Location:</strong> Near console, easily accessible</p>
+            <p><strong>Type:</strong> Marine-rated dry chemical</p>
+            <p><strong>Check:</strong></p>
+            <ul>
+                <li>Pressure gauge in green zone</li>
+                <li>Pin and seal intact</li>
+                <li>No visible damage</li>
+                <li>Within expiry date</li>
+            </ul>
+            <p><strong>Operation:</strong> Pull pin, Aim at base, Squeeze handle, Sweep side to side</p>
+        </div>
+        
+        <div id="firstaid" class="info-panel">
+            <h3><i class="fas fa-first-aid"></i> First Aid Kit</h3>
+            <p><strong>Location:</strong> Waterproof compartment near console</p>
+            <p><strong>Contents Include:</strong></p>
+            <ul>
+                <li>Bandages and gauze</li>
+                <li>Antiseptic wipes</li>
+                <li>Scissors and tweezers</li>
+                <li>Emergency blanket</li>
+                <li>CPR mask</li>
+            </ul>
+            <p><strong>Check:</strong> Seal intact, contents complete, items within expiry</p>
+        </div>
+        
+        <div id="navlights" class="info-panel">
+            <h3><i class="fas fa-lightbulb"></i> Navigation Lights</h3>
+            <p><strong>Required Lights:</strong></p>
+            <ul>
+                <li>Port (red) - Left side</li>
+                <li>Starboard (green) - Right side</li>
+                <li>Stern (white) - Rear</li>
+                <li>All-round white (when anchored)</li>
+            </ul>
+            <p><strong>Test:</strong> Check all lights function before departure</p>
+            <p><strong>When Required:</strong> Between sunset and sunrise, or restricted visibility</p>
+        </div>
+        
+        <div id="horn" class="info-panel">
+            <h3><i class="fas fa-bullhorn"></i> Sound Signals</h3>
+            <p><strong>Type:</strong> Air horn or electric horn</p>
+            <p><strong>Required Signals:</strong></p>
+            <ul>
+                <li>One short blast - Altering course to starboard</li>
+                <li>Two short blasts - Altering course to port</li>
+                <li>Three short blasts - Operating in reverse</li>
+                <li>Five short blasts - Danger signal</li>
+            </ul>
+            <p><strong>Test:</strong> Ensure horn produces clear, loud sound</p>
+        </div>
+        
+        <div id="engine" class="info-panel">
+            <h3><i class="fas fa-cog"></i> Outboard Engine</h3>
+            <p><strong>Pre-Start Checks:</strong></p>
+            <ul>
+                <li>Oil level - Check dipstick</li>
+                <li>Tell-tale water flow - Confirms cooling</li>
+                <li>Propeller - No damage or debris</li>
+                <li>Tilt/trim operation</li>
+                <li>Emergency stop lanyard attached</li>
+            </ul>
+            <p><strong>Starting Procedure:</strong></p>
+            <ol>
+                <li>Ensure in neutral</li>
+                <li>Prime if required</li>
+                <li>Turn key or pull cord</li>
+                <li>Check water flow from tell-tale</li>
+            </ol>
+        </div>
+        
+        <div id="fuel" class="info-panel">
+            <h3><i class="fas fa-gas-pump"></i> Fuel System</h3>
+            <p><strong>Fuel Type:</strong> Unleaded petrol (check specific engine requirements)</p>
+            <p><strong>Checks:</strong></p>
+            <ul>
+                <li>Fuel level - Visual or gauge check</li>
+                <li>Fuel lines - No cracks or leaks</li>
+                <li>Fuel filter - Clean and clear</li>
+                <li>Vent - Open for proper flow</li>
+                <li>Shut-off valve - Know location</li>
+            </ul>
+            <p><strong>Safety:</strong> No smoking, check for fumes before starting</p>
+        </div>
+        
+        <div id="anchor" class="info-panel">
+            <h3><i class="fas fa-anchor"></i> Anchor & Rode</h3>
+            <p><strong>Type:</strong> Appropriate for vessel size and bottom conditions</p>
+            <p><strong>Rode Requirements:</strong></p>
+            <ul>
+                <li>Length: Minimum 5:1 scope ratio</li>
+                <li>Condition: No fraying or damage</li>
+                <li>Properly secured to vessel</li>
+                <li>Chain leader for better holding</li>
+            </ul>
+            <p><strong>Storage:</strong> Secure to prevent movement, ready for quick deployment</p>
+        </div>
+        
+        <div id="bilge" class="info-panel">
+            <h3><i class="fas fa-water"></i> Bilge Pump</h3>
+            <p><strong>Types:</strong> Manual and/or electric</p>
+            <p><strong>Operation:</strong></p>
+            <ul>
+                <li>Auto mode - Activates with water presence</li>
+                <li>Manual mode - Operator controlled</li>
+                <li>Test both modes before departure</li>
+            </ul>
+            <p><strong>Maintenance:</strong> Keep intake clear, test float switch, check discharge</p>
+        </div>
+    </div>
+    
+    <script>
+        let currentFilter = 'all';
+        
+        function showInfo(equipment) {
+            // Hide all panels
+            document.querySelectorAll('.info-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Show selected panel
+            const panel = document.getElementById(equipment);
+            if (panel) {
+                panel.classList.add('active');
+                panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+        
+        function filterByType(type) {
+            currentFilter = type;
+            
+            // Update button states
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide hotspots
+            document.querySelectorAll('.hotspot').forEach(hotspot => {
+                if (type === 'all' || hotspot.classList.contains(type)) {
+                    hotspot.style.display = 'block';
+                } else {
+                    hotspot.style.display = 'none';
+                }
+            });
+            
+            // Hide info panels when filtering
+            document.querySelectorAll('.info-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+        }
+        
+        function showAll() {
+            currentFilter = 'all';
+            
+            // Update button states
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show all hotspots
+            document.querySelectorAll('.hotspot').forEach(hotspot => {
+                hotspot.style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html> 

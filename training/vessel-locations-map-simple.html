@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manly Boat Hire - Vessel Locations</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            background: white;
+            color: #2E86AB;
+            padding: 0.5rem 1rem;
+            margin: 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #2E86AB;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .map-section {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .map-iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .locations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .location-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .location-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .location-card h3 {
+            color: #2E86AB;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .location-card h3 i {
+            margin-right: 0.5rem;
+        }
+        
+        .vessel-info {
+            background: #F8F9F9;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+        
+        .vessel-info strong {
+            color: #2874A6;
+        }
+        
+        .access-details {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 1rem;
+        }
+        
+        .access-details ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .access-details li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .access-details li:before {
+            content: "";
+            position: absolute;
+            left: 0;
+        }
+        
+        .directions-btn {
+            background: #2E86AB;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        
+        .directions-btn:hover {
+            background: #1B4F72;
+        }
+        
+        .type-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+        
+        .swing-mooring {
+            background: #EBF5FB;
+            color: #2874A6;
+        }
+        
+        .marina-berth {
+            background: #EAFAF1;
+            color: #1E8449;
+        }
+        
+        .temp-mooring {
+            background: #FEF9E7;
+            color: #D68910;
+        }
+        
+        .alert {
+            background: #D6EAF8;
+            border-left: 4px solid #3498DB;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+        
+        .alert i {
+            color: #2874A6;
+            margin-right: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .map-iframe {
+                height: 300px;
+            }
+            
+            .locations-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-map-marked-alt"></i> Vessel Locations & Safe Anchorages</h1>
+        <p>All vessel storage locations and safe anchorage areas for Manly Boat Hire</p>
+    </div>
+    
+    <div class="container">
+        <a href="index.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Training
+        </a>
+        
+        <!-- Embedded Map Section -->
+        <div class="map-section">
+            <h2 style="color: #2E86AB; margin-bottom: 1rem;"><i class="fas fa-map"></i> Sydney Harbour Overview</h2>
+            <iframe 
+                class="map-iframe"
+                src="https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d26498.35744849!2d151.23308063476566!3d-33.81593279999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x6b12ac9e8f0f6a8d%3A0x8d3d9b9f8f8f8f8f!2sLittle%20Manly%20Point%20Reserve%2C%20Manly%20NSW!3m2!1d-33.8102!2d151.2871!4m5!1s0x6b12ac6e8f8f8f8f%3A0x8f8f8f8f8f8f8f8f!2sBalmoral%20Beach%2C%20Mosman%20NSW!3m2!1d-33.8267!2d151.251!4m5!1s0x6b12ac7e8f8f8f8f%3A0x8f8f8f8f8f8f8f8f!2sSeaforth%2C%20NSW!3m2!1d-33.7969!2d151.2469!4m5!1s0x6b12ae234c5c5c5c%3A0x5c5c5c5c5c5c5c5c!2sd&#39;Albora%20Marinas%20The%20Spit%2C%20Mosman%20NSW!3m2!1d-33.8048!2d151.2459!5e0!3m2!1sen!2sau!4v1625000000000!5m2!1sen!2sau"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+            <div class="alert" style="margin-top: 1rem;">
+                <i class="fas fa-info-circle"></i>
+                <strong>Tip:</strong> Click "View larger map" to open in Google Maps for detailed navigation
+            </div>
+        </div>
+        
+        <!-- Location Cards Grid -->
+        <div class="locations-grid">
+            <!-- Little Manly -->
+            <div class="location-card">
+                <h3><i class="fas fa-anchor"></i> Little Manly Point Reserve</h3>
+                <span class="type-badge swing-mooring">Swing Mooring</span>
+                
+                <div class="vessel-info">
+                    <strong>Vessel:</strong> JUNIOR (12 seater)<br>
+                    <strong>Mooring:</strong> CL8335 (Red Buoy)
+                </div>
+                
+                <div class="access-details">
+                    <strong>Access Details:</strong>
+                    <ul>
+                        <li>🚗 Parking: Stuart Street</li>
+                        <li>🛶 Tender: Paddle board in racks facing water</li>
+                        <li>📍 Near boat ramp</li>
+                        <li>⏰ Access: Anytime</li>
+                    </ul>
+                </div>
+                
+                <a href="https://www.google.com/maps/dir/?api=1&destination=-33.807998,151.286544" 
+                   target="_blank" 
+                   class="directions-btn">
+                    <i class="fas fa-route"></i> Get Directions
+                </a>
+            </div>
+            
+            <!-- Balmoral -->
+            <div class="location-card">
+                <h3><i class="fas fa-anchor"></i> Balmoral Beach</h3>
+                <span class="type-badge temp-mooring">Temporary Mooring</span>
+                
+                <div class="vessel-info">
+                    <strong>Vessel:</strong> SANDSTONE (8 seater)<br>
+                    <strong>Status:</strong> Temporary Location
+                </div>
+                
+                <div class="access-details">
+                    <strong>Access Details:</strong>
+                    <ul>
+                        <li>🚗 Parking: The Esplanade</li>
+                        <li>⚠️ Temporary location - check status</li>
+                        <li>📍 Popular beach area</li>
+                        <li>🌊 Weather dependent access</li>
+                    </ul>
+                </div>
+                
+                <a href="https://www.google.com/maps/dir/?api=1&destination=-33.826154,151.254493" 
+                   target="_blank" 
+                   class="directions-btn">
+                    <i class="fas fa-route"></i> Get Directions
+                </a>
+            </div>
+            
+            <!-- Seaforth -->
+            <div class="location-card">
+                <h3><i class="fas fa-anchor"></i> Seaforth</h3>
+                <span class="type-badge swing-mooring">Swing Mooring</span>
+                
+                <div class="vessel-info">
+                    <strong>Vessel:</strong> PUMICESTONE (12 seater)<br>
+                    <strong>Mooring:</strong> CA017/CA023
+                </div>
+                
+                <div class="access-details">
+                    <strong>Access Details:</strong>
+                    <ul>
+                        <li>🚗 Parking: The Spit West Reserve</li>
+                        <li>🚤 Tender: Work Boat near Plonk Cafe</li>
+                        <li>🌉 Navigate through Spit Bridge underpass</li>
+                        <li>➡️ Follow channel alongside Seaforth Crescent</li>
+                    </ul>
+                </div>
+                
+                <a href="https://www.google.com/maps/dir/?api=1&destination=-33.804468,151.239951" 
+                   target="_blank" 
+                   class="directions-btn">
+                    <i class="fas fa-route"></i> Get Directions to The Spit
+                </a>
+            </div>
+            
+            <!-- d'Albora Marina -->
+            <div class="location-card">
+                <h3><i class="fas fa-building"></i> d'Albora Marina - The Spit</h3>
+                <span class="type-badge marina-berth">Marina Berth</span>
+                
+                <div class="vessel-info">
+                    <strong>Vessel:</strong> Ice Cream Boat<br>
+                    <strong>Berth:</strong> AE25 (Eastern side of A arm)
+                </div>
+                
+                <div class="access-details">
+                    <strong>Access Details:</strong>
+                    <ul>
+                        <li>🚗 Parking: Marina visitor parking</li>
+                        <li>🔑 FOB key access (5PM - 7:30AM)</li>
+                        <li>⚡ Check shore power for ice cream freezer</li>
+                        <li>📍 Near Dry Dock, next to Boat Yard</li>
+                    </ul>
+                </div>
+                
+                <a href="https://www.google.com/maps/dir/?api=1&destination=-33.804802,151.245358" 
+                   target="_blank" 
+                   class="directions-btn">
+                    <i class="fas fa-route"></i> Get Directions
+                </a>
+            </div>
+            
+            <!-- Fergusons Marina -->
+            <div class="location-card">
+                <h3><i class="fas fa-building"></i> Fergusons Marina</h3>
+                <span class="type-badge marina-berth">Marina Berth</span>
+                
+                <div class="vessel-info">
+                    <strong>Vessel:</strong> Work Boat<br>
+                    <strong>Address:</strong> 83 Parriwi Rd, Mosman NSW 2088
+                </div>
+                
+                <div class="access-details">
+                    <strong>Access Details:</strong>
+                    <ul>
+                        <li>🚗 Parking: Marina visitor parking</li>
+                        <li>🔑 PIN code access at gate</li>
+                        <li>📍 83 Parriwi Rd, Mosman</li>
+                        <li>⚠️ Remember to lock gate after entry</li>
+                    </ul>
+                </div>
+                
+                <a href="https://www.google.com/maps/dir/?api=1&destination=-33.804169,151.246879" 
+                   target="_blank" 
+                   class="directions-btn">
+                    <i class="fas fa-route"></i> Get Directions
+                </a>
+            </div>
+        </div>
+        
+        <!-- Safe Anchorages Section -->
+        <div class="map-section" style="margin-top: 2rem;">
+            <h2 style="color: #2E86AB; margin-bottom: 1rem;"><i class="fas fa-anchor"></i> Safe Anchorage Areas</h2>
+            <p style="margin-bottom: 1rem;">When wind exceeds 20kts from S/SE, use these protected anchorages:</p>
+            
+            <div class="locations-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                <div class="location-card" style="padding: 1rem;">
+                    <h4 style="color: #E74C3C; margin-bottom: 0.5rem;">Forty Baskets Beach</h4>
+                    <p style="font-size: 0.9rem;">Protected anchorage with good holding. Popular spot.</p>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=-33.803671,151.270431" 
+                       target="_blank" 
+                       class="directions-btn" style="margin-top: 0.5rem; padding: 0.5rem;">
+                        <i class="fas fa-route"></i> Directions
+                    </a>
+                </div>
+                
+                <div class="location-card" style="padding: 1rem;">
+                    <h4 style="color: #E74C3C; margin-bottom: 0.5rem;">Collins Beach</h4>
+                    <p style="font-size: 0.9rem;">Well-protected from southerly winds. Good holding in sand.</p>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=-33.808391,151.290998" 
+                       target="_blank" 
+                       class="directions-btn" style="margin-top: 0.5rem; padding: 0.5rem;">
+                        <i class="fas fa-route"></i> Directions
+                    </a>
+                </div>
+                
+                <div class="location-card" style="padding: 1rem;">
+                    <h4 style="color: #E74C3C; margin-bottom: 0.5rem;">Store Beach</h4>
+                    <p style="font-size: 0.9rem;">Excellent protection from S/SE winds. Facilities nearby.</p>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=-33.812269,151.288648" 
+                       target="_blank" 
+                       class="directions-btn" style="margin-top: 0.5rem; padding: 0.5rem;">
+                        <i class="fas fa-route"></i> Directions
+                    </a>
+                </div>
+                
+                <div class="location-card" style="padding: 1rem;">
+                    <h4 style="color: #E74C3C; margin-bottom: 0.5rem;">Quarantine Beach</h4>
+                    <p style="font-size: 0.9rem;">Historic location with good protection. Suitable for overnight.</p>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=-33.814993,151.286208" 
+                       target="_blank" 
+                       class="directions-btn" style="margin-top: 0.5rem; padding: 0.5rem;">
+                        <i class="fas fa-route"></i> Directions
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Important Notes -->
+        <div class="map-section" style="margin-top: 2rem;">
+            <h2 style="color: #2E86AB; margin-bottom: 1rem;"><i class="fas fa-exclamation-circle"></i> Important Notes</h2>
+            
+            <div class="alert">
+                <i class="fas fa-clock"></i> <strong>Access Times:</strong> Marina requires FOB key between 5:00 PM - 7:30 AM
+            </div>
+            
+            <div class="alert" style="background: #FCF3CF; border-color: #F39C12;">
+                <i class="fas fa-exclamation-triangle" style="color: #D68910;"></i> 
+                <strong>Weather Alert:</strong> Check conditions before accessing swing moorings, especially in southerly winds
+            </div>
+            
+            <div class="alert" style="background: #FADBD8; border-color: #E74C3C;">
+                <i class="fas fa-bolt" style="color: #E74C3C;"></i> 
+                <strong>Ice Cream Boat:</strong> Always check shore power connection at d'Albora Marina
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manly Boat Hire - Quick Reference Card</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            padding: 1rem;
+            line-height: 1.4;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            page-break-inside: avoid;
+        }
+        
+        .card h2 {
+            color: #2E86AB;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #5DADE2;
+            padding-bottom: 0.5rem;
+        }
+        
+        .card h3 {
+            color: #2874A6;
+            margin: 1rem 0 0.5rem 0;
+            font-size: 1.2rem;
+        }
+        
+        .emergency {
+            background: #FADBD8;
+            border: 2px solid #E74C3C;
+        }
+        
+        .emergency h2 {
+            color: #E74C3C;
+            border-bottom-color: #E74C3C;
+        }
+        
+        .contacts {
+            background: #D6EAF8;
+            border: 2px solid #3498DB;
+        }
+        
+        .contacts h2 {
+            color: #2874A6;
+            border-bottom-color: #3498DB;
+        }
+        
+        .weather {
+            background: #FCF3CF;
+            border: 2px solid #F39C12;
+        }
+        
+        .weather h2 {
+            color: #D68910;
+            border-bottom-color: #F39C12;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5rem 0;
+        }
+        
+        td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #E5E7E9;
+        }
+        
+        td:first-child {
+            font-weight: bold;
+            color: #2874A6;
+        }
+        
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        ul li {
+            padding: 0.3rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        ul li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #5DADE2;
+            font-weight: bold;
+        }
+        
+        .alert {
+            background: #FEF9E7;
+            border-left: 4px solid #F39C12;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+        }
+        
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            grid-column: 1 / -1;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            
+            .header {
+                background: none;
+                color: black;
+                border: 2px solid black;
+            }
+        }
+        
+        .icon {
+            margin-right: 0.5rem;
+            color: #5DADE2;
+        }
+        
+        .btn-print {
+            background: #2E86AB;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .btn-print:hover {
+            background: #1B4F72;
+        }
+        
+        @media print {
+            .btn-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-ship"></i> Manly Boat Hire - Quick Reference Card</h1>
+            <p>Keep this card handy for essential information and procedures</p>
+            <button class="btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Quick Reference
+            </button>
+        </div>
+        
+        <!-- Emergency Contacts -->
+        <div class="card contacts">
+            <h2><i class="fas fa-phone-alt"></i> Emergency Contacts</h2>
+            <table>
+                <tr>
+                    <td><i class="fas fa-exclamation-circle icon"></i>Emergency</td>
+                    <td><strong>000</strong></td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-ship icon"></i>Water Police</td>
+                    <td><strong>02 9320 7099</strong></td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-user-tie icon"></i>Management (Max)</td>
+                    <td><strong>0403 580 669</strong></td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-radio icon"></i>Working Channel</td>
+                    <td><strong>0403 580 669</strong></td>
+                </tr>
+            </table>
+        </div>
+        
+        <!-- Fleet Overview -->
+        <div class="card">
+            <h2><i class="fas fa-anchor"></i> Fleet Locations</h2>
+            <h3>Little Manly</h3>
+            <ul>
+                <li>JUNIOR - 12 seater</li>
+                <li>Mooring: CL8335 (Red Buoy)</li>
+                <li>Access: Stuart Street parking</li>
+            </ul>
+            
+            <h3>Balmoral</h3>
+            <ul>
+                <li>SANDSTONE - 8 seater</li>
+                <li>Swing mooring (temporary)</li>
+            </ul>
+            
+            <h3>Seaforth</h3>
+            <ul>
+                <li>PUMICESTONE - 12 seater</li>
+                <li>Mooring: CA017/CA023</li>
+                <li>Access: The Spit West Reserve</li>
+            </ul>
+            
+            <h3>d'Albora Marinas</h3>
+            <ul>
+                <li>Ice Cream Boat</li>
+                <li>Berth: AE25</li>
+                <li>FOB access after 5PM</li>
+            </ul>
+            
+            <h3>Fergusons Marina</h3>
+            <ul>
+                <li>Work Boat</li>
+                <li>83 Parriwi Rd, Mosman</li>
+                <li>PIN code access at gate</li>
+            </ul>
+        </div>
+        
+        <!-- Emergency Procedures -->
+        <div class="card emergency">
+            <h2><i class="fas fa-exclamation-triangle"></i> Emergency Procedures</h2>
+            
+            <h3>Person Overboard</h3>
+            <ul>
+                <li>Shout "MAN OVERBOARD"</li>
+                <li>Throw flotation device</li>
+                <li>Keep visual contact</li>
+                <li>Execute safe recovery</li>
+                <li>Call Water Police if needed</li>
+            </ul>
+            
+            <h3>Fire on Board</h3>
+            <ul>
+                <li>Alert all passengers</li>
+                <li>Use fire extinguisher/blanket</li>
+                <li>Radio MAYDAY if spreading</li>
+                <li>Prepare for evacuation</li>
+                <li>Head for nearest shore</li>
+            </ul>
+            
+            <h3>Medical Emergency</h3>
+            <ul>
+                <li>Radio for ambulance</li>
+                <li>Provide first aid</li>
+                <li>Head to nearest access point</li>
+                <li>Keep patient comfortable</li>
+                <li>Document incident</li>
+            </ul>
+        </div>
+        
+        <!-- Weather Limits -->
+        <div class="card weather">
+            <h2><i class="fas fa-cloud-sun"></i> Weather Limits</h2>
+            
+            <h3>Wind Speed Limits</h3>
+            <ul>
+                <li><strong>Under 20kts:</strong> Safe to operate</li>
+                <li><strong>20kts S/SE:</strong> Monitor closely</li>
+                <li><strong>Over 20kts:</strong> Cancel/Recall all vessels</li>
+            </ul>
+            
+            <h3>Safe Anchorages (Southerly)</h3>
+            <ul>
+                <li>Forty Baskets Beach (-33.803671, 151.270431)</li>
+                <li>Collins Beach (-33.808391, 151.290998)</li>
+                <li>Store Beach (-33.812269, 151.288648)</li>
+                <li>Quarantine Beach (-33.814993, 151.286208)</li>
+            </ul>
+            
+            <div class="alert">
+                <strong>⚠️ Unsafe in Southerlies:</strong> Little Manly (anchored), West/East Esplanade
+            </div>
+        </div>
+        
+        <!-- Pre-Departure Checklist -->
+        <div class="card">
+            <h2><i class="fas fa-clipboard-check"></i> Pre-Departure Checklist</h2>
+            
+            <h3>Safety Equipment</h3>
+            <ul>
+                <li>Life jackets (correct sizes)</li>
+                <li>Fire extinguisher</li>
+                <li>First aid kit</li>
+                <li>Anchor and rode</li>
+                <li>Bilge pump</li>
+                <li>Navigation lights</li>
+                <li>Sound signals</li>
+            </ul>
+            
+            <h3>Engine Checks</h3>
+            <ul>
+                <li>Oil levels</li>
+                <li>Tell tail (water outlet)</li>
+                <li>Start/stop test</li>
+                <li>Steering operation</li>
+                <li>Throttle and gears</li>
+            </ul>
+        </div>
+        
+        <!-- Customer Safety Briefing -->
+        <div class="card">
+            <h2><i class="fas fa-users"></i> Safety Briefing Points</h2>
+            
+            <h3>Mandatory Topics</h3>
+            <ul>
+                <li>Life jacket locations & fitting</li>
+                <li>Emergency procedures</li>
+                <li>000 calling procedure</li>
+                <li>Man overboard drill</li>
+                <li>Fire extinguisher location</li>
+                <li>No-go zones & speed limits</li>
+                <li>Return time & procedures</li>
+                <li>Emergency contacts</li>
+            </ul>
+            
+            <div class="alert">
+                <strong>BBQ Boats:</strong> Gas safety, BBQ operation, fire blanket location
+            </div>
+        </div>
+        
+        <!-- Troubleshooting -->
+        <div class="card">
+            <h2><i class="fas fa-tools"></i> Quick Troubleshooting</h2>
+            
+            <h3>Engine Won't Start</h3>
+            <ul>
+                <li>Check battery connections</li>
+                <li>Fuel valve open?</li>
+                <li>Kill switch position</li>
+                <li>In neutral?</li>
+                <li>Try pull cord</li>
+            </ul>
+            
+            <h3>Overheating</h3>
+            <ul>
+                <li>Check water intake</li>
+                <li>Reduce speed</li>
+                <li>Return to base</li>
+            </ul>
+            
+            <h3>Call for Help When</h3>
+            <ul>
+                <li>Any safety concern</li>
+                <li>Major mechanical failure</li>
+                <li>Medical emergency</li>
+                <li>Weather deterioration</li>
+            </ul>
+        </div>
+        
+        <!-- End of Day -->
+        <div class="card">
+            <h2><i class="fas fa-moon"></i> End of Day Procedures</h2>
+            
+            <h3>Vessel Shutdown</h3>
+            <ul>
+                <li>Complete trip logs</li>
+                <li>Clean vessel</li>
+                <li>Check for belongings</li>
+                <li>Secure equipment</li>
+                <li>Complete fuel log</li>
+                <li>Report issues</li>
+            </ul>
+            
+            <h3>Mooring Specific</h3>
+            <ul>
+                <li>Double-check mooring</li>
+                <li>Secure tender</li>
+                <li>Remove valuables</li>
+                <li>Lock vessel</li>
+            </ul>
+            
+            <h3>Marina Specific</h3>
+            <ul>
+                <li>Connect shore power</li>
+                <li>Check dock lines</li>
+                <li>Position fenders</li>
+                <li>Sign out</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html> 

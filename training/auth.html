@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBH Staff Portal - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            color: #0066cc;
+            font-size: 1.5rem;
+        }
+
+        .logo p {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0052a3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .error {
+            background-color: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .success {
+            background-color: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .auth-switch {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .auth-switch a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <h1>🚤 MBH Staff Portal</h1>
+            <p>Manly Boat Hire</p>
+        </div>
+
+        <div id="messageBox" class="message" style="display: none;"></div>
+
+        <!-- Login Form -->
+        <form id="loginForm">
+            <h2 style="margin-bottom: 1.5rem; text-align: center;">Sign In</h2>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required placeholder="your@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="••••••••" minlength="6">
+            </div>
+
+            <button type="submit" id="submitBtn">Sign In</button>
+
+            <div class="auth-switch">
+                <p>Don't have an account? <a href="#" id="switchToSignup">Sign Up</a></p>
+            </div>
+        </form>
+
+        <!-- Signup Form (hidden by default) -->
+        <form id="signupForm" style="display: none;">
+            <h2 style="margin-bottom: 1.5rem; text-align: center;">Create Account</h2>
+            
+            <div class="form-group">
+                <label for="signupEmail">Email</label>
+                <input type="email" id="signupEmail" required placeholder="your@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <input type="password" id="signupPassword" required placeholder="••••••••" minlength="6">
+            </div>
+
+            <button type="submit" id="signupBtn">Sign Up</button>
+
+            <div class="auth-switch">
+                <p>Already have an account? <a href="#" id="switchToLogin">Sign In</a></p>
+            </div>
+        </form>
+
+        <div class="loading" id="loading">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase client
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // DOM elements
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const messageBox = document.getElementById('messageBox');
+        const loading = document.getElementById('loading');
+
+        // Switch between forms
+        document.getElementById('switchToSignup').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            hideMessage();
+        });
+
+        document.getElementById('switchToLogin').addEventListener('click', (e) => {
+            e.preventDefault();
+            signupForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            hideMessage();
+        });
+
+        // Handle login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            setLoading(true);
+            hideMessage();
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+
+                showMessage('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                showMessage(error.message || 'Login failed', 'error');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // Handle signup
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            setLoading(true);
+            hideMessage();
+
+            try {
+                // Build the redirect URL based on current location
+                const baseUrl = window.location.origin;
+                const redirectPath = window.location.pathname.includes('/training/') 
+                    ? '/training/auth-callback.html' 
+                    : '/auth-callback.html';
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        emailRedirectTo: `${baseUrl}${redirectPath}`
+                    }
+                });
+
+                if (error) throw error;
+
+                showMessage('Account created! Check your email for verification link.', 'success');
+                
+                // Clear form
+                signupForm.reset();
+
+            } catch (error) {
+                showMessage(error.message || 'Signup failed', 'error');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // Helper functions
+        function showMessage(text, type) {
+            messageBox.textContent = text;
+            messageBox.className = `message ${type}`;
+            messageBox.style.display = 'block';
+        }
+
+        function hideMessage() {
+            messageBox.style.display = 'none';
+        }
+
+        function setLoading(isLoading) {
+            const submitBtn = document.getElementById('submitBtn');
+            const signupBtn = document.getElementById('signupBtn');
+            
+            if (isLoading) {
+                submitBtn.disabled = true;
+                signupBtn.disabled = true;
+                submitBtn.textContent = 'Loading...';
+                signupBtn.textContent = 'Loading...';
+            } else {
+                submitBtn.disabled = false;
+                signupBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
+                signupBtn.textContent = 'Sign Up';
+            }
+        }
+
+        // Check if user is already logged in
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        // Run auth check on page load
+        checkAuth();
+    </script>
+</body>
+</html> 

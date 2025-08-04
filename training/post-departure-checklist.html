@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post-Departure Checklist - MBH Staff Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f8fa;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-email {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-white {
+            background: white;
+            color: #f5576c;
+        }
+        
+        .btn-white:hover {
+            background: #f0f0f0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .bookings-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+        }
+        
+        .booking-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1rem;
+        }
+        
+        .booking-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .booking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .booking-card.selected {
+            border-color: #f5576c;
+            background: #fff0f3;
+        }
+        
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        .booking-code {
+            font-weight: 600;
+            color: #f5576c;
+        }
+        
+        .booking-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            background: #ffeaa7;
+            color: #d63031;
+        }
+        
+        .booking-details {
+            display: grid;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .booking-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+        }
+        
+        .booking-detail i {
+            width: 20px;
+            color: #f5576c;
+        }
+        
+        .checklist-section {
+            display: none;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .checklist-section.active {
+            display: block;
+        }
+        
+        .checklist-header {
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .checklist-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .checklist-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .checklist-group {
+            margin-bottom: 2rem;
+        }
+        
+        .group-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .group-title i {
+            color: #f5576c;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            transition: background 0.2s ease;
+        }
+        
+        .checklist-item:hover {
+            background: #e9ecef;
+        }
+        
+        .checklist-item.checked {
+            background: #d4edda;
+        }
+        
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 1rem;
+            cursor: pointer;
+        }
+        
+        .checklist-item label {
+            flex: 1;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #f5576c;
+        }
+        
+        .select-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .select-option {
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .select-option:hover {
+            border-color: #f5576c;
+            background: #fff0f3;
+        }
+        
+        .select-option.selected {
+            border-color: #f5576c;
+            background: #f5576c;
+            color: white;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .btn-primary {
+            background: #f5576c;
+            color: white;
+            padding: 0.75rem 2rem;
+        }
+        
+        .btn-primary:hover {
+            background: #e74c5f;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 0.75rem 2rem;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .damage-alert {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .booking-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .select-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1><i class="fas fa-anchor"></i> Post-Departure Checklist</h1>
+            <div class="user-info">
+                <span class="user-email" id="userEmail"></span>
+                <a href="vessel-checklists.html" class="btn btn-white">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Bookings Section -->
+        <div class="bookings-section" id="bookingsSection">
+            <div class="section-header">
+                <h2 class="section-title">Your Assigned Post-Departure Checks</h2>
+                <button class="btn btn-primary" onclick="refreshBookings()">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            
+            <div id="loadingBookings" class="loading">
+                <i class="fas fa-spinner"></i>
+                <p>Loading your assignments...</p>
+            </div>
+            
+            <div id="bookingCards" class="booking-cards" style="display: none;"></div>
+            
+            <div id="noBookings" class="alert alert-info" style="display: none;">
+                <i class="fas fa-info-circle"></i> You have no post-departure checks assigned.
+            </div>
+        </div>
+
+        <!-- Checklist Form Section -->
+        <div class="checklist-section" id="checklistSection">
+            <div class="checklist-header">
+                <h2 class="checklist-title">Post-Departure Vessel Inspection</h2>
+                <p class="checklist-subtitle" id="checklistSubtitle"></p>
+            </div>
+
+            <form id="checklistForm">
+                <!-- Fuel & Resources Used -->
+                <div class="checklist-group">
+                    <h3 class="group-title"><i class="fas fa-gas-pump"></i> Resource Levels After Use</h3>
+                    
+                    <div class="form-group">
+                        <label>Fuel Level After Use</label>
+                        <div class="select-group" id="fuelLevelAfter">
+                            <div class="select-option" data-value="Empty">Empty</div>
+                            <div class="select-option" data-value="Quarter">Quarter</div>
+                            <div class="select-option" data-value="Half">Half</div>
+                            <div class="select-option" data-value="Three-Quarter">3/4</div>
+                            <div class="select-option" data-value="Full">Full</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gas Bottle Level After Use</label>
+                        <div class="select-group" id="gasLevelAfter">
+                            <div class="select-option" data-value="Empty">Empty</div>
+                            <div class="select-option" data-value="Quarter">Quarter</div>
+                            <div class="select-option" data-value="Half">Half</div>
+                            <div class="select-option" data-value="Three-Quarter">3/4</div>
+                            <div class="select-option" data-value="Full">Full</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Water Tank Level After Use</label>
+                        <div class="select-group" id="waterLevelAfter">
+                            <div class="select-option" data-value="Empty">Empty</div>
+                            <div class="select-option" data-value="Quarter">Quarter</div>
+                            <div class="select-option" data-value="Half">Half</div>
+                            <div class="select-option" data-value="Three-Quarter">3/4</div>
+                            <div class="select-option" data-value="Full">Full</div>
+                        </div>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="fuelRefilled" name="fuelRefilled">
+                        <label for="fuelRefilled">Fuel Refilled (if needed)</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="gasReplaced" name="gasReplaced">
+                        <label for="gasReplaced">Gas Bottle Replaced (if needed)</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="waterRefilled" name="waterRefilled">
+                        <label for="waterRefilled">Water Tank Refilled (if needed)</label>
+                    </div>
+                </div>
+
+                <!-- Vessel Condition -->
+                <div class="checklist-group">
+                    <h3 class="group-title"><i class="fas fa-broom"></i> Cleaning & Maintenance</h3>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="toiletCleaned" name="toiletCleaned">
+                        <label for="toiletCleaned">Toilet Cleaned</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="bbqCleaned" name="bbqCleaned">
+                        <label for="bbqCleaned">BBQ Cleaned</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="deckCleaned" name="deckCleaned">
+                        <label for="deckCleaned">Deck Cleaned</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="toiletPumped" name="toiletPumped">
+                        <label for="toiletPumped">Toilet Pumped Out</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="rubbishRemoved" name="rubbishRemoved">
+                        <label for="rubbishRemoved">Rubbish Removed</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="equipmentReturned" name="equipmentReturned">
+                        <label for="equipmentReturned">All Equipment Returned to Correct Position</label>
+                    </div>
+                </div>
+
+                <!-- Safety & Equipment -->
+                <div class="checklist-group">
+                    <h3 class="group-title"><i class="fas fa-life-ring"></i> Safety & Equipment Check</h3>
+                    
+                    <div class="form-group">
+                        <label>Lights Condition</label>
+                        <div class="select-group" id="lightsCondition">
+                            <div class="select-option" data-value="All Working">All Working</div>
+                            <div class="select-option" data-value="Some Not Working">Some Not Working</div>
+                            <div class="select-option" data-value="Major Issues">Major Issues</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Safety Equipment Condition</label>
+                        <div class="select-group" id="safetyEquipmentCondition">
+                            <div class="select-option" data-value="All Present & Good">All Present & Good</div>
+                            <div class="select-option" data-value="Minor Issues">Minor Issues</div>
+                            <div class="select-option" data-value="Missing/Damaged Items">Missing/Damaged</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Anchor & Mooring Equipment</label>
+                        <div class="select-group" id="anchorCondition">
+                            <div class="select-option" data-value="Secure & Complete">Secure & Complete</div>
+                            <div class="select-option" data-value="Needs Adjustment">Needs Adjustment</div>
+                            <div class="select-option" data-value="Damaged/Missing">Damaged/Missing</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Damage & Issues -->
+                <div class="checklist-group">
+                    <h3 class="group-title"><i class="fas fa-exclamation-triangle"></i> Damage & Lost Items</h3>
+                    
+                    <div class="form-group">
+                        <label for="damageReport">Damage Report (if any)</label>
+                        <textarea class="form-control" id="damageReport" name="damageReport" rows="4" 
+                            placeholder="Describe any damage in detail..." onchange="checkDamageReport()"></textarea>
+                    </div>
+
+                    <div class="damage-alert" id="damageAlert">
+                        <i class="fas fa-camera"></i> Please take photos of all damage before submitting
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="customerItems" name="customerItems" onchange="toggleItemsDescription()">
+                        <label for="customerItems">Customer Items Left Behind</label>
+                    </div>
+
+                    <div class="form-group" id="itemsDescriptionGroup" style="display: none;">
+                        <label for="itemsDescription">Items Description</label>
+                        <textarea class="form-control" id="itemsDescription" name="itemsDescription" rows="3" 
+                            placeholder="Describe items left behind..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Overall Assessment -->
+                <div class="checklist-group">
+                    <h3 class="group-title"><i class="fas fa-clipboard-check"></i> Overall Assessment</h3>
+                    
+                    <div class="form-group">
+                        <label>Overall Vessel Condition After Use</label>
+                        <div class="select-group" id="overallCondition">
+                            <div class="select-option" data-value="Good - Ready for Next Booking">Ready for Next Booking</div>
+                            <div class="select-option" data-value="Needs Attention">Needs Attention</div>
+                            <div class="select-option" data-value="Major Issues - Do Not Use">Do Not Use</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cancelChecklist()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Submit Checklist
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Airtable configuration
+        const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
+        const BASE_ID = 'applkAFOn2qxtu7tx';
+        const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
+        const CHECKLIST_TABLE_ID = 'tblYkbSQGP6zveYNi';
+        const BOATS_TABLE_ID = 'tblNLoBNb4daWzjob';
+
+        let currentUser = null;
+        let employeeRecordId = null;
+        let employeeFirstName = null;
+        let selectedBooking = null;
+        let selectedBoatName = null;
+        let assignedBookings = [];
+
+        // Check authentication
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                window.location.href = 'auth.html';
+            } else {
+                currentUser = user;
+                document.getElementById('userEmail').textContent = user.email;
+                
+                // Find employee record
+                await findEmployeeRecord(user.email);
+                if (employeeRecordId) {
+                    await loadAssignedBookings();
+                } else {
+                    showNoBookings('Employee record not found. Please contact your manager.');
+                }
+            }
+        }
+
+        // Find employee record in Airtable by email
+        async function findEmployeeRecord(email) {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/tbltAE4NlNePvnkpY?filterByFormula={Email}='${email}'`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+                if (data.records && data.records.length > 0) {
+                    employeeRecordId = data.records[0].id;
+                    // Extract first name from full name
+                    const fullName = data.records[0].fields['Name'] || '';
+                    employeeFirstName = fullName.split(' ')[0] || 'Unknown';
+                    console.log('Employee found:', {
+                        id: employeeRecordId,
+                        fullName: fullName,
+                        firstName: employeeFirstName,
+                        fullRecord: data.records[0].fields
+                    });
+                }
+            } catch (error) {
+                console.error('Error finding employee:', error);
+            }
+        }
+
+        // Load assigned bookings
+        async function loadAssignedBookings() {
+            const loadingDiv = document.getElementById('loadingBookings');
+            const cardsDiv = document.getElementById('bookingCards');
+            const noBookingsDiv = document.getElementById('noBookings');
+            
+            loadingDiv.style.display = 'block';
+            cardsDiv.style.display = 'none';
+            noBookingsDiv.style.display = 'none';
+
+            try {
+                // Fetch ALL PAID bookings and filter client-side
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
+                    `filterByFormula={Status}='PAID'&` +
+                    `sort[0][field]=Booking Date&sort[0][direction]=asc&sort[1][field]=Deloading Time&sort[1][direction]=asc&` +
+                    `pageSize=100`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+                console.log('All PAID bookings:', data);
+                
+                // Filter for bookings where current user is deloading employee
+                if (data.records) {
+                    assignedBookings = data.records.filter(record => {
+                        const deloadingEmployees = record.fields['Deloading Employee'] || [];
+                        return deloadingEmployees.includes(employeeRecordId);
+                    });
+                    
+                    console.log(`Found ${assignedBookings.length} assigned bookings from ${data.records.length} total PAID bookings`);
+                } else {
+                    assignedBookings = [];
+                }
+
+                if (assignedBookings.length === 0) {
+                    showNoBookings();
+                } else {
+                    displayBookings(assignedBookings);
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                showNoBookings('Error loading bookings. Please try again.');
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        // Display booking cards
+        async function displayBookings(bookings) {
+            const cardsDiv = document.getElementById('bookingCards');
+            cardsDiv.innerHTML = '';
+
+            for (const booking of bookings) {
+                const boatName = await getBoatName(booking.fields['Boat']);
+                const card = createBookingCard(booking, boatName);
+                cardsDiv.appendChild(card);
+            }
+
+            cardsDiv.style.display = 'grid';
+        }
+
+        // Get boat name from ID
+        async function getBoatName(boatIds) {
+            if (!boatIds || boatIds.length === 0) return 'No Boat Assigned';
+            
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE_ID}/${boatIds[0]}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+                return data.fields?.Name || 'Unknown Boat';
+            } catch (error) {
+                console.error('Error fetching boat:', error);
+                return 'Unknown Boat';
+            }
+        }
+
+        // Create booking card element
+        function createBookingCard(booking, boatName) {
+            const card = document.createElement('div');
+            card.className = 'booking-card';
+            card.onclick = () => selectBooking(booking, boatName);
+
+            const bookingDate = new Date(booking.fields['Booking Date']);
+            const dateStr = bookingDate.toLocaleDateString('en-AU', { 
+                weekday: 'short', 
+                day: 'numeric', 
+                month: 'short' 
+            });
+
+            const hasChecklist = booking.fields['Post-Departure Checklist'] && 
+                               booking.fields['Post-Departure Checklist'].length > 0;
+
+            card.innerHTML = `
+                <div class="booking-header">
+                    <span class="booking-code">${booking.fields['Booking Code'] || 'N/A'}</span>
+                    <span class="booking-status">${hasChecklist ? 'Completed' : 'Pending'}</span>
+                </div>
+                <div class="booking-details">
+                    <div class="booking-detail">
+                        <i class="fas fa-user"></i>
+                        <span>${booking.fields['Customer Name'] || 'Unknown Customer'}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <i class="fas fa-calendar"></i>
+                        <span>${dateStr}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <i class="fas fa-clock"></i>
+                        <span>Deloading: ${booking.fields['Deloading Time'] || 'N/A'}</span>
+                    </div>
+                    <div class="booking-detail">
+                        <i class="fas fa-ship"></i>
+                        <span>${boatName}</span>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Select a booking for checklist
+        function selectBooking(booking, boatName) {
+            selectedBooking = booking;
+            selectedBoatName = boatName;
+            
+            // Update UI
+            document.querySelectorAll('.booking-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+
+            // Show checklist form
+            document.getElementById('bookingsSection').style.display = 'none';
+            document.getElementById('checklistSection').classList.add('active');
+
+            // Update checklist header
+            const bookingDate = new Date(booking.fields['Booking Date']);
+            const dateStr = bookingDate.toLocaleDateString('en-AU', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long' 
+            });
+
+            document.getElementById('checklistSubtitle').innerHTML = `
+                <strong>Booking:</strong> ${booking.fields['Booking Code']} | 
+                <strong>Customer:</strong> ${booking.fields['Customer Name']} | 
+                <strong>Boat:</strong> ${boatName} | 
+                <strong>Date:</strong> ${dateStr}
+            `;
+
+            // Reset form
+            document.getElementById('checklistForm').reset();
+            resetSelectGroups();
+            document.getElementById('damageAlert').style.display = 'none';
+            document.getElementById('itemsDescriptionGroup').style.display = 'none';
+        }
+
+        // Cancel checklist and go back
+        function cancelChecklist() {
+            selectedBooking = null;
+            document.getElementById('checklistSection').classList.remove('active');
+            document.getElementById('bookingsSection').style.display = 'block';
+            
+            // Remove selection
+            document.querySelectorAll('.booking-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+        }
+
+        // Show no bookings message
+        function showNoBookings(message = null) {
+            const noBookingsDiv = document.getElementById('noBookings');
+            if (message) {
+                noBookingsDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+                noBookingsDiv.className = 'alert alert-warning';
+            }
+            noBookingsDiv.style.display = 'block';
+            document.getElementById('bookingCards').style.display = 'none';
+        }
+
+        // Check damage report
+        function checkDamageReport() {
+            const damageReport = document.getElementById('damageReport').value;
+            const damageAlert = document.getElementById('damageAlert');
+            
+            if (damageReport && damageReport.trim() !== '') {
+                damageAlert.style.display = 'block';
+            } else {
+                damageAlert.style.display = 'none';
+            }
+        }
+
+        // Toggle items description
+        function toggleItemsDescription() {
+            const checkbox = document.getElementById('customerItems');
+            const descGroup = document.getElementById('itemsDescriptionGroup');
+            
+            if (checkbox.checked) {
+                descGroup.style.display = 'block';
+            } else {
+                descGroup.style.display = 'none';
+                document.getElementById('itemsDescription').value = '';
+            }
+        }
+
+        // Handle select group clicks
+        document.addEventListener('DOMContentLoaded', () => {
+            // Select group functionality
+            document.querySelectorAll('.select-group').forEach(group => {
+                group.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('select-option')) {
+                        // Remove other selections in this group
+                        group.querySelectorAll('.select-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        // Select clicked option
+                        e.target.classList.add('selected');
+                    }
+                });
+            });
+
+            // Checkbox interactions
+            document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const item = e.target.closest('.checklist-item');
+                    if (e.target.checked) {
+                        item.classList.add('checked');
+                    } else {
+                        item.classList.remove('checked');
+                    }
+                });
+            });
+
+            // Form submission
+            document.getElementById('checklistForm').addEventListener('submit', handleSubmit);
+
+            // Initialize
+            checkAuth();
+        });
+
+        // Reset select groups
+        function resetSelectGroups() {
+            document.querySelectorAll('.select-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelectorAll('.checklist-item').forEach(item => {
+                item.classList.remove('checked');
+            });
+        }
+
+        // Get selected value from a select group
+        function getSelectedValue(groupId) {
+            const selected = document.querySelector(`#${groupId} .select-option.selected`);
+            return selected ? selected.dataset.value : null;
+        }
+
+        // Handle form submission
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            if (!selectedBooking) {
+                alert('Please select a booking first');
+                return;
+            }
+
+            // Validate booking has a vessel
+            const vesselField = selectedBooking.fields['Boat'];
+            if (!vesselField || vesselField.length === 0) {
+                console.error('No vessel assigned to booking:', selectedBooking);
+                alert('This booking does not have a vessel assigned. Please contact management.');
+                return;
+            }
+
+            // Validate required fields
+            const fuelLevelAfter = getSelectedValue('fuelLevelAfter');
+            const gasLevelAfter = getSelectedValue('gasLevelAfter');
+            const waterLevelAfter = getSelectedValue('waterLevelAfter');
+            const lightsCondition = getSelectedValue('lightsCondition');
+            const safetyEquipmentCondition = getSelectedValue('safetyEquipmentCondition');
+            const anchorCondition = getSelectedValue('anchorCondition');
+            const overallCondition = getSelectedValue('overallCondition');
+
+            if (!fuelLevelAfter || !gasLevelAfter || !waterLevelAfter || 
+                !lightsCondition || !safetyEquipmentCondition || 
+                !anchorCondition || !overallCondition) {
+                alert('Please complete all required fields');
+                return;
+            }
+
+            // Generate Checklist ID: "Vessel name - Employee first name - date"
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-AU', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            }).replace(/\//g, '-'); // Convert DD/MM/YYYY to DD-MM-YYYY
+            
+            const checklistId = `${selectedBoatName} - ${employeeFirstName || 'Unknown'} - ${dateStr}`;
+            console.log('Generated Checklist ID:', checklistId);
+
+            // Prepare checklist data
+            const checklistData = {
+                fields: {
+                    "Checklist ID": checklistId,
+                    "Booking": [selectedBooking.id],
+                    "Staff Member": [employeeRecordId],
+                    "Vessel": selectedBooking.fields['Boat'],
+                    "Checklist Date/Time": new Date().toISOString(),
+                    "Fuel Level After Use": fuelLevelAfter,
+                    "Gas Bottle Level After Use": gasLevelAfter,
+                    "Water Tank Level After Use": waterLevelAfter,
+                    "Toilet Cleaned": document.getElementById('toiletCleaned').checked,
+                    "BBQ Cleaned": document.getElementById('bbqCleaned').checked,
+                    "Deck Cleaned": document.getElementById('deckCleaned').checked,
+                    "Toilet Pumped Out": document.getElementById('toiletPumped').checked,
+                    "Rubbish Removed": document.getElementById('rubbishRemoved').checked,
+                    "Equipment Returned": document.getElementById('equipmentReturned').checked,
+                    "Lights Condition": lightsCondition,
+                    "Safety Equipment Condition": safetyEquipmentCondition,
+                    "Anchor & Mooring Equipment": anchorCondition,
+                    "Damage Report": document.getElementById('damageReport').value || "",
+                    "Customer Items Left": document.getElementById('customerItems').checked,
+                    "Items Description": document.getElementById('itemsDescription').value || "",
+                    "Overall Vessel Condition After Use": overallCondition,
+                    "Completion Status": "Completed",
+                    "Completion Time": new Date().toISOString(),
+                    "Fuel Refilled": document.getElementById('fuelRefilled').checked,
+                    "Gas Bottle Replaced": document.getElementById('gasReplaced').checked,
+                    "Water Tank Refilled": document.getElementById('waterRefilled').checked
+                }
+            };
+
+            // Debug logging
+            console.log('Submitting checklist data:', checklistData);
+            console.log('Selected booking:', selectedBooking);
+            console.log('Employee ID:', employeeRecordId);
+
+            try {
+                // Submit to Airtable
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${CHECKLIST_TABLE_ID}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(checklistData)
+                    }
+                );
+
+                if (response.ok) {
+                    alert('Post-departure checklist submitted successfully!');
+                    window.location.href = 'vessel-checklists.html';
+                } else {
+                    const error = await response.json();
+                    console.error('Airtable error:', error);
+                    
+                    // Show detailed error message
+                    let errorMessage = 'Failed to submit checklist.';
+                    if (error.error && error.error.message) {
+                        errorMessage += '\n\nError: ' + error.error.message;
+                    }
+                    if (error.error && error.error.type === 'INVALID_REQUEST_UNKNOWN') {
+                        errorMessage += '\n\nPlease check that all fields are filled correctly.';
+                    }
+                    alert(errorMessage);
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                alert('Network error. Please check your connection and try again.');
+            }
+        }
+
+        // Refresh bookings
+        function refreshBookings() {
+            loadAssignedBookings();
+        }
+    </script>
+</body>
+</html> 

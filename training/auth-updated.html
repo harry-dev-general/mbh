@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBH Staff Portal - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            color: #0066cc;
+            font-size: 1.5rem;
+        }
+
+        .logo p {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0052a3;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .form-toggle {
+            text-align: center;
+            margin-top: 1rem;
+            color: #666;
+        }
+
+        .form-toggle a {
+            color: #0066cc;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .form-toggle a:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .message.error {
+            background-color: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .message.success {
+            background-color: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0066cc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">
+            <h1>🚤 MBH Staff Portal</h1>
+            <p>Manly Boat Hire</p>
+        </div>
+
+        <div id="message" class="message" style="display: none;"></div>
+
+        <form id="authForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">
+                <span id="btnText">Login</span>
+            </button>
+        </form>
+
+        <div class="form-toggle">
+            <span id="toggleText">Don't have an account?</span>
+            <a href="#" id="toggleLink" onclick="toggleForm(event)">Sign up</a>
+        </div>
+    </div>
+
+    <script>
+        let isLogin = true;
+        let supabase = null;
+
+        // Initialize Supabase on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                supabase = await MBHConfig.initializeSupabase();
+                
+                // Check if user is already logged in
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    window.location.href = '/dashboard.html';
+                }
+            } catch (error) {
+                console.error('Error initializing:', error);
+                showMessage('Error loading configuration. Please refresh the page.', 'error');
+            }
+        });
+
+        function toggleForm(e) {
+            e.preventDefault();
+            isLogin = !isLogin;
+            
+            const submitBtn = document.getElementById('btnText');
+            const toggleText = document.getElementById('toggleText');
+            const toggleLink = document.getElementById('toggleLink');
+            
+            if (isLogin) {
+                submitBtn.textContent = 'Login';
+                toggleText.textContent = "Don't have an account?";
+                toggleLink.textContent = 'Sign up';
+            } else {
+                submitBtn.textContent = 'Sign Up';
+                toggleText.textContent = 'Already have an account?';
+                toggleLink.textContent = 'Login';
+            }
+            
+            hideMessage();
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+        }
+
+        function hideMessage() {
+            const messageEl = document.getElementById('message');
+            messageEl.style.display = 'none';
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!supabase) {
+                showMessage('Application not initialized. Please refresh the page.', 'error');
+                return;
+            }
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<span class="loading"></span>Processing...';
+            hideMessage();
+            
+            try {
+                if (isLogin) {
+                    // Login
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+                    
+                    if (error) throw error;
+                    
+                    showMessage('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1000);
+                    
+                } else {
+                    // Sign up
+                    const { data, error } = await supabase.auth.signUp({
+                        email,
+                        password,
+                        options: {
+                            emailRedirectTo: `${window.location.origin}/auth-callback.html`
+                        }
+                    });
+                    
+                    if (error) throw error;
+                    
+                    if (data.user && data.user.identities && data.user.identities.length === 0) {
+                        showMessage('This email is already registered. Please login instead.', 'error');
+                    } else {
+                        showMessage('Success! Please check your email to verify your account.', 'success');
+                        document.getElementById('authForm').reset();
+                    }
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                showMessage(error.message || 'An error occurred. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = isLogin ? 'Login' : 'Sign Up';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manly Boat Hire - Training Resources</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-info {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            text-align: right;
+        }
+        
+        .user-info button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .user-info button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .nav {
+            background: #2874A6;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0;
+        }
+        
+        .nav li {
+            margin: 0;
+        }
+        
+        .nav a {
+            display: block;
+            color: white;
+            padding: 1rem 1.5rem;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .nav a:hover {
+            background: #1B4F72;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .module {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .module h2 {
+            color: #2E86AB;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            border-bottom: 3px solid #5DADE2;
+            padding-bottom: 0.5rem;
+        }
+        
+        .module h3 {
+            color: #2874A6;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.5rem;
+        }
+        
+        .checklist {
+            background: #EBF5FB;
+            border-left: 4px solid #5DADE2;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+        
+        .checklist input[type="checkbox"] {
+            margin-right: 0.5rem;
+            transform: scale(1.2);
+        }
+        
+        .checklist label {
+            display: block;
+            padding: 0.5rem 0;
+            cursor: pointer;
+        }
+        
+        .checklist label:hover {
+            background: #D6EAF8;
+            margin: 0 -1rem;
+            padding-left: 1rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .alert-danger {
+            background: #FADBD8;
+            border-left: 4px solid #E74C3C;
+            color: #922B21;
+        }
+        
+        .alert-warning {
+            background: #FCF3CF;
+            border-left: 4px solid #F39C12;
+            color: #7E5109;
+        }
+        
+        .alert-info {
+            background: #D6EAF8;
+            border-left: 4px solid #3498DB;
+            color: #1B4F72;
+        }
+        
+        .video-link {
+            display: inline-block;
+            background: #E74C3C;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 0.5rem 0;
+            transition: background 0.3s;
+        }
+        
+        .video-link:hover {
+            background: #C0392B;
+        }
+        
+        .video-link i {
+            margin-right: 0.5rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .card {
+            background: #F8F9F9;
+            border: 1px solid #E5E7E9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .card h4 {
+            color: #2E86AB;
+            margin-bottom: 0.5rem;
+        }
+        
+        .emergency-box {
+            background: #FADBD8;
+            border: 2px solid #E74C3C;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .emergency-box h4 {
+            color: #E74C3C;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        
+        .mermaid {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .progress-bar {
+            background: #E5E7E9;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress {
+            background: linear-gradient(90deg, #27AE60, #2ECC71);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            padding-left: 1rem;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .contact-card {
+            background: #2E86AB;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .contact-card h4 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-card a {
+            color: #AED6F1;
+            text-decoration: none;
+        }
+        
+        .interactive-map {
+            background: #F8F9F9;
+            border: 2px solid #D5D8DC;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            min-height: 400px;
+            position: relative;
+        }
+        
+        @media (max-width: 768px) {
+            .nav ul {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: #2E86AB;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+        
+        .btn:hover {
+            background: #1B4F72;
+        }
+        
+        .btn-success {
+            background: #27AE60;
+        }
+        
+        .btn-success:hover {
+            background: #1E8449;
+        }
+        
+        .btn-danger {
+            background: #E74C3C;
+        }
+        
+        .btn-danger:hover {
+            background: #C0392B;
+        }
+        
+        @media print {
+            .nav, .btn, .video-link {
+                display: none;
+            }
+            
+            .module {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="user-info" id="userInfo" style="display: none;">
+            <p>Welcome, <span id="userEmail"></span></p>
+            <button onclick="window.location.href='dashboard.html'" style="margin-right: 0.5rem;">Dashboard</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+        <h1><i class="fas fa-ship"></i> Manly Boat Hire - Training Resources</h1>
+        <p>Comprehensive Training Guide for Safe and Professional Operations</p>
+    </div>
+    
+    <nav class="nav">
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#locations">Locations</a></li>
+            <li><a href="#procedures">Procedures</a></li>
+            <li><a href="#safety">Safety</a></li>
+            <li><a href="#emergency">Emergency</a></li>
+            <li><a href="#weather">Weather</a></li>
+            <li><a href="#maintenance">Maintenance</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <!-- Module 1: Company Overview -->
+        <div class="module" id="overview">
+            <h2><i class="fas fa-building"></i> Module 1: Company Overview</h2>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Our Mission: To provide safe, enjoyable, and memorable boating experiences while maintaining the highest standards of customer service and vessel safety.
+            </div>
+            
+            <h3>Fleet Overview</h3>
+            <div class="mermaid">
+                graph TB
+                    A[Manly Boat Hire Fleet Overview] --> B[Little Manly<br/>JUNIOR 12 seater<br/>Swing Mooring CL8335]
+                    A --> C[Balmoral<br/>SANDSTONE 8 seater<br/>Swing Mooring]
+                    A --> D[Seaforth<br/>PUMICESTONE 12 seater<br/>Swing Mooring CA017/CA023]
+                                            A --> E[d'Albora Marinas<br/>Ice Cream Boat<br/>Berth AE25]
+                        A --> F[Fergusons Marina<br/>Work Boat<br/>83 Parriwi Rd, Mosman]
+                    
+                    style A fill:#2E86AB,stroke:#1B4F72,stroke-width:3px,color:#fff
+                    style B fill:#5DADE2,stroke:#2874A6,stroke-width:2px
+                    style C fill:#5DADE2,stroke:#2874A6,stroke-width:2px
+                    style D fill:#5DADE2,stroke:#2874A6,stroke-width:2px
+                    style E fill:#5DADE2,stroke:#2874A6,stroke-width:2px
+            </div>
+            
+            <div class="grid">
+                <div class="contact-card">
+                    <h4><i class="fas fa-phone-alt"></i> Emergency Contacts</h4>
+                    <p><strong>Emergency:</strong> 000</p>
+                    <p><strong>Water Police:</strong> 02 9320 7099</p>
+                    <p><strong>Management (Max):</strong> 0403 580 669</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Module 2: Vessel Locations & Access -->
+        <div class="module" id="locations">
+            <h2><i class="fas fa-map-marked-alt"></i> Module 2: Vessel Locations & Access</h2>
+            
+            <div style="text-align: center; margin: 1rem 0;">
+                <a href="vessel-locations-map.html" class="btn btn-success" target="_blank">
+                    <i class="fas fa-map"></i> View Interactive Locations Map
+                </a>
+            </div>
+            
+            <div class="mermaid">
+                graph LR
+                    A[Access Locations] --> B[Little Manly Point Reserve]
+                    A --> C[D'Albora Marina's The Spit]
+                    B --> D[Paddle Board Storage]
+                    B --> E[Stuart Street Parking]
+                    C --> F[Work Boat Storage]
+                    C --> G[Marina Visitor Parking]
+                    
+                    style A fill:#2E86AB,stroke:#1B4F72,stroke-width:3px,color:#fff
+                    style B fill:#5DADE2,stroke:#2874A6,stroke-width:2px
+                    style C fill:#5DADE2,stroke:#2874A6,stroke-width:2px
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4><i class="fas fa-anchor"></i> Little Manly Swing Moorings</h4>
+                    <ul>
+                        <li><strong>Access:</strong> Little Manly Point Reserve</li>
+                        <li><strong>Parking:</strong> Stuart Street</li>
+                        <li><strong>Tender:</strong> Paddle board in racks</li>
+                        <li><strong>Mooring:</strong> CL8335 (Red Buoy)</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4><i class="fas fa-anchor"></i> Seaforth Swing Moorings</h4>
+                    <ul>
+                        <li><strong>Access:</strong> D'Albora Marina's The Spit</li>
+                        <li><strong>Parking:</strong> The Spit West Reserve</li>
+                        <li><strong>Tender:</strong> Work Boat near Plonk Cafe</li>
+                        <li><strong>Mooring:</strong> CA017/CA023</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4><i class="fas fa-anchor"></i> d'Albora Marinas</h4>
+                    <ul>
+                        <li><strong>Access:</strong> FOB key after 5PM</li>
+                        <li><strong>Berth:</strong> AE25 - Eastern side</li>
+                        <li><strong>Parking:</strong> Marina visitor parking</li>
+                        <li><strong>Note:</strong> Check shore power for ice cream freezer</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Module 3: Pre-Departure Procedures -->
+        <div class="module" id="procedures">
+            <h2><i class="fas fa-clipboard-check"></i> Module 3: Pre-Departure Procedures</h2>
+            
+            <a href="https://www.youtube.com/watch?v=pLgk3kwy-fs" target="_blank" class="video-link">
+                <i class="fab fa-youtube"></i> Watch: Pre-outboard engine checks tutorial
+            </a>
+            
+            <h3>Safety Equipment Checklist</h3>
+            <div class="checklist" id="safety-checklist">
+                <label><input type="checkbox"> Life jackets (correct sizes and numbers)</label>
+                <label><input type="checkbox"> Fire extinguisher (current and accessible)</label>
+                <label><input type="checkbox"> First aid kit (stocked and sealed)</label>
+                <label><input type="checkbox"> Anchor and rode</label>
+                <label><input type="checkbox"> Bilge pump operational</label>
+                <label><input type="checkbox"> Navigation lights working</label>
+                <label><input type="checkbox"> Sound signals (horn/whistle)</label>
+            </div>
+            
+            <h3>Engine & Mechanical Checks</h3>
+            <div class="checklist" id="engine-checklist">
+                <label><input type="checkbox"> Check oil levels</label>
+                <label><input type="checkbox"> Inspect tell tail (water outlet)</label>
+                <label><input type="checkbox"> Test engine start/stop</label>
+                <label><input type="checkbox"> Check steering operation</label>
+                <label><input type="checkbox"> Test throttle and gear controls</label>
+                <label><input type="checkbox"> Verify forward and aft propulsion</label>
+            </div>
+            
+            <h3>Fuel System Checks</h3>
+            <div class="checklist" id="fuel-checklist">
+                <label><input type="checkbox"> Check fuel levels</label>
+                <label><input type="checkbox"> Inspect for fuel leaks</label>
+                <label><input type="checkbox"> Ensure fuel shut-off accessible</label>
+                <label><input type="checkbox"> Verify fuel type correct</label>
+            </div>
+            
+            <h3>Hull & Deck Checks</h3>
+            <div class="checklist" id="hull-checklist">
+                <label><input type="checkbox"> Check for damage</label>
+                <label><input type="checkbox"> Cleats secure</label>
+                <label><input type="checkbox"> Rails tight</label>
+                <label><input type="checkbox"> Windows/hatches sealed</label>
+                <label><input type="checkbox"> Deck clean and non-slip</label>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress" id="checklist-progress">0%</div>
+            </div>
+        </div>
+        
+        <!-- Module 4: Customer Service -->
+        <div class="module" id="safety">
+            <h2><i class="fas fa-users"></i> Module 4: Customer Service Standards</h2>
+            
+            <a href="https://www.youtube.com/watch?v=qW6FxZG8TyI" target="_blank" class="video-link">
+                <i class="fab fa-youtube"></i> Watch: Safety Briefing Tutorial
+            </a>
+            
+            <div class="mermaid">
+                flowchart TD
+                    A[Customer Arrives] --> B[Welcome with Smile]
+                    B --> C[Confirm Booking Details]
+                    C --> D[Check Customer Numbers]
+                    D --> E[Verify Skipper]
+                    E --> F[Safety Briefing]
+                    F --> G[Vessel Handover]
+                    
+                    style A fill:#27AE60,stroke:#1E8449,stroke-width:2px
+                    style F fill:#E74C3C,stroke:#C0392B,stroke-width:3px,color:#fff
+            </div>
+            
+            <h3>Mandatory Safety Briefing Points</h3>
+            <div class="checklist">
+                <label><input type="checkbox"> Life jacket locations and fitting demonstration</label>
+                <label><input type="checkbox"> Emergency procedures explanation</label>
+                <label><input type="checkbox"> Triple zero (000) calling procedure</label>
+                <label><input type="checkbox"> Man overboard procedures</label>
+                <label><input type="checkbox"> Fire extinguisher location</label>
+                <label><input type="checkbox"> No-go zones and speed limits</label>
+                <label><input type="checkbox"> Return time and procedures</label>
+                <label><input type="checkbox"> Emergency contact numbers</label>
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-fire"></i> BBQ Boat Additional Requirements: Gas bottle operation, BBQ lighting, grease tray management, fire blanket location
+            </div>
+        </div>
+        
+        <!-- Module 5: Operating Procedures -->
+        <div class="module">
+            <h2><i class="fas fa-ship"></i> Module 5: Operating Procedures</h2>
+            
+            <h3>Swing Mooring Operations</h3>
+            <div class="mermaid">
+                flowchart LR
+                    A[Departing Mooring] --> B[Start Engine]
+                    B --> C[Check Wind/Current]
+                    C --> D[Prepare Line]
+                    D --> E[Release Mooring]
+                    E --> F[Clear Area]
+                    
+                    G[Returning to Mooring] --> H[Approach Slowly]
+                    H --> I[Have Hook Ready]
+                    I --> J[Secure to Mooring]
+                    J --> K[Shut Down Engine]
+                    K --> L[Trim Engine Up]
+                    
+                    style A fill:#27AE60,stroke:#1E8449,stroke-width:2px
+                    style G fill:#3498DB,stroke:#2874A6,stroke-width:2px
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4>Departing Swing Mooring</h4>
+                    <ol>
+                        <li>Start engine and warm up</li>
+                        <li>Check wind and current direction</li>
+                        <li>Prepare mooring line for release</li>
+                        <li>Release mooring when ready</li>
+                        <li>Clear mooring area promptly</li>
+                    </ol>
+                </div>
+                
+                <div class="card">
+                    <h4>Returning to Swing Mooring</h4>
+                    <ol>
+                        <li>Approach slowly into wind/current</li>
+                        <li>Have boat hook ready</li>
+                        <li>Secure to mooring pickup buoy</li>
+                        <li>Shut down engine</li>
+                        <li>Trim engine up out of water</li>
+                        <li>Ensure vessel secure</li>
+                        <li>Complete post-trip inspection</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Module 6: Weather Procedures -->
+        <div class="module" id="weather">
+            <h2><i class="fas fa-cloud-sun"></i> Module 6: Weather Procedures</h2>
+            
+            <a href="https://www.youtube.com/watch?v=2Yc6Ekgg91I" target="_blank" class="video-link">
+                <i class="fab fa-youtube"></i> Watch: Sight reading wind tutorial
+            </a>
+            
+            <a href="vessel-locations-map.html" onclick="setTimeout(function(){ showAnchorageView(); }, 100);" class="video-link" style="background: #E74C3C;">
+                <i class="fas fa-map-marked-alt"></i> View Safe Anchorage Areas on Map
+            </a>
+            
+            <div class="mermaid">
+                graph TD
+                    A[Check Weather] --> B{Wind Speed?}
+                    B -->|Under 20kts| C[Safe to Operate]
+                    B -->|Over 20kts| D[Cancel/Recall]
+                    B -->|20kts S/SE| E[Monitor Closely]
+                    E --> F[Safe Anchorages]
+                    F --> G[Store Beach<br/>Forty Baskets<br/>Quarantine<br/>Collins Beach<br/><i>View on Map</i>]
+                    D --> H[Secure All Vessels]
+                    
+                    style B fill:#F39C12,stroke:#D68910,stroke-width:3px
+                    style D fill:#E74C3C,stroke:#C0392B,stroke-width:3px,color:#fff
+                    style C fill:#27AE60,stroke:#1E8449,stroke-width:3px,color:#fff
+            </div>
+            
+            <div class="emergency-box">
+                <h4><i class="fas fa-exclamation-triangle"></i> Southerly Wind Warning</h4>
+                <p><strong>Unsafe Locations:</strong></p>
+                <ul>
+                    <li>Little Manly (when anchored)</li>
+                    <li>West and East Esplanade</li>
+                    <li>Any area exposed to wind chop</li>
+                </ul>
+                <p><strong>Safe Anchorages:</strong></p>
+                <ul>
+                    <li>Store Beach</li>
+                    <li>Forty Baskets Beach</li>
+                    <li>Quarantine Station Beach</li>
+                    <li>Collins Beach</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Module 7: Emergency Procedures -->
+        <div class="module" id="emergency">
+            <h2><i class="fas fa-exclamation-circle"></i> Module 7: Emergency Procedures</h2>
+            
+            <a href="https://www.youtube.com/watch?v=ifL5EF796NM" target="_blank" class="video-link">
+                <i class="fab fa-youtube"></i> Watch: Person Overboard Drill
+            </a>
+            
+            <div class="mermaid">
+                flowchart TD
+                    A[EMERGENCY] --> B{Type?}
+                    B -->|Person Overboard| C[1. Shout MAN OVERBOARD<br/>2. Throw flotation<br/>3. Keep visual contact<br/>4. Execute recovery<br/>5. Call Water Police if needed]
+                    B -->|Fire| D[1. Alert passengers<br/>2. Use extinguisher<br/>3. Radio MAYDAY<br/>4. Prepare evacuation<br/>5. Head to shore]
+                    B -->|Medical| E[1. Radio for ambulance<br/>2. Provide first aid<br/>3. Head to access point<br/>4. Keep patient comfortable<br/>5. Document incident]
+                    B -->|Breakdown| F[1. Ensure safety<br/>2. Deploy anchor<br/>3. Call base<br/>4. Troubleshoot<br/>5. Arrange tow]
+                    
+                    style A fill:#E74C3C,stroke:#C0392B,stroke-width:4px,color:#fff
+                    style B fill:#F39C12,stroke:#D68910,stroke-width:3px
+            </div>
+            
+            <div class="grid">
+                <div class="emergency-box">
+                    <h4>Emergency Priority</h4>
+                    <ol>
+                        <li><strong>Human Safety First</strong></li>
+                        <li>Protect Property Second</li>
+                        <li>Document Everything</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Module 8: End of Day Procedures -->
+        <div class="module">
+            <h2><i class="fas fa-moon"></i> Module 8: End of Day Procedures</h2>
+            
+            <h3>Vessel Shutdown Checklist</h3>
+            <div class="checklist">
+                <label><input type="checkbox"> Complete trip log entries</label>
+                <label><input type="checkbox"> Clean vessel thoroughly</label>
+                <label><input type="checkbox"> Check for customer belongings</label>
+                <label><input type="checkbox"> Secure all equipment</label>
+                <label><input type="checkbox"> Complete fuel log</label>
+                <label><input type="checkbox"> Report any issues</label>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <h4>Swing Mooring Specific</h4>
+                    <ul>
+                        <li>Double-check mooring secure</li>
+                        <li>Ensure tender secured</li>
+                        <li>Remove any valuables</li>
+                        <li>Close and lock vessel</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4>Marina Specific</h4>
+                    <ul>
+                        <li>Connect shore power</li>
+                        <li>Check dock lines</li>
+                        <li>Ensure fenders positioned</li>
+                        <li>Lock vessel</li>
+                        <li>Sign out of marina</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Module 9: Communication Protocols -->
+        <div class="module">
+            <h2><i class="fas fa-comments"></i> Module 9: Communication Protocols</h2>
+            
+            <div class="mermaid">
+                graph TD
+                    A[Communication Channels] --> B[Emergency: 000]
+                    A --> C[Management: 0403 580 669]
+                    A --> D[Water Police: 02 9320 7099]
+                    
+                    E[Professional Communication] --> F[Clear Instructions]
+                    E --> G[Friendly Tone]
+                    E --> H[Document Important Info]
+                    
+                    style A fill:#2E86AB,stroke:#1B4F72,stroke-width:3px,color:#fff
+                    style E fill:#5DADE2,stroke:#2874A6,stroke-width:2px
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Always maintain professional and clear communication with customers, colleagues, and emergency services.
+            </div>
+        </div>
+        
+        <!-- Module 10: Maintenance -->
+        <div class="module" id="maintenance">
+            <h2><i class="fas fa-tools"></i> Module 10: Maintenance & Troubleshooting</h2>
+            
+            <div class="mermaid">
+                flowchart LR
+                    A[Daily Tasks] --> B[Engine Oil Check]
+                    A --> C[Visual Inspection]
+                    A --> D[Cleaning Routine]
+                    A --> E[Safety Check]
+                    A --> F[Log Issues]
+                    
+                    style A fill:#2E86AB,stroke:#1B4F72,stroke-width:3px,color:#fff
+            </div>
+            
+            <h3>Common Issues & Solutions</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4><i class="fas fa-battery-dead"></i> Engine Won't Start</h4>
+                    <ol>
+                        <li>Check battery connections</li>
+                        <li>Ensure fuel valve open</li>
+                        <li>Check kill switch position</li>
+                        <li>Check neutral selection</li>
+                        <li>Check fuel lines and level</li>
+                        <li>Try manual start with pull cord</li>
+                    </ol>
+                </div>
+                
+                <div class="card">
+                    <h4><i class="fas fa-thermometer-full"></i> Overheating</h4>
+                    <ol>
+                        <li>Check water intake</li>
+                        <li>Reduce speed immediately</li>
+                        <li>Check coolant levels</li>
+                        <li>Return to base</li>
+                    </ol>
+                </div>
+                
+                <div class="card">
+                    <h4><i class="fas fa-bolt"></i> Electrical Issues</h4>
+                    <ol>
+                        <li>Check main breaker</li>
+                        <li>Test battery voltage</li>
+                        <li>Isolate problem circuit</li>
+                        <li>Use manual backups</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> When to Call for Help:
+                Any safety concern, major mechanical failure, customer medical issue, weather deterioration, or navigation uncertainty
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Check authentication on page load
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                // Redirect to login page if not authenticated
+                window.location.href = 'auth.html';
+            } else {
+                // Show user info
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'auth.html';
+        }
+
+        // Run auth check when page loads
+        checkAuth();
+
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#2E86AB',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#1B4F72',
+                lineColor: '#5DADE2',
+                secondaryColor: '#5DADE2',
+                tertiaryColor: '#AED6F1'
+            }
+        });
+        
+        // Progress tracking for checklists
+        function updateProgress() {
+            const allCheckboxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+            const checkedBoxes = document.querySelectorAll('.checklist input[type="checkbox"]:checked');
+            const percentage = Math.round((checkedBoxes.length / allCheckboxes.length) * 100);
+            
+            const progressBar = document.getElementById('checklist-progress');
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+                progressBar.textContent = percentage + '%';
+            }
+            
+            // Store progress in localStorage
+            localStorage.setItem('trainingProgress', percentage);
+            
+            // Save individual checkbox states
+            allCheckboxes.forEach((checkbox, index) => {
+                localStorage.setItem(`checkbox_${index}`, checkbox.checked);
+            });
+        }
+        
+        // Add event listeners to all checkboxes
+        document.querySelectorAll('.checklist input[type="checkbox"]').forEach((checkbox, index) => {
+            checkbox.addEventListener('change', updateProgress);
+            
+            // Load saved state
+            const savedState = localStorage.getItem(`checkbox_${index}`);
+            if (savedState === 'true') {
+                checkbox.checked = true;
+            }
+        });
+        
+        // Load saved progress
+        window.addEventListener('load', () => {
+            const savedProgress = localStorage.getItem('trainingProgress');
+            if (savedProgress) {
+                const progressBar = document.getElementById('checklist-progress');
+                if (progressBar) {
+                    progressBar.style.width = savedProgress + '%';
+                    progressBar.textContent = savedProgress + '%';
+                }
+            }
+            updateProgress();
+        });
+
+        
+        // Smooth scrolling for navigation (only for anchor links)
+        document.querySelectorAll('.nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                // Only prevent default for anchor links (starting with #)
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+                // Let normal links work as expected
+            });
+        });
+    </script>
+</body>
+</html>

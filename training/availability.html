@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Availability - MBH Staff Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .user-info {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            text-align: right;
+        }
+        
+        .user-info button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .user-info button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .form-header {
+            margin-bottom: 2rem;
+        }
+        
+        .form-header h2 {
+            color: #1B4F72;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-header p {
+            color: #666;
+        }
+        
+        .week-selector {
+            margin-bottom: 2rem;
+        }
+        
+        .week-selector label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .week-selector input[type="date"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .days-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .day-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .day-card.available {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+        
+        .day-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .day-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .availability-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .availability-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .time-inputs {
+            display: none;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .time-inputs.show {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .time-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .time-input-group label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+        
+        .time-input-group input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .notes-section {
+            margin-top: 2rem;
+        }
+        
+        .notes-section label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .notes-section textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-actions {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #2E86AB;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1B4F72;
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #ccc;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="user-info" id="userInfo" style="display: none;">
+            <p>Welcome, <span id="userEmail"></span></p>
+            <button onclick="window.location.href='dashboard.html'" style="margin-right: 0.5rem;">Dashboard</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+        <h1><i class="fas fa-calendar-check"></i> Weekly Availability Submission</h1>
+        <p>Let us know when you're available to work</p>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <div class="form-header">
+                <h2>Submit Your Weekly Availability</h2>
+                <p>Please select the week and indicate your available days and times</p>
+            </div>
+
+            <div id="alertBox" style="display: none;"></div>
+
+            <form id="availabilityForm">
+                <div class="week-selector">
+                    <label for="weekStarting">Week Starting (Monday)</label>
+                    <input type="date" id="weekStarting" name="weekStarting" required>
+                </div>
+
+                <div class="days-grid">
+                    <!-- Days will be generated by JavaScript -->
+                </div>
+
+                <div class="notes-section">
+                    <label for="additionalNotes">Additional Notes (Optional)</label>
+                    <textarea id="additionalNotes" name="additionalNotes" placeholder="Any special circumstances or preferences for this week..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        Submit Availability
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Airtable configuration
+        const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
+        const BASE_ID = 'applkAFOn2qxtu7tx';
+        const TABLE_ID = 'tblcBoyuVsbB1dt1I';
+        const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
+
+        let currentUser = null;
+        let employeeRecordId = null;
+
+        // Days of the week
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        // Check authentication
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                window.location.href = 'auth.html';
+            } else {
+                currentUser = user;
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('userEmail').textContent = user.email;
+                
+                // Find employee record
+                await findEmployeeRecord(user.email);
+            }
+        }
+
+        // Find employee record in Airtable by email
+        async function findEmployeeRecord(email) {
+            try {
+                const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}?filterByFormula={Email}='${email}'`, {
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                    }
+                });
+
+                const data = await response.json();
+                if (data.records && data.records.length > 0) {
+                    employeeRecordId = data.records[0].id;
+                } else {
+                    showAlert('error', 'Employee record not found. Please contact your manager.');
+                    document.getElementById('submitBtn').disabled = true;
+                }
+            } catch (error) {
+                console.error('Error finding employee:', error);
+                showAlert('error', 'Error connecting to employee database.');
+            }
+        }
+
+        // Generate day cards
+        function generateDayCards() {
+            const container = document.querySelector('.days-grid');
+            container.innerHTML = '';
+
+            daysOfWeek.forEach(day => {
+                const dayCard = document.createElement('div');
+                dayCard.className = 'day-card';
+                dayCard.innerHTML = `
+                    <div class="day-header">
+                        <span class="day-name">${day}</span>
+                        <div class="availability-toggle">
+                            <label for="${day.toLowerCase()}Available">Available</label>
+                            <input type="checkbox" id="${day.toLowerCase()}Available" name="${day.toLowerCase()}Available" onchange="toggleTimeInputs('${day.toLowerCase()}')">
+                        </div>
+                    </div>
+                    <div class="time-inputs" id="${day.toLowerCase()}Times">
+                        <div class="time-input-group">
+                            <label for="${day.toLowerCase()}From">From</label>
+                            <input type="time" id="${day.toLowerCase()}From" name="${day.toLowerCase()}From">
+                        </div>
+                        <div class="time-input-group">
+                            <label for="${day.toLowerCase()}Until">Until</label>
+                            <input type="time" id="${day.toLowerCase()}Until" name="${day.toLowerCase()}Until">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(dayCard);
+            });
+        }
+
+        // Toggle time inputs visibility
+        function toggleTimeInputs(day) {
+            const checkbox = document.getElementById(`${day}Available`);
+            const timeInputs = document.getElementById(`${day}Times`);
+            const dayCard = checkbox.closest('.day-card');
+
+            if (checkbox.checked) {
+                timeInputs.classList.add('show');
+                dayCard.classList.add('available');
+            } else {
+                timeInputs.classList.remove('show');
+                dayCard.classList.remove('available');
+                // Clear time values
+                document.getElementById(`${day}From`).value = '';
+                document.getElementById(`${day}Until`).value = '';
+            }
+        }
+
+        // Set default week starting date to next Monday
+        function setDefaultWeekStarting() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek);
+            const nextMonday = new Date(today);
+            nextMonday.setDate(today.getDate() + daysUntilMonday);
+            
+            const dateString = nextMonday.toISOString().split('T')[0];
+            document.getElementById('weekStarting').value = dateString;
+            document.getElementById('weekStarting').min = dateString;
+        }
+
+        // Handle form submission
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            if (!employeeRecordId) {
+                showAlert('error', 'Employee record not found. Cannot submit availability.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Submitting... <span class="loading"></span>';
+
+            // Generate Submission ID
+            const weekStarting = document.getElementById('weekStarting').value;
+            // Extract last part of employee ID for the code (e.g., "recdInFO4p3ennWpe" -> "ennWpe")
+            const employeeCode = employeeRecordId.slice(-6);
+            const submissionId = `WK${weekStarting}-${employeeCode}`;
+
+            // Collect form data
+            const formData = {
+                "fields": {
+                    "Submission ID": submissionId,
+                    "Employee": [employeeRecordId],
+                    "Week Starting": weekStarting,
+                    "Additional Notes": document.getElementById('additionalNotes').value,
+                    "Processing Status": "Pending"
+                }
+            };
+
+            // Add day availability data
+            daysOfWeek.forEach(day => {
+                const dayLower = day.toLowerCase();
+                const available = document.getElementById(`${dayLower}Available`).checked;
+                formData.fields[`${day} Available`] = available;
+                
+                if (available) {
+                    const from = document.getElementById(`${dayLower}From`).value || '9:00 AM';
+                    const until = document.getElementById(`${dayLower}Until`).value || '5:00 PM';
+                    formData.fields[`${day} From`] = formatTime(from);
+                    formData.fields[`${day} Until`] = formatTime(until);
+                }
+            });
+
+            try {
+                const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showAlert('success', 'Availability submitted successfully! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    const error = await response.json();
+                    console.error('Airtable error:', error);
+                    showAlert('error', 'Failed to submit availability. Please try again.');
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                showAlert('error', 'Network error. Please check your connection and try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit Availability';
+            }
+        }
+
+        // Format time from 24h to 12h format
+        function formatTime(time24) {
+            if (!time24) return '';
+            const [hours, minutes] = time24.split(':');
+            const h = parseInt(hours);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${minutes} ${ampm}`;
+        }
+
+        // Show alert message
+        function showAlert(type, message) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type}`;
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    alertBox.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'auth.html';
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            generateDayCards();
+            setDefaultWeekStarting();
+            
+            // Add form submit listener
+            document.getElementById('availabilityForm').addEventListener('submit', handleSubmit);
+        });
+    </script>
+</body>
+</html> 
