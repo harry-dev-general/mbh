@@ -110,12 +110,36 @@
                     
                     console.log('Session created successfully via implicit flow');
                     
+                } else if (queryParams.get('code')) {
+                    // Code flow (alternative from OnboardingRE)
+                    const code = queryParams.get('code');
+                    const type = queryParams.get('type');
+                    
+                    console.log('Found code in query, attempting to exchange for session...');
+                    
+                    try {
+                        // Try to exchange code for session
+                        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+                        if (error) throw error;
+                        console.log('Code exchanged successfully');
+                    } catch (codeError) {
+                        console.log('Code exchange failed, trying OTP verification...');
+                        // If code exchange fails, try verifying as OTP
+                        const { data, error } = await supabase.auth.verifyOtp({
+                            token: code,
+                            type: 'email',
+                            email: localStorage.getItem('pendingEmail') // We'll need to store this during signup
+                        });
+                        if (error) throw error;
+                        console.log('OTP verified successfully');
+                    }
+                    
                 } else if (queryParams.get('token_hash')) {
-                    // Fallback for token_hash format (current emails)
+                    // Token hash format (default ConfirmationURL)
                     const tokenHash = queryParams.get('token_hash');
                     const type = queryParams.get('type');
                     
-                    console.log('Found token_hash in query (PKCE flow), attempting verification...');
+                    console.log('Found token_hash in query, attempting verification...');
                     
                     // Map the type correctly
                     let otpType = 'email';
