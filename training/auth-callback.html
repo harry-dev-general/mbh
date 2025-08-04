@@ -80,22 +80,39 @@
             const statusDiv = document.getElementById('status');
             
             try {
-                // Get the hash parameters
+                // Get URL parameters from both hash and query
                 const hashParams = new URLSearchParams(window.location.hash.substring(1));
-                const accessToken = hashParams.get('access_token');
-                const refreshToken = hashParams.get('refresh_token');
+                const queryParams = new URLSearchParams(window.location.search);
                 
-                if (!accessToken || !refreshToken) {
-                    throw new Error('No authentication tokens found');
+                // Check for token_hash (email confirmation format)
+                const tokenHash = hashParams.get('token_hash') || queryParams.get('token_hash');
+                const type = hashParams.get('type') || queryParams.get('type') || 'signup';
+                
+                if (tokenHash) {
+                    // This is an email confirmation - verify the token
+                    const { data, error } = await supabase.auth.verifyOtp({
+                        token_hash: tokenHash,
+                        type: type === 'signup' ? 'signup' : 'email'
+                    });
+                    
+                    if (error) throw error;
+                } else {
+                    // Check for access_token (legacy format)
+                    const accessToken = hashParams.get('access_token');
+                    const refreshToken = hashParams.get('refresh_token');
+                    
+                    if (accessToken && refreshToken) {
+                        // Legacy format - set session directly
+                        const { data, error } = await supabase.auth.setSession({
+                            access_token: accessToken,
+                            refresh_token: refreshToken
+                        });
+                        
+                        if (error) throw error;
+                    } else {
+                        throw new Error('No authentication token found in URL. Expected token_hash parameter.');
+                    }
                 }
-
-                // Set the session
-                const { data, error } = await supabase.auth.setSession({
-                    access_token: accessToken,
-                    refresh_token: refreshToken
-                });
-
-                if (error) throw error;
 
                 // Success!
                 statusDiv.className = 'success';

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Callback Debug - MBH Staff Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .debug-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #0066cc;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-info">
+        <h2>Auth Callback Debug Information</h2>
+        
+        <div class="section">
+            <h3>Full URL:</h3>
+            <pre id="fullUrl"></pre>
+        </div>
+        
+        <div class="section">
+            <h3>URL Components:</h3>
+            <pre id="urlComponents"></pre>
+        </div>
+        
+        <div class="section">
+            <h3>Query Parameters:</h3>
+            <pre id="queryParams"></pre>
+        </div>
+        
+        <div class="section">
+            <h3>Hash Parameters:</h3>
+            <pre id="hashParams"></pre>
+        </div>
+        
+        <div class="section">
+            <h3>Recommended Action:</h3>
+            <div id="recommendation"></div>
+        </div>
+        
+        <a href="auth.html" class="button">Return to Login</a>
+    </div>
+
+    <script>
+        // Display full URL
+        document.getElementById('fullUrl').textContent = window.location.href;
+        
+        // Display URL components
+        const components = {
+            protocol: window.location.protocol,
+            host: window.location.host,
+            pathname: window.location.pathname,
+            search: window.location.search,
+            hash: window.location.hash
+        };
+        document.getElementById('urlComponents').textContent = JSON.stringify(components, null, 2);
+        
+        // Parse query parameters
+        const queryParams = {};
+        const searchParams = new URLSearchParams(window.location.search);
+        for (const [key, value] of searchParams) {
+            queryParams[key] = value.length > 50 ? value.substring(0, 50) + '...' : value;
+        }
+        document.getElementById('queryParams').textContent = JSON.stringify(queryParams, null, 2) || 'No query parameters found';
+        
+        // Parse hash parameters
+        const hashParams = {};
+        const hashSearchParams = new URLSearchParams(window.location.hash.substring(1));
+        for (const [key, value] of hashSearchParams) {
+            hashParams[key] = value.length > 50 ? value.substring(0, 50) + '...' : value;
+        }
+        document.getElementById('hashParams').textContent = JSON.stringify(hashParams, null, 2) || 'No hash parameters found';
+        
+        // Provide recommendation
+        const recommendation = document.getElementById('recommendation');
+        if (window.location.hash && (hashParams.access_token || hashParams.error)) {
+            recommendation.innerHTML = '<p style="color: green;">✓ URL is using hash parameters (implicit flow) - this is expected.</p>';
+        } else if (window.location.search && (queryParams.token || queryParams.code)) {
+            recommendation.innerHTML = '<p style="color: red;">✗ URL is using query parameters (PKCE flow) - need to update Supabase email templates to use hash parameters.</p>';
+        } else {
+            recommendation.innerHTML = '<p style="color: orange;">⚠ No authentication parameters found in URL.</p>';
+        }
+    </script>
+</body>
+</html>
