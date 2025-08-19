@@ -96,6 +96,24 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
 });
 
+// Redirect from index.html to dashboard (for legacy links)
+app.get('/index.html', (req, res) => {
+  res.redirect('/dashboard.html');
+});
+
+app.get('/training/index.html', (req, res) => {
+  res.redirect('/training/dashboard.html');
+});
+
+// Explicit routes for dashboard
+app.get('/dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
+});
+
+app.get('/training/dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
+});
+
 // Catch-all route for HTML5 client-side routing
 app.get('*', (req, res) => {
   // If it's not an API route and the file doesn't exist, serve dashboard
