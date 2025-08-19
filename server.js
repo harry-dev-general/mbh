@@ -105,6 +105,15 @@ app.get('/training/index.html', (req, res) => {
   res.redirect('/training/dashboard.html');
 });
 
+// Route for training resources (previously index.html)
+app.get('/training-resources.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'training', 'training-resources.html'));
+});
+
+app.get('/training/training-resources.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'training', 'training-resources.html'));
+});
+
 // Explicit routes for dashboard
 app.get('/dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
