@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Allocation Dashboard - MBH Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-white {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-white:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .btn-primary {
+            background: #2E86AB;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1B4F72;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .date-selector {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .date-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .current-week {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1B4F72;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f4f8;
+        }
+        
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1B4F72;
+        }
+        
+        .staff-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .staff-item {
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .staff-item:hover {
+            background: #e8f5e9;
+        }
+        
+        .staff-item.unavailable {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .staff-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .staff-hours {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .availability-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .available {
+            background: #27ae60;
+        }
+        
+        .partially-available {
+            background: #f39c12;
+        }
+        
+        .unavailable-dot {
+            background: #e74c3c;
+        }
+        
+        .schedule-grid {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .schedule-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .schedule-body {
+            padding: 1.5rem;
+        }
+        
+        .time-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: 0;
+            min-height: 600px;
+        }
+        
+        .time-label {
+            padding: 0.5rem;
+            text-align: right;
+            font-size: 0.85rem;
+            color: #666;
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        .day-column {
+            border-right: 1px solid #e0e0e0;
+            position: relative;
+        }
+        
+        .day-header {
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: 600;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .allocation-block {
+            position: absolute;
+            left: 2px;
+            right: 2px;
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 4px;
+            padding: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        .allocation-block.booking {
+            background: #fff3e0;
+            border-color: #ff9800;
+        }
+        
+        .allocation-block.general {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+        
+        .allocation-block:hover {
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .allocation-info {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .allocation-time {
+            font-size: 0.7rem;
+            color: #666;
+        }
+        
+        .bookings-panel {
+            margin-top: 1.5rem;
+        }
+        
+        .booking-item {
+            padding: 1rem;
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            border-radius: 4px;
+            margin-bottom: 0.75rem;
+        }
+        
+        .booking-time {
+            font-weight: 600;
+            color: #ff9800;
+            margin-bottom: 0.25rem;
+        }
+        
+        .booking-customer {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .booking-staff {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .staff-badge {
+            padding: 0.25rem 0.5rem;
+            background: #e0e0e0;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+        
+        .staff-badge.assigned {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .staff-badge.needed {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1B4F72;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2E86AB;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            
+            .panel {
+                min-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1><i class="fas fa-calendar-alt"></i> Staff Allocation Dashboard</h1>
+            <div class="user-info">
+                <span id="userEmail"></span>
+                <button class="btn btn-white" onclick="window.location.href='dashboard.html'">
+                    <i class="fas fa-home"></i> Dashboard
+                </button>
+                <button class="btn btn-white" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="date-selector">
+            <div class="date-nav">
+                <button class="btn btn-primary" onclick="changeWeek(-1)">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span class="current-week" id="currentWeek">Loading...</span>
+                <button class="btn btn-primary" onclick="changeWeek(1)">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <button class="btn btn-success" onclick="openAllocationModal()">
+                <i class="fas fa-plus"></i> New Allocation
+            </button>
+        </div>
+
+        <div class="main-grid">
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Available Staff</span>
+                        <span id="staffCount" style="color: #666; font-size: 0.9rem;">0</span>
+                    </div>
+                    <div class="staff-list" id="staffList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading staff...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel bookings-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Today's Bookings</span>
+                        <span id="bookingCount" style="color: #666; font-size: 0.9rem;">0</span>
+                    </div>
+                    <div id="bookingsList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading bookings...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="schedule-grid">
+                <div class="schedule-header">
+                    <h2>Weekly Schedule</h2>
+                </div>
+                <div class="schedule-body">
+                    <div id="scheduleGrid" class="time-grid">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading schedule...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Allocation Modal -->
+    <div id="allocationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Staff Allocation</h3>
+            </div>
+            <form id="allocationForm">
+                <div class="form-group">
+                    <label for="allocationType">Allocation Type</label>
+                    <select id="allocationType" onchange="toggleBookingField()">
+                        <option value="General Operations">General Operations</option>
+                        <option value="Booking Specific">Booking Specific</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Training">Training</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="employeeSelect">Staff Member</label>
+                    <select id="employeeSelect" required>
+                        <option value="">Select Staff Member</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="allocationDate">Date</label>
+                    <input type="date" id="allocationDate" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startTime">Start Time</label>
+                        <input type="time" id="startTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime">End Time</label>
+                        <input type="time" id="endTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group" id="bookingGroup" style="display: none;">
+                    <label for="bookingSelect">Booking</label>
+                    <select id="bookingSelect">
+                        <option value="">Select Booking</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="roleGroup" style="display: none;">
+                    <label for="roleSelect">Role</label>
+                    <select id="roleSelect">
+                        <option value="">Select Role</option>
+                        <option value="Onboarding">Onboarding</option>
+                        <option value="Deloading">Deloading</option>
+                        <option value="Support Staff">Support Staff</option>
+                        <option value="Dock Operations">Dock Operations</option>
+                        <option value="Customer Service">Customer Service</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes (Optional)</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAllocationModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success">Create Allocation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Airtable configuration
+        const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
+        const BASE_ID = 'applkAFOn2qxtu7tx';
+        const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
+        const ROSTER_TABLE_ID = 'tblGv7fBQoKIDU5jr';
+        const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
+        const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX'; // Shift Allocations table
+
+        let currentWeekStart = new Date();
+        let staffData = [];
+        let rosterData = [];
+        let bookingsData = [];
+        let allocationsData = [];
+
+        // Set to Monday of current week
+        function setToMonday(date) {
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            date.setDate(diff);
+            date.setHours(0, 0, 0, 0);
+            return date;
+        }
+
+        // Initialize current week
+        currentWeekStart = setToMonday(currentWeekStart);
+
+        // Check authentication
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                window.location.href = 'auth.html';
+            } else {
+                document.getElementById('userEmail').textContent = user.email;
+                loadWeekData();
+            }
+        }
+
+        // Change week view
+        function changeWeek(direction) {
+            currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+            loadWeekData();
+        }
+
+        // Load all data for the week
+        async function loadWeekData() {
+            updateWeekDisplay();
+            await Promise.all([
+                loadStaffAvailability(),
+                loadBookings(),
+                loadAllocations()
+            ]);
+            renderScheduleGrid();
+        }
+
+        // Update week display
+        function updateWeekDisplay() {
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            const options = { month: 'short', day: 'numeric' };
+            const startStr = currentWeekStart.toLocaleDateString('en-US', options);
+            const endStr = weekEnd.toLocaleDateString('en-US', options);
+            
+            document.getElementById('currentWeek').textContent = `${startStr} - ${endStr}`;
+        }
+
+        // Load staff availability from Roster
+        async function loadStaffAvailability() {
+            try {
+                const weekString = currentWeekStart.toISOString().split('T')[0];
+                
+                // Get roster data for the week
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${ROSTER_TABLE_ID}?` +
+                    `filterByFormula=DATESTR({Week Starting})='${weekString}'`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+                rosterData = data.records || [];
+                
+                // Get all staff
+                const staffResponse = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const staffDataResponse = await staffResponse.json();
+                staffData = staffDataResponse.records || [];
+                
+                renderStaffList();
+            } catch (error) {
+                console.error('Error loading staff:', error);
+            }
+        }
+
+        // Render staff list in sidebar
+        function renderStaffList() {
+            const staffList = document.getElementById('staffList');
+            const staffCount = document.getElementById('staffCount');
+            
+            // Group roster by employee
+            const staffAvailability = {};
+            rosterData.forEach(record => {
+                const employeeId = record.fields['Employee']?.[0];
+                if (employeeId) {
+                    if (!staffAvailability[employeeId]) {
+                        staffAvailability[employeeId] = [];
+                    }
+                    staffAvailability[employeeId].push(record.fields);
+                }
+            });
+            
+            let availableCount = 0;
+            let html = '';
+            
+            staffData.forEach(staff => {
+                const availability = staffAvailability[staff.id];
+                const isAvailable = availability && availability.length > 0;
+                
+                if (isAvailable) availableCount++;
+                
+                html += `
+                    <div class="staff-item ${!isAvailable ? 'unavailable' : ''}" 
+                         data-staff-id="${staff.id}">
+                        <div class="staff-name">
+                            <span class="availability-indicator ${isAvailable ? 'available' : 'unavailable-dot'}"></span>
+                            ${staff.fields['Name'] || 'Unknown'}
+                        </div>
+                        <div class="staff-hours">
+                            ${isAvailable ? `${availability.length} days available` : 'Not available this week'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            staffList.innerHTML = html;
+            staffCount.textContent = `${availableCount} available`;
+            
+            // Populate employee select in modal
+            const employeeSelect = document.getElementById('employeeSelect');
+            employeeSelect.innerHTML = '<option value="">Select Staff Member</option>';
+            staffData.forEach(staff => {
+                if (staffAvailability[staff.id]) {
+                    employeeSelect.innerHTML += `
+                        <option value="${staff.id}">${staff.fields['Name']}</option>
+                    `;
+                }
+            });
+        }
+
+        // Load bookings for the day
+        async function loadBookings() {
+            try {
+                const todayStr = new Date().toISOString().split('T')[0];
+                
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
+                    `filterByFormula=AND({Status}='PAID',DATESTR({Booking Date})='${todayStr}')`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+                bookingsData = data.records || [];
+                
+                renderBookingsList();
+                populateBookingsSelect();
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+            }
+        }
+
+        // Render bookings list in sidebar
+        function renderBookingsList() {
+            const bookingsList = document.getElementById('bookingsList');
+            const bookingCount = document.getElementById('bookingCount');
+            
+            if (bookingsData.length === 0) {
+                bookingsList.innerHTML = '<p style="color: #666;">No bookings today</p>';
+                bookingCount.textContent = '0';
+                return;
+            }
+            
+            let html = '';
+            bookingsData.forEach(booking => {
+                const fields = booking.fields;
+                const onboardingStaff = fields['Onboarding Employee'];
+                const deloadingStaff = fields['Deloading Employee'];
+                
+                html += `
+                    <div class="booking-item">
+                        <div class="booking-time">
+                            ${fields['Onboarding Time'] || 'TBD'} - ${fields['Deloading Time'] || 'TBD'}
+                        </div>
+                        <div class="booking-customer">
+                            ${fields['Customer Name'] || 'Unknown Customer'}
+                        </div>
+                        <div class="booking-staff">
+                            <span class="staff-badge ${onboardingStaff ? 'assigned' : 'needed'}">
+                                Onboarding: ${onboardingStaff ? '✓' : 'Needed'}
+                            </span>
+                            <span class="staff-badge ${deloadingStaff ? 'assigned' : 'needed'}">
+                                Deloading: ${deloadingStaff ? '✓' : 'Needed'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            bookingsList.innerHTML = html;
+            bookingCount.textContent = bookingsData.length.toString();
+        }
+
+        // Populate bookings select in modal
+        function populateBookingsSelect() {
+            const bookingSelect = document.getElementById('bookingSelect');
+            bookingSelect.innerHTML = '<option value="">Select Booking</option>';
+            
+            bookingsData.forEach(booking => {
+                const fields = booking.fields;
+                const label = `${fields['Onboarding Time'] || 'TBD'} - ${fields['Customer Name'] || 'Unknown'}`;
+                bookingSelect.innerHTML += `
+                    <option value="${booking.id}">${label}</option>
+                `;
+            });
+        }
+
+        // Load allocations from Airtable
+        async function loadAllocations() {
+            try {
+                const weekEnd = new Date(currentWeekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                
+                const startStr = currentWeekStart.toISOString().split('T')[0];
+                const endStr = weekEnd.toISOString().split('T')[0];
+                
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
+                    `filterByFormula=AND(IS_AFTER({Shift Date}, '${startStr}'), IS_BEFORE({Shift Date}, '${endStr}'))`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+                allocationsData = data.records || [];
+            } catch (error) {
+                console.error('Error loading allocations:', error);
+                allocationsData = [];
+            }
+        }
+
+        // Render the weekly schedule grid
+        function renderScheduleGrid() {
+            const grid = document.getElementById('scheduleGrid');
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const hours = Array.from({length: 15}, (_, i) => i + 6); // 6am to 8pm
+            
+            let html = '<div></div>'; // Empty corner cell
+            
+            // Day headers
+            days.forEach(day => {
+                html += `<div class="day-header">${day}</div>`;
+            });
+            
+            // Time slots and day columns
+            hours.forEach(hour => {
+                html += `<div class="time-label">${hour}:00</div>`;
+                days.forEach((day, dayIndex) => {
+                    const date = new Date(currentWeekStart);
+                    date.setDate(date.getDate() + dayIndex);
+                    const dateStr = date.toISOString().split('T')[0];
+                    
+                    html += `
+                        <div class="day-column" 
+                             data-date="${dateStr}" 
+                             data-hour="${hour}"
+                             onclick="handleCellClick(this)">
+                        </div>
+                    `;
+                });
+            });
+            
+            grid.innerHTML = html;
+            
+            // Add allocations to grid
+            renderAllocations();
+        }
+
+        // Render allocations on the grid
+        function renderAllocations() {
+            // This will be implemented to show allocations as blocks on the grid
+            // For now, showing placeholder
+        }
+
+        // Handle cell click for quick allocation
+        function handleCellClick(cell) {
+            const date = cell.dataset.date;
+            const hour = cell.dataset.hour;
+            
+            document.getElementById('allocationDate').value = date;
+            document.getElementById('startTime').value = `${hour.padStart(2, '0')}:00`;
+            document.getElementById('endTime').value = `${(parseInt(hour) + 1).toString().padStart(2, '0')}:00`;
+            
+            openAllocationModal();
+        }
+
+        // Modal functions
+        function openAllocationModal() {
+            document.getElementById('allocationModal').classList.add('show');
+        }
+
+        function closeAllocationModal() {
+            document.getElementById('allocationModal').classList.remove('show');
+            document.getElementById('allocationForm').reset();
+        }
+
+        function toggleBookingField() {
+            const type = document.getElementById('allocationType').value;
+            const bookingGroup = document.getElementById('bookingGroup');
+            const roleGroup = document.getElementById('roleGroup');
+            
+            if (type === 'Booking Specific') {
+                bookingGroup.style.display = 'block';
+                roleGroup.style.display = 'block';
+            } else {
+                bookingGroup.style.display = 'none';
+                roleGroup.style.display = 'none';
+            }
+        }
+
+        // Handle allocation form submission
+        document.getElementById('allocationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                fields: {
+                    'Name': `${document.getElementById('allocationDate').value} - ${document.getElementById('employeeSelect').options[document.getElementById('employeeSelect').selectedIndex].text}`,
+                    'Employee': [document.getElementById('employeeSelect').value],
+                    'Shift Date': document.getElementById('allocationDate').value,
+                    'Start Time': document.getElementById('startTime').value,
+                    'End Time': document.getElementById('endTime').value,
+                    'Shift Type': document.getElementById('allocationType').value,
+                    'Shift Status': 'Scheduled',
+                    'Role': document.getElementById('roleSelect').value || undefined
+                }
+            };
+            
+            if (document.getElementById('allocationType').value === 'Booking Specific') {
+                const bookingId = document.getElementById('bookingSelect').value;
+                if (bookingId) {
+                    formData.fields['Booking'] = [bookingId];
+                    formData.fields['Role'] = document.getElementById('roleSelect').value;
+                }
+            }
+            
+            // Save to Airtable
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    }
+                );
+
+                if (response.ok) {
+                    alert('Allocation created successfully!');
+                    closeAllocationModal();
+                    loadWeekData();
+                } else {
+                    const error = await response.json();
+                    console.error('Error creating allocation:', error);
+                    alert('Error creating allocation. Please check the console for details.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error creating allocation. Please check your connection.');
+            }
+        });
+
+        // Logout function
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'auth.html';
+        }
+
+        // Initialize on page load
+        checkAuth();
+    </script>
+</body>
+</html>

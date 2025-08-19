@@ -271,16 +271,23 @@
                 <div class="description">Submit your schedule</div>
             </a>
             
-            <a href="roster.html" class="nav-button">
+            <a href="my-schedule.html" class="nav-button">
                 <i class="fas fa-clipboard-list"></i>
-                <div class="title">Roster</div>
-                <div class="description">View work assignments</div>
+                <div class="title">My Schedule</div>
+                <div class="description">View your work shifts</div>
             </a>
             
             <a href="vessel-checklists.html" class="nav-button">
                 <i class="fas fa-clipboard-check"></i>
                 <div class="title">Vessel Checklists</div>
                 <div class="description">Pre & post departure checks</div>
+            </a>
+            
+            <!-- Management Only Section -->
+            <a href="management-allocations.html" class="nav-button" id="managementButton" style="display: none; background: linear-gradient(135deg, #8B0000, #DC143C); color: white;">
+                <i class="fas fa-users-cog" style="color: white;"></i>
+                <div class="title">Staff Allocation</div>
+                <div class="description">Manage staff schedules</div>
             </a>
         </div>
     </div>
@@ -357,6 +364,19 @@
             } else {
                 currentUser = user;
                 document.getElementById('userEmail').textContent = user.email;
+                
+                // Check if user is management (add your management emails here)
+                const managementEmails = [
+                    'manager@mbh.com',
+                    'admin@mbh.com',
+                    'operations@mbh.com'
+                ];
+                
+                // Show management button if user is in management list
+                if (managementEmails.includes(user.email.toLowerCase()) || 
+                    user.email.includes('@mbh.com')) {
+                    document.getElementById('managementButton').style.display = 'flex';
+                }
                 
                 // Find employee record to get first name
                 await loadEmployeeData(user.email);
