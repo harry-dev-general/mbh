@@ -49,6 +49,19 @@
         .user-info button:hover {
             background: rgba(255,255,255,0.3);
         }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+        }
         
         .container {
             max-width: 800px;
@@ -269,6 +282,9 @@
             <p>Welcome, <span id="userEmail"></span></p>
             <button onclick="window.location.href='dashboard.html'" style="margin-right: 0.5rem;">Dashboard</button>
             <button onclick="logout()">Logout</button>
+        </div>
+        <div class="logo-container">
+            <img src="images/mbh-logo.png" alt="Manly Boat Hire" class="logo">
         </div>
         <h1><i class="fas fa-calendar-check"></i> Weekly Availability Submission</h1>
         <p>Let us know when you're available to work</p>

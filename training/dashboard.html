@@ -35,6 +35,18 @@
             justify-content: space-between;
             align-items: center;
         }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;
+            /* Removed filter - adjust if logo needs color changes */
+        }
         
         .welcome-section h1 {
             font-size: 2.5rem;
@@ -238,9 +250,12 @@
 <body>
     <div class="header">
         <div class="header-content">
-            <div class="welcome-section">
-                <h1>Welcome, <span id="firstName">Staff Member</span>!</h1>
-                <p>Manly Boat Hire Staff Portal</p>
+            <div class="logo-container">
+                <img src="images/mbh-logo.png" alt="Manly Boat Hire" class="logo">
+                <div class="welcome-section">
+                    <h1>Welcome, <span id="firstName">Staff Member</span>!</h1>
+                    <p>Manly Boat Hire Staff Portal</p>
+                </div>
             </div>
             <div class="user-actions">
                 <div class="user-email" id="userEmail"></div>
