@@ -747,16 +747,10 @@
                 console.log('Current week start date:', currentWeekStart);
                 console.log('Searching for roster data for week:', weekString, 'to', weekEndString);
                 
-                // Get roster data for the week - check both Week Starting field and Date field
+                // Get ALL roster data and filter client-side for debugging
                 const response = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${ROSTER_TABLE_ID}?` +
-                    `filterByFormula=OR(` +
-                    `DATESTR({Week Starting})='${weekString}',` +
-                    `AND(` +
-                    `OR(IS_AFTER({Date}, '${weekString}'), DATESTR({Date})='${weekString}'),` +
-                    `OR(IS_BEFORE({Date}, '${weekEndString}'), DATESTR({Date})='${weekEndString}')` +
-                    `)` +
-                    `)`,
+                    `pageSize=100`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -772,8 +766,55 @@
                 }
                 
                 const data = await response.json();
-                rosterData = data.records || [];
-                console.log('Found roster records:', rosterData.length, rosterData);
+                const allRosterData = data.records || [];
+                console.log('Total roster records from Airtable:', allRosterData.length);
+                
+                // Debug: Show Test Staff records specifically
+                const testStaffRecords = allRosterData.filter(r => 
+                    r.fields['Employee Name'] && r.fields['Employee Name'].includes('Test Staff')
+                );
+                console.log('Test Staff specific records found:', testStaffRecords.length);
+                testStaffRecords.forEach(r => {
+                    console.log('Test Staff record:', {
+                        date: r.fields['Date'],
+                        weekStarting: r.fields['Week Starting'],
+                        employee: r.fields['Employee'],
+                        employeeName: r.fields['Employee Name']
+                    });
+                });
+                
+                // Filter for current week client-side
+                rosterData = allRosterData.filter(record => {
+                    const weekStarting = record.fields['Week Starting'];
+                    const date = record.fields['Date'];
+                    
+                    // Check if Week Starting matches
+                    if (weekStarting && weekStarting === weekString) {
+                        return true;
+                    }
+                    
+                    // Check if Date falls within the week
+                    if (date) {
+                        const recordDate = new Date(date + 'T00:00:00');
+                        const weekStartDate = new Date(weekString + 'T00:00:00');
+                        const weekEndDate = new Date(weekEndString + 'T23:59:59');
+                        
+                        if (recordDate >= weekStartDate && recordDate <= weekEndDate) {
+                            return true;
+                        }
+                    }
+                    
+                    return false;
+                });
+                
+                console.log('Filtered roster records for current week:', rosterData.length, rosterData);
+                
+                // Debug: Show all roster records with employee IDs
+                console.log('Roster records detail:');
+                rosterData.forEach(r => {
+                    console.log('- Employee:', r.fields['Employee'], 'Name:', r.fields['Employee Name'], 
+                               'Date:', r.fields['Date'], 'Week Starting:', r.fields['Week Starting']);
+                });
                 
                 // Get all staff
                 const staffResponse = await fetch(
