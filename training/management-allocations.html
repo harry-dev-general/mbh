@@ -655,7 +655,10 @@
 
         // Change week view
         function changeWeek(direction) {
-            currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+            const newDate = new Date(currentWeekStart);
+            newDate.setDate(newDate.getDate() + (direction * 7));
+            currentWeekStart = newDate;
+            console.log('Changed to week:', formatLocalDate(currentWeekStart));
             loadWeekData();
         }
 
@@ -968,33 +971,67 @@
                 const endTime = allocation['End Time'] || '17:00';
                 const shiftType = allocation['Shift Type'] || 'General';
                 
-                // Find the cell for this allocation
-                const dateStr = shiftDate; // Already in YYYY-MM-DD format
-                const startHour = parseInt(startTime.split(':')[0]);
+                // Calculate duration in hours
+                const startParts = startTime.split(':');
+                const endParts = endTime.split(':');
+                const startHour = parseInt(startParts[0]);
+                const startMin = parseInt(startParts[1] || 0);
+                const endHour = parseInt(endParts[0]);
+                const endMin = parseInt(endParts[1] || 0);
                 
-                // Find the matching day column and hour
-                const cell = document.querySelector(`[data-date="${dateStr}"][data-hour="${startHour}"]`);
-                if (cell) {
+                const startTotalMinutes = startHour * 60 + startMin;
+                const endTotalMinutes = endHour * 60 + endMin;
+                const durationMinutes = endTotalMinutes - startTotalMinutes;
+                const durationHours = Math.ceil(durationMinutes / 60); // Round up to next hour
+                
+                // Find the starting cell for this allocation
+                const dateStr = shiftDate; // Already in YYYY-MM-DD format
+                const startCell = document.querySelector(`[data-date="${dateStr}"][data-hour="${startHour}"]`);
+                
+                if (startCell) {
                     const allocationBlock = document.createElement('div');
                     allocationBlock.className = 'allocation-block';
+                    
+                    // Calculate height to span multiple hours
+                    const cellHeight = startCell.offsetHeight;
+                    const blockHeight = cellHeight * durationHours - 4; // Subtract margin
+                    
+                    // Style the block to span the correct duration
                     allocationBlock.style.cssText = `
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                         color: white;
-                        padding: 4px;
+                        padding: 6px;
                         border-radius: 4px;
-                        font-size: 12px;
+                        font-size: 11px;
                         margin: 2px;
                         cursor: pointer;
-                        position: relative;
+                        position: absolute;
+                        left: 2px;
+                        right: 2px;
+                        top: 2px;
+                        height: ${blockHeight}px;
+                        z-index: 10;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                        overflow: hidden;
                     `;
+                    
+                    // Add different colors for different shift types
+                    if (shiftType === 'Boat Hire' || shiftType === 'Ice Cream Boat Operations') {
+                        allocationBlock.style.background = 'linear-gradient(135deg, #00acc1 0%, #0288d1 100%)';
+                    } else if (shiftType === 'Maintenance') {
+                        allocationBlock.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
+                    } else if (shiftType === 'Training') {
+                        allocationBlock.style.background = 'linear-gradient(135deg, #48c774 0%, #00d1b2 100%)';
+                    }
                     
                     allocationBlock.innerHTML = `
-                        <strong>${employee.fields['First Name'] || employee.fields['Name'] || 'Unknown'}</strong><br>
-                        ${startTime} - ${endTime}<br>
-                        <small>${shiftType}</small>
+                        <strong style="display: block; margin-bottom: 2px;">${employee.fields['First Name'] || employee.fields['Name'] || 'Unknown'}</strong>
+                        <div style="font-size: 10px;">${startTime} - ${endTime}</div>
+                        <small style="opacity: 0.9;">${shiftType}</small>
+                        ${allocation['Role'] ? `<br><small style="opacity: 0.8;">${allocation['Role']}</small>` : ''}
                     `;
                     
-                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}`;
+                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours`;
                     
                     // Add click handler to view/edit
                     allocationBlock.onclick = (e) => {
@@ -1003,7 +1040,9 @@
                         // Could open edit modal here
                     };
                     
-                    cell.appendChild(allocationBlock);
+                    // Make the parent cell position relative for absolute positioning
+                    startCell.style.position = 'relative';
+                    startCell.appendChild(allocationBlock);
                 }
             });
             
@@ -1048,8 +1087,24 @@
         }
 
         // Handle allocation form submission
+        let isSubmitting = false;
         document.getElementById('allocationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Prevent duplicate submissions
+            if (isSubmitting) {
+                console.log('Already submitting, please wait...');
+                return;
+            }
+            isSubmitting = true;
+            
+            // Show loading state on button
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn ? submitBtn.textContent : 'Create Allocation';
+            if (submitBtn) {
+                submitBtn.textContent = 'Creating...';
+                submitBtn.disabled = true;
+            }
             
             // Build form data with only defined fields
             const fields = {
@@ -1110,6 +1165,13 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error creating allocation. Please check your connection.');
+            } finally {
+                isSubmitting = false;
+                // Reset button state
+                if (submitBtn) {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
             }
         });
 
