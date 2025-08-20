@@ -536,6 +536,7 @@
         // Find employee record by email
         async function findEmployeeRecord(email) {
             try {
+                console.log('Finding employee record for email:', email);
                 const response = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}?filterByFormula={Email}='${email}'`,
                     {
@@ -546,8 +547,13 @@
                 );
 
                 const data = await response.json();
+                console.log('Employee search results:', data.records);
+                
                 if (data.records && data.records.length > 0) {
                     employeeRecordId = data.records[0].id;
+                    console.log('Found employee record ID:', employeeRecordId, 'Name:', data.records[0].fields.Name);
+                } else {
+                    console.log('No employee record found for email:', email);
                 }
             } catch (error) {
                 console.error('Error finding employee:', error);
@@ -618,11 +624,28 @@
                 const startStr = formatLocalDate(currentWeekStart);
                 const endStr = formatLocalDate(weekEnd);
                 
-                // Filter allocations for this employee and week
+                console.log('Loading allocations for employee:', employeeRecordId);
+                console.log('Date range:', startStr, 'to', endStr);
+                
+                // First, let's test if we can find ANY allocations for this employee
+                const testResponse = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
+                    `filterByFormula=SEARCH('${employeeRecordId}', ARRAYJOIN({Employee}))`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+                const testData = await testResponse.json();
+                console.log('ALL allocations for this employee (no date filter):', testData.records?.length || 0, testData.records);
+                
+                // Now fetch with date filter (inclusive of start and end dates)
                 const response = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
                     `filterByFormula=AND(SEARCH('${employeeRecordId}', ARRAYJOIN({Employee})), ` +
-                    `IS_AFTER({Shift Date}, '${startStr}'), IS_BEFORE({Shift Date}, '${endStr}'))`,
+                    `OR(IS_AFTER({Shift Date}, '${startStr}'), DATESTR({Shift Date})='${startStr}'), ` +
+                    `OR(IS_BEFORE({Shift Date}, '${endStr}'), DATESTR({Shift Date})='${endStr}'))`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -631,19 +654,32 @@
                 );
 
                 const data = await response.json();
+                console.log('Allocations found:', data.records);
                 
                 if (data.records) {
-                    myAllocations = data.records.map(record => ({
-                        id: record.id,
-                        date: new Date(record.fields['Shift Date']),
-                        startTime: record.fields['Start Time'] || '09:00',
-                        endTime: record.fields['End Time'] || '17:00',
-                        type: record.fields['Shift Type'] || 'General Operations',
-                        role: record.fields['Role'] || null,
-                        customer: record.fields['Customer Name'] ? record.fields['Customer Name'][0] : null,
-                        status: record.fields['Shift Status'] || 'Scheduled',
-                        booking: record.fields['Booking'] || null
-                    }));
+                    console.log('Processing allocations:');
+                    myAllocations = data.records.map(record => {
+                        console.log('- Allocation:', {
+                            employee: record.fields['Employee'],
+                            date: record.fields['Shift Date'],
+                            type: record.fields['Shift Type'],
+                            role: record.fields['Role']
+                        });
+                        
+                        return {
+                            id: record.id,
+                            date: new Date(record.fields['Shift Date']),
+                            startTime: record.fields['Start Time'] || '09:00',
+                            endTime: record.fields['End Time'] || '17:00',
+                            type: record.fields['Shift Type'] || 'General Operations',
+                            role: record.fields['Role'] || null,
+                            customer: record.fields['Customer Name'] ? record.fields['Customer Name'][0] : null,
+                            status: record.fields['Shift Status'] || 'Scheduled',
+                            booking: record.fields['Booking'] || null
+                        };
+                    });
+                    
+                    console.log('Total allocations loaded:', myAllocations.length);
                     
                     // Sort by date and time
                     myAllocations.sort((a, b) => {
@@ -653,6 +689,7 @@
                     });
                 } else {
                     myAllocations = [];
+                    console.log('No allocation records found');
                 }
             } catch (error) {
                 console.error('Error loading allocations:', error);
