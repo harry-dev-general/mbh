@@ -612,7 +612,15 @@
         const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
         const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX'; // Shift Allocations table
 
-        let currentWeekStart = new Date();
+        // Get Monday of current week
+        function getMonday(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            return new Date(d.setDate(diff));
+        }
+
+        let currentWeekStart = getMonday(new Date());
         let staffData = [];
         let rosterData = [];
         let bookingsData = [];
@@ -674,11 +682,17 @@
         async function loadStaffAvailability() {
             try {
                 const weekString = currentWeekStart.toISOString().split('T')[0];
+                // Also check for 2025 dates (data has wrong year)
+                const weekDate2025 = new Date(currentWeekStart);
+                weekDate2025.setFullYear(2025);
+                const weekString2025 = weekDate2025.toISOString().split('T')[0];
                 
-                // Get roster data for the week
+                console.log('Searching for roster data for weeks:', weekString, 'or', weekString2025);
+                
+                // Get roster data for the week (check both 2024 and 2025)
                 const response = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${ROSTER_TABLE_ID}?` +
-                    `filterByFormula=DATESTR({Week Starting})='${weekString}'`,
+                    `filterByFormula=OR(DATESTR({Week Starting})='${weekString}',DATESTR({Week Starting})='${weekString2025}')`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -686,8 +700,16 @@
                     }
                 );
 
+                if (!response.ok) {
+                    console.error('Error fetching roster:', response.status, response.statusText);
+                    const errorText = await response.text();
+                    console.error('Error details:', errorText);
+                    throw new Error(`Failed to fetch roster: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 rosterData = data.records || [];
+                console.log('Found roster records:', rosterData.length, rosterData);
                 
                 // Get all staff
                 const staffResponse = await fetch(
@@ -698,9 +720,10 @@
                         }
                     }
                 );
-
+                
                 const staffDataResponse = await staffResponse.json();
                 staffData = staffDataResponse.records || [];
+                console.log('Found staff records:', staffData.length);
                 
                 renderStaffList();
             } catch (error) {
