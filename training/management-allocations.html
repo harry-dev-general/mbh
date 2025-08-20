@@ -877,20 +877,26 @@
                 
                 console.log(`Staff ${staff.fields['Name']} (${staff.id}):`, {
                     hasAvailability: isAvailable,
-                    availabilityCount: availability?.length || 0
+                    availabilityCount: availability?.length || 0,
+                    availabilityData: availability
                 });
                 
                 if (isAvailable) availableCount++;
+                
+                const staffName = staff.fields['Name'] || 'Unknown';
+                const availabilityText = isAvailable ? `${availability.length} days available` : 'Not available this week';
+                
+                console.log(`- Creating HTML for ${staffName}: "${availabilityText}"`);
                 
                 html += `
                     <div class="staff-item ${!isAvailable ? 'unavailable' : ''}" 
                          data-staff-id="${staff.id}">
                         <div class="staff-name">
                             <span class="availability-indicator ${isAvailable ? 'available' : 'unavailable-dot'}"></span>
-                            ${staff.fields['Name'] || 'Unknown'}
+                            ${staffName}
                         </div>
                         <div class="staff-hours">
-                            ${isAvailable ? `${availability.length} days available` : 'Not available this week'}
+                            ${availabilityText}
                         </div>
                     </div>
                 `;
