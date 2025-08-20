@@ -486,7 +486,11 @@
         const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX'; // Shift Allocations table
         const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
 
-        let currentWeekStart = new Date();
+        // Use 2025 as the current year
+        let today = new Date();
+        today.setFullYear(2025);
+        
+        let currentWeekStart = today;
         let currentView = 'calendar';
         let myAllocations = [];
         let employeeRecordId = null;
@@ -501,7 +505,7 @@
         }
 
         // Initialize current week
-        currentWeekStart = setToMonday(new Date());
+        currentWeekStart = setToMonday(currentWeekStart);
 
         // Check authentication and get employee record
         async function checkAuth() {
