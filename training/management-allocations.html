@@ -617,29 +617,21 @@
             const d = new Date(date);
             const day = d.getDay();
             const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-            return new Date(d.setDate(diff));
+            d.setDate(diff);
+            d.setHours(0, 0, 0, 0); // Reset to start of day
+            return d;
         }
 
-        // Use 2025 as the current year
-        let today = new Date();
-        today.setFullYear(2025);
+        // Use 2025 as the current year - Aug 20, 2025
+        let today = new Date('2025-08-20T12:00:00'); // Set to noon to avoid timezone issues
         let currentWeekStart = getMonday(today);
+        console.log('Initialized with today:', today, 'Week start:', currentWeekStart);
         let staffData = [];
         let rosterData = [];
         let bookingsData = [];
         let allocationsData = [];
 
-        // Set to Monday of current week
-        function setToMonday(date) {
-            const day = date.getDay();
-            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-            date.setDate(diff);
-            date.setHours(0, 0, 0, 0);
-            return date;
-        }
-
-        // Initialize current week
-        currentWeekStart = setToMonday(currentWeekStart);
+        // Week already initialized to Monday above
 
         // Check authentication
         async function checkAuth() {
@@ -686,6 +678,7 @@
             try {
                 const weekString = currentWeekStart.toISOString().split('T')[0];
                 
+                console.log('Current week start date:', currentWeekStart);
                 console.log('Searching for roster data for week:', weekString);
                 
                 // Get roster data for the week
