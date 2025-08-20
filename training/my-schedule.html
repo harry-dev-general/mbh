@@ -628,9 +628,10 @@
                 console.log('Date range:', startStr, 'to', endStr);
                 
                 // First, let's test if we can find ANY allocations for this employee
+                // Try different ways of matching the employee
                 const testResponse = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=SEARCH('${employeeRecordId}', ARRAYJOIN({Employee}))`,
+                    `filterByFormula=FIND('${employeeRecordId}', ARRAYJOIN({Employee}))`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -638,14 +639,29 @@
                     }
                 );
                 const testData = await testResponse.json();
-                console.log('ALL allocations for this employee (no date filter):', testData.records?.length || 0, testData.records);
+                console.log('ALL allocations for this employee (using FIND):', testData.records?.length || 0, testData.records);
                 
-                // Now fetch with date filter (inclusive of start and end dates)
+                // Also try getting ALL allocations to see what's there
+                const allResponse = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?pageSize=100`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+                const allData = await allResponse.json();
+                console.log('ALL allocations in table:', allData.records?.length || 0);
+                if (allData.records) {
+                    allData.records.forEach(r => {
+                        console.log('- Allocation Employee field:', r.fields.Employee, 'Employee Name:', r.fields['Employee Name']);
+                    });
+                }
+                
+                // Now fetch allocations for this week
+                // Filter using client-side since Airtable filter is not working as expected
                 const response = await fetch(
-                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=AND(SEARCH('${employeeRecordId}', ARRAYJOIN({Employee})), ` +
-                    `OR(IS_AFTER({Shift Date}, '${startStr}'), DATESTR({Shift Date})='${startStr}'), ` +
-                    `OR(IS_BEFORE({Shift Date}, '${endStr}'), DATESTR({Shift Date})='${endStr}'))`,
+                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?pageSize=100`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -654,11 +670,28 @@
                 );
 
                 const data = await response.json();
-                console.log('Allocations found:', data.records);
+                console.log('All allocations before filtering:', data.records?.length || 0);
                 
                 if (data.records) {
+                    // Filter client-side for this employee and week
+                    const weekStartDate = new Date(startStr + 'T00:00:00');
+                    const weekEndDate = new Date(endStr + 'T23:59:59');
+                    
+                    const filteredRecords = data.records.filter(record => {
+                        // Check if allocation is for this employee
+                        const employeeField = record.fields['Employee'];
+                        if (!employeeField || !Array.isArray(employeeField)) return false;
+                        if (!employeeField.includes(employeeRecordId)) return false;
+                        
+                        // Check if allocation is within this week
+                        const shiftDate = new Date(record.fields['Shift Date'] + 'T00:00:00');
+                        return shiftDate >= weekStartDate && shiftDate <= weekEndDate;
+                    });
+                    
+                    console.log('Filtered allocations for employee and week:', filteredRecords.length);
+                    
                     console.log('Processing allocations:');
-                    myAllocations = data.records.map(record => {
+                    myAllocations = filteredRecords.map(record => {
                         console.log('- Allocation:', {
                             employee: record.fields['Employee'],
                             date: record.fields['Shift Date'],
