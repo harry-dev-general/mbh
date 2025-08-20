@@ -506,6 +506,14 @@
         // Initialize current week
         currentWeekStart = setToMonday(currentWeekStart);
 
+        // Helper function to format date as YYYY-MM-DD in local timezone
+        function formatLocalDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         // Check authentication and get employee record
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
@@ -607,8 +615,8 @@
                 const weekEnd = new Date(currentWeekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
                 
-                const startStr = currentWeekStart.toISOString().split('T')[0];
-                const endStr = weekEnd.toISOString().split('T')[0];
+                const startStr = formatLocalDate(currentWeekStart);
+                const endStr = formatLocalDate(weekEnd);
                 
                 // Filter allocations for this employee and week
                 const response = await fetch(
