@@ -513,6 +513,34 @@
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
+        
+        // Calculate duration between two time strings
+        function calculateDuration(startTime, endTime) {
+            const [startHour, startMin] = startTime.split(':').map(Number);
+            const [endHour, endMin] = endTime.split(':').map(Number);
+            
+            const startTotalMinutes = startHour * 60 + startMin;
+            const endTotalMinutes = endHour * 60 + endMin;
+            let durationMinutes = endTotalMinutes - startTotalMinutes;
+            
+            // Handle overnight shifts
+            if (durationMinutes < 0) {
+                durationMinutes += 24 * 60;
+            }
+            
+            const hours = Math.floor(durationMinutes / 60);
+            const minutes = durationMinutes % 60;
+            
+            if (hours > 0 && minutes > 0) {
+                return `${hours}h ${minutes}min`;
+            } else if (hours > 0) {
+                return `${hours}h`;
+            } else if (minutes > 0) {
+                return `${minutes}min`;
+            } else {
+                return '0min';
+            }
+        }
 
         // Check authentication and get employee record
         async function checkAuth() {
@@ -771,21 +799,49 @@
         // Update statistics
         function updateStats() {
             const totalShifts = myAllocations.length;
-            let totalHours = 0;
+            let totalMinutes = 0;
             let bookingShifts = 0;
             
             myAllocations.forEach(shift => {
-                const start = parseInt(shift.startTime.split(':')[0]);
-                const end = parseInt(shift.endTime.split(':')[0]);
-                totalHours += (end - start);
+                // Parse hours and minutes from time strings
+                const [startHour, startMin] = shift.startTime.split(':').map(Number);
+                const [endHour, endMin] = shift.endTime.split(':').map(Number);
+                
+                // Calculate duration in minutes
+                const startTotalMinutes = startHour * 60 + startMin;
+                const endTotalMinutes = endHour * 60 + endMin;
+                let durationMinutes = endTotalMinutes - startTotalMinutes;
+                
+                // Handle overnight shifts (if end time is before start time)
+                if (durationMinutes < 0) {
+                    durationMinutes += 24 * 60; // Add 24 hours
+                }
+                
+                totalMinutes += durationMinutes;
                 
                 if (shift.type === 'Booking Specific') {
                     bookingShifts++;
                 }
             });
             
+            // Convert total minutes to hours and minutes
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            
+            // Format the display string
+            let hoursDisplay = '';
+            if (hours > 0 && minutes > 0) {
+                hoursDisplay = `${hours}h ${minutes}min`;
+            } else if (hours > 0) {
+                hoursDisplay = `${hours}h`;
+            } else if (minutes > 0) {
+                hoursDisplay = `${minutes}min`;
+            } else {
+                hoursDisplay = '0h';
+            }
+            
             document.getElementById('totalShifts').textContent = totalShifts;
-            document.getElementById('totalHours').textContent = `${totalHours}h`;
+            document.getElementById('totalHours').textContent = hoursDisplay;
             document.getElementById('bookingShifts').textContent = bookingShifts;
         }
 
@@ -875,7 +931,7 @@
                 `;
                 
                 dayGroups[dayKey].forEach(shift => {
-                    const duration = parseInt(shift.endTime.split(':')[0]) - parseInt(shift.startTime.split(':')[0]);
+                    const duration = calculateDuration(shift.startTime, shift.endTime);
                     const isBooking = shift.type === 'Booking Specific';
                     
                     html += `
@@ -883,7 +939,7 @@
                              onclick="showShiftDetails('${shift.id}')">
                             <div class="shift-header">
                                 <span class="shift-times">${shift.startTime} - ${shift.endTime}</span>
-                                <span class="shift-duration">${duration} hours</span>
+                                <span class="shift-duration">${duration}</span>
                             </div>
                             <div class="shift-details">
                                 <strong>${shift.type}</strong>
