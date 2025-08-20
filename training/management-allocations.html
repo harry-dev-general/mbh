@@ -245,12 +245,29 @@
             position: relative;
         }
         
+        .day-column.today-column {
+            background: #f3f8ff;
+            border-left: 2px solid #2196f3;
+            border-right: 2px solid #2196f3;
+        }
+        
+        .day-column.today-column:hover {
+            background: #e8f4ff;
+        }
+        
         .day-header {
             padding: 0.5rem;
             text-align: center;
             font-weight: 600;
             background: #f8f9fa;
             border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .day-header.today-header {
+            background: #e3f2fd;
+            border-bottom: 3px solid #2196f3;
+            color: #1976d2;
+            font-weight: 700;
         }
         
         .allocation-block {
@@ -963,11 +980,31 @@
             const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             const hours = Array.from({length: 15}, (_, i) => i + 6); // 6am to 8pm
             
+            // Get today's date for highlighting
+            const today = new Date();
+            today.setFullYear(2025);
+            const todayStr = formatLocalDate(today);
+            
             let html = '<div></div>'; // Empty corner cell
             
-            // Day headers
-            days.forEach(day => {
-                html += `<div class="day-header">${day}</div>`;
+            // Day headers with dates
+            days.forEach((day, index) => {
+                const date = new Date(currentWeekStart);
+                date.setDate(date.getDate() + index);
+                const dateStr = formatLocalDate(date);
+                const dayNum = date.getDate();
+                const month = date.getMonth() + 1;
+                const dateDisplay = `${dayNum.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+                
+                // Check if this is today
+                const isToday = dateStr === todayStr;
+                
+                html += `
+                    <div class="day-header ${isToday ? 'today-header' : ''}" data-date="${dateStr}">
+                        <div>${day}</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 2px;">${dateDisplay}</div>
+                    </div>
+                `;
             });
             
             // Time slots and day columns
@@ -978,8 +1015,11 @@
                     date.setDate(date.getDate() + dayIndex);
                     const dateStr = formatLocalDate(date);
                     
+                    // Check if this is today
+                    const isToday = dateStr === todayStr;
+                    
                     html += `
-                        <div class="day-column" 
+                        <div class="day-column ${isToday ? 'today-column' : ''}" 
                              data-date="${dateStr}" 
                              data-hour="${hour}"
                              onclick="handleCellClick(this)">
