@@ -536,10 +536,10 @@
                     <label for="allocationType">Allocation Type</label>
                     <select id="allocationType" onchange="toggleBookingField()">
                         <option value="General Operations">General Operations</option>
-                        <option value="Booking Specific">Booking Specific</option>
+                        <option value="Boat Hire">Boat Hire (Booking Specific)</option>
+                        <option value="Ice Cream Boat Operations">Ice Cream Boat Operations</option>
                         <option value="Maintenance">Maintenance</option>
                         <option value="Training">Training</option>
-                        <option value="Admin">Admin</option>
                     </select>
                 </div>
 
@@ -580,8 +580,9 @@
                         <option value="Onboarding">Onboarding</option>
                         <option value="Deloading">Deloading</option>
                         <option value="Support Staff">Support Staff</option>
-                        <option value="Dock Operations">Dock Operations</option>
-                        <option value="Customer Service">Customer Service</option>
+                        <option value="Ice Cream Boat">Ice Cream Boat</option>
+                        <option value="Administration">Administration</option>
+                        <option value="Maintenance">Maintenance</option>
                     </select>
                 </div>
 
@@ -1036,7 +1037,8 @@
             const bookingGroup = document.getElementById('bookingGroup');
             const roleGroup = document.getElementById('roleGroup');
             
-            if (type === 'Booking Specific') {
+            // Show booking selection for Boat Hire or Ice Cream Boat Operations
+            if (type === 'Boat Hire' || type === 'Ice Cream Boat Operations') {
                 bookingGroup.style.display = 'block';
                 roleGroup.style.display = 'block';
             } else {
@@ -1049,26 +1051,38 @@
         document.getElementById('allocationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const formData = {
-                fields: {
-                    'Name': `${document.getElementById('allocationDate').value} - ${document.getElementById('employeeSelect').options[document.getElementById('employeeSelect').selectedIndex].text}`,
-                    'Employee': [document.getElementById('employeeSelect').value],
-                    'Shift Date': document.getElementById('allocationDate').value,
-                    'Start Time': document.getElementById('startTime').value,
-                    'End Time': document.getElementById('endTime').value,
-                    'Shift Type': document.getElementById('allocationType').value,
-                    'Shift Status': 'Scheduled',
-                    'Role': document.getElementById('roleSelect').value || undefined
-                }
+            // Build form data with only defined fields
+            const fields = {
+                'Name': `${document.getElementById('allocationDate').value} - ${document.getElementById('employeeSelect').options[document.getElementById('employeeSelect').selectedIndex].text}`,
+                'Employee': [document.getElementById('employeeSelect').value],
+                'Shift Date': document.getElementById('allocationDate').value,
+                'Start Time': document.getElementById('startTime').value,
+                'End Time': document.getElementById('endTime').value,
+                'Shift Type': document.getElementById('allocationType').value,
+                'Shift Status': 'Scheduled'
             };
             
-            if (document.getElementById('allocationType').value === 'Booking Specific') {
+            // Note: The Shift Allocations table doesn't have a Notes field
+            // If you want to add notes, you'd need to add that field to Airtable first
+            
+            // Add Role only if selected
+            const roleValue = document.getElementById('roleSelect').value;
+            if (roleValue && roleValue !== '') {
+                fields['Role'] = roleValue;
+            }
+            
+            // Add Booking link if it's a booking-specific allocation
+            const allocationType = document.getElementById('allocationType').value;
+            if (allocationType === 'Boat Hire' || allocationType === 'Ice Cream Boat Operations') {
                 const bookingId = document.getElementById('bookingSelect').value;
                 if (bookingId) {
-                    formData.fields['Booking'] = [bookingId];
-                    formData.fields['Role'] = document.getElementById('roleSelect').value;
+                    fields['Booking'] = [bookingId];
                 }
             }
+            
+            const formData = { fields };
+            
+            console.log('Sending allocation data:', formData);
             
             // Save to Airtable
             try {
