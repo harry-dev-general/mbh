@@ -932,28 +932,66 @@
             });
         }
 
+        // Retry logic helper function
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status === 429) { // Rate limited
+                        const delay = Math.min(1000 * Math.pow(2, i), 5000); // Exponential backoff, max 5 seconds
+                        console.log(`Rate limited, retrying in ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    }
+                    return response;
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                    const delay = Math.min(1000 * Math.pow(2, i), 5000);
+                    console.log(`Request failed, retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
         // Load bookings for the week
         async function loadBookings() {
             try {
                 const weekEnd = new Date(currentWeekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
                 
+                // Create dates for simpler filtering
+                const prevDay = new Date(currentWeekStart);
+                prevDay.setDate(prevDay.getDate() - 1);
+                const nextDay = new Date(weekEnd);
+                nextDay.setDate(nextDay.getDate() + 1);
+                
                 const startStr = formatLocalDate(currentWeekStart);
                 const endStr = formatLocalDate(weekEnd);
+                const prevDayStr = formatLocalDate(prevDay);
+                const nextDayStr = formatLocalDate(nextDay);
                 
                 console.log('Loading bookings for week:', startStr, 'to', endStr);
                 
-                // Add timestamp to bypass any caching
-                const response = await fetch(
+                // Simplified filterByFormula based on Airtable docs
+                const filter = encodeURIComponent(
+                    `AND({Status}='PAID',` +
+                    `IS_AFTER({Booking Date}, '${prevDayStr}'),` +
+                    `IS_BEFORE({Booking Date}, '${nextDayStr}')` +
+                    `)`);
+                
+                // Specify fields to reduce payload size
+                const fields = ['Booking Name', 'Customer Name', 'Booking Date', 'Start Time', 'End Time',
+                               'Onboarding Time', 'Deloading Time', 'Onboarding Employee', 'Deloading Employee',
+                               'Status', 'Total Duration'];
+                const fieldsParam = fields.map(f => `fields[]=${encodeURIComponent(f)}`).join('&');
+                
+                // Use retry logic for resilience
+                const response = await fetchWithRetry(
                     `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
-                    `filterByFormula=AND({Status}='PAID',` +
-                    `OR(IS_AFTER({Booking Date}, '${startStr}'), DATESTR({Booking Date})='${startStr}'),` +
-                    `OR(IS_BEFORE({Booking Date}, '${endStr}'), DATESTR({Booking Date})='${endStr}'))` +
-                    `&_t=${Date.now()}`, // Add timestamp to force refresh
+                    `filterByFormula=${filter}&${fieldsParam}&_t=${Date.now()}`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                            // Removed Cache-Control header - not allowed by Airtable CORS
                         }
                     }
                 );
@@ -1034,17 +1072,33 @@
                 const weekEnd = new Date(currentWeekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
                 
+                // Create dates for simpler filtering
+                const prevDay = new Date(currentWeekStart);
+                prevDay.setDate(prevDay.getDate() - 1);
+                const nextDay = new Date(weekEnd);
+                nextDay.setDate(nextDay.getDate() + 1);
+                
                 const startStr = formatLocalDate(currentWeekStart);
                 const endStr = formatLocalDate(weekEnd);
+                const prevDayStr = formatLocalDate(prevDay);
+                const nextDayStr = formatLocalDate(nextDay);
                 
                 console.log('Loading allocations for week:', startStr, 'to', endStr);
                 
-                // Use inclusive date range filter - IS_AFTER/IS_BEFORE are exclusive, so we need OR with equals
-                const response = await fetch(
+                // Simplified filter based on Airtable docs
+                const filter = encodeURIComponent(
+                    `AND(IS_AFTER({Shift Date}, '${prevDayStr}'),` +
+                    `IS_BEFORE({Shift Date}, '${nextDayStr}')` +
+                    `)`);
+                
+                // Specify fields to reduce payload
+                const fields = ['Name', 'Employee', 'Shift Date', 'Start Time', 'End Time',
+                               'Shift Type', 'Shift Status', 'Role', 'Booking'];
+                const fieldsParam = fields.map(f => `fields[]=${encodeURIComponent(f)}`).join('&');
+                
+                const response = await fetchWithRetry(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=AND(` +
-                    `OR(IS_AFTER({Shift Date}, '${startStr}'), DATESTR({Shift Date})='${startStr}'), ` +
-                    `OR(IS_BEFORE({Shift Date}, '${endStr}'), DATESTR({Shift Date})='${endStr}'))`,
+                    `filterByFormula=${filter}&${fieldsParam}`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -1467,7 +1521,8 @@
                     
                     // Update the booking record
                     if (Object.keys(updateFields).length > 0) {
-                        const updateResponse = await fetch(
+                        // Use retry logic for booking update
+                        const updateResponse = await fetchWithRetry(
                             `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}/${bookingId}`,
                             {
                                 method: 'PATCH',
@@ -1513,8 +1568,8 @@
                 const formData = { fields };
                 console.log('Creating allocation record:', formData);
                 
-                // Save allocation to Airtable
-                const response = await fetch(
+                // Save allocation to Airtable with retry logic
+                const response = await fetchWithRetry(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}`,
                     {
                         method: 'POST',
