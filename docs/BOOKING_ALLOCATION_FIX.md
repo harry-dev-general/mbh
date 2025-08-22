@@ -2,8 +2,16 @@
 
 ## Date: January 2025
 
-## Issue Description
+## Issues Fixed
+
+### 1. Duplicate Visual Elements
 When allocating staff to bookings in the management allocations dashboard, the system was creating duplicate visual elements instead of updating the booking's color from red (unstaffed) to green (staffed).
+
+### 2. CORS Error Preventing Bookings from Loading
+The addition of `Cache-Control: 'no-cache'` header was causing CORS errors with Airtable's API, preventing bookings from loading entirely. This caused:
+- No customer bookings displayed
+- "Today's Bookings" container stuck in loading state
+- Only staff allocations visible
 
 ## Root Cause
 The allocation form submission was only creating a new record in the Shift Allocations table without updating the booking's `Onboarding Employee` or `Deloading Employee` fields in the Bookings Dashboard table.
@@ -91,6 +99,20 @@ User Action → Update Booking Record → Create Allocation Record → Refresh C
 - 🏁 OFF = Deloading time slot
 - ✓ = Staff assigned
 - ✗ = Staff needed
+
+## CORS Error Fix
+
+### Problem
+The `Cache-Control: 'no-cache'` header was blocked by Airtable's CORS policy, causing:
+```
+Access to fetch at 'https://api.airtable.com/...' has been blocked by CORS policy: 
+Request header field cache-control is not allowed by Access-Control-Allow-Headers
+```
+
+### Solution
+- Removed the `Cache-Control` header from fetch requests
+- Kept the timestamp parameter (`&_t=${Date.now()}`) for cache busting
+- Added proper error handling to update UI when bookings fail to load
 
 ## Testing Verification
 1. Navigate to week with bookings (e.g., August 25, 2025)
