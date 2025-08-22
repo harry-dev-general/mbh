@@ -676,7 +676,7 @@
         const BASE_ID = 'applkAFOn2qxtu7tx';
         const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
         const ROSTER_TABLE_ID = 'tblwwK1jWGxnfuzAN'; // Corrected Roster table ID
-        const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
+        const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I'; // Bookings Dashboard table (corrected)
         const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX'; // Shift Allocations table
 
         // Get Monday of current week
@@ -976,8 +976,7 @@
                 const filter = encodeURIComponent(
                     `AND({Status}='PAID',` +
                     `IS_AFTER({Booking Date}, '${prevDayStr}'),` +
-                    `IS_BEFORE({Booking Date}, '${nextDayStr}')` +
-                    `)`);
+                    `IS_BEFORE({Booking Date}, '${nextDayStr}'))`);
                 
                 // Specify fields to reduce payload size
                 const fields = ['Booking Name', 'Customer Name', 'Booking Date', 'Start Time', 'End Time',
@@ -1507,7 +1506,7 @@
                 // Check if this is a booking-specific allocation
                 if ((allocationType === 'Boat Hire' || allocationType === 'Ice Cream Boat Operations') && bookingId && roleValue) {
                     // For booking allocations, update the booking's employee fields
-                    const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I'; // Bookings Dashboard table
+                    // Using global BOOKINGS_TABLE_ID constant
                     
                     // Determine which field to update based on role
                     let updateFields = {};
