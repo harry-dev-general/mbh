@@ -1414,41 +1414,76 @@
                 submitBtn.disabled = true;
             }
             
-            // Build form data with only defined fields
-            const fields = {
-                'Name': `${document.getElementById('allocationDate').value} - ${document.getElementById('employeeSelect').options[document.getElementById('employeeSelect').selectedIndex].text}`,
-                'Employee': [document.getElementById('employeeSelect').value],
-                'Shift Date': document.getElementById('allocationDate').value,
-                'Start Time': document.getElementById('startTime').value,
-                'End Time': document.getElementById('endTime').value,
-                'Shift Type': document.getElementById('allocationType').value,
-                'Shift Status': 'Scheduled'
-            };
-            
-            // Note: The Shift Allocations table doesn't have a Notes field
-            // If you want to add notes, you'd need to add that field to Airtable first
-            
-            // Add Role only if selected
-            const roleValue = document.getElementById('roleSelect').value;
-            if (roleValue && roleValue !== '') {
-                fields['Role'] = roleValue;
-            }
-            
-            // Add Booking link if it's a booking-specific allocation
             const allocationType = document.getElementById('allocationType').value;
-            if (allocationType === 'Boat Hire' || allocationType === 'Ice Cream Boat Operations') {
-                const bookingId = document.getElementById('bookingSelect').value;
-                if (bookingId) {
+            const bookingId = document.getElementById('bookingSelect').value;
+            const roleValue = document.getElementById('roleSelect').value;
+            const employeeId = document.getElementById('employeeSelect').value;
+            
+            try {
+                // Check if this is a booking-specific allocation
+                if ((allocationType === 'Boat Hire' || allocationType === 'Ice Cream Boat Operations') && bookingId && roleValue) {
+                    // For booking allocations, update the booking's employee fields
+                    const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I'; // Bookings Dashboard table
+                    
+                    // Determine which field to update based on role
+                    let updateFields = {};
+                    if (roleValue === 'Onboarding') {
+                        updateFields['Onboarding Employee'] = [employeeId];
+                        console.log('Updating booking with Onboarding Employee:', employeeId);
+                    } else if (roleValue === 'Deloading') {
+                        updateFields['Deloading Employee'] = [employeeId];
+                        console.log('Updating booking with Deloading Employee:', employeeId);
+                    }
+                    
+                    // Update the booking record
+                    if (Object.keys(updateFields).length > 0) {
+                        const updateResponse = await fetch(
+                            `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}/${bookingId}`,
+                            {
+                                method: 'PATCH',
+                                headers: {
+                                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ fields: updateFields })
+                            }
+                        );
+                        
+                        if (!updateResponse.ok) {
+                            const error = await updateResponse.json();
+                            console.error('Error updating booking:', error);
+                            throw new Error('Failed to update booking with staff assignment');
+                        }
+                        
+                        console.log('Successfully updated booking with staff assignment');
+                    }
+                }
+                
+                // Now create the shift allocation record for tracking
+                const fields = {
+                    'Name': `${document.getElementById('allocationDate').value} - ${document.getElementById('employeeSelect').options[document.getElementById('employeeSelect').selectedIndex].text}`,
+                    'Employee': [employeeId],
+                    'Shift Date': document.getElementById('allocationDate').value,
+                    'Start Time': document.getElementById('startTime').value,
+                    'End Time': document.getElementById('endTime').value,
+                    'Shift Type': allocationType,
+                    'Shift Status': 'Scheduled'
+                };
+                
+                // Add Role only if selected
+                if (roleValue && roleValue !== '') {
+                    fields['Role'] = roleValue;
+                }
+                
+                // Add Booking link if it's a booking-specific allocation
+                if ((allocationType === 'Boat Hire' || allocationType === 'Ice Cream Boat Operations') && bookingId) {
                     fields['Booking'] = [bookingId];
                 }
-            }
-            
-            const formData = { fields };
-            
-            console.log('Sending allocation data:', formData);
-            
-            // Save to Airtable
-            try {
+                
+                const formData = { fields };
+                console.log('Creating allocation record:', formData);
+                
+                // Save allocation to Airtable
                 const response = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}`,
                     {
@@ -1462,7 +1497,7 @@
                 );
 
                 if (response.ok) {
-                    alert('Allocation created successfully!');
+                    alert('Staff allocated successfully!');
                     closeAllocationModal();
                     loadWeekData();
                 } else {
@@ -1472,7 +1507,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error creating allocation. Please check your connection.');
+                alert(`Error: ${error.message || 'Failed to allocate staff. Please check your connection.'}`);
             } finally {
                 isSubmitting = false;
                 // Reset button state
