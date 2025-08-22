@@ -676,7 +676,7 @@
         const BASE_ID = 'applkAFOn2qxtu7tx';
         const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
         const ROSTER_TABLE_ID = 'tblwwK1jWGxnfuzAN'; // Corrected Roster table ID
-        const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I'; // Bookings Dashboard table (corrected)
+        const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Bookings Dashboard table (correct ID verified via Airtable)
         const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX'; // Shift Allocations table
 
         // Get Monday of current week
@@ -996,9 +996,9 @@
                 
                 // Filter client-side for the current week
                 bookingsData = allBookings.filter(record => {
-                    const bookingDate = record.fields['Booking Date'] || record.fields['Date'] || record.fields['Booking date'];
+                    const bookingDate = record.fields['Booking Date'];
                     if (!bookingDate) {
-                        console.log('No date field found in booking:', record.fields);
+                        console.log('No Booking Date field found in booking:', record.fields);
                         return false;
                     }
                     
@@ -1632,15 +1632,16 @@
             
             const testBookingData = {
                 fields: {
-                    'Booking Name': 'TEST-' + Date.now(),
+                    'Booking Code': 'TEST-' + Date.now(),
                     'Customer Name': 'Test Customer',
+                    'Customer Email': 'test@example.com',
                     'Booking Date': testDateStr,
                     'Start Time': '10:00',
-                    'End Time': '16:00',
+                    'Finish Time': '16:00',
                     'Onboarding Time': '10:00',
                     'Deloading Time': '16:00',
                     'Status': 'PAID',
-                    'Total Duration': 6
+                    'Duration': 6
                 }
             };
             
