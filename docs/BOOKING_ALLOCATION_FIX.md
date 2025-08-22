@@ -182,6 +182,25 @@ const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I'; // Correct table ID
 `IS_BEFORE({Booking Date}, '${nextDayStr}'))` // Added missing parenthesis
 ```
 
+## Issue 4: Alternative Approach - Client-Side Filtering (January 2025)
+
+### Approach
+Since Airtable filterByFormula continues to have issues with date field names, switched to:
+1. Fetch all PAID bookings without date filter
+2. Filter by date range client-side
+3. Add debugging to understand field structure
+
+### Features Added
+- **Test Booking Creation**: Button to create test bookings for debugging
+- **Enhanced Logging**: Shows booking field names and structure
+- **Client-Side Filtering**: More reliable than complex filterByFormula
+
+### How to Test
+1. Check console for "Sample booking fields" to see actual field names
+2. Use "Create Test Booking" button if no bookings exist
+3. Test booking will be created for Wednesday of current week
+4. Booking should appear as red blocks (onboarding/deloading) if unstaffed
+
 ## Deployment
 - **Committed**: January 2025
 - **Repository**: https://github.com/harry-dev-general/mbh
