@@ -162,6 +162,26 @@ Request header field cache-control is not allowed by Access-Control-Allow-Header
 - Better compatibility with Airtable's API requirements
 - Reduced chance of CORS and timeout errors
 
+## Issue 3: Bookings Not Loading (Fixed January 2025)
+
+### Problem
+Customer bookings stopped showing on the calendar with 422 errors after API optimizations.
+
+### Root Causes
+1. **Wrong Table ID**: Code was using `tblRe0cDmK3bG2kPf` instead of correct ID `tblcBoyuVsbB1dt1I`
+2. **Malformed Filter Formula**: Missing closing parenthesis after `IS_BEFORE` function
+
+### Solution
+```javascript
+// Before (broken):
+const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
+`IS_BEFORE({Booking Date}, '${nextDayStr}')` +
+
+// After (fixed):
+const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I'; // Correct table ID
+`IS_BEFORE({Booking Date}, '${nextDayStr}'))` // Added missing parenthesis
+```
+
 ## Deployment
 - **Committed**: January 2025
 - **Repository**: https://github.com/harry-dev-general/mbh
