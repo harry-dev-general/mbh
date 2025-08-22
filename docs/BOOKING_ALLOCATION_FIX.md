@@ -133,6 +133,35 @@ Request header field cache-control is not allowed by Access-Control-Allow-Header
 - [Staff Allocation Setup](./STAFF_ALLOCATION_SETUP.md)
 - [Technical Implementation Guide](./TECHNICAL_IMPLEMENTATION_GUIDE.md)
 
+## API Optimizations (Based on Airtable Documentation)
+
+### Implemented Best Practices
+
+1. **Retry Logic with Exponential Backoff**
+   - Handles rate limiting (429 errors) automatically
+   - Retries up to 3 times with increasing delays
+   - Maximum delay of 5 seconds between retries
+
+2. **Simplified FilterByFormula**
+   - Uses cleaner `IS_AFTER` and `IS_BEFORE` with boundary dates
+   - Properly URL encodes all filter formulas
+   - Removed complex `OR/DATESTR` comparisons
+
+3. **Field Selection for Performance**
+   - Only requests necessary fields to reduce payload size
+   - Improves response time and reduces bandwidth usage
+   - Prevents timeout issues on large datasets
+
+4. **Proper Linked Record Format**
+   - Ensures employee IDs are always passed as arrays `[employeeId]`
+   - Compatible with Airtable's linked record field requirements
+
+### Performance Benefits
+- Faster loading times due to smaller payloads
+- More reliable with automatic retry on failures
+- Better compatibility with Airtable's API requirements
+- Reduced chance of CORS and timeout errors
+
 ## Deployment
 - **Committed**: January 2025
 - **Repository**: https://github.com/harry-dev-general/mbh
