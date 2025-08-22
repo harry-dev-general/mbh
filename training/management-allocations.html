@@ -959,35 +959,19 @@
                 const weekEnd = new Date(currentWeekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
                 
-                // Create dates for simpler filtering
-                const prevDay = new Date(currentWeekStart);
-                prevDay.setDate(prevDay.getDate() - 1);
-                const nextDay = new Date(weekEnd);
-                nextDay.setDate(nextDay.getDate() + 1);
-                
                 const startStr = formatLocalDate(currentWeekStart);
                 const endStr = formatLocalDate(weekEnd);
-                const prevDayStr = formatLocalDate(prevDay);
-                const nextDayStr = formatLocalDate(nextDay);
                 
                 console.log('Loading bookings for week:', startStr, 'to', endStr);
                 
-                // Simplified filterByFormula based on Airtable docs
-                const filter = encodeURIComponent(
-                    `AND({Status}='PAID',` +
-                    `IS_AFTER({Booking Date}, '${prevDayStr}'),` +
-                    `IS_BEFORE({Booking Date}, '${nextDayStr}'))`);
-                
-                // Specify fields to reduce payload size
-                const fields = ['Booking Name', 'Customer Name', 'Booking Date', 'Start Time', 'End Time',
-                               'Onboarding Time', 'Deloading Time', 'Onboarding Employee', 'Deloading Employee',
-                               'Status', 'Total Duration'];
-                const fieldsParam = fields.map(f => `fields[]=${encodeURIComponent(f)}`).join('&');
+                // Fetch all PAID bookings - will filter by date client-side
+                // This avoids field name issues in filterByFormula
+                const filter = encodeURIComponent(`{Status}='PAID'`);
                 
                 // Use retry logic for resilience
                 const response = await fetchWithRetry(
                     `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
-                    `filterByFormula=${filter}&${fieldsParam}&_t=${Date.now()}`,
+                    `filterByFormula=${filter}&_t=${Date.now()}`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -995,9 +979,34 @@
                     }
                 );
 
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Bookings API error:', response.status, errorText);
+                    throw new Error(`API returned ${response.status}: ${errorText}`);
+                }
+
                 const data = await response.json();
-                bookingsData = data.records || [];
-                console.log('Found bookings:', bookingsData.length, bookingsData);
+                const allBookings = data.records || [];
+                
+                // Debug: Log first booking to see field structure
+                if (allBookings.length > 0) {
+                    console.log('Sample booking fields:', Object.keys(allBookings[0].fields));
+                    console.log('First booking:', allBookings[0].fields);
+                }
+                
+                // Filter client-side for the current week
+                bookingsData = allBookings.filter(record => {
+                    const bookingDate = record.fields['Booking Date'] || record.fields['Date'] || record.fields['Booking date'];
+                    if (!bookingDate) {
+                        console.log('No date field found in booking:', record.fields);
+                        return false;
+                    }
+                    
+                    const date = new Date(bookingDate);
+                    return date >= currentWeekStart && date <= weekEnd;
+                });
+                
+                console.log(`Found ${allBookings.length} total PAID bookings, ${bookingsData.length} for current week`, bookingsData);
                 
                 renderBookingsList();
                 populateBookingsSelect();
