@@ -943,14 +943,17 @@
                 
                 console.log('Loading bookings for week:', startStr, 'to', endStr);
                 
+                // Note: We need to force refresh by adding a timestamp to bypass any caching
                 const response = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
                     `filterByFormula=AND({Status}='PAID',` +
                     `OR(IS_AFTER({Booking Date}, '${startStr}'), DATESTR({Booking Date})='${startStr}'),` +
-                    `OR(IS_BEFORE({Booking Date}, '${endStr}'), DATESTR({Booking Date})='${endStr}'))`,
+                    `OR(IS_BEFORE({Booking Date}, '${endStr}'), DATESTR({Booking Date})='${endStr}'))` +
+                    `&_t=${Date.now()}`, // Add timestamp to force refresh
                     {
                         headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Cache-Control': 'no-cache'
                         }
                     }
                 );
@@ -1242,6 +1245,11 @@
                 const hasDeloadingStaff = booking['Deloading Employee'] && booking['Deloading Employee'].length > 0;
                 const isFullyStaffed = hasOnboardingStaff && hasDeloadingStaff;
                 
+                // Debug log to see staff assignment status
+                if (booking['Customer Name']) {
+                    console.log(`Booking ${booking['Customer Name']}: Onboarding Staff:`, booking['Onboarding Employee'], 'Deloading Staff:', booking['Deloading Employee']);
+                }
+                
                 // Create onboarding block
                 if (onboardingTime) {
                     createBookingBlock(bookingDate, onboardingTime, 'onboarding', customerName, isFullyStaffed, record, hasOnboardingStaff);
@@ -1323,21 +1331,37 @@
             document.getElementById('allocationType').value = 'Boat Hire';
             document.getElementById('bookingSelect').value = bookingRecord.id;
             
+            // Function to properly add 1 hour to a time string
+            function addOneHour(timeStr) {
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                let newHours = hours + 1;
+                if (newHours >= 24) newHours = 0; // Handle midnight wrap
+                return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            }
+            
             // Set the appropriate time and role
             if (allocationType === 'onboarding') {
                 const onboardingTime = booking['Onboarding Time'] || booking['Start Time'] || '09:00';
                 document.getElementById('startTime').value = onboardingTime;
-                // Add 1 hour for end time
-                const endHour = parseInt(onboardingTime.split(':')[0]) + 1;
-                document.getElementById('endTime').value = `${endHour.toString().padStart(2, '0')}:00`;
+                document.getElementById('endTime').value = addOneHour(onboardingTime);
                 document.getElementById('roleSelect').value = 'Onboarding';
+                
+                // Pre-select currently assigned employee if exists
+                const currentEmployee = booking['Onboarding Employee'];
+                if (currentEmployee && currentEmployee.length > 0) {
+                    document.getElementById('employeeSelect').value = currentEmployee[0];
+                }
             } else {
                 const deloadingTime = booking['Deloading Time'] || booking['Finish Time'] || '17:00';
                 document.getElementById('startTime').value = deloadingTime;
-                // Add 1 hour for end time
-                const endHour = parseInt(deloadingTime.split(':')[0]) + 1;
-                document.getElementById('endTime').value = `${endHour.toString().padStart(2, '0')}:00`;
+                document.getElementById('endTime').value = addOneHour(deloadingTime);
                 document.getElementById('roleSelect').value = 'Deloading';
+                
+                // Pre-select currently assigned employee if exists
+                const currentEmployee = booking['Deloading Employee'];
+                if (currentEmployee && currentEmployee.length > 0) {
+                    document.getElementById('employeeSelect').value = currentEmployee[0];
+                }
             }
             
             // Show booking fields
@@ -1346,7 +1370,10 @@
             // Update modal title
             const modalTitle = document.querySelector('.modal-title');
             if (modalTitle) {
-                modalTitle.textContent = `Allocate Staff for ${customerName} - ${allocationType === 'onboarding' ? 'Onboarding' : 'Deloading'}`;
+                const staffStatus = allocationType === 'onboarding' 
+                    ? (booking['Onboarding Employee']?.length > 0 ? ' (Currently: ' + staffData.find(s => s.id === booking['Onboarding Employee'][0])?.fields.Name + ')' : '')
+                    : (booking['Deloading Employee']?.length > 0 ? ' (Currently: ' + staffData.find(s => s.id === booking['Deloading Employee'][0])?.fields.Name + ')' : '');
+                modalTitle.textContent = `Allocate Staff for ${customerName} - ${allocationType === 'onboarding' ? 'Onboarding' : 'Deloading'}${staffStatus}`;
             }
             
             openAllocationModal();
@@ -1497,9 +1524,17 @@
                 );
 
                 if (response.ok) {
-                    alert('Staff allocated successfully!');
+                    console.log('Allocation created successfully, reloading data...');
                     closeAllocationModal();
-                    loadWeekData();
+                    // Small delay to ensure Airtable has processed the update
+                    setTimeout(async () => {
+                        // Force reload of all data to ensure booking updates are reflected
+                        await loadBookings();
+                        await loadAllocations();
+                        renderBookingsOnGrid();
+                        renderScheduleGrid();
+                        alert('Staff allocated successfully!');
+                    }, 1000); // 1 second delay for Airtable to process
                 } else {
                     const error = await response.json();
                     console.error('Error creating allocation:', error);
