@@ -59,7 +59,7 @@
 |-------|-----|---------|--------|
 | Employee Details | `tblTJrOT3WD0hrLAW` | Staff records | ✅ Active |
 | Roster | `tblwwK1jWGxnfuzAN` | Weekly availability | ✅ Active |
-| Bookings Dashboard | `tblcBoyuVsbB1dt1I` | Customer bookings | ✅ Active |
+| Bookings Dashboard | `tblRe0cDmK3bG2kPf` | Customer bookings | ✅ Active |
 | Shift Allocations | `tbl22YKtQXZtDFtEX` | Staff schedules | ✅ Active |
 | Pre-Departure Checklist | `tbl9igu5g1bPG4Ahu` | Safety checks | ✅ Active |
 | Post-Departure Checklist | `tblYkbSQGP6zveYNi` | Vessel inspection | ✅ Active |

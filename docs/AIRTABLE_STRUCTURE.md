@@ -8,7 +8,7 @@ The MBH system uses two Airtable bases that work together to manage boat hire op
 
 ### Tables
 
-#### 1. Bookings Dashboard (`tblh0PxQWr6vRGHVZ`)
+#### 1. Bookings Dashboard (`tblRe0cDmK3bG2kPf`)
 Central table for managing customer bookings.
 
 **Key Fields**:
