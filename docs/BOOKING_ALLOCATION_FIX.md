@@ -235,3 +235,47 @@ today.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
 - Calendar now correctly shows the current week based on actual date
 - Bookings for current week will properly display
 - Test booking creation now works without Duration field errors
+
+---
+
+## Final Fix: Time Format and Date Filtering
+### Date: January 26, 2025
+
+### Problem Identified
+Raoa Zaoud booking on Aug 31, 2025 was not displaying despite being in the current week and having PAID status.
+
+### Root Causes
+1. **Time Format Mismatch**: Airtable returns "09:00 am" format, code expected "09:00"
+2. **Date Filtering Issues**: Timezone handling caused date comparison problems
+3. **Incomplete Data Fetch**: Default pageSize of 20 could miss bookings
+
+### Solution Implemented
+```javascript
+// 1. Robust time parsing for both formats
+if (time.toLowerCase().includes('am') || time.toLowerCase().includes('pm')) {
+  // Handle 12-hour format
+} else {
+  // Handle 24-hour format
+}
+
+// 2. String-based date comparison
+const dateStr = formatLocalDate(date);
+const weekStartStr = formatLocalDate(weekStart);
+return dateStr >= weekStartStr && dateStr <= weekEndStr;
+
+// 3. Ensure all records fetched
+`pageSize=100`
+```
+
+### Verification
+Console logs confirm success:
+- "Found 22 PAID bookings, 2 for current week"
+- "Raoa Zaoud booking" correctly processed with "Deloading Staff: Array(1)"
+- Bookings now rendering on grid as expected
+
+### Documentation Created
+See `AIRTABLE_DATA_INTEGRATION_GUIDE.md` for comprehensive documentation of:
+- Airtable table structures and relationships
+- Data format variations and handling
+- Common issues and solutions
+- Best practices for future development
