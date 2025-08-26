@@ -259,6 +259,13 @@
             background: #ffe0b2;
         }
         
+        /* Today highlighting */
+        .day-cell.today {
+            background: #f3f8ff;
+            border: 2px solid #2196f3;
+            box-shadow: 0 0 8px rgba(33, 150, 243, 0.2);
+        }
+        
         .shift-time {
             font-weight: 500;
             color: #333;
@@ -501,8 +508,9 @@
         const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX'; // Shift Allocations table
         const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
 
-        // Use 2025 as the current year - Aug 20, 2025
-        let today = new Date('2025-08-20');
+        // Get the actual current date
+        let today = new Date(); // Use actual current date
+        today.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
         
         let currentWeekStart = today;
         let currentView = 'calendar';
@@ -622,7 +630,9 @@
 
         // Go to current week
         function goToToday() {
-            currentWeekStart = setToMonday(new Date());
+            const actualToday = new Date(); // Use actual current date
+            actualToday.setHours(12, 0, 0, 0);
+            currentWeekStart = setToMonday(actualToday);
             loadSchedule();
         }
 
@@ -715,30 +725,30 @@
                 console.log('All shift allocations before filtering:', data.records?.length || 0);
                 
                 if (!data.records) return [];
-                
-                // Filter client-side for this employee and week
-                const filteredRecords = data.records.filter(record => {
-                    // Check if allocation is for this employee
-                    const employeeField = record.fields['Employee'];
-                    if (!employeeField || !Array.isArray(employeeField)) return false;
-                    if (!employeeField.includes(employeeRecordId)) return false;
                     
-                    // Check if allocation is within this week
-                    const shiftDate = new Date(record.fields['Shift Date'] + 'T00:00:00');
-                    return shiftDate >= weekStartDate && shiftDate <= weekEndDate;
-                });
-                
+                // Filter client-side for this employee and week
+                    const filteredRecords = data.records.filter(record => {
+                        // Check if allocation is for this employee
+                        const employeeField = record.fields['Employee'];
+                        if (!employeeField || !Array.isArray(employeeField)) return false;
+                        if (!employeeField.includes(employeeRecordId)) return false;
+                        
+                        // Check if allocation is within this week
+                        const shiftDate = new Date(record.fields['Shift Date'] + 'T00:00:00');
+                        return shiftDate >= weekStartDate && shiftDate <= weekEndDate;
+                    });
+                    
                 console.log('Filtered shift allocations for employee and week:', filteredRecords.length);
                 
                 return filteredRecords.map(record => ({
-                    id: record.id,
-                    date: new Date(record.fields['Shift Date']),
-                    startTime: record.fields['Start Time'] || '09:00',
-                    endTime: record.fields['End Time'] || '17:00',
-                    type: record.fields['Shift Type'] || 'General Operations',
-                    role: record.fields['Role'] || null,
-                    customer: record.fields['Customer Name'] ? record.fields['Customer Name'][0] : null,
-                    status: record.fields['Shift Status'] || 'Scheduled',
+                            id: record.id,
+                            date: new Date(record.fields['Shift Date']),
+                            startTime: record.fields['Start Time'] || '09:00',
+                            endTime: record.fields['End Time'] || '17:00',
+                            type: record.fields['Shift Type'] || 'General Operations',
+                            role: record.fields['Role'] || null,
+                            customer: record.fields['Customer Name'] ? record.fields['Customer Name'][0] : null,
+                            status: record.fields['Shift Status'] || 'Scheduled',
                     booking: record.fields['Booking'] || null,
                     source: 'allocation'
                 }));
@@ -796,6 +806,44 @@
                     const bookingDate = new Date(fields['Booking Date']);
                     const customerName = fields['Customer Name'] || 'Unknown Customer';
                     
+                    // Helper function to add time
+                    const addTime = (timeStr, hoursToAdd, minutesToAdd = 0) => {
+                        const [hours, minutes] = timeStr.split(':').map(Number);
+                        let newHours = hours + hoursToAdd;
+                        let newMinutes = minutes + minutesToAdd;
+                        
+                        // Handle minute overflow
+                        if (newMinutes >= 60) {
+                            newHours += Math.floor(newMinutes / 60);
+                            newMinutes = newMinutes % 60;
+                        }
+                        
+                        // Handle hour overflow (wrap at 24)
+                        newHours = newHours % 24;
+                        
+                        return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+                    };
+                    
+                    // Helper function to subtract time
+                    const subtractTime = (timeStr, hoursToSubtract, minutesToSubtract = 0) => {
+                        const [hours, minutes] = timeStr.split(':').map(Number);
+                        let newHours = hours - hoursToSubtract;
+                        let newMinutes = minutes - minutesToSubtract;
+                        
+                        // Handle minute underflow
+                        if (newMinutes < 0) {
+                            newHours -= Math.ceil(Math.abs(newMinutes) / 60);
+                            newMinutes = (60 + (newMinutes % 60)) % 60;
+                        }
+                        
+                        // Handle hour underflow (wrap at 24)
+                        if (newHours < 0) {
+                            newHours = 24 + (newHours % 24);
+                        }
+                        
+                        return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+                    };
+                    
                     // Helper function to convert time to 24hr format
                     const convertTo24Hour = (timeStr) => {
                         if (!timeStr) return '09:00';
@@ -822,12 +870,16 @@
                     if (onboardingEmployee && Array.isArray(onboardingEmployee) && 
                         onboardingEmployee.includes(employeeRecordId)) {
                         
-                        const onboardingTime = fields['Onboarding Time'] || fields['Start Time'] || '09:00 am';
+                        // For onboarding: Start 30 minutes before booking start time, end 1 hour after allocation start
+                        const bookingStartTime = fields['Start Time'] || '09:00 am';
+                        const startTime24 = subtractTime(convertTo24Hour(bookingStartTime), 0, 30);
+                        const endTime24 = addTime(startTime24, 1, 0);
+                        
                         bookingAllocations.push({
                             id: `${record.id}-onboarding`,
                             date: bookingDate,
-                            startTime: convertTo24Hour(onboardingTime),
-                            endTime: convertTo24Hour(fields['Start Time'] || '10:00 am'), // Use actual start time as end
+                            startTime: startTime24,
+                            endTime: endTime24,
                             type: 'Boat Hire',
                             role: 'Onboarding',
                             customer: customerName,
@@ -843,13 +895,16 @@
                     if (deloadingEmployee && Array.isArray(deloadingEmployee) && 
                         deloadingEmployee.includes(employeeRecordId)) {
                         
-                        const deloadingTime = fields['Deloading Time'] || fields['Finish Time'] || '05:00 pm';
-                        const finishTime = fields['Finish Time'] || '06:00 pm';
+                        // For deloading: Start 30 minutes before booking finish time, end 1 hour after allocation start
+                        const bookingFinishTime = fields['Finish Time'] || '05:00 pm';
+                        const startTime24 = subtractTime(convertTo24Hour(bookingFinishTime), 0, 30);
+                        const endTime24 = addTime(startTime24, 1, 0);
+                        
                         bookingAllocations.push({
                             id: `${record.id}-deloading`,
                             date: bookingDate,
-                            startTime: convertTo24Hour(deloadingTime),
-                            endTime: convertTo24Hour(finishTime), // Use actual finish time as end
+                            startTime: startTime24,
+                            endTime: endTime24,
                             type: 'Boat Hire',
                             role: 'Deloading',
                             customer: customerName,
@@ -967,6 +1022,10 @@
                 html += `<div class="day-header-cell">${day}</div>`;
             });
             
+            // Get today's date for comparison
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
+            
             // Day cells
             for (let i = 0; i < 7; i++) {
                 const cellDate = new Date(currentWeekStart);
@@ -976,8 +1035,11 @@
                     shift.date.toDateString() === cellDate.toDateString()
                 );
                 
+                // Check if this is today
+                const isToday = cellDate.toDateString() === todayDate.toDateString();
+                
                 html += `
-                    <div class="day-cell">
+                    <div class="day-cell ${isToday ? 'today' : ''}">
                         <div class="day-date">${cellDate.getDate()}</div>
                         <div class="day-shifts">
                 `;
@@ -986,16 +1048,20 @@
                     const isBooking = shift.source === 'booking' || shift.type === 'Boat Hire';
                     let shiftLabel = shift.type;
                     if (shift.role) {
-                        shiftLabel = shift.role;
-                        if (shift.customer) {
-                            shiftLabel += ` - ${shift.customer}`;
+                        // For bookings, show customer name prominently with role
+                        if (shift.customer && isBooking) {
+                            shiftLabel = `${shift.role}: ${shift.customer}`;
+                        } else {
+                            shiftLabel = shift.role;
                         }
                     }
                     html += `
                         <div class="shift-item ${isBooking ? 'booking' : ''}"
                              onclick="showShiftDetails('${shift.id}')">
                             <div class="shift-time">${shift.startTime} - ${shift.endTime}</div>
-                            <div class="shift-type">${shiftLabel}</div>
+                            <div class="shift-type" style="font-weight: ${isBooking ? 'bold' : 'normal'};">
+                                ${shiftLabel}
+                            </div>
                         </div>
                     `;
                 });
