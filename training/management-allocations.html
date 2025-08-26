@@ -967,12 +967,13 @@
                 
                 // Fetch all PAID bookings - will filter by date client-side
                 // This avoids field name issues in filterByFormula
-                const filter = encodeURIComponent(`{Status}='PAID'`);
+                // Fetch ALL bookings to ensure we don't miss any
+                const filter = encodeURIComponent(`OR({Status}='PAID', {Status}='Confirmed', {Status}='Pending')`);
                 
                 // Use retry logic for resilience
                 const response = await fetchWithRetry(
                     `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
-                    `filterByFormula=${filter}&_t=${Date.now()}`,
+                    `filterByFormula=${filter}&pageSize=100&_t=${Date.now()}`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -1003,19 +1004,47 @@
             }
         }
         
-        // Filter client-side for the current week
+        // Filter client-side for the current week and PAID status
         bookingsData = allBookings.filter(record => {
             const bookingDate = record.fields['Booking Date'];
+            const status = record.fields['Status'];
+            
+            // Only show PAID bookings
+            if (status !== 'PAID') {
+                return false;
+            }
+            
             if (!bookingDate) {
                 console.log('No Booking Date field found in booking:', record.fields);
                 return false;
             }
             
-            const date = new Date(bookingDate);
-            return date >= currentWeekStart && date <= weekEnd;
+            const date = new Date(bookingDate + 'T00:00:00');  // Ensure proper date parsing
+            const dateStr = formatLocalDate(date);
+            const weekStartStr = formatLocalDate(currentWeekStart); 
+            const weekEndStr = formatLocalDate(weekEnd);
+            
+            // Compare dates as strings to avoid timezone issues
+            const isInRange = dateStr >= weekStartStr && dateStr <= weekEndStr;
+            
+            // Debug log for Raoa Zaoud booking
+            if (record.fields['Customer Name'] && record.fields['Customer Name'].includes('Raoa')) {
+                console.log('Raoa Zaoud booking:', {
+                    bookingDate: bookingDate,
+                    parsedDate: dateStr,
+                    weekStart: weekStartStr,
+                    weekEnd: weekEndStr,
+                    status: status,
+                    isInRange: isInRange
+                });
+            }
+            
+            return isInRange;
         });
         
-        console.log(`Found ${allBookings.length} total PAID bookings, ${bookingsData.length} for current week`, bookingsData);
+        // Only count PAID bookings for the log
+        const paidBookings = allBookings.filter(r => r.fields['Status'] === 'PAID');
+        console.log(`Found ${paidBookings.length} PAID bookings, ${bookingsData.length} for current week`, bookingsData);
                 
                 renderBookingsList();
                 populateBookingsSelect();
@@ -1322,6 +1351,20 @@
                 const onboardingTime = booking['Onboarding Time'] || booking['Start Time'] || '09:00';
                 const deloadingTime = booking['Deloading Time'] || booking['Finish Time'] || '17:00';
                 
+                // Debug logging for specific bookings
+                if (customerName.includes('Raoa')) {
+                    console.log('Processing Raoa booking:', {
+                        date: bookingDate,
+                        customer: customerName,
+                        onboardingTime: onboardingTime,
+                        deloadingTime: deloadingTime,
+                        startTime: booking['Start Time'],
+                        finishTime: booking['Finish Time'],
+                        onboardingEmployee: booking['Onboarding Employee'],
+                        deloadingEmployee: booking['Deloading Employee']
+                    });
+                }
+                
                 // Check staffing status
                 const hasOnboardingStaff = booking['Onboarding Employee'] && booking['Onboarding Employee'].length > 0;
                 const hasDeloadingStaff = booking['Deloading Employee'] && booking['Deloading Employee'].length > 0;
@@ -1348,8 +1391,25 @@
         
         // Create a booking block on the grid
         function createBookingBlock(date, time, type, customerName, isFullyStaffed, bookingRecord, hasStaff) {
-            const timeStr = time.split(' ')[0]; // Remove any AM/PM if present
-            const hour = parseInt(timeStr.split(':')[0]);
+            // Handle different time formats: "09:00 am", "9:00 AM", "09:00", etc.
+            let hour;
+            if (time.toLowerCase().includes('pm') || time.toLowerCase().includes('am')) {
+                // Parse 12-hour format
+                const timeStr = time.replace(/\s/g, '').toLowerCase(); // Remove spaces
+                const hourMatch = timeStr.match(/(\d{1,2}):/);
+                if (hourMatch) {
+                    hour = parseInt(hourMatch[1]);
+                    if (timeStr.includes('pm') && hour !== 12) {
+                        hour += 12;
+                    } else if (timeStr.includes('am') && hour === 12) {
+                        hour = 0;
+                    }
+                }
+            } else {
+                // Parse 24-hour format
+                const timeStr = time.split(' ')[0]; // Remove any trailing text
+                hour = parseInt(timeStr.split(':')[0]);
+            }
             const dateStr = date; // Already in YYYY-MM-DD format
             
             const cell = document.querySelector(`[data-date="${dateStr}"][data-hour="${hour}"]`);
