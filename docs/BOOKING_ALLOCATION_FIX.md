@@ -205,3 +205,33 @@ Since Airtable filterByFormula continues to have issues with date field names, s
 - **Committed**: January 2025
 - **Repository**: https://github.com/harry-dev-general/mbh
 - **Auto-deployed**: Via Railway to https://mbh-production-f0d1.up.railway.app
+
+---
+
+## Critical Fix: Hardcoded Date Issue
+### Date: January 26, 2025
+
+### Issue Discovered
+System was hardcoded to August 20, 2025 instead of using the actual current date, causing:
+- Calendar always showed week of Aug 18-24, 2025
+- Bookings for actual current week wouldn't display
+- Users couldn't see today's bookings (e.g., Aug 26, 2025)
+
+### Root Cause
+```javascript
+// OLD (BROKEN):
+let today = new Date('2025-08-20T12:00:00'); // Hardcoded date!
+
+// NEW (FIXED):
+let today = new Date(); // Use actual current date
+today.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+```
+
+### Additional Fixes in Same Deployment
+1. **Duration Field Format**: Changed from integer (6) to time format ('6:00')
+2. **Function Reference Fix**: Changed undefined `loadRosterData()` to `loadStaffAvailability()`
+
+### Impact
+- Calendar now correctly shows the current week based on actual date
+- Bookings for current week will properly display
+- Test booking creation now works without Duration field errors
