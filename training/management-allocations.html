@@ -1703,10 +1703,26 @@
                         }
                         
                         console.log('Successfully updated booking with staff assignment');
+                        
+                        // For booking-specific allocations, we only update the booking
+                        // No need to create a separate allocation record
+                        closeAllocationModal();
+                        
+                        // Small delay to ensure Airtable has processed the update
+                        setTimeout(async () => {
+                            // Force reload of bookings to show updated staff assignments
+                            await loadBookings();
+                            renderBookingsList();
+                            renderBookingsOnGrid();
+                            // Note: We don't reload allocations here since we didn't create one
+                            alert('Staff allocated to booking successfully!');
+                        }, 1000);
+                        
+                        return; // Exit early - don't create allocation record for booking-specific allocations
                     }
                 }
                 
-                // Now create the shift allocation record for tracking
+                // For general (non-booking) allocations, create an allocation record
                 const fields = {
                     'Name': `${document.getElementById('allocationDate').value} - ${document.getElementById('employeeSelect').options[document.getElementById('employeeSelect').selectedIndex].text}`,
                     'Employee': [employeeId],
@@ -1728,7 +1744,7 @@
                 }
                 
                 const formData = { fields };
-                console.log('Creating allocation record:', formData);
+                console.log('Creating general allocation record:', formData);
                 
                 // Save allocation to Airtable with retry logic
                 const response = await fetchWithRetry(
@@ -1744,16 +1760,14 @@
                 );
 
                 if (response.ok) {
-                    console.log('Allocation created successfully, reloading data...');
+                    console.log('General allocation created successfully, reloading data...');
                     closeAllocationModal();
                     // Small delay to ensure Airtable has processed the update
                     setTimeout(async () => {
-                        // Force reload of all data to ensure booking updates are reflected
-                        await loadBookings();
+                        // Reload allocations for general shifts
                         await loadAllocations();
-                        renderBookingsOnGrid();
                         renderScheduleGrid();
-                        alert('Staff allocated successfully!');
+                        alert('Shift allocated successfully!');
                     }, 1000); // 1 second delay for Airtable to process
                 } else {
                     const error = await response.json();
