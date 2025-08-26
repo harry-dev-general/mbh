@@ -658,7 +658,7 @@
             renderListView();
         }
 
-        // Load allocations from Airtable
+        // Load allocations from Airtable (both Shift Allocations and Bookings)
         async function loadMyAllocations() {
             try {
                 const weekEnd = new Date(currentWeekStart);
@@ -670,39 +670,38 @@
                 console.log('Loading allocations for employee:', employeeRecordId);
                 console.log('Date range:', startStr, 'to', endStr);
                 
-                // First, let's test if we can find ANY allocations for this employee
-                // Try different ways of matching the employee
-                const testResponse = await fetch(
-                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=FIND('${employeeRecordId}', ARRAYJOIN({Employee}))`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                        }
-                    }
-                );
-                const testData = await testResponse.json();
-                console.log('ALL allocations for this employee (using FIND):', testData.records?.length || 0, testData.records);
+                const weekStartDate = new Date(startStr + 'T00:00:00');
+                const weekEndDate = new Date(endStr + 'T23:59:59');
                 
-                // Also try getting ALL allocations to see what's there
-                const allResponse = await fetch(
-                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?pageSize=100`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                        }
-                    }
-                );
-                const allData = await allResponse.json();
-                console.log('ALL allocations in table:', allData.records?.length || 0);
-                if (allData.records) {
-                    allData.records.forEach(r => {
-                        console.log('- Allocation Employee field:', r.fields.Employee, 'Employee Name:', r.fields['Employee Name']);
-                    });
-                }
+                // Load both general allocations and booking allocations in parallel
+                const [generalAllocations, bookingAllocations] = await Promise.all([
+                    loadGeneralAllocations(weekStartDate, weekEndDate),
+                    loadBookingAllocations(weekStartDate, weekEndDate)
+                ]);
                 
-                // Now fetch allocations for this week
-                // Filter using client-side since Airtable filter is not working as expected
+                // Combine both types of allocations
+                myAllocations = [...generalAllocations, ...bookingAllocations];
+                
+                console.log('Total allocations loaded:', myAllocations.length);
+                console.log('- General allocations:', generalAllocations.length);
+                console.log('- Booking allocations:', bookingAllocations.length);
+                
+                // Sort by date and time
+                myAllocations.sort((a, b) => {
+                    const dateCompare = a.date - b.date;
+                    if (dateCompare !== 0) return dateCompare;
+                    return a.startTime.localeCompare(b.startTime);
+                });
+                
+            } catch (error) {
+                console.error('Error loading allocations:', error);
+                myAllocations = [];
+            }
+        }
+        
+        // Load general allocations from Shift Allocations table
+        async function loadGeneralAllocations(weekStartDate, weekEndDate) {
+            try {
                 const response = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?pageSize=100`,
                     {
@@ -713,64 +712,159 @@
                 );
 
                 const data = await response.json();
-                console.log('All allocations before filtering:', data.records?.length || 0);
+                console.log('All shift allocations before filtering:', data.records?.length || 0);
                 
-                if (data.records) {
-                    // Filter client-side for this employee and week
-                    const weekStartDate = new Date(startStr + 'T00:00:00');
-                    const weekEndDate = new Date(endStr + 'T23:59:59');
+                if (!data.records) return [];
+                
+                // Filter client-side for this employee and week
+                const filteredRecords = data.records.filter(record => {
+                    // Check if allocation is for this employee
+                    const employeeField = record.fields['Employee'];
+                    if (!employeeField || !Array.isArray(employeeField)) return false;
+                    if (!employeeField.includes(employeeRecordId)) return false;
                     
-                    const filteredRecords = data.records.filter(record => {
-                        // Check if allocation is for this employee
-                        const employeeField = record.fields['Employee'];
-                        if (!employeeField || !Array.isArray(employeeField)) return false;
-                        if (!employeeField.includes(employeeRecordId)) return false;
-                        
-                        // Check if allocation is within this week
-                        const shiftDate = new Date(record.fields['Shift Date'] + 'T00:00:00');
-                        return shiftDate >= weekStartDate && shiftDate <= weekEndDate;
-                    });
-                    
-                    console.log('Filtered allocations for employee and week:', filteredRecords.length);
-                    
-                    console.log('Processing allocations:');
-                    myAllocations = filteredRecords.map(record => {
-                        console.log('- Allocation:', {
-                            employee: record.fields['Employee'],
-                            date: record.fields['Shift Date'],
-                            type: record.fields['Shift Type'],
-                            role: record.fields['Role']
-                        });
-                        
-                        return {
-                            id: record.id,
-                            date: new Date(record.fields['Shift Date']),
-                            startTime: record.fields['Start Time'] || '09:00',
-                            endTime: record.fields['End Time'] || '17:00',
-                            type: record.fields['Shift Type'] || 'General Operations',
-                            role: record.fields['Role'] || null,
-                            customer: record.fields['Customer Name'] ? record.fields['Customer Name'][0] : null,
-                            status: record.fields['Shift Status'] || 'Scheduled',
-                            booking: record.fields['Booking'] || null
-                        };
-                    });
-                    
-                    console.log('Total allocations loaded:', myAllocations.length);
-                    
-                    // Sort by date and time
-                    myAllocations.sort((a, b) => {
-                        const dateCompare = a.date - b.date;
-                        if (dateCompare !== 0) return dateCompare;
-                        return a.startTime.localeCompare(b.startTime);
-                    });
-                } else {
-                    myAllocations = [];
-                    console.log('No allocation records found');
-                }
+                    // Check if allocation is within this week
+                    const shiftDate = new Date(record.fields['Shift Date'] + 'T00:00:00');
+                    return shiftDate >= weekStartDate && shiftDate <= weekEndDate;
+                });
+                
+                console.log('Filtered shift allocations for employee and week:', filteredRecords.length);
+                
+                return filteredRecords.map(record => ({
+                    id: record.id,
+                    date: new Date(record.fields['Shift Date']),
+                    startTime: record.fields['Start Time'] || '09:00',
+                    endTime: record.fields['End Time'] || '17:00',
+                    type: record.fields['Shift Type'] || 'General Operations',
+                    role: record.fields['Role'] || null,
+                    customer: record.fields['Customer Name'] ? record.fields['Customer Name'][0] : null,
+                    status: record.fields['Shift Status'] || 'Scheduled',
+                    booking: record.fields['Booking'] || null,
+                    source: 'allocation'
+                }));
             } catch (error) {
-                console.error('Error loading allocations:', error);
-                // Fallback to sample data if loading fails
-                generateSampleAllocations();
+                console.error('Error loading general allocations:', error);
+                return [];
+            }
+        }
+        
+        // Load booking-specific allocations from Bookings Dashboard
+        async function loadBookingAllocations(weekStartDate, weekEndDate) {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?pageSize=100`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+                console.log('All bookings before filtering:', data.records?.length || 0);
+                
+                if (!data.records) return [];
+                
+                // Filter for bookings where this employee is assigned
+                const filteredRecords = data.records.filter(record => {
+                    const fields = record.fields;
+                    
+                    // Check if booking is in this week
+                    const bookingDate = new Date(fields['Booking Date'] + 'T00:00:00');
+                    if (!(bookingDate >= weekStartDate && bookingDate <= weekEndDate)) {
+                        return false;
+                    }
+                    
+                    // Check if employee is assigned to onboarding or deloading
+                    const onboardingEmployee = fields['Onboarding Employee'];
+                    const deloadingEmployee = fields['Deloading Employee'];
+                    
+                    const isOnboardingStaff = onboardingEmployee && Array.isArray(onboardingEmployee) && 
+                                             onboardingEmployee.includes(employeeRecordId);
+                    const isDeloadingStaff = deloadingEmployee && Array.isArray(deloadingEmployee) && 
+                                            deloadingEmployee.includes(employeeRecordId);
+                    
+                    return isOnboardingStaff || isDeloadingStaff;
+                });
+                
+                console.log('Filtered bookings for employee:', filteredRecords.length);
+                
+                // Convert booking records to allocation format
+                const bookingAllocations = [];
+                filteredRecords.forEach(record => {
+                    const fields = record.fields;
+                    const bookingDate = new Date(fields['Booking Date']);
+                    const customerName = fields['Customer Name'] || 'Unknown Customer';
+                    
+                    // Helper function to convert time to 24hr format
+                    const convertTo24Hour = (timeStr) => {
+                        if (!timeStr) return '09:00';
+                        const cleanTime = timeStr.replace(/\s/g, '').toLowerCase();
+                        if (!cleanTime.includes('am') && !cleanTime.includes('pm')) {
+                            const parts = timeStr.split(':');
+                            if (parts.length === 2) {
+                                return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+                            }
+                            return timeStr;
+                        }
+                        const match = cleanTime.match(/(\d{1,2}):(\d{2})(am|pm)/);
+                        if (!match) return '09:00';
+                        let hours = parseInt(match[1]);
+                        const minutes = match[2];
+                        const period = match[3];
+                        if (period === 'pm' && hours !== 12) hours += 12;
+                        else if (period === 'am' && hours === 12) hours = 0;
+                        return `${hours.toString().padStart(2, '0')}:${minutes}`;
+                    };
+                    
+                    // Check if assigned to onboarding
+                    const onboardingEmployee = fields['Onboarding Employee'];
+                    if (onboardingEmployee && Array.isArray(onboardingEmployee) && 
+                        onboardingEmployee.includes(employeeRecordId)) {
+                        
+                        const onboardingTime = fields['Onboarding Time'] || fields['Start Time'] || '09:00 am';
+                        bookingAllocations.push({
+                            id: `${record.id}-onboarding`,
+                            date: bookingDate,
+                            startTime: convertTo24Hour(onboardingTime),
+                            endTime: convertTo24Hour(fields['Start Time'] || '10:00 am'), // Use actual start time as end
+                            type: 'Boat Hire',
+                            role: 'Onboarding',
+                            customer: customerName,
+                            status: 'Scheduled',
+                            booking: record.id,
+                            bookingCode: fields['Booking Code'] || '',
+                            source: 'booking'
+                        });
+                    }
+                    
+                    // Check if assigned to deloading
+                    const deloadingEmployee = fields['Deloading Employee'];
+                    if (deloadingEmployee && Array.isArray(deloadingEmployee) && 
+                        deloadingEmployee.includes(employeeRecordId)) {
+                        
+                        const deloadingTime = fields['Deloading Time'] || fields['Finish Time'] || '05:00 pm';
+                        const finishTime = fields['Finish Time'] || '06:00 pm';
+                        bookingAllocations.push({
+                            id: `${record.id}-deloading`,
+                            date: bookingDate,
+                            startTime: convertTo24Hour(deloadingTime),
+                            endTime: convertTo24Hour(finishTime), // Use actual finish time as end
+                            type: 'Boat Hire',
+                            role: 'Deloading',
+                            customer: customerName,
+                            status: 'Scheduled',
+                            booking: record.id,
+                            bookingCode: fields['Booking Code'] || '',
+                            source: 'booking'
+                        });
+                    }
+                });
+                
+                return bookingAllocations;
+            } catch (error) {
+                console.error('Error loading booking allocations:', error);
+                return [];
             }
         }
 
@@ -834,7 +928,8 @@
                 
                 totalMinutes += durationMinutes;
                 
-                if (shift.type === 'Booking Specific') {
+                // Count booking shifts (both from allocations and from bookings)
+                if (shift.source === 'booking' || shift.type === 'Boat Hire' || shift.type === 'Booking Specific') {
                     bookingShifts++;
                 }
             });
@@ -888,12 +983,19 @@
                 `;
                 
                 dayShifts.forEach(shift => {
-                    const isBooking = shift.type === 'Booking Specific';
+                    const isBooking = shift.source === 'booking' || shift.type === 'Boat Hire';
+                    let shiftLabel = shift.type;
+                    if (shift.role) {
+                        shiftLabel = shift.role;
+                        if (shift.customer) {
+                            shiftLabel += ` - ${shift.customer}`;
+                        }
+                    }
                     html += `
                         <div class="shift-item ${isBooking ? 'booking' : ''}"
                              onclick="showShiftDetails('${shift.id}')">
                             <div class="shift-time">${shift.startTime} - ${shift.endTime}</div>
-                            <div class="shift-type">${shift.role || shift.type}</div>
+                            <div class="shift-type">${shiftLabel}</div>
                         </div>
                     `;
                 });
@@ -947,7 +1049,15 @@
                 
                 dayGroups[dayKey].forEach(shift => {
                     const duration = calculateDuration(shift.startTime, shift.endTime);
-                    const isBooking = shift.type === 'Booking Specific';
+                    const isBooking = shift.source === 'booking' || shift.type === 'Boat Hire';
+                    
+                    // Build shift type display
+                    let typeDisplay = shift.type;
+                    if (shift.role && shift.source === 'booking') {
+                        typeDisplay = `${shift.role} - ${shift.type}`;
+                    } else if (shift.role) {
+                        typeDisplay = `${shift.type} - ${shift.role}`;
+                    }
                     
                     html += `
                         <div class="shift-card ${isBooking ? 'booking' : ''}"
@@ -957,12 +1067,16 @@
                                 <span class="shift-duration">${duration}</span>
                             </div>
                             <div class="shift-details">
-                                <strong>${shift.type}</strong>
-                                ${shift.role ? ` - ${shift.role}` : ''}
+                                <strong>${typeDisplay}</strong>
                             </div>
                             ${shift.customer ? `
                                 <div class="shift-customer">
                                     <i class="fas fa-user"></i> ${shift.customer}
+                                </div>
+                            ` : ''}
+                            ${shift.bookingCode ? `
+                                <div class="shift-customer">
+                                    <i class="fas fa-ticket-alt"></i> ${shift.bookingCode}
                                 </div>
                             ` : ''}
                             ${shift.notes ? `
@@ -1018,14 +1132,22 @@
         function showShiftDetails(shiftId) {
             const shift = myAllocations.find(s => s.id === shiftId);
             if (shift) {
+                let typeLabel = shift.type;
+                if (shift.source === 'booking') {
+                    typeLabel = `${shift.role} (Customer Booking)`;
+                } else if (shift.role) {
+                    typeLabel = `${shift.type} - ${shift.role}`;
+                }
+                
                 const details = `
                     Shift Details:
                     Date: ${shift.date.toLocaleDateString()}
                     Time: ${shift.startTime} - ${shift.endTime}
-                    Type: ${shift.type}
-                    ${shift.role ? `Role: ${shift.role}` : ''}
+                    Type: ${typeLabel}
                     ${shift.customer ? `Customer: ${shift.customer}` : ''}
+                    ${shift.bookingCode ? `Booking Code: ${shift.bookingCode}` : ''}
                     ${shift.notes ? `Notes: ${shift.notes}` : ''}
+                    Status: ${shift.status || 'Scheduled'}
                 `;
                 alert(details);
             }
