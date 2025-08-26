@@ -1473,19 +1473,88 @@
             document.getElementById('allocationType').value = 'Boat Hire';
             document.getElementById('bookingSelect').value = bookingRecord.id;
             
-            // Function to properly add 1 hour to a time string
-            function addOneHour(timeStr) {
+            // Function to convert 12-hour time to 24-hour format for HTML input
+            function convertTo24Hour(timeStr) {
+                if (!timeStr) return '09:00';
+                
+                // Clean the time string
+                const cleanTime = timeStr.replace(/\s/g, '').toLowerCase();
+                
+                // Check if it's already in 24-hour format
+                if (!cleanTime.includes('am') && !cleanTime.includes('pm')) {
+                    // Already in 24-hour format, ensure it's properly formatted
+                    const parts = timeStr.split(':');
+                    if (parts.length === 2) {
+                        const hours = parts[0].padStart(2, '0');
+                        const minutes = parts[1].padStart(2, '0');
+                        return `${hours}:${minutes}`;
+                    }
+                    return timeStr;
+                }
+                
+                // Parse 12-hour format
+                const match = cleanTime.match(/(\d{1,2}):(\d{2})(am|pm)/);
+                if (!match) return '09:00';
+                
+                let hours = parseInt(match[1]);
+                const minutes = match[2];
+                const period = match[3];
+                
+                // Convert to 24-hour
+                if (period === 'pm' && hours !== 12) {
+                    hours += 12;
+                } else if (period === 'am' && hours === 12) {
+                    hours = 0;
+                }
+                
+                return `${hours.toString().padStart(2, '0')}:${minutes}`;
+            }
+            
+            // Function to add time to a time string
+            function addTime(timeStr, hoursToAdd, minutesToAdd = 0) {
                 const [hours, minutes] = timeStr.split(':').map(Number);
-                let newHours = hours + 1;
-                if (newHours >= 24) newHours = 0; // Handle midnight wrap
-                return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                let newHours = hours + hoursToAdd;
+                let newMinutes = minutes + minutesToAdd;
+                
+                // Handle minute overflow
+                if (newMinutes >= 60) {
+                    newHours += Math.floor(newMinutes / 60);
+                    newMinutes = newMinutes % 60;
+                }
+                
+                // Handle hour overflow
+                if (newHours >= 24) newHours = newHours % 24;
+                
+                return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
+            }
+            
+            // Function to subtract time from a time string
+            function subtractTime(timeStr, hoursToSubtract, minutesToSubtract = 0) {
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                let newHours = hours - hoursToSubtract;
+                let newMinutes = minutes - minutesToSubtract;
+                
+                // Handle minute underflow
+                if (newMinutes < 0) {
+                    newHours -= Math.ceil(Math.abs(newMinutes) / 60);
+                    newMinutes = (60 + (newMinutes % 60)) % 60;
+                }
+                
+                // Handle hour underflow
+                if (newHours < 0) newHours = 24 + (newHours % 24);
+                
+                return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
             }
             
             // Set the appropriate time and role
             if (allocationType === 'onboarding') {
-                const onboardingTime = booking['Onboarding Time'] || booking['Start Time'] || '09:00';
-                document.getElementById('startTime').value = onboardingTime;
-                document.getElementById('endTime').value = addOneHour(onboardingTime);
+                // For onboarding: Start 30 minutes before booking start time, end 1 hour after allocation start
+                const bookingStartTime = booking['Start Time'] || '09:00 am';
+                const startTime24 = subtractTime(convertTo24Hour(bookingStartTime), 0, 30);
+                const endTime24 = addTime(startTime24, 1, 0);
+                
+                document.getElementById('startTime').value = startTime24;
+                document.getElementById('endTime').value = endTime24;
                 document.getElementById('roleSelect').value = 'Onboarding';
                 
                 // Pre-select currently assigned employee if exists
@@ -1494,9 +1563,13 @@
                     document.getElementById('employeeSelect').value = currentEmployee[0];
                 }
             } else {
-                const deloadingTime = booking['Deloading Time'] || booking['Finish Time'] || '17:00';
-                document.getElementById('startTime').value = deloadingTime;
-                document.getElementById('endTime').value = addOneHour(deloadingTime);
+                // For deloading: Start 30 minutes before booking finish time, end 1 hour after allocation start
+                const bookingFinishTime = booking['Finish Time'] || '05:00 pm';
+                const startTime24 = subtractTime(convertTo24Hour(bookingFinishTime), 0, 30);
+                const endTime24 = addTime(startTime24, 1, 0);
+                
+                document.getElementById('startTime').value = startTime24;
+                document.getElementById('endTime').value = endTime24;
                 document.getElementById('roleSelect').value = 'Deloading';
                 
                 // Pre-select currently assigned employee if exists

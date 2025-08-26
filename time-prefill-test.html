@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBH Time Prefill Logic Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f0f4f8;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #8B0000;
+        }
+        h2 {
+            color: #2E86AB;
+            border-bottom: 2px solid #2E86AB;
+            padding-bottom: 10px;
+        }
+        .booking-example {
+            background: #f9f9f9;
+            border-left: 4px solid #2E86AB;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .calculation {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .before {
+            background: #ffebee;
+        }
+        .after {
+            background: #e8f5e9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        .test-button {
+            background: #2E86AB;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .test-button:hover {
+            background: #1B4F72;
+        }
+        .time-input {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚢 MBH Staff Portal - Time Prefill Logic Documentation</h1>
+        
+        <h2>Problem Fixed</h2>
+        <p>The allocation modal was not properly prefilling the start and end times when clicking on booking blocks for onboarding or deloading.</p>
+        
+        <h2>Solution Implemented</h2>
+        
+        <div class="booking-example">
+            <h3>✅ New Logic for Time Calculations</h3>
+            
+            <h4>Onboarding Times:</h4>
+            <ul>
+                <li><strong>Start Time:</strong> Booking Start Time - 30 minutes</li>
+                <li><strong>End Time:</strong> Onboarding Start Time + 1 hour</li>
+            </ul>
+            
+            <h4>Deloading Times:</h4>
+            <ul>
+                <li><strong>Start Time:</strong> Booking Finish Time - 30 minutes</li>
+                <li><strong>End Time:</strong> Deloading Start Time + 1 hour</li>
+            </ul>
+        </div>
+        
+        <h2>Key Improvements</h2>
+        
+        <div class="booking-example after">
+            <h3>1. Time Format Conversion</h3>
+            <p>Added <code>convertTo24Hour()</code> function to handle various time formats:</p>
+            <ul>
+                <li>"09:00 am" → "09:00"</li>
+                <li>"1:00 PM" → "13:00"</li>
+                <li>"12:30 pm" → "12:30"</li>
+                <li>"12:00 am" → "00:00"</li>
+            </ul>
+        </div>
+        
+        <div class="booking-example after">
+            <h3>2. Time Calculation Functions</h3>
+            <p>Added helper functions for time arithmetic:</p>
+            <ul>
+                <li><code>addTime(timeStr, hours, minutes)</code> - Add hours/minutes to a time</li>
+                <li><code>subtractTime(timeStr, hours, minutes)</code> - Subtract hours/minutes from a time</li>
+            </ul>
+            <p>These properly handle edge cases like midnight wraparound.</p>
+        </div>
+        
+        <h2>Example Calculations</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking</th>
+                    <th>Start Time</th>
+                    <th>Finish Time</th>
+                    <th>Onboarding Start</th>
+                    <th>Onboarding End</th>
+                    <th>Deloading Start</th>
+                    <th>Deloading End</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Raoa Zaoud</td>
+                    <td>09:00 am</td>
+                    <td>01:00 pm</td>
+                    <td>08:30</td>
+                    <td>09:30</td>
+                    <td>12:30</td>
+                    <td>13:30</td>
+                </tr>
+                <tr>
+                    <td>Test Customer</td>
+                    <td>10:00</td>
+                    <td>16:00</td>
+                    <td>09:30</td>
+                    <td>10:30</td>
+                    <td>15:30</td>
+                    <td>16:30</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2>Interactive Test</h2>
+        
+        <div class="booking-example">
+            <h3>Test Time Conversion</h3>
+            <p>Enter a time in any format to see the conversion:</p>
+            <input type="text" id="testTime" class="time-input" placeholder="e.g., 09:00 am" value="09:00 am">
+            <button class="test-button" onclick="testConversion()">Test Conversion</button>
+            <div id="conversionResult" style="margin-top: 10px;"></div>
+            
+            <h3>Test Allocation Times</h3>
+            <p>Enter booking times to see calculated allocation times:</p>
+            <div>
+                <label>Start Time: <input type="text" id="bookingStart" class="time-input" value="09:00 am"></label>
+                <label>Finish Time: <input type="text" id="bookingFinish" class="time-input" value="01:00 pm"></label>
+            </div>
+            <button class="test-button" onclick="calculateAllocations()">Calculate Allocation Times</button>
+            <div id="allocationResult" style="margin-top: 10px;"></div>
+        </div>
+        
+        <h2>What This Fixes</h2>
+        
+        <div class="booking-example before">
+            <h3>❌ Previous Issues</h3>
+            <ul>
+                <li>Times were not converting from 12-hour to 24-hour format</li>
+                <li>Input fields showed AM/PM format which HTML time inputs don't accept</li>
+                <li>Onboarding Time field was being used directly instead of calculating from Start Time</li>
+                <li>No proper time arithmetic for edge cases</li>
+            </ul>
+        </div>
+        
+        <div class="booking-example after">
+            <h3>✅ Now Working</h3>
+            <ul>
+                <li>All time formats properly converted to 24-hour</li>
+                <li>Start times correctly calculated as 30 minutes before booking times</li>
+                <li>End times correctly calculated as 1 hour after allocation start</li>
+                <li>Handles midnight wraparound and edge cases</li>
+                <li>HTML time inputs receive properly formatted values</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Copy of the functions from the main file for testing
+        function convertTo24Hour(timeStr) {
+            if (!timeStr) return '09:00';
+            
+            const cleanTime = timeStr.replace(/\s/g, '').toLowerCase();
+            
+            if (!cleanTime.includes('am') && !cleanTime.includes('pm')) {
+                const parts = timeStr.split(':');
+                if (parts.length === 2) {
+                    const hours = parts[0].padStart(2, '0');
+                    const minutes = parts[1].padStart(2, '0');
+                    return `${hours}:${minutes}`;
+                }
+                return timeStr;
+            }
+            
+            const match = cleanTime.match(/(\d{1,2}):(\d{2})(am|pm)/);
+            if (!match) return '09:00';
+            
+            let hours = parseInt(match[1]);
+            const minutes = match[2];
+            const period = match[3];
+            
+            if (period === 'pm' && hours !== 12) {
+                hours += 12;
+            } else if (period === 'am' && hours === 12) {
+                hours = 0;
+            }
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes}`;
+        }
+        
+        function addTime(timeStr, hoursToAdd, minutesToAdd = 0) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            let newHours = hours + hoursToAdd;
+            let newMinutes = minutes + minutesToAdd;
+            
+            if (newMinutes >= 60) {
+                newHours += Math.floor(newMinutes / 60);
+                newMinutes = newMinutes % 60;
+            }
+            
+            if (newHours >= 24) newHours = newHours % 24;
+            
+            return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
+        }
+        
+        function subtractTime(timeStr, hoursToSubtract, minutesToSubtract = 0) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            let newHours = hours - hoursToSubtract;
+            let newMinutes = minutes - minutesToSubtract;
+            
+            if (newMinutes < 0) {
+                newHours -= Math.ceil(Math.abs(newMinutes) / 60);
+                newMinutes = (60 + (newMinutes % 60)) % 60;
+            }
+            
+            if (newHours < 0) newHours = 24 + (newHours % 24);
+            
+            return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
+        }
+        
+        function testConversion() {
+            const input = document.getElementById('testTime').value;
+            const result = convertTo24Hour(input);
+            document.getElementById('conversionResult').innerHTML = `
+                <div class="calculation">
+                    Input: "${input}"<br>
+                    24-hour format: <strong>${result}</strong>
+                </div>
+            `;
+        }
+        
+        function calculateAllocations() {
+            const startTime = document.getElementById('bookingStart').value;
+            const finishTime = document.getElementById('bookingFinish').value;
+            
+            const start24 = convertTo24Hour(startTime);
+            const finish24 = convertTo24Hour(finishTime);
+            
+            const onboardingStart = subtractTime(start24, 0, 30);
+            const onboardingEnd = addTime(onboardingStart, 1, 0);
+            
+            const deloadingStart = subtractTime(finish24, 0, 30);
+            const deloadingEnd = addTime(deloadingStart, 1, 0);
+            
+            document.getElementById('allocationResult').innerHTML = `
+                <div class="calculation">
+                    <strong>Booking Times:</strong><br>
+                    Start: ${startTime} → ${start24}<br>
+                    Finish: ${finishTime} → ${finish24}<br><br>
+                    
+                    <strong>Calculated Onboarding:</strong><br>
+                    Start: ${onboardingStart} (30 min before booking start)<br>
+                    End: ${onboardingEnd} (1 hour after onboarding start)<br><br>
+                    
+                    <strong>Calculated Deloading:</strong><br>
+                    Start: ${deloadingStart} (30 min before booking finish)<br>
+                    End: ${deloadingEnd} (1 hour after deloading start)
+                </div>
+            `;
+        }
+        
+        // Run initial calculation on load
+        window.onload = function() {
+            testConversion();
+            calculateAllocations();
+        };
+    </script>
+</body>
+</html>
