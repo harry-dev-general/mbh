@@ -689,8 +689,9 @@
             return d;
         }
 
-        // Use 2025 as the current year - Aug 20, 2025
-        let today = new Date('2025-08-20T12:00:00'); // Set to noon to avoid timezone issues
+        // Get the actual current date
+        let today = new Date(); // Use actual current date
+        today.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
         let currentWeekStart = getMonday(today);
         console.log('Initialized with today:', today, 'Week start:', currentWeekStart);
         let staffData = [];
@@ -1650,7 +1651,7 @@
                     'Start Time': '10:00',
                     'Finish Time': '16:00',
                     'Status': 'PAID',
-                    'Duration': 6,
+                    'Duration': '6:00',  // Format as HH:MM
                     'Total Amount': 500
                 }
             };
@@ -1756,7 +1757,7 @@
                         await Promise.all([
                             loadBookings(),
                             loadAllocations(),
-                            loadRosterData()
+                            loadStaffAvailability()
                         ]);
                         renderBookingsList();
                         renderBookingsOnGrid();
