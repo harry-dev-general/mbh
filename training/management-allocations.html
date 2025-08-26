@@ -732,12 +732,29 @@
         // Load all data for the week
         async function loadWeekData() {
             updateWeekDisplay();
-            await Promise.all([
-                loadStaffAvailability(),
-                loadBookings(),
-                loadAllocations()
-            ]);
-            renderScheduleGrid();
+            
+            try {
+                // Load all data in parallel
+                await Promise.all([
+                    loadStaffAvailability(),
+                    loadStaffData(),
+                    loadBookings(),
+                    loadAllocations()
+                ]);
+                
+                // After all data is loaded, render everything
+                renderScheduleGrid();
+                renderBookingsOnGrid();
+                renderAllocations();
+                
+                console.log('All data loaded and rendered successfully');
+            } catch (error) {
+                console.error('Error loading week data:', error);
+                // Still try to render with whatever data we have
+                renderScheduleGrid();
+                renderBookingsOnGrid();
+                renderAllocations();
+            }
         }
 
         // Update week display
@@ -752,6 +769,38 @@
             document.getElementById('currentWeek').textContent = `${startStr} - ${endStr}`;
         }
 
+        // Load staff from Employee Details table
+        async function loadStaffData() {
+            try {
+                // Get all staff
+                const staffResponse = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}?pageSize=100`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+                
+                if (!staffResponse.ok) {
+                    throw new Error(`Failed to load staff: ${staffResponse.status}`);
+                }
+                
+                const staffDataResponse = await staffResponse.json();
+                staffData = staffDataResponse.records || [];
+                console.log('Found staff records:', staffData.length);
+                
+                // Render staff list after loading
+                renderStaffList();
+                return staffData; // Return data for Promise.all
+            } catch (error) {
+                console.error('Error loading staff:', error);
+                staffData = [];
+                renderStaffList(); // Still try to render empty list
+                throw error; // Re-throw to let Promise.all handle it
+            }
+        }
+        
         // Load staff availability from Roster
         async function loadStaffAvailability() {
             try {
@@ -832,23 +881,11 @@
                                'Date:', r.fields['Date'], 'Week Starting:', r.fields['Week Starting']);
                 });
                 
-                // Get all staff
-                const staffResponse = await fetch(
-                    `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                        }
-                    }
-                );
-                
-                const staffDataResponse = await staffResponse.json();
-                staffData = staffDataResponse.records || [];
-                console.log('Found staff records:', staffData.length);
-                
-                renderStaffList();
+                return rosterData; // Return data for Promise.all
             } catch (error) {
-                console.error('Error loading staff:', error);
+                console.error('Error loading staff availability:', error);
+                rosterData = [];
+                return rosterData; // Still return empty array so other data can load
             }
         }
 
