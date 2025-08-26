@@ -1514,6 +1514,9 @@
             document.getElementById('allocationType').value = 'Boat Hire';
             document.getElementById('bookingSelect').value = bookingRecord.id;
             
+            // Populate staff dropdown with staff available on this specific date
+            populateStaffForDate(bookingDate);
+            
             // Function to convert 12-hour time to 24-hour format for HTML input
             function convertTo24Hour(timeStr) {
                 if (!timeStr) return '09:00';
@@ -1598,11 +1601,13 @@
                 document.getElementById('endTime').value = endTime24;
                 document.getElementById('roleSelect').value = 'Onboarding';
                 
-                // Pre-select currently assigned employee if exists
-                const currentEmployee = booking['Onboarding Employee'];
-                if (currentEmployee && currentEmployee.length > 0) {
-                    document.getElementById('employeeSelect').value = currentEmployee[0];
-                }
+                // Pre-select currently assigned employee if exists (after dropdown is populated)
+                setTimeout(() => {
+                    const currentEmployee = booking['Onboarding Employee'];
+                    if (currentEmployee && currentEmployee.length > 0) {
+                        document.getElementById('employeeSelect').value = currentEmployee[0];
+                    }
+                }, 100);
             } else {
                 // For deloading: Start 30 minutes before booking finish time, end 1 hour after allocation start
                 const bookingFinishTime = booking['Finish Time'] || '05:00 pm';
@@ -1613,11 +1618,13 @@
                 document.getElementById('endTime').value = endTime24;
                 document.getElementById('roleSelect').value = 'Deloading';
                 
-                // Pre-select currently assigned employee if exists
-                const currentEmployee = booking['Deloading Employee'];
-                if (currentEmployee && currentEmployee.length > 0) {
-                    document.getElementById('employeeSelect').value = currentEmployee[0];
-                }
+                // Pre-select currently assigned employee if exists (after dropdown is populated)
+                setTimeout(() => {
+                    const currentEmployee = booking['Deloading Employee'];
+                    if (currentEmployee && currentEmployee.length > 0) {
+                        document.getElementById('employeeSelect').value = currentEmployee[0];
+                    }
+                }, 100);
             }
             
             // Show booking fields
@@ -1635,6 +1642,42 @@
             openAllocationModal();
         }
 
+        // Populate staff dropdown based on specific date
+        function populateStaffForDate(date) {
+            const employeeSelect = document.getElementById('employeeSelect');
+            employeeSelect.innerHTML = '<option value="">Select Staff Member</option>';
+            
+            // Find staff available on this specific date
+            const availableStaff = [];
+            rosterData.forEach(record => {
+                const rosterDate = record.fields['Date'];
+                const employeeId = record.fields['Employee']?.[0];
+                const employeeName = record.fields['Employee Name'];
+                
+                if (rosterDate === date && employeeId) {
+                    // Check if we haven't already added this employee
+                    if (!availableStaff.some(s => s.id === employeeId)) {
+                        availableStaff.push({
+                            id: employeeId,
+                            name: employeeName
+                        });
+                    }
+                }
+            });
+            
+            // Add available staff to dropdown
+            availableStaff.forEach(staff => {
+                employeeSelect.innerHTML += `
+                    <option value="${staff.id}">${staff.name}</option>
+                `;
+            });
+            
+            // If no staff available, show a message
+            if (availableStaff.length === 0) {
+                employeeSelect.innerHTML = '<option value="">No staff available on this date</option>';
+            }
+        }
+        
         // Handle cell click for quick allocation
         function handleCellClick(cell) {
             const date = cell.dataset.date;
@@ -1643,6 +1686,9 @@
             document.getElementById('allocationDate').value = date;
             document.getElementById('startTime').value = `${hour.padStart(2, '0')}:00`;
             document.getElementById('endTime').value = `${(parseInt(hour) + 1).toString().padStart(2, '0')}:00`;
+            
+            // Populate staff for the selected date
+            populateStaffForDate(date);
             
             openAllocationModal();
         }
@@ -1966,6 +2012,14 @@
 
         // Initialize on page load
         checkAuth();
+        
+        // Add event listener for date changes in allocation modal
+        document.getElementById('allocationDate').addEventListener('change', (e) => {
+            const selectedDate = e.target.value;
+            if (selectedDate) {
+                populateStaffForDate(selectedDate);
+            }
+        });
     </script>
 </body>
 </html>
