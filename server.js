@@ -8,6 +8,10 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Import notification handlers
+const notifications = require('./api/notifications');
+const shiftResponseHandler = require('./api/shift-response-handler');
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -89,6 +93,210 @@ app.get('/api/config', (req, res) => {
     // Don't expose the Airtable API key
     API_BASE_URL: ''  // Empty string means use relative URLs
   });
+});
+
+// Shift response endpoint - handles magic link clicks from SMS
+app.get('/api/shift-response', async (req, res) => {
+  const { token } = req.query;
+  
+  if (!token) {
+    return res.status(400).send(`
+      <html>
+        <head><title>Invalid Link</title></head>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+          <h1>❌ Invalid Link</h1>
+          <p>This link is invalid or has missing information.</p>
+          <p>Please contact management for assistance.</p>
+        </body>
+      </html>
+    `);
+  }
+  
+  try {
+    const result = await shiftResponseHandler.handleShiftResponse(token);
+    
+    if (result.success) {
+      // Successful response - show confirmation page
+      const emoji = result.action === 'accepted' ? '✅' : '❌';
+      const title = result.action === 'accepted' ? 'Shift Confirmed' : 'Shift Declined';
+      
+      res.send(`
+        <html>
+          <head>
+            <title>${title}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                text-align: center;
+                padding: 50px 20px;
+                background: #f0f4f8;
+              }
+              .container {
+                max-width: 500px;
+                margin: 0 auto;
+                background: white;
+                padding: 40px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+              }
+              h1 { 
+                color: ${result.action === 'accepted' ? '#27ae60' : '#e74c3c'};
+                font-size: 2.5em;
+                margin-bottom: 20px;
+              }
+              .details {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 5px;
+                margin: 20px 0;
+                text-align: left;
+              }
+              .detail-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 5px 0;
+              }
+              .portal-link {
+                display: inline-block;
+                margin-top: 20px;
+                padding: 12px 30px;
+                background: #2E86AB;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                transition: background 0.3s;
+              }
+              .portal-link:hover {
+                background: #1B4F72;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>${emoji} ${title}</h1>
+              <p>${result.message}</p>
+              
+              ${result.shiftDetails ? `
+                <div class="details">
+                  <div class="detail-row">
+                    <strong>Date:</strong>
+                    <span>${result.shiftDetails.date}</span>
+                  </div>
+                  <div class="detail-row">
+                    <strong>Time:</strong>
+                    <span>${result.shiftDetails.time}</span>
+                  </div>
+                  <div class="detail-row">
+                    <strong>Type:</strong>
+                    <span>${result.shiftDetails.type}</span>
+                  </div>
+                </div>
+              ` : ''}
+              
+              <a href="/training/my-schedule.html" class="portal-link">
+                View My Schedule →
+              </a>
+            </div>
+          </body>
+        </html>
+      `);
+    } else {
+      // Error response
+      res.status(result.statusCode || 400).send(`
+        <html>
+          <head><title>Error</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <h1>⚠️ Error Processing Response</h1>
+            <p>${result.error}</p>
+            <p>Please contact management directly.</p>
+          </body>
+        </html>
+      `);
+    }
+  } catch (error) {
+    console.error('Error handling shift response:', error);
+    res.status(500).send(`
+      <html>
+        <head><title>Error</title></head>
+        <body style="font-family: Arial; text-align: center; padding: 50px;">
+          <h1>⚠️ System Error</h1>
+          <p>An unexpected error occurred. Please contact management.</p>
+        </body>
+      </html>
+    `);
+  }
+});
+
+// API endpoint to trigger shift notifications (called from allocation form)
+app.post('/api/send-shift-notification', async (req, res) => {
+  try {
+    const {
+      employeeId,
+      allocationId,
+      shiftType,
+      shiftDate,
+      startTime,
+      endTime,
+      customerName,
+      role,
+      isBookingAllocation
+    } = req.body;
+    
+    // Fetch employee details from Airtable
+    const employeeResponse = await axios.get(
+      `https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx'}/tbltAE4NlNePvnkpY/${employeeId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`
+        }
+      }
+    );
+    
+    const employee = employeeResponse.data.fields;
+    const employeePhone = employee['Phone'] || employee['Mobile'];
+    
+    if (!employeePhone) {
+      return res.status(400).json({
+        success: false,
+        error: 'Employee has no phone number on file'
+      });
+    }
+    
+    // Send the notification
+    const result = await notifications.sendShiftNotification({
+      employeePhone,
+      employeeName: employee['Name'] || employee['First Name'],
+      allocationId,
+      employeeId,
+      shiftType,
+      shiftDate,
+      startTime,
+      endTime,
+      customerName,
+      role,
+      isBookingAllocation
+    });
+    
+    res.json(result);
+    
+  } catch (error) {
+    console.error('Error sending shift notification:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// API endpoint to get shift status
+app.get('/api/shift-status/:allocationId', async (req, res) => {
+  try {
+    const status = await shiftResponseHandler.getShiftStatus(req.params.allocationId);
+    res.json(status);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Default route - serve the dashboard

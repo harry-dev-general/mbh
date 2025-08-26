@@ -1787,6 +1787,42 @@
                         
                         console.log('Successfully updated booking with staff assignment');
                         
+                        // Send SMS notification for the booking allocation
+                        try {
+                            // Get booking details for the notification
+                            const booking = bookingsByCategory[document.getElementById('allocationType').value]
+                                ?.find(b => b.id === bookingId);
+                            
+                            if (booking) {
+                                const notificationData = {
+                                    employeeId: employeeId,
+                                    allocationId: bookingId, // Use booking ID as allocation ID
+                                    shiftType: allocationType,
+                                    shiftDate: booking.fields['Booking Date'],
+                                    startTime: booking.fields['Start Time'] || '09:00',
+                                    endTime: booking.fields['End Time'] || booking.fields['Finish Time'] || '17:00',
+                                    customerName: booking.fields['Customer Name'],
+                                    role: roleValue,
+                                    isBookingAllocation: true
+                                };
+                                
+                                const notifyResponse = await fetch('/api/send-shift-notification', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(notificationData)
+                                });
+                                
+                                if (notifyResponse.ok) {
+                                    console.log('SMS notification sent successfully for booking allocation');
+                                } else {
+                                    console.error('Failed to send SMS notification for booking');
+                                }
+                            }
+                        } catch (notifyError) {
+                            console.error('Error sending booking SMS notification:', notifyError);
+                            // Don't fail the allocation if SMS fails
+                        }
+                        
                         // For booking-specific allocations, we only update the booking
                         // No need to create a separate allocation record
                         closeAllocationModal();
@@ -1843,7 +1879,38 @@
                 );
 
                 if (response.ok) {
+                    const createdRecord = await response.json();
                     console.log('General allocation created successfully, reloading data...');
+                    
+                    // Send SMS notification for the new allocation
+                    try {
+                        const notificationData = {
+                            employeeId: employeeId,
+                            allocationId: createdRecord.id,
+                            shiftType: allocationType,
+                            shiftDate: document.getElementById('allocationDate').value,
+                            startTime: document.getElementById('startTime').value,
+                            endTime: document.getElementById('endTime').value,
+                            role: roleValue,
+                            isBookingAllocation: false
+                        };
+                        
+                        const notifyResponse = await fetch('/api/send-shift-notification', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(notificationData)
+                        });
+                        
+                        if (notifyResponse.ok) {
+                            console.log('SMS notification sent successfully');
+                        } else {
+                            console.error('Failed to send SMS notification');
+                        }
+                    } catch (notifyError) {
+                        console.error('Error sending SMS notification:', notifyError);
+                        // Don't fail the allocation if SMS fails
+                    }
+                    
                     closeAllocationModal();
                     // Small delay to ensure Airtable has processed the update
                     setTimeout(async () => {
