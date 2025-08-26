@@ -965,10 +965,10 @@
                 
                 console.log('Loading bookings for week:', startStr, 'to', endStr);
                 
-                // Fetch all PAID bookings - will filter by date client-side
+                // Fetch all relevant bookings - will filter by date client-side
                 // This avoids field name issues in filterByFormula
-                // Fetch ALL bookings to ensure we don't miss any
-                const filter = encodeURIComponent(`OR({Status}='PAID', {Status}='Confirmed', {Status}='Pending')`);
+                // Fetch ALL bookings to ensure we don't miss any (including PART status)
+                const filter = encodeURIComponent(`OR({Status}='PAID', {Status}='PART', {Status}='Confirmed', {Status}='Pending')`);
                 
                 // Use retry logic for resilience
                 const response = await fetchWithRetry(
@@ -1009,8 +1009,9 @@
             const bookingDate = record.fields['Booking Date'];
             const status = record.fields['Status'];
             
-            // Only show PAID bookings
-            if (status !== 'PAID') {
+            // Only show PAID or PART bookings (PART = partial payment)
+            // Note: PEND status is already included in the API filter but excluded here for now
+            if (status !== 'PAID' && status !== 'PART') {
                 return false;
             }
             
@@ -1042,9 +1043,9 @@
             return isInRange;
         });
         
-        // Only count PAID bookings for the log
-        const paidBookings = allBookings.filter(r => r.fields['Status'] === 'PAID');
-        console.log(`Found ${paidBookings.length} PAID bookings, ${bookingsData.length} for current week`, bookingsData);
+        // Count both PAID and PART bookings for the log
+        const paidBookings = allBookings.filter(r => r.fields['Status'] === 'PAID' || r.fields['Status'] === 'PART');
+        console.log(`Found ${paidBookings.length} PAID/PART bookings, ${bookingsData.length} for current week`, bookingsData);
                 
                 renderBookingsList();
                 populateBookingsSelect();
@@ -1377,12 +1378,12 @@
                 
                 // Create onboarding block
                 if (onboardingTime) {
-                    createBookingBlock(bookingDate, onboardingTime, 'onboarding', customerName, isFullyStaffed, record, hasOnboardingStaff);
+                    createBookingBlock(bookingDate, onboardingTime, 'onboarding', customerName, isFullyStaffed, record, hasOnboardingStaff, booking['Start Time']);
                 }
                 
                 // Create deloading block
                 if (deloadingTime && deloadingTime !== onboardingTime) {
-                    createBookingBlock(bookingDate, deloadingTime, 'deloading', customerName, isFullyStaffed, record, hasDeloadingStaff);
+                    createBookingBlock(bookingDate, deloadingTime, 'deloading', customerName, isFullyStaffed, record, hasDeloadingStaff, booking['Finish Time']);
                 }
             });
             
@@ -1390,7 +1391,7 @@
         }
         
         // Create a booking block on the grid
-        function createBookingBlock(date, time, type, customerName, isFullyStaffed, bookingRecord, hasStaff) {
+        function createBookingBlock(date, time, type, customerName, isFullyStaffed, bookingRecord, hasStaff, actualBookingTime) {
             // Handle different time formats: "09:00 am", "9:00 AM", "09:00", etc.
             let hour;
             if (time.toLowerCase().includes('pm') || time.toLowerCase().includes('am')) {
@@ -1442,16 +1443,19 @@
             const typeLabel = type === 'onboarding' ? '🚢 ON' : '🏁 OFF';
             const staffIcon = hasStaff ? '✓' : '✗';
             
+            // Use the actual booking time for display
+            const displayTime = actualBookingTime || time;
+            
             bookingBlock.innerHTML = `
                 <div style="font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     ${typeLabel} ${customerName}
                 </div>
                 <div style="font-size: 9px; opacity: 0.9;">
-                    ${time} ${staffIcon}
+                    ${displayTime} ${staffIcon}
                 </div>
             `;
             
-            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'}: ${time}\nStaff: ${hasStaff ? 'Assigned' : 'NEEDED'}\nClick to manage allocation`;
+            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Booking Start' : 'Booking Finish'}: ${displayTime}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} Time: ${time}\nStaff: ${hasStaff ? 'Assigned' : 'NEEDED'}\nClick to manage allocation`;
             
             // Add click handler to open allocation modal
             bookingBlock.onclick = (e) => {
@@ -1827,7 +1831,7 @@
             try {
                 const response = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
-                    `filterByFormula={Status}='PAID'&` +
+                    `filterByFormula=OR({Status}='PAID',{Status}='PART')&` +
                     `fields[]=Booking Code&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time&` +
                     `fields[]=Status&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Duration&` +
                     `&_t=${Date.now()}`,
@@ -1867,7 +1871,7 @@
                 // Sort dates
                 const sortedDates = Object.keys(bookingsByDate).sort();
                 
-                let message = `Found ${allBookings.length} total PAID bookings:\n\n`;
+                let message = `Found ${allBookings.length} total PAID/PART bookings:\n\n`;
                 sortedDates.slice(0, 10).forEach(date => {  // Show first 10 dates
                     message += `${date}: ${bookingsByDate[date].length} bookings\n`;
                 });
