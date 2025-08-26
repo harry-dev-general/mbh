@@ -50,3 +50,4 @@ mcp_airtable_describe_table({
 
 ## Last Updated
 January 2025 - Verified via Airtable API
+

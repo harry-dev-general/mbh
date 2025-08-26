@@ -990,23 +990,31 @@
                 
                 // Debug: Log first booking to see field structure
                 if (allBookings.length > 0) {
-                    console.log('Sample booking fields:', Object.keys(allBookings[0].fields));
-                    console.log('First booking:', allBookings[0].fields);
-                }
-                
-                // Filter client-side for the current week
-                bookingsData = allBookings.filter(record => {
-                    const bookingDate = record.fields['Booking Date'];
-                    if (!bookingDate) {
-                        console.log('No Booking Date field found in booking:', record.fields);
-                        return false;
-                    }
-                    
-                    const date = new Date(bookingDate);
-                    return date >= currentWeekStart && date <= weekEnd;
-                });
-                
-                console.log(`Found ${allBookings.length} total PAID bookings, ${bookingsData.length} for current week`, bookingsData);
+                                console.log('Sample booking fields:', Object.keys(allBookings[0].fields));
+            console.log('First booking:', allBookings[0].fields);
+            
+            // Log the date range of all bookings to understand why none match
+            const bookingDates = allBookings.map(r => r.fields['Booking Date']).filter(d => d);
+            if (bookingDates.length > 0) {
+                bookingDates.sort();
+                console.log('Booking dates range from', bookingDates[0], 'to', bookingDates[bookingDates.length - 1]);
+                console.log('Looking for bookings between', formatLocalDate(currentWeekStart), 'and', formatLocalDate(weekEnd));
+            }
+        }
+        
+        // Filter client-side for the current week
+        bookingsData = allBookings.filter(record => {
+            const bookingDate = record.fields['Booking Date'];
+            if (!bookingDate) {
+                console.log('No Booking Date field found in booking:', record.fields);
+                return false;
+            }
+            
+            const date = new Date(bookingDate);
+            return date >= currentWeekStart && date <= weekEnd;
+        });
+        
+        console.log(`Found ${allBookings.length} total PAID bookings, ${bookingsData.length} for current week`, bookingsData);
                 
                 renderBookingsList();
                 populateBookingsSelect();
@@ -1029,6 +1037,9 @@
                     <p style="color: #666;">No bookings found for this week</p>
                     <button onclick="window.createTestBooking()" style="margin-top: 10px; padding: 5px 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
                         Create Test Booking
+                    </button>
+                    <button onclick="window.showAllBookings()" style="margin-top: 10px; padding: 5px 10px; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Show All Bookings (Debug)
                     </button>
                 `;
                 bookingCount.textContent = '0';
@@ -1638,10 +1649,9 @@
                     'Booking Date': testDateStr,
                     'Start Time': '10:00',
                     'Finish Time': '16:00',
-                    'Onboarding Time': '10:00',
-                    'Deloading Time': '16:00',
                     'Status': 'PAID',
-                    'Duration': 6
+                    'Duration': 6,
+                    'Total Amount': 500
                 }
             };
             
@@ -1675,6 +1685,87 @@
             } catch (error) {
                 console.error('Error creating test booking:', error);
                 alert('Error creating test booking. Check console for details.');
+            }
+        };
+
+        // Show all bookings for debugging
+        window.showAllBookings = async function() {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
+                    `filterByFormula={Status}='PAID'&` +
+                    `fields[]=Booking Code&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time&` +
+                    `fields[]=Status&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Duration&` +
+                    `&_t=${Date.now()}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Failed to fetch all bookings:', errorText);
+                    alert('Failed to fetch all bookings. Check console for details.');
+                    return;
+                }
+
+                const data = await response.json();
+                const allBookings = data.records || [];
+                
+                if (allBookings.length === 0) {
+                    alert('No PAID bookings found in the entire database.');
+                    return;
+                }
+                
+                // Group bookings by date
+                const bookingsByDate = {};
+                allBookings.forEach(record => {
+                    const date = record.fields['Booking Date'];
+                    if (!bookingsByDate[date]) {
+                        bookingsByDate[date] = [];
+                    }
+                    bookingsByDate[date].push(record.fields);
+                });
+                
+                // Sort dates
+                const sortedDates = Object.keys(bookingsByDate).sort();
+                
+                let message = `Found ${allBookings.length} total PAID bookings:\n\n`;
+                sortedDates.slice(0, 10).forEach(date => {  // Show first 10 dates
+                    message += `${date}: ${bookingsByDate[date].length} bookings\n`;
+                });
+                if (sortedDates.length > 10) {
+                    message += `... and ${sortedDates.length - 10} more dates\n`;
+                }
+                
+                console.log('All bookings by date:', bookingsByDate);
+                alert(message);
+                
+                // Ask if user wants to jump to a date with bookings
+                if (sortedDates.length > 0) {
+                    const firstBookingDate = new Date(sortedDates[0]);
+                    
+                    if (confirm(`Bookings range from ${sortedDates[0]} to ${sortedDates[sortedDates.length - 1]}.\n\nWould you like to jump to the first booking date?`)) {
+                        // Change week to show first booking
+                        currentWeekStart = new Date(firstBookingDate);
+                        currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay() + 1); // Monday
+                        updateWeekDisplay();
+                        await Promise.all([
+                            loadBookings(),
+                            loadAllocations(),
+                            loadRosterData()
+                        ]);
+                        renderBookingsList();
+                        renderBookingsOnGrid();
+                        renderAllocationsOnGrid();
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching all bookings:', error);
+                alert('Error fetching all bookings. Check console for details.');
             }
         };
 
