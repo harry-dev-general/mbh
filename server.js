@@ -125,12 +125,55 @@ app.get('/api/shift-response', async (req, res) => {
           <head>
             <title>${title}</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <meta http-equiv="refresh" content="5;url=${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html">
+            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
             <script>
-              // Automatic redirect after 5 seconds
-              setTimeout(function() {
-                window.location.replace('${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html');
-              }, 5000);
+              // Initialize Supabase to maintain session context
+              const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+              const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+              
+              const { createClient } = window.supabase;
+              const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+              
+              // Function to redirect with session maintained
+              async function redirectToSchedule() {
+                try {
+                  // Check if user has a session
+                  const { data: { user } } = await supabase.auth.getUser();
+                  
+                  if (user) {
+                    // User has session, safe to redirect
+                    window.location.href = '${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html';
+                  } else {
+                    // No session, redirect to dashboard instead (doesn't require strict auth)
+                    window.location.href = '${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/dashboard.html';
+                  }
+                } catch (error) {
+                  console.error('Error checking session:', error);
+                  // Fallback to dashboard on error
+                  window.location.href = '${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/dashboard.html';
+                }
+              }
+              
+              // Show countdown and redirect
+              let countdown = 3;
+              const updateMessage = () => {
+                const element = document.getElementById('redirect-message');
+                if (element) {
+                  if (countdown > 0) {
+                    element.innerHTML = \`Checking authentication... Redirecting in \${countdown} seconds...\`;
+                    countdown--;
+                    setTimeout(updateMessage, 1000);
+                  } else {
+                    element.innerHTML = 'Redirecting now...';
+                  }
+                }
+              };
+              
+              // Start countdown immediately
+              document.addEventListener('DOMContentLoaded', updateMessage);
+              
+              // Redirect after 3 seconds to ensure page loads
+              setTimeout(redirectToSchedule, 3000);
             </script>
             <style>
               body {
@@ -210,12 +253,12 @@ app.get('/api/shift-response', async (req, res) => {
                 </div>
               ` : ''}
               
-              <a href="${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html" class="portal-link">
-                View My Schedule →
+              <a href="${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/dashboard.html" class="portal-link">
+                Go to Dashboard →
               </a>
               
               <p class="redirect-notice">
-                You will be automatically redirected to your schedule in 5 seconds...
+                <span id="redirect-message">Redirecting in 3 seconds...</span>
               </p>
             </div>
           </body>
