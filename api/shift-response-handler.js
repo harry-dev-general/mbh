@@ -28,40 +28,20 @@ async function handleShiftResponse(token) {
         };
     }
     
-    const { allocationId, employeeId, action } = tokenData;
+    const { allocationId, employeeId, action, isBookingAllocation, role } = tokenData;
     
     try {
-        // Update the allocation record with the response
-        const updateFields = {
-            'Response Status': action === 'accept' ? 'Accepted' : 'Declined',
-            'Response Date': new Date().toISOString(),
-            'Response Method': 'SMS Link'
-        };
+        let allocationData = {};
+        let responseStatus = action === 'accept' ? 'Accepted' : 'Declined';
         
-        // Update Airtable record
-        const response = await axios.patch(
-            `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`,
-            {
-                fields: updateFields
-            },
-            {
-                headers: {
-                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-        
-        if (response.status === 200) {
-            // Mark token as used
-            notifications.consumeToken(token);
+        if (isBookingAllocation) {
+            // For booking allocations, we don't have a separate allocation record
+            // Just mark as successful and send confirmation
+            // In the future, we could track this in a separate table or add fields to Bookings
             
-            // Get employee and shift details for confirmation message
-            const allocationData = response.data.fields;
-            
-            // Fetch employee details for phone number
-            const employeeResponse = await axios.get(
-                `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEES_TABLE_ID}/${employeeId}`,
+            // Get booking details
+            const bookingResponse = await axios.get(
+                `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}/${allocationId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -69,42 +49,96 @@ async function handleShiftResponse(token) {
                 }
             );
             
-            const employeeData = employeeResponse.data.fields;
+            if (bookingResponse.status === 200) {
+                const booking = bookingResponse.data.fields;
+                allocationData = {
+                    'Shift Date': booking['Booking Date'],
+                    'Start Time': role === 'Onboarding' ? booking['Onboarding Time'] : booking['Finish Time'],
+                    'End Time': role === 'Onboarding' ? booking['Start Time'] : booking['Deloading Time'],
+                    'Customer Name': booking['Customer Name'],
+                    'Role': role
+                };
+                
+                // Log the response for tracking (could be sent to a separate table in the future)
+                console.log(`Booking allocation response: ${employeeId} ${responseStatus} ${role} for booking ${allocationId}`);
+            }
+        } else {
+            // Regular allocation - update the allocation record
+            const updateFields = {
+                'Response Status': responseStatus,
+                'Response Date': new Date().toISOString(),
+                'Response Method': 'SMS Link'
+            };
             
-            // Send confirmation SMS
-            await notifications.sendShiftConfirmation({
-                employeePhone: employeeData['Phone'] || employeeData['Mobile'] || employeeData['Mobile Number'],
-                employeeName: employeeData['Name'] || employeeData['First Name'],
-                action: action === 'accept' ? 'accepted' : 'denied',
+            // Update Airtable record
+            const response = await axios.patch(
+                `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`,
+                {
+                    fields: updateFields
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            
+            if (response.status === 200) {
+                allocationData = response.data.fields;
+            }
+        }
+        
+        // Mark token as used
+        notifications.consumeToken(token);
+        
+        // Fetch employee details for phone number
+        const employeeResponse = await axios.get(
+            `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEES_TABLE_ID}/${employeeId}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                }
+            }
+        );
+        
+        const employeeData = employeeResponse.data.fields;
+        
+        // Send confirmation SMS
+        await notifications.sendShiftConfirmation({
+            employeePhone: employeeData['Phone'] || employeeData['Mobile'] || employeeData['Mobile Number'],
+            employeeName: employeeData['Name'] || employeeData['First Name'],
+            action: action === 'accept' ? 'accepted' : 'denied',
+            shiftDate: allocationData['Shift Date'],
+            startTime: allocationData['Start Time'],
+            endTime: allocationData['End Time'],
+            shiftType: allocationData['Shift Type'] || (isBookingAllocation ? `${role} - ${allocationData['Customer Name']}` : 'Shift'),
+            customerName: allocationData['Customer Name']
+        });
+        
+        // If declined, notify management for coverage
+        if (action === 'deny') {
+            await notifyManagementOfDecline({
+                employeeName: employeeData['Name'],
                 shiftDate: allocationData['Shift Date'],
                 startTime: allocationData['Start Time'],
-                endTime: allocationData['End Time'],
-                shiftType: allocationData['Shift Type']
+                shiftType: allocationData['Shift Type'] || (isBookingAllocation ? `${role} Assignment` : 'Shift')
             });
-            
-            // If declined, notify management for coverage
-            if (action === 'deny') {
-                await notifyManagementOfDecline({
-                    employeeName: employeeData['Name'],
-                    shiftDate: allocationData['Shift Date'],
-                    startTime: allocationData['Start Time'],
-                    shiftType: allocationData['Shift Type']
-                });
-            }
-            
-            return {
-                success: true,
-                action: action === 'accept' ? 'accepted' : 'declined',
-                message: action === 'accept' 
-                    ? 'Thank you! Your shift has been confirmed.' 
-                    : 'Your response has been recorded. We will find coverage.',
-                shiftDetails: {
-                    date: allocationData['Shift Date'],
-                    time: `${allocationData['Start Time']} - ${allocationData['End Time']}`,
-                    type: allocationData['Shift Type']
-                }
-            };
         }
+        
+        return {
+            success: true,
+            action: action === 'accept' ? 'accepted' : 'declined',
+            message: action === 'accept' 
+                ? 'Thank you! Your shift has been confirmed.' 
+                : 'Your response has been recorded. We will find coverage.',
+            shiftDetails: {
+                date: allocationData['Shift Date'],
+                time: `${allocationData['Start Time']} - ${allocationData['End Time']}`,
+                type: allocationData['Shift Type'] || (isBookingAllocation ? `${role} - ${allocationData['Customer Name']}` : 'Shift'),
+                customer: allocationData['Customer Name']
+            }
+        };
         
     } catch (error) {
         console.error('Error handling shift response:', error);

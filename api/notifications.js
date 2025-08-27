@@ -22,12 +22,14 @@ const magicTokens = new Map();
 
 /**
  * Generate a secure magic link token for shift acceptance
- * @param {string} allocationId - The shift allocation record ID
+ * @param {string} allocationId - The shift allocation record ID (or booking ID for booking allocations)
  * @param {string} employeeId - The employee record ID
  * @param {string} action - 'accept' or 'deny'
+ * @param {boolean} isBookingAllocation - Whether this is a booking-specific allocation
+ * @param {string} role - The role for booking allocations (Onboarding/Deloading)
  * @returns {string} - The generated token
  */
-function generateMagicToken(allocationId, employeeId, action) {
+function generateMagicToken(allocationId, employeeId, action, isBookingAllocation = false, role = null) {
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72 hours expiry
     
@@ -37,6 +39,8 @@ function generateMagicToken(allocationId, employeeId, action) {
         employeeId,
         action,
         expiresAt,
+        isBookingAllocation,
+        role,
         used: false
     });
     
@@ -121,8 +125,8 @@ async function sendShiftNotification(params) {
     });
     
     // Generate magic link tokens for accept and deny
-    const acceptToken = generateMagicToken(allocationId, employeeId, 'accept');
-    const denyToken = generateMagicToken(allocationId, employeeId, 'deny');
+    const acceptToken = generateMagicToken(allocationId, employeeId, 'accept', isBookingAllocation, role);
+    const denyToken = generateMagicToken(allocationId, employeeId, 'deny', isBookingAllocation, role);
     
     // Create magic links
     const acceptLink = `${BASE_URL}/api/shift-response?token=${acceptToken}`;
