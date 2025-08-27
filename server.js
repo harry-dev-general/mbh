@@ -125,6 +125,13 @@ app.get('/api/shift-response', async (req, res) => {
           <head>
             <title>${title}</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="refresh" content="5;url=${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html">
+            <script>
+              // Automatic redirect after 5 seconds
+              setTimeout(function() {
+                window.location.replace('${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html');
+              }, 5000);
+            </script>
             <style>
               body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -173,6 +180,12 @@ app.get('/api/shift-response', async (req, res) => {
               .portal-link:hover {
                 background: #1B4F72;
               }
+              .redirect-notice {
+                font-size: 0.9rem;
+                color: #999;
+                margin-top: 15px;
+                font-style: italic;
+              }
             </style>
           </head>
           <body>
@@ -197,9 +210,13 @@ app.get('/api/shift-response', async (req, res) => {
                 </div>
               ` : ''}
               
-              <button onclick="window.location.href='${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html'" class="portal-link">
+              <a href="${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html" class="portal-link">
                 View My Schedule →
-              </button>
+              </a>
+              
+              <p class="redirect-notice">
+                You will be automatically redirected to your schedule in 5 seconds...
+              </p>
             </div>
           </body>
         </html>
