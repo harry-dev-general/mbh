@@ -1261,7 +1261,8 @@
                             role: 'Onboarding',
                             customer: customerName,
                             status: 'Scheduled',
-                            responseStatus: fields['Onboarding Response'] || 'Pending', // Check for stored response
+                            responseStatus: fields['Onboarding Response'] || 'Accepted', // Default to Accepted if field doesn't exist
+                            responseFieldExists: fields.hasOwnProperty('Onboarding Response'), // Track if field exists
                             booking: record.id,
                             bookingCode: fields['Booking Code'] || '',
                             source: 'booking'
@@ -1287,7 +1288,8 @@
                             role: 'Deloading',
                             customer: customerName,
                             status: 'Scheduled',
-                            responseStatus: fields['Deloading Response'] || 'Pending', // Check for stored response
+                            responseStatus: fields['Deloading Response'] || 'Accepted', // Default to Accepted if field doesn't exist
+                            responseFieldExists: fields.hasOwnProperty('Deloading Response'), // Track if field exists
                             booking: record.id,
                             bookingCode: fields['Booking Code'] || '',
                             source: 'booking'
@@ -1677,43 +1679,63 @@
                 <div class="shift-detail-row">
                     <span class="shift-detail-label"><i class="fas fa-info-circle"></i> Status</span>
                     <span class="shift-detail-value">
-                        <span class="shift-status-badge ${responseStatus.toLowerCase()} clickable" 
-                              onclick="toggleStatusChange('${shiftId}')" title="Click to change response">
+                        <span class="shift-status-badge ${responseStatus.toLowerCase()} ${(shift.source === 'allocation' || shift.responseFieldExists) ? 'clickable' : ''}" 
+                              ${(shift.source === 'allocation' || shift.responseFieldExists) ? `onclick="toggleStatusChange('${shiftId}')" title="Click to change response"` : ''}>
                             ${responseStatus === 'Accepted' ? '✅ ' : responseStatus === 'Declined' ? '❌ ' : '⏳ '}
                             ${responseStatus}
-                            ▼
+                            ${(shift.source === 'allocation' || shift.responseFieldExists) ? ' ▼' : ''}
                         </span>
                     </span>
                 </div>
             `;
             
             // Add response options section (hidden by default, shown when status badge is clicked)
-            // Works for both allocations and bookings
-            modalHTML += `
-                <div id="statusChangeOptions-${shiftId}" class="status-change-options">
-                    <div class="status-change-label">
-                        <i class="fas fa-edit"></i> Change your response for this ${isBooking ? 'booking allocation' : 'shift'}:
+            // Only show if response fields exist for bookings or it's a general allocation
+            if (shift.source === 'allocation' || shift.responseFieldExists) {
+                modalHTML += `
+                    <div id="statusChangeOptions-${shiftId}" class="status-change-options">
+                        <div class="status-change-label">
+                            <i class="fas fa-edit"></i> Change your response for this ${isBooking ? 'booking allocation' : 'shift'}:
+                        </div>
+                        <div class="modal-actions">
+                            <button class="modal-btn-accept" onclick="handleModalShiftResponse('${shiftId}', 'accept')">
+                                <i class="fas fa-check"></i> Accept ${isBooking ? 'Booking' : 'Shift'}
+                            </button>
+                            <button class="modal-btn-decline" onclick="handleModalShiftResponse('${shiftId}', 'decline')">
+                                <i class="fas fa-times"></i> Decline ${isBooking ? 'Booking' : 'Shift'}
+                            </button>
+                        </div>
                     </div>
-                    <div class="modal-actions">
-                        <button class="modal-btn-accept" onclick="handleModalShiftResponse('${shiftId}', 'accept')">
-                            <i class="fas fa-check"></i> Accept ${isBooking ? 'Booking' : 'Shift'}
-                        </button>
-                        <button class="modal-btn-decline" onclick="handleModalShiftResponse('${shiftId}', 'decline')">
-                            <i class="fas fa-times"></i> Decline ${isBooking ? 'Booking' : 'Shift'}
-                        </button>
+                `;
+            } else if (isBooking && !shift.responseFieldExists) {
+                // Show notice that response fields are not yet configured
+                modalHTML += `
+                    <div id="statusChangeOptions-${shiftId}" class="status-change-options">
+                        <div class="status-change-label" style="color: #e67e22;">
+                            <i class="fas fa-exclamation-triangle"></i> Response tracking not available
+                        </div>
+                        <p style="font-size: 0.9rem; color: #666; margin: 0.5rem 0;">
+                            The booking response fields have not been configured in Airtable yet. 
+                            This booking is showing as accepted by default.
+                        </p>
+                        <p style="font-size: 0.85rem; color: #999; margin-top: 0.5rem;">
+                            Contact management to enable response tracking for bookings.
+                        </p>
                     </div>
-                </div>
-            `;
+                `;
+            }
             
             // Add help text for all types
-            modalHTML += `
-                <div class="shift-response-notice">
-                    <i class="fas fa-lightbulb"></i>
-                    ${isBooking ? 
-                        'Tip: You can update your availability for this booking by clicking the status badge above.' : 
-                        'Tip: Click on the status badge above to change your response at any time.'}
-                </div>
-            `;
+            if (shift.source === 'allocation' || shift.responseFieldExists) {
+                modalHTML += `
+                    <div class="shift-response-notice">
+                        <i class="fas fa-lightbulb"></i>
+                        ${isBooking ? 
+                            'Tip: You can update your availability for this booking by clicking the status badge above.' : 
+                            'Tip: Click on the status badge above to change your response at any time.'}
+                    </div>
+                `;
+            }
             
             // Update modal title
             const modalTitle = isBooking ? 'Booking Allocation Details' : 'Shift Details';
@@ -1863,11 +1885,27 @@
                     const error = await response.json();
                     console.error('Error updating shift response:', error);
                     
+                    // Check if it's a field error for booking responses
+                    let errorMessage = 'Failed to update shift response. Please try again or contact management.';
+                    
+                    if (response.status === 422 && shift.source === 'booking') {
+                        errorMessage = `
+                            <strong>Booking response fields not configured</strong><br><br>
+                            The system administrator needs to add response fields to the Bookings table in Airtable.<br><br>
+                            <small>Required fields: "Onboarding Response" and "Deloading Response"</small><br><br>
+                            Please contact management to set up these fields.
+                        `;
+                    } else if (error.error && error.error.message) {
+                        errorMessage = `Error: ${error.error.message}`;
+                    }
+                    
                     document.getElementById('modalBody').innerHTML = `
                         <div style="text-align: center; padding: 2rem;">
                             <div style="font-size: 3rem; margin-bottom: 1rem; color: #e74c3c;">⚠️</div>
-                            <h3 style="color: #e74c3c; margin-bottom: 1rem;">Error</h3>
-                            <p>Failed to update shift response. Please try again or contact management.</p>
+                            <h3 style="color: #e74c3c; margin-bottom: 1rem;">
+                                ${response.status === 422 && shift.source === 'booking' ? 'Configuration Required' : 'Error'}
+                            </h3>
+                            <p>${errorMessage}</p>
                             <button class="modal-btn-close" onclick="closeShiftModal()" style="margin-top: 1.5rem;">
                                 Close
                             </button>
