@@ -125,33 +125,15 @@ app.get('/api/shift-response', async (req, res) => {
           <head>
             <title>${title}</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
             <script>
-              // Initialize Supabase to maintain session context
-              const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
-              const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
-              
-              const { createClient } = window.supabase;
-              const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-              
-              // Function to redirect with session maintained
-              async function redirectToSchedule() {
-                try {
-                  // Check if user has a session
-                  const { data: { user } } = await supabase.auth.getUser();
-                  
-                  if (user) {
-                    // User has session, safe to redirect
-                    window.location.href = '${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html';
-                  } else {
-                    // No session, redirect to dashboard instead (doesn't require strict auth)
-                    window.location.href = '${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/dashboard.html';
-                  }
-                } catch (error) {
-                  console.error('Error checking session:', error);
-                  // Fallback to dashboard on error
-                  window.location.href = '${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/dashboard.html';
-                }
+              // Function to redirect properly
+              function redirectToPortal() {
+                // Use a simple redirect that works regardless of auth state
+                // The dashboard has better auth handling than my-schedule
+                const dashboardUrl = '${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/dashboard.html';
+                
+                // Use replace to prevent back button issues
+                window.location.replace(dashboardUrl);
               }
               
               // Show countdown and redirect
@@ -160,11 +142,11 @@ app.get('/api/shift-response', async (req, res) => {
                 const element = document.getElementById('redirect-message');
                 if (element) {
                   if (countdown > 0) {
-                    element.innerHTML = \`Checking authentication... Redirecting in \${countdown} seconds...\`;
+                    element.innerHTML = \`Redirecting to dashboard in \${countdown} seconds...\`;
                     countdown--;
                     setTimeout(updateMessage, 1000);
                   } else {
-                    element.innerHTML = 'Redirecting now...';
+                    element.innerHTML = 'Redirecting to dashboard...';
                   }
                 }
               };
@@ -173,7 +155,7 @@ app.get('/api/shift-response', async (req, res) => {
               document.addEventListener('DOMContentLoaded', updateMessage);
               
               // Redirect after 3 seconds to ensure page loads
-              setTimeout(redirectToSchedule, 3000);
+              setTimeout(redirectToPortal, 3000);
             </script>
             <style>
               body {
