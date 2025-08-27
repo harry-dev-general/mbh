@@ -73,7 +73,7 @@ async function handleShiftResponse(token) {
             
             // Send confirmation SMS
             await notifications.sendShiftConfirmation({
-                employeePhone: employeeData['Phone'] || employeeData['Mobile'],
+                employeePhone: employeeData['Phone'] || employeeData['Mobile'] || employeeData['Mobile Number'],
                 employeeName: employeeData['Name'] || employeeData['First Name'],
                 action: action === 'accept' ? 'accepted' : 'denied',
                 shiftDate: allocationData['Shift Date'],

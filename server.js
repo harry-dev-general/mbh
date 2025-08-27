@@ -254,7 +254,7 @@ app.post('/api/send-shift-notification', async (req, res) => {
     );
     
     const employee = employeeResponse.data.fields;
-    const employeePhone = employee['Phone'] || employee['Mobile'];
+    const employeePhone = employee['Phone'] || employee['Mobile'] || employee['Mobile Number'];
     
     if (!employeePhone) {
       return res.status(400).json({
