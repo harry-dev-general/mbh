@@ -620,6 +620,49 @@
             color: #721c24;
         }
         
+        .shift-status-badge.clickable {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .shift-status-badge.clickable:hover {
+            transform: scale(1.05);
+            border-color: currentColor;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .status-change-options {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .status-change-options.active {
+            display: block;
+        }
+        
+        .status-change-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .modal-actions {
             display: flex;
             gap: 1rem;
@@ -1634,13 +1677,34 @@
                 <div class="shift-detail-row">
                     <span class="shift-detail-label"><i class="fas fa-info-circle"></i> Status</span>
                     <span class="shift-detail-value">
-                        <span class="shift-status-badge ${responseStatus.toLowerCase()}">
+                        <span class="shift-status-badge ${responseStatus.toLowerCase()} ${shift.source === 'allocation' ? 'clickable' : ''}" 
+                              ${shift.source === 'allocation' ? `onclick="toggleStatusChange('${shiftId}')" title="Click to change response"` : ''}>
                             ${responseStatus === 'Accepted' ? '✅ ' : responseStatus === 'Declined' ? '❌ ' : '⏳ '}
                             ${responseStatus}
+                            ${shift.source === 'allocation' ? ' ▼' : ''}
                         </span>
                     </span>
                 </div>
             `;
+            
+            // Add response options section (hidden by default, shown when status badge is clicked)
+            if (shift.source === 'allocation') {
+                modalHTML += `
+                    <div id="statusChangeOptions-${shiftId}" class="status-change-options">
+                        <div class="status-change-label">
+                            <i class="fas fa-edit"></i> Change your response for this shift:
+                        </div>
+                        <div class="modal-actions">
+                            <button class="modal-btn-accept" onclick="handleModalShiftResponse('${shiftId}', 'accept')">
+                                <i class="fas fa-check"></i> Accept Shift
+                            </button>
+                            <button class="modal-btn-decline" onclick="handleModalShiftResponse('${shiftId}', 'decline')">
+                                <i class="fas fa-times"></i> Decline Shift
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
             
             // Add response notice for booking allocations
             if (isBooking && shift.source === 'booking') {
@@ -1650,40 +1714,12 @@
                         This is a customer booking allocation that has been assigned to you.
                     </div>
                 `;
-            }
-            
-            // Add action buttons if the shift can be responded to
-            if (canRespond) {
-                modalHTML += `
-                    <div class="modal-actions">
-                        <button class="modal-btn-accept" onclick="handleModalShiftResponse('${shiftId}', 'accept')">
-                            <i class="fas fa-check"></i> Accept Shift
-                        </button>
-                        <button class="modal-btn-decline" onclick="handleModalShiftResponse('${shiftId}', 'decline')">
-                            <i class="fas fa-times"></i> Decline Shift
-                        </button>
-                    </div>
-                `;
-            } else if (responseStatus === 'Accepted') {
+            } else if (shift.source === 'allocation') {
+                // Add help text for general allocations
                 modalHTML += `
                     <div class="shift-response-notice">
-                        <i class="fas fa-check-circle"></i>
-                        You have accepted this shift.
-                    </div>
-                `;
-            } else if (responseStatus === 'Declined') {
-                modalHTML += `
-                    <div class="shift-response-notice">
-                        <i class="fas fa-times-circle"></i>
-                        You have declined this shift. Management will find coverage.
-                    </div>
-                `;
-            } else {
-                modalHTML += `
-                    <div class="modal-actions">
-                        <button class="modal-btn-close" onclick="closeShiftModal()">
-                            Close
-                        </button>
+                        <i class="fas fa-lightbulb"></i>
+                        Tip: Click on the status badge above to change your response at any time.
                     </div>
                 `;
             }
@@ -1706,6 +1742,22 @@
         function closeModalOnOverlay(event) {
             if (event.target === event.currentTarget) {
                 closeShiftModal();
+            }
+        }
+        
+        // Toggle status change options visibility
+        function toggleStatusChange(shiftId) {
+            const optionsDiv = document.getElementById(`statusChangeOptions-${shiftId}`);
+            if (optionsDiv) {
+                optionsDiv.classList.toggle('active');
+                
+                // Update arrow indicator in status badge
+                const statusBadge = event.target;
+                if (statusBadge && statusBadge.classList.contains('shift-status-badge')) {
+                    const isActive = optionsDiv.classList.contains('active');
+                    const currentText = statusBadge.innerText.replace(' ▲', '').replace(' ▼', '');
+                    statusBadge.innerText = currentText + (isActive ? ' ▲' : ' ▼');
+                }
             }
         }
         
@@ -1759,7 +1811,11 @@
                     shift.responseDate = new Date().toISOString();
                     shift.responseMethod = 'Portal';
                     
-                    // Show success message in modal
+                    // Re-render the views to show updated status
+                    renderCalendarView();
+                    renderListView();
+                    
+                    // Show success message briefly then refresh the modal content
                     const successIcon = action === 'accept' ? '✅' : '❌';
                     const successMessage = action === 'accept' 
                         ? 'You have successfully accepted this shift!' 
@@ -1772,21 +1828,22 @@
                                 Shift ${action === 'accept' ? 'Accepted' : 'Declined'}!
                             </h3>
                             <p>${successMessage}</p>
-                            <button class="modal-btn-close" onclick="closeShiftModal()" style="margin-top: 1.5rem;">
-                                Close
-                            </button>
+                            <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">
+                                <i class="fas fa-sync"></i> Refreshing details...
+                            </p>
                         </div>
                     `;
-                    
-                    // Re-render the views to show updated status
-                    renderCalendarView();
-                    renderListView();
                     
                     // If declined, notify management (optional - could add API call here)
                     if (action === 'decline') {
                         // Could trigger notification to management here
                         console.log('Shift declined - management should be notified');
                     }
+                    
+                    // After a brief delay, refresh the modal to show updated status
+                    setTimeout(() => {
+                        showShiftDetails(shiftId);
+                    }, 1500);
                 } else {
                     const error = await response.json();
                     console.error('Error updating shift response:', error);
