@@ -1790,21 +1790,36 @@
                         // Send SMS notification for the booking allocation
                         try {
                             // Get booking details for the notification
-                            const booking = bookingsByCategory[document.getElementById('allocationType').value]
-                                ?.find(b => b.id === bookingId);
+                            const booking = bookingsData.find(b => b.id === bookingId);
                             
-                            if (booking) {
+                            if (booking && booking.fields) {
+                                // Determine the time based on the role
+                                let shiftStart, shiftEnd;
+                                if (roleValue === 'Onboarding') {
+                                    shiftStart = booking.fields['Onboarding Time'] || '08:30';
+                                    shiftEnd = booking.fields['Start Time'] || '09:00';
+                                } else if (roleValue === 'Deloading') {
+                                    shiftStart = booking.fields['Finish Time'] || '17:00';
+                                    shiftEnd = booking.fields['Deloading Time'] || '17:30';
+                                } else {
+                                    // Default times if role is not specified
+                                    shiftStart = booking.fields['Start Time'] || '09:00';
+                                    shiftEnd = booking.fields['Finish Time'] || '17:00';
+                                }
+                                
                                 const notificationData = {
                                     employeeId: employeeId,
                                     allocationId: bookingId, // Use booking ID as allocation ID
-                                    shiftType: allocationType,
+                                    shiftType: `${roleValue} - ${booking.fields['Booking Code'] || 'Booking'}`,
                                     shiftDate: booking.fields['Booking Date'],
-                                    startTime: booking.fields['Start Time'] || '09:00',
-                                    endTime: booking.fields['End Time'] || booking.fields['Finish Time'] || '17:00',
+                                    startTime: shiftStart,
+                                    endTime: shiftEnd,
                                     customerName: booking.fields['Customer Name'],
                                     role: roleValue,
                                     isBookingAllocation: true
                                 };
+                                
+                                console.log('Sending SMS notification with data:', notificationData);
                                 
                                 const notifyResponse = await fetch('/api/send-shift-notification', {
                                     method: 'POST',
@@ -1813,10 +1828,14 @@
                                 });
                                 
                                 if (notifyResponse.ok) {
-                                    console.log('SMS notification sent successfully for booking allocation');
+                                    const result = await notifyResponse.json();
+                                    console.log('SMS notification sent successfully for booking allocation:', result);
                                 } else {
-                                    console.error('Failed to send SMS notification for booking');
+                                    const error = await notifyResponse.text();
+                                    console.error('Failed to send SMS notification for booking:', error);
                                 }
+                            } else {
+                                console.error('Booking not found in bookingsData for SMS notification');
                             }
                         } catch (notifyError) {
                             console.error('Error sending booking SMS notification:', notifyError);
