@@ -362,10 +362,16 @@
     </div>
 
     <script>
-        // Initialize Supabase
+        // Initialize Supabase with proper session detection
         const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: true
+            }
+        });
 
         // Airtable configuration for employee lookup
         const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
@@ -376,10 +382,30 @@
 
         // Check authentication and load user data
         async function checkAuth() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                window.location.href = 'auth.html';
-            } else {
+            try {
+                // Give a moment for session to establish if coming from redirect
+                if (document.referrer && document.referrer.includes('/api/shift-response')) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error) {
+                    console.error('Auth error:', error);
+                    // Hide loading and redirect to auth
+                    document.getElementById('loading').style.display = 'none';
+                    window.location.href = 'auth.html';
+                    return;
+                }
+                
+                if (!user) {
+                    // Hide loading and redirect to auth
+                    document.getElementById('loading').style.display = 'none';
+                    window.location.href = 'auth.html';
+                    return;
+                }
+                
+                // User authenticated successfully
                 currentUser = user;
                 document.getElementById('userEmail').textContent = user.email;
                 
@@ -403,6 +429,12 @@
                 
                 // Hide loading, show content
                 document.getElementById('loading').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                // Hide loading and redirect to auth on any error
+                document.getElementById('loading').style.display = 'none';
+                window.location.href = 'auth.html';
             }
         }
 
@@ -433,12 +465,47 @@
 
         // Logout function
         async function logout() {
-            await supabase.auth.signOut();
-            window.location.href = 'auth.html';
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error('Logout error:', error);
+                }
+            } catch (error) {
+                console.error('Failed to sign out:', error);
+            } finally {
+                // Always redirect to auth page
+                window.location.href = 'auth.html';
+            }
         }
 
-        // Initialize on page load
-        checkAuth();
+        // Listen for auth state changes
+        supabase.auth.onAuthStateChange((event, session) => {
+            console.log('Auth event:', event);
+            if (event === 'SIGNED_OUT') {
+                window.location.href = 'auth.html';
+            } else if (event === 'SIGNED_IN' && session && !currentUser) {
+                // If signed in but page hasn't loaded user yet, reload
+                window.location.reload();
+            }
+        });
+        
+        // Initialize on page load with session recovery
+        async function init() {
+            // Try to recover session from storage first
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (error) {
+                console.error('Session recovery error:', error);
+            } else if (session) {
+                console.log('Session recovered from storage');
+            }
+            
+            // Now check auth
+            checkAuth();
+        }
+        
+        // Start initialization
+        init();
     </script>
 </body>
 </html> 
