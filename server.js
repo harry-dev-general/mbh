@@ -165,6 +165,9 @@ app.get('/api/shift-response', async (req, res) => {
                 color: white;
                 text-decoration: none;
                 border-radius: 5px;
+                border: none;
+                font-size: 16px;
+                cursor: pointer;
                 transition: background 0.3s;
               }
               .portal-link:hover {
@@ -194,9 +197,9 @@ app.get('/api/shift-response', async (req, res) => {
                 </div>
               ` : ''}
               
-              <a href="${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html" class="portal-link">
+              <button onclick="window.location.href='${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html'" class="portal-link">
                 View My Schedule →
-              </a>
+              </button>
             </div>
           </body>
         </html>
