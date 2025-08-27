@@ -12,24 +12,60 @@ const PORT = process.env.PORT || 8080;
 const notifications = require('./api/notifications');
 const shiftResponseHandler = require('./api/shift-response-handler');
 
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://maps.googleapis.com"],
-      scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
-      styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-      imgSrc: ["'self'", "data:", "https:", "https://maps.gstatic.com", "https://maps.googleapis.com"],
-      connectSrc: ["'self'", "https://etkugeooigiwahikrmzr.supabase.co", "https://api.airtable.com", "https://maps.googleapis.com"],
-      fontSrc: ["'self'", "data:", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
-      frameSrc: ["'self'", "https://www.google.com"]
-    }
+// Security middleware with exceptions for shift confirmation
+app.use((req, res, next) => {
+  // Skip helmet CSP for shift confirmation page to avoid loading issues
+  if (req.path === '/training/shift-confirmation.html' || req.path === '/api/shift-response') {
+    return next();
   }
-}));
+  
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://maps.googleapis.com"],
+        scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
+        styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "https:", "https://maps.gstatic.com", "https://maps.googleapis.com"],
+        connectSrc: ["'self'", "https://etkugeooigiwahikrmzr.supabase.co", "https://api.airtable.com", "https://maps.googleapis.com"],
+        fontSrc: ["'self'", "data:", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
+        frameSrc: ["'self'", "https://www.google.com"]
+      }
+    }
+  })(req, res, next);
+});
 
 app.use(cors());
 app.use(express.json());
+
+// Specific route for shift confirmation page (before static middleware)
+app.get('/training/shift-confirmation.html', (req, res) => {
+  console.log('Serving shift-confirmation.html with query params:', req.query);
+  const filePath = path.join(__dirname, 'training', 'shift-confirmation.html');
+  console.log('File path:', filePath);
+  
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('Error serving shift-confirmation.html:', err);
+      res.status(404).send(`
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>File Not Found</title>
+          </head>
+          <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <h1>❌ Page Not Found</h1>
+            <p>The confirmation page could not be loaded.</p>
+            <p>Please contact management for assistance.</p>
+          </body>
+        </html>
+      `);
+    } else {
+      console.log('Successfully served shift-confirmation.html');
+    }
+  });
+});
 
 // Serve static files from the training directory
 app.use(express.static(path.join(__dirname, 'training')));
