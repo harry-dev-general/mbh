@@ -97,12 +97,18 @@ app.get('/api/config', (req, res) => {
 
 // Shift response endpoint - handles magic link clicks from SMS
 app.get('/api/shift-response', async (req, res) => {
+  console.log('Shift response endpoint called with query:', req.query);
   const { token } = req.query;
   
   if (!token) {
+    console.log('No token provided in shift response');
     return res.status(400).send(`
       <html>
-        <head><title>Invalid Link</title></head>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Invalid Link</title>
+        </head>
         <body style="font-family: Arial; text-align: center; padding: 50px;">
           <h1>❌ Invalid Link</h1>
           <p>This link is invalid or has missing information.</p>
@@ -113,7 +119,9 @@ app.get('/api/shift-response', async (req, res) => {
   }
   
   try {
+    console.log('Processing shift response for token:', token);
     const result = await shiftResponseHandler.handleShiftResponse(token);
+    console.log('Shift response result:', result);
     
     if (result.success) {
       // Build URL parameters for the confirmation page
@@ -128,7 +136,8 @@ app.get('/api/shift-response', async (req, res) => {
       
       // Redirect to the standalone confirmation page (no auth required)
       const confirmationUrl = `${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/shift-confirmation.html?${confirmationParams}`;
-      return res.redirect(confirmationUrl);
+      console.log('Redirecting to confirmation page:', confirmationUrl);
+      return res.redirect(302, confirmationUrl);
       
       // OLD CODE - keeping for reference
       /*
@@ -264,9 +273,14 @@ app.get('/api/shift-response', async (req, res) => {
       */
     } else {
       // Error response
+      console.log('Shift response failed:', result.error);
       res.status(result.statusCode || 400).send(`
         <html>
-          <head><title>Error</title></head>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Error</title>
+          </head>
           <body style="font-family: Arial; text-align: center; padding: 50px;">
             <h1>⚠️ Error Processing Response</h1>
             <p>${result.error}</p>
@@ -279,7 +293,11 @@ app.get('/api/shift-response', async (req, res) => {
     console.error('Error handling shift response:', error);
     res.status(500).send(`
       <html>
-        <head><title>Error</title></head>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Error</title>
+        </head>
         <body style="font-family: Arial; text-align: center; padding: 50px;">
           <h1>⚠️ System Error</h1>
           <p>An unexpected error occurred. Please contact management.</p>
