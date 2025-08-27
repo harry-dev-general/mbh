@@ -383,11 +383,6 @@
         // Check authentication and load user data
         async function checkAuth() {
             try {
-                // Give a moment for session to establish if coming from redirect
-                if (document.referrer && document.referrer.includes('/api/shift-response')) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-                
                 const { data: { user }, error } = await supabase.auth.getUser();
                 
                 if (error) {
@@ -481,31 +476,14 @@
         // Listen for auth state changes
         supabase.auth.onAuthStateChange((event, session) => {
             console.log('Auth event:', event);
+            // Only handle sign out events - let init() handle sign in
             if (event === 'SIGNED_OUT') {
                 window.location.href = 'auth.html';
-            } else if (event === 'SIGNED_IN' && session && !currentUser) {
-                // If signed in but page hasn't loaded user yet, reload
-                window.location.reload();
             }
         });
         
-        // Initialize on page load with session recovery
-        async function init() {
-            // Try to recover session from storage first
-            const { data: { session }, error } = await supabase.auth.getSession();
-            
-            if (error) {
-                console.error('Session recovery error:', error);
-            } else if (session) {
-                console.log('Session recovered from storage');
-            }
-            
-            // Now check auth
-            checkAuth();
-        }
-        
-        // Start initialization
-        init();
+        // Initialize on page load
+        checkAuth();
     </script>
 </body>
 </html> 
