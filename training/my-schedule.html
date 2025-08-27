@@ -244,10 +244,13 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .shift-item:hover {
             background: #bbdefb;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .shift-item.booking {
@@ -257,6 +260,41 @@
         
         .shift-item.booking:hover {
             background: #ffe0b2;
+        }
+        
+        /* Status-based colors for shifts */
+        .shift-item.pending {
+            background: #fff9e6;
+            border-left-color: #f39c12;
+        }
+        
+        .shift-item.pending:hover {
+            background: #fff3cd;
+        }
+        
+        .shift-item.accepted {
+            background: #e8f5e9;
+            border-left-color: #27ae60;
+        }
+        
+        .shift-item.accepted:hover {
+            background: #c8e6c9;
+        }
+        
+        .shift-item.declined {
+            background: #ffebee;
+            border-left-color: #e74c3c;
+        }
+        
+        .shift-item.declined:hover {
+            background: #ffcdd2;
+        }
+        
+        .shift-status-icon {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.7rem;
         }
         
         /* Today highlighting */
@@ -469,6 +507,209 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            position: relative;
+        }
+        
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .shift-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .shift-detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .shift-detail-label {
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .shift-detail-value {
+            text-align: right;
+            color: #333;
+        }
+        
+        .shift-status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .shift-status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .shift-status-badge.accepted {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .shift-status-badge.declined {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .modal-actions button {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn-accept {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .modal-btn-accept:hover {
+            background: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+        }
+        
+        .modal-btn-decline {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .modal-btn-decline:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+        }
+        
+        .modal-btn-close {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .modal-btn-close:hover {
+            background: #7f8c8d;
+        }
+        
+        .modal-processing {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .modal-processing .spinner {
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .shift-response-notice {
+            background: #f0f4f8;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .shift-response-notice i {
+            color: #2E86AB;
+            margin-right: 0.5rem;
+        }
+        
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
@@ -566,6 +807,21 @@
                 <div id="listView" class="list-view">
                     <!-- List view content will be rendered here -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shift Details Modal -->
+    <div id="shiftModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Shift Details</h2>
+                <button class="modal-close" onclick="closeShiftModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be dynamically inserted here -->
             </div>
         </div>
     </div>
@@ -824,6 +1080,9 @@
                             role: record.fields['Role'] || null,
                             customer: record.fields['Customer Name'] ? record.fields['Customer Name'][0] : null,
                             status: record.fields['Shift Status'] || 'Scheduled',
+                            responseStatus: record.fields['Response Status'] || 'Pending',
+                            responseDate: record.fields['Response Date'] || null,
+                            responseMethod: record.fields['Response Method'] || null,
                     booking: record.fields['Booking'] || null,
                     source: 'allocation'
                 }));
@@ -1123,6 +1382,9 @@
                 
                 dayShifts.forEach(shift => {
                     const isBooking = shift.source === 'booking' || shift.type === 'Boat Hire';
+                    const responseStatus = shift.responseStatus || (shift.source === 'booking' ? 'Accepted' : 'Pending');
+                    const statusClass = responseStatus.toLowerCase();
+                    
                     let shiftLabel = shift.type;
                     if (shift.role) {
                         // For bookings, show customer name prominently with role
@@ -1132,9 +1394,18 @@
                             shiftLabel = shift.role;
                         }
                     }
+                    
+                    // Get status icon
+                    let statusIcon = '';
+                    if (responseStatus === 'Accepted') statusIcon = '✅';
+                    else if (responseStatus === 'Declined') statusIcon = '❌';
+                    else if (responseStatus === 'Pending' && shift.source === 'allocation') statusIcon = '⏳';
+                    
                     html += `
-                        <div class="shift-item ${isBooking ? 'booking' : ''}"
-                             onclick="showShiftDetails('${shift.id}')">
+                        <div class="shift-item ${isBooking ? 'booking' : ''} ${statusClass}"
+                             onclick="showShiftDetails('${shift.id}')"
+                             title="${shift.type} - ${responseStatus}">
+                            ${statusIcon ? `<span class="shift-status-icon">${statusIcon}</span>` : ''}
                             <div class="shift-time">${shift.startTime} - ${shift.endTime}</div>
                             <div class="shift-type" style="font-weight: ${isBooking ? 'bold' : 'normal'};">
                                 ${shiftLabel}
@@ -1292,30 +1563,259 @@
             }
         }
 
-        // Show shift details (placeholder for modal/popup)
+        // Show shift details in modal
         function showShiftDetails(shiftId) {
             const shift = myAllocations.find(s => s.id === shiftId);
-            if (shift) {
-                let typeLabel = shift.type;
-                if (shift.source === 'booking') {
-                    typeLabel = `${shift.role} (Customer Booking)`;
-                } else if (shift.role) {
-                    typeLabel = `${shift.type} - ${shift.role}`;
+            if (!shift) return;
+            
+            // Determine type label and other display details
+            let typeLabel = shift.type;
+            let roleDisplay = '';
+            
+            if (shift.source === 'booking') {
+                typeLabel = 'Customer Booking';
+                roleDisplay = shift.role;
+            } else if (shift.role) {
+                typeLabel = shift.type;
+                roleDisplay = shift.role;
+            }
+            
+            const responseStatus = shift.responseStatus || (shift.source === 'booking' ? 'Accepted' : 'Pending');
+            const duration = calculateDuration(shift.startTime, shift.endTime);
+            const isBooking = shift.source === 'booking' || shift.type === 'Boat Hire';
+            const canRespond = responseStatus === 'Pending' && shift.source === 'allocation';
+            
+            // Format date nicely
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = shift.date.toLocaleDateString('en-US', dateOptions);
+            
+            // Build modal content
+            let modalHTML = `
+                <div class="shift-detail-row">
+                    <span class="shift-detail-label"><i class="fas fa-calendar"></i> Date</span>
+                    <span class="shift-detail-value">${formattedDate}</span>
+                </div>
+                <div class="shift-detail-row">
+                    <span class="shift-detail-label"><i class="fas fa-clock"></i> Time</span>
+                    <span class="shift-detail-value">${shift.startTime} - ${shift.endTime}</span>
+                </div>
+                <div class="shift-detail-row">
+                    <span class="shift-detail-label"><i class="fas fa-hourglass-half"></i> Duration</span>
+                    <span class="shift-detail-value">${duration}</span>
+                </div>
+                <div class="shift-detail-row">
+                    <span class="shift-detail-label"><i class="fas fa-briefcase"></i> Type</span>
+                    <span class="shift-detail-value">${typeLabel}</span>
+                </div>
+                ${roleDisplay ? `
+                    <div class="shift-detail-row">
+                        <span class="shift-detail-label"><i class="fas fa-user-tag"></i> Role</span>
+                        <span class="shift-detail-value">${roleDisplay}</span>
+                    </div>
+                ` : ''}
+                ${shift.customer ? `
+                    <div class="shift-detail-row">
+                        <span class="shift-detail-label"><i class="fas fa-user"></i> Customer</span>
+                        <span class="shift-detail-value">${shift.customer}</span>
+                    </div>
+                ` : ''}
+                ${shift.bookingCode ? `
+                    <div class="shift-detail-row">
+                        <span class="shift-detail-label"><i class="fas fa-ticket-alt"></i> Booking Code</span>
+                        <span class="shift-detail-value">${shift.bookingCode}</span>
+                    </div>
+                ` : ''}
+                ${shift.notes ? `
+                    <div class="shift-detail-row">
+                        <span class="shift-detail-label"><i class="fas fa-sticky-note"></i> Notes</span>
+                        <span class="shift-detail-value">${shift.notes}</span>
+                    </div>
+                ` : ''}
+                <div class="shift-detail-row">
+                    <span class="shift-detail-label"><i class="fas fa-info-circle"></i> Status</span>
+                    <span class="shift-detail-value">
+                        <span class="shift-status-badge ${responseStatus.toLowerCase()}">
+                            ${responseStatus === 'Accepted' ? '✅ ' : responseStatus === 'Declined' ? '❌ ' : '⏳ '}
+                            ${responseStatus}
+                        </span>
+                    </span>
+                </div>
+            `;
+            
+            // Add response notice for booking allocations
+            if (isBooking && shift.source === 'booking') {
+                modalHTML += `
+                    <div class="shift-response-notice">
+                        <i class="fas fa-info-circle"></i>
+                        This is a customer booking allocation that has been assigned to you.
+                    </div>
+                `;
+            }
+            
+            // Add action buttons if the shift can be responded to
+            if (canRespond) {
+                modalHTML += `
+                    <div class="modal-actions">
+                        <button class="modal-btn-accept" onclick="handleModalShiftResponse('${shiftId}', 'accept')">
+                            <i class="fas fa-check"></i> Accept Shift
+                        </button>
+                        <button class="modal-btn-decline" onclick="handleModalShiftResponse('${shiftId}', 'decline')">
+                            <i class="fas fa-times"></i> Decline Shift
+                        </button>
+                    </div>
+                `;
+            } else if (responseStatus === 'Accepted') {
+                modalHTML += `
+                    <div class="shift-response-notice">
+                        <i class="fas fa-check-circle"></i>
+                        You have accepted this shift.
+                    </div>
+                `;
+            } else if (responseStatus === 'Declined') {
+                modalHTML += `
+                    <div class="shift-response-notice">
+                        <i class="fas fa-times-circle"></i>
+                        You have declined this shift. Management will find coverage.
+                    </div>
+                `;
+            } else {
+                modalHTML += `
+                    <div class="modal-actions">
+                        <button class="modal-btn-close" onclick="closeShiftModal()">
+                            Close
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // Update modal title
+            const modalTitle = isBooking ? 'Booking Allocation Details' : 'Shift Details';
+            document.getElementById('modalTitle').innerHTML = `<i class="fas fa-${isBooking ? 'anchor' : 'calendar-check'}"></i> ${modalTitle}`;
+            
+            // Insert content and show modal
+            document.getElementById('modalBody').innerHTML = modalHTML;
+            document.getElementById('shiftModal').classList.add('active');
+        }
+        
+        // Close modal
+        function closeShiftModal() {
+            document.getElementById('shiftModal').classList.remove('active');
+        }
+        
+        // Close modal when clicking overlay
+        function closeModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeShiftModal();
+            }
+        }
+        
+        // Handle shift response from modal
+        async function handleModalShiftResponse(shiftId, action) {
+            const shift = myAllocations.find(s => s.id === shiftId);
+            if (!shift) {
+                alert('Shift not found');
+                return;
+            }
+            
+            const confirmMessage = action === 'accept' 
+                ? 'Are you sure you want to ACCEPT this shift?' 
+                : 'Are you sure you want to DECLINE this shift?';
+                
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            // Show processing state
+            document.getElementById('modalBody').innerHTML = `
+                <div class="modal-processing">
+                    <div class="spinner"></div>
+                    <p>Processing your response...</p>
+                </div>
+            `;
+            
+            try {
+                // Update the allocation record in Airtable
+                const updateFields = {
+                    'Response Status': action === 'accept' ? 'Accepted' : 'Declined',
+                    'Response Date': new Date().toISOString(),
+                    'Response Method': 'Portal'
+                };
+                
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${shiftId}`,
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ fields: updateFields })
+                    }
+                );
+                
+                if (response.ok) {
+                    // Update local data
+                    shift.responseStatus = action === 'accept' ? 'Accepted' : 'Declined';
+                    shift.responseDate = new Date().toISOString();
+                    shift.responseMethod = 'Portal';
+                    
+                    // Show success message in modal
+                    const successIcon = action === 'accept' ? '✅' : '❌';
+                    const successMessage = action === 'accept' 
+                        ? 'You have successfully accepted this shift!' 
+                        : 'You have declined this shift. Management will be notified.';
+                    
+                    document.getElementById('modalBody').innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">${successIcon}</div>
+                            <h3 style="color: ${action === 'accept' ? '#27ae60' : '#e74c3c'}; margin-bottom: 1rem;">
+                                Shift ${action === 'accept' ? 'Accepted' : 'Declined'}!
+                            </h3>
+                            <p>${successMessage}</p>
+                            <button class="modal-btn-close" onclick="closeShiftModal()" style="margin-top: 1.5rem;">
+                                Close
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Re-render the views to show updated status
+                    renderCalendarView();
+                    renderListView();
+                    
+                    // If declined, notify management (optional - could add API call here)
+                    if (action === 'decline') {
+                        // Could trigger notification to management here
+                        console.log('Shift declined - management should be notified');
+                    }
+                } else {
+                    const error = await response.json();
+                    console.error('Error updating shift response:', error);
+                    
+                    document.getElementById('modalBody').innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem; color: #e74c3c;">⚠️</div>
+                            <h3 style="color: #e74c3c; margin-bottom: 1rem;">Error</h3>
+                            <p>Failed to update shift response. Please try again or contact management.</p>
+                            <button class="modal-btn-close" onclick="closeShiftModal()" style="margin-top: 1.5rem;">
+                                Close
+                            </button>
+                        </div>
+                    `;
                 }
                 
-                const responseStatus = shift.responseStatus || 'Pending';
-                const details = `
-                    Shift Details:
-                    Date: ${shift.date.toLocaleDateString()}
-                    Time: ${shift.startTime} - ${shift.endTime}
-                    Type: ${typeLabel}
-                    Response Status: ${responseStatus}
-                    ${shift.customer ? `Customer: ${shift.customer}` : ''}
-                    ${shift.bookingCode ? `Booking Code: ${shift.bookingCode}` : ''}
-                    ${shift.notes ? `Notes: ${shift.notes}` : ''}
-                    Status: ${shift.status || 'Scheduled'}
+            } catch (error) {
+                console.error('Error handling shift response:', error);
+                
+                document.getElementById('modalBody').innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem; color: #e74c3c;">⚠️</div>
+                        <h3 style="color: #e74c3c; margin-bottom: 1rem;">Connection Error</h3>
+                        <p>Unable to process your response. Please check your connection and try again.</p>
+                        <button class="modal-btn-close" onclick="closeShiftModal()" style="margin-top: 1.5rem;">
+                            Close
+                        </button>
+                    </div>
                 `;
-                alert(details);
             }
         }
         
