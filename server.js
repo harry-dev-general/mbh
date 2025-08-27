@@ -194,7 +194,7 @@ app.get('/api/shift-response', async (req, res) => {
                 </div>
               ` : ''}
               
-              <a href="/training/my-schedule.html" class="portal-link">
+              <a href="${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/my-schedule.html" class="portal-link">
                 View My Schedule →
               </a>
             </div>
