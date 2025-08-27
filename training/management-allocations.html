@@ -743,6 +743,7 @@
                 ]);
                 
                 // After all data is loaded, render everything
+                renderStaffList();  // Render staff list after roster data is loaded
                 renderScheduleGrid();
                 renderBookingsOnGrid();
                 renderAllocations();
@@ -751,6 +752,7 @@
             } catch (error) {
                 console.error('Error loading week data:', error);
                 // Still try to render with whatever data we have
+                renderStaffList();  // Render staff list even on error
                 renderScheduleGrid();
                 renderBookingsOnGrid();
                 renderAllocations();
@@ -790,13 +792,11 @@
                 staffData = staffDataResponse.records || [];
                 console.log('Found staff records:', staffData.length);
                 
-                // Render staff list after loading
-                renderStaffList();
+                // Don't render here - wait for all data to load
                 return staffData; // Return data for Promise.all
             } catch (error) {
                 console.error('Error loading staff:', error);
                 staffData = [];
-                renderStaffList(); // Still try to render empty list
                 throw error; // Re-throw to let Promise.all handle it
             }
         }
