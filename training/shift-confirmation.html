@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift Response Confirmed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #2E86AB 0%, #1B4F72 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 40px;
+        }
+        
+        .icon-container.accepted {
+            background: #d4edda;
+            color: #27ae60;
+        }
+        
+        .icon-container.declined {
+            background: #f8d7da;
+            color: #e74c3c;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .shift-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .detail-value {
+            color: #6c757d;
+        }
+        
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #2E86AB;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1B4F72;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 134, 171, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #2E86AB;
+            border: 2px solid #2E86AB;
+        }
+        
+        .btn-secondary:hover {
+            background: #f0f8ff;
+        }
+        
+        .info-message {
+            background: #e7f3ff;
+            border-left: 4px solid #2E86AB;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            color: #004085;
+        }
+        
+        .info-message i {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon-container" id="statusIcon">
+            <i class="fas fa-check"></i>
+        </div>
+        
+        <h1 id="statusTitle">Response Recorded</h1>
+        <p class="subtitle" id="statusSubtitle">Your shift response has been successfully recorded</p>
+        
+        <div class="shift-details" id="shiftDetails" style="display: none;">
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value" id="shiftDate">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Time:</span>
+                <span class="detail-value" id="shiftTime">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Type:</span>
+                <span class="detail-value" id="shiftType">-</span>
+            </div>
+            <div class="detail-row" id="customerRow" style="display: none;">
+                <span class="detail-label">Customer:</span>
+                <span class="detail-value" id="customerName">-</span>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="/training/auth.html" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i> Login to Staff Portal
+            </a>
+            <a href="/" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Go to Homepage
+            </a>
+        </div>
+        
+        <div class="info-message">
+            <i class="fas fa-info-circle"></i>
+            <strong>Next Steps:</strong> Login to the staff portal to view your full schedule and manage your shifts.
+        </div>
+    </div>
+    
+    <script>
+        // Parse URL parameters to get confirmation details
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                status: params.get('status') || 'success',
+                action: params.get('action') || 'accepted',
+                date: params.get('date'),
+                time: params.get('time'),
+                type: params.get('type'),
+                customer: params.get('customer')
+            };
+        }
+        
+        // Update page based on parameters
+        function updatePage() {
+            const params = getUrlParams();
+            
+            // Update icon and colors based on action
+            const iconContainer = document.getElementById('statusIcon');
+            const title = document.getElementById('statusTitle');
+            const subtitle = document.getElementById('statusSubtitle');
+            
+            if (params.action === 'declined') {
+                iconContainer.className = 'icon-container declined';
+                iconContainer.innerHTML = '<i class="fas fa-times"></i>';
+                title.textContent = 'Shift Declined';
+                subtitle.textContent = 'Your decline has been recorded and management has been notified';
+            } else {
+                iconContainer.className = 'icon-container accepted';
+                iconContainer.innerHTML = '<i class="fas fa-check"></i>';
+                title.textContent = 'Shift Confirmed';
+                subtitle.textContent = 'Your acceptance has been recorded successfully';
+            }
+            
+            // Show shift details if available
+            if (params.date || params.time || params.type) {
+                document.getElementById('shiftDetails').style.display = 'block';
+                
+                if (params.date) {
+                    document.getElementById('shiftDate').textContent = params.date;
+                }
+                if (params.time) {
+                    document.getElementById('shiftTime').textContent = params.time;
+                }
+                if (params.type) {
+                    document.getElementById('shiftType').textContent = params.type;
+                }
+                if (params.customer) {
+                    document.getElementById('customerRow').style.display = 'flex';
+                    document.getElementById('customerName').textContent = params.customer;
+                }
+            }
+        }
+        
+        // Initialize page
+        updatePage();
+    </script>
+</body>
+</html>

@@ -116,7 +116,22 @@ app.get('/api/shift-response', async (req, res) => {
     const result = await shiftResponseHandler.handleShiftResponse(token);
     
     if (result.success) {
-      // Successful response - show confirmation page
+      // Build URL parameters for the confirmation page
+      const confirmationParams = new URLSearchParams({
+        status: 'success',
+        action: result.action,
+        date: result.shiftDetails?.date || '',
+        time: result.shiftDetails?.time || '',
+        type: result.shiftDetails?.type || '',
+        customer: result.shiftDetails?.customer || ''
+      });
+      
+      // Redirect to the standalone confirmation page (no auth required)
+      const confirmationUrl = `${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/shift-confirmation.html?${confirmationParams}`;
+      return res.redirect(confirmationUrl);
+      
+      // OLD CODE - keeping for reference
+      /*
       const emoji = result.action === 'accepted' ? '✅' : '❌';
       const title = result.action === 'accepted' ? 'Shift Confirmed' : 'Shift Declined';
       
@@ -246,6 +261,7 @@ app.get('/api/shift-response', async (req, res) => {
           </body>
         </html>
       `);
+      */
     } else {
       // Error response
       res.status(result.statusCode || 400).send(`
