@@ -1261,7 +1261,7 @@
                             role: 'Onboarding',
                             customer: customerName,
                             status: 'Scheduled',
-                            responseStatus: 'Accepted', // Booking allocations are pre-accepted
+                            responseStatus: fields['Onboarding Response'] || 'Pending', // Check for stored response
                             booking: record.id,
                             bookingCode: fields['Booking Code'] || '',
                             source: 'booking'
@@ -1287,7 +1287,7 @@
                             role: 'Deloading',
                             customer: customerName,
                             status: 'Scheduled',
-                            responseStatus: 'Accepted', // Booking allocations are pre-accepted
+                            responseStatus: fields['Deloading Response'] || 'Pending', // Check for stored response
                             booking: record.id,
                             bookingCode: fields['Booking Code'] || '',
                             source: 'booking'
@@ -1425,7 +1425,7 @@
                 
                 dayShifts.forEach(shift => {
                     const isBooking = shift.source === 'booking' || shift.type === 'Boat Hire';
-                    const responseStatus = shift.responseStatus || (shift.source === 'booking' ? 'Accepted' : 'Pending');
+                    const responseStatus = shift.responseStatus || 'Pending';
                     const statusClass = responseStatus.toLowerCase();
                     
                     let shiftLabel = shift.type;
@@ -1623,10 +1623,10 @@
                 roleDisplay = shift.role;
             }
             
-            const responseStatus = shift.responseStatus || (shift.source === 'booking' ? 'Accepted' : 'Pending');
+            const responseStatus = shift.responseStatus || 'Pending';
             const duration = calculateDuration(shift.startTime, shift.endTime);
             const isBooking = shift.source === 'booking' || shift.type === 'Boat Hire';
-            const canRespond = responseStatus === 'Pending' && shift.source === 'allocation';
+            const canRespond = true; // Allow responses for all shift types
             
             // Format date nicely
             const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -1677,52 +1677,43 @@
                 <div class="shift-detail-row">
                     <span class="shift-detail-label"><i class="fas fa-info-circle"></i> Status</span>
                     <span class="shift-detail-value">
-                        <span class="shift-status-badge ${responseStatus.toLowerCase()} ${shift.source === 'allocation' ? 'clickable' : ''}" 
-                              ${shift.source === 'allocation' ? `onclick="toggleStatusChange('${shiftId}')" title="Click to change response"` : ''}>
+                        <span class="shift-status-badge ${responseStatus.toLowerCase()} clickable" 
+                              onclick="toggleStatusChange('${shiftId}')" title="Click to change response">
                             ${responseStatus === 'Accepted' ? '✅ ' : responseStatus === 'Declined' ? '❌ ' : '⏳ '}
                             ${responseStatus}
-                            ${shift.source === 'allocation' ? ' ▼' : ''}
+                            ▼
                         </span>
                     </span>
                 </div>
             `;
             
             // Add response options section (hidden by default, shown when status badge is clicked)
-            if (shift.source === 'allocation') {
-                modalHTML += `
-                    <div id="statusChangeOptions-${shiftId}" class="status-change-options">
-                        <div class="status-change-label">
-                            <i class="fas fa-edit"></i> Change your response for this shift:
-                        </div>
-                        <div class="modal-actions">
-                            <button class="modal-btn-accept" onclick="handleModalShiftResponse('${shiftId}', 'accept')">
-                                <i class="fas fa-check"></i> Accept Shift
-                            </button>
-                            <button class="modal-btn-decline" onclick="handleModalShiftResponse('${shiftId}', 'decline')">
-                                <i class="fas fa-times"></i> Decline Shift
-                            </button>
-                        </div>
+            // Works for both allocations and bookings
+            modalHTML += `
+                <div id="statusChangeOptions-${shiftId}" class="status-change-options">
+                    <div class="status-change-label">
+                        <i class="fas fa-edit"></i> Change your response for this ${isBooking ? 'booking allocation' : 'shift'}:
                     </div>
-                `;
-            }
+                    <div class="modal-actions">
+                        <button class="modal-btn-accept" onclick="handleModalShiftResponse('${shiftId}', 'accept')">
+                            <i class="fas fa-check"></i> Accept ${isBooking ? 'Booking' : 'Shift'}
+                        </button>
+                        <button class="modal-btn-decline" onclick="handleModalShiftResponse('${shiftId}', 'decline')">
+                            <i class="fas fa-times"></i> Decline ${isBooking ? 'Booking' : 'Shift'}
+                        </button>
+                    </div>
+                </div>
+            `;
             
-            // Add response notice for booking allocations
-            if (isBooking && shift.source === 'booking') {
-                modalHTML += `
-                    <div class="shift-response-notice">
-                        <i class="fas fa-info-circle"></i>
-                        This is a customer booking allocation that has been assigned to you.
-                    </div>
-                `;
-            } else if (shift.source === 'allocation') {
-                // Add help text for general allocations
-                modalHTML += `
-                    <div class="shift-response-notice">
-                        <i class="fas fa-lightbulb"></i>
-                        Tip: Click on the status badge above to change your response at any time.
-                    </div>
-                `;
-            }
+            // Add help text for all types
+            modalHTML += `
+                <div class="shift-response-notice">
+                    <i class="fas fa-lightbulb"></i>
+                    ${isBooking ? 
+                        'Tip: You can update your availability for this booking by clicking the status badge above.' : 
+                        'Tip: Click on the status badge above to change your response at any time.'}
+                </div>
+            `;
             
             // Update modal title
             const modalTitle = isBooking ? 'Booking Allocation Details' : 'Shift Details';
@@ -1786,24 +1777,48 @@
             `;
             
             try {
-                // Update the allocation record in Airtable
-                const updateFields = {
-                    'Response Status': action === 'accept' ? 'Accepted' : 'Declined',
-                    'Response Date': new Date().toISOString(),
-                    'Response Method': 'Portal'
-                };
+                let response;
                 
-                const response = await fetch(
-                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${shiftId}`,
-                    {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ fields: updateFields })
-                    }
-                );
+                if (shift.source === 'booking') {
+                    // For booking allocations, update the Bookings Dashboard
+                    const bookingId = shift.booking;
+                    const roleField = shift.role === 'Onboarding' ? 'Onboarding Response' : 'Deloading Response';
+                    
+                    const updateFields = {
+                        [roleField]: action === 'accept' ? 'Accepted' : 'Declined'
+                    };
+                    
+                    response = await fetch(
+                        `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}/${bookingId}`,
+                        {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ fields: updateFields })
+                        }
+                    );
+                } else {
+                    // For general allocations, update the Shift Allocations table
+                    const updateFields = {
+                        'Response Status': action === 'accept' ? 'Accepted' : 'Declined',
+                        'Response Date': new Date().toISOString(),
+                        'Response Method': 'Portal'
+                    };
+                    
+                    response = await fetch(
+                        `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${shiftId}`,
+                        {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ fields: updateFields })
+                        }
+                    );
+                }
                 
                 if (response.ok) {
                     // Update local data
