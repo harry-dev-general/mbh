@@ -1183,14 +1183,15 @@
                     `IS_BEFORE({Shift Date}, '${nextDayStr}')` +
                     `)`);
                 
-                // Specify fields to reduce payload
+                // Specify fields to reduce payload (including Response Status for color coding)
                 const fields = ['Name', 'Employee', 'Shift Date', 'Start Time', 'End Time',
-                               'Shift Type', 'Shift Status', 'Role', 'Booking'];
+                               'Shift Type', 'Shift Status', 'Role', 'Booking', 'Duration',
+                               'Response Status', 'Response Date', 'Response Method'];
                 const fieldsParam = fields.map(f => `fields[]=${encodeURIComponent(f)}`).join('&');
                 
                 const response = await fetchWithRetry(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=${filter}&${fieldsParam}`,
+                    `filterByFormula=${filter}&${fieldsParam}&_t=${Date.now()}`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
