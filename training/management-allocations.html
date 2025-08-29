@@ -1296,7 +1296,10 @@
                 const startTime = allocation['Start Time'] || '09:00';
                 const endTime = allocation['End Time'] || '17:00';
                 const shiftType = allocation['Shift Type'] || 'General';
+                const responseStatus = allocation['Response Status'] || 'Pending';
                 
+                // Get response status for color coding (matching customer booking system)
+                // This replaces the previous color-by-shift-type system
                 // Calculate duration in hours
                 const startParts = startTime.split(':');
                 const endParts = endTime.split(':');
@@ -1322,9 +1325,29 @@
                     const cellHeight = startCell.offsetHeight;
                     const blockHeight = cellHeight * durationHours - 4; // Subtract margin
                     
+                    // Determine color based on response status (matching customer booking system)
+                    let backgroundColor;
+                    let borderColor;
+                    let statusIcon;
+                    
+                    if (responseStatus === 'Accepted') {
+                        backgroundColor = '#4caf50';  // Green for accepted
+                        borderColor = '#2e7d32';
+                        statusIcon = '✅';
+                    } else if (responseStatus === 'Declined') {
+                        backgroundColor = '#f44336';  // Red for declined
+                        borderColor = '#c62828';
+                        statusIcon = '❌';
+                    } else {
+                        // Pending or no response
+                        backgroundColor = '#ff9800';  // Orange for pending
+                        borderColor = '#f57c00';
+                        statusIcon = '⏳';
+                    }
+                    
                     // Style the block to span the correct duration
                     allocationBlock.style.cssText = `
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        background: ${backgroundColor};
                         color: white;
                         padding: 6px;
                         border-radius: 4px;
@@ -1339,25 +1362,20 @@
                         z-index: 10;
                         box-shadow: 0 1px 3px rgba(0,0,0,0.2);
                         overflow: hidden;
+                        border: 2px solid ${borderColor};
+                        opacity: ${responseStatus === 'Pending' || !responseStatus ? '0.9' : '1'};
                     `;
                     
-                    // Add different colors for different shift types
-                    if (shiftType === 'Boat Hire' || shiftType === 'Ice Cream Boat Operations') {
-                        allocationBlock.style.background = 'linear-gradient(135deg, #00acc1 0%, #0288d1 100%)';
-                    } else if (shiftType === 'Maintenance') {
-                        allocationBlock.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)';
-                    } else if (shiftType === 'Training') {
-                        allocationBlock.style.background = 'linear-gradient(135deg, #48c774 0%, #00d1b2 100%)';
-                    }
-                    
                     allocationBlock.innerHTML = `
-                        <strong style="display: block; margin-bottom: 2px;">${employee.fields['First Name'] || employee.fields['Name'] || 'Unknown'}</strong>
+                        <strong style="display: block; margin-bottom: 2px;">
+                            ${statusIcon} ${employee.fields['First Name'] || employee.fields['Name'] || 'Unknown'}
+                        </strong>
                         <div style="font-size: 10px;">${startTime} - ${endTime}</div>
                         <small style="opacity: 0.9;">${shiftType}</small>
                         ${allocation['Role'] ? `<br><small style="opacity: 0.8;">${allocation['Role']}</small>` : ''}
                     `;
                     
-                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours`;
+                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours\nStatus: ${responseStatus}`;
                     
                     // Add click handler to view/edit
                     allocationBlock.onclick = (e) => {
