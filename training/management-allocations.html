@@ -1914,7 +1914,49 @@
                     }
                     
                     console.log('Successfully reassigned shift');
-                    alert('Shift reassigned successfully! The new staff member will be notified.');
+                    
+                    // Send SMS notification to the new employee
+                    try {
+                        // Get the original allocation data from the form
+                        const shiftDate = document.getElementById('allocationDate').value;
+                        const startTime = document.getElementById('startTime').value;
+                        const endTime = document.getElementById('endTime').value;
+                        const shiftType = document.getElementById('allocationType').value;
+                        
+                        // Prepare notification data
+                        const notificationData = {
+                            employeeId: employeeId,
+                            allocationId: allocationId,
+                            shiftType: shiftType,
+                            shiftDate: shiftDate,
+                            startTime: startTime,
+                            endTime: endTime,
+                            isReassignment: true,
+                            role: 'General'
+                        };
+                        
+                        console.log('Sending SMS notification for reassignment:', notificationData);
+                        
+                        // Send SMS notification
+                        const notifyResponse = await fetch('/api/send-shift-notification', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(notificationData)
+                        });
+                        
+                        if (notifyResponse.ok) {
+                            console.log('SMS notification sent successfully');
+                            alert('Shift reassigned successfully! The new staff member has been notified via SMS.');
+                        } else {
+                            console.warn('SMS notification failed, but shift was reassigned');
+                            alert('Shift reassigned successfully! Note: SMS notification may not have been sent.');
+                        }
+                    } catch (notifyError) {
+                        console.error('Error sending SMS notification:', notifyError);
+                        alert('Shift reassigned successfully! Note: SMS notification could not be sent.');
+                    }
                     
                     // Close modal and refresh
                     closeAllocationModal();
