@@ -1894,8 +1894,8 @@
                                 fields: {
                                     'Employee': [employeeId],
                                     'Response Status': 'Pending',  // Reset status for new employee
-                                    'Response Date': '',  // Clear previous response
-                                    'Response Method': ''  // Clear previous method
+                                    'Response Date': null,  // Clear previous response (use null for date fields)
+                                    'Response Method': null  // Clear previous method (use null to clear)
                                 }
                             })
                         }
@@ -1904,7 +1904,13 @@
                     if (!updateResponse.ok) {
                         const error = await updateResponse.json();
                         console.error('Error reassigning shift:', error);
-                        throw new Error('Failed to reassign shift');
+                        console.error('Error details:', {
+                            status: updateResponse.status,
+                            message: error.error?.message || error.message,
+                            type: error.error?.type
+                        });
+                        const errorMsg = error.error?.message || 'Failed to reassign shift';
+                        throw new Error(errorMsg);
                     }
                     
                     console.log('Successfully reassigned shift');
