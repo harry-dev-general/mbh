@@ -1733,7 +1733,7 @@
             
             // Re-enable all fields
             document.getElementById('allocationType').disabled = false;
-            document.getElementById('shiftDate').disabled = false;
+            document.getElementById('allocationDate').disabled = false;
             document.getElementById('startTime').disabled = false;
             document.getElementById('endTime').disabled = false;
             
@@ -1776,7 +1776,7 @@
             
             // Pre-fill form with existing allocation data
             document.getElementById('allocationType').value = allocation['Shift Type'] || 'General Operations';
-            document.getElementById('shiftDate').value = allocation['Shift Date'];
+            document.getElementById('allocationDate').value = allocation['Shift Date'];
             document.getElementById('startTime').value = allocation['Start Time'] || '09:00';
             document.getElementById('endTime').value = allocation['End Time'] || '17:00';
             
@@ -1815,7 +1815,7 @@
             
             // Disable fields that shouldn't be changed during reassignment
             document.getElementById('allocationType').disabled = true;
-            document.getElementById('shiftDate').disabled = true;
+            document.getElementById('allocationDate').disabled = true;
             document.getElementById('startTime').disabled = true;
             document.getElementById('endTime').disabled = true;
             
@@ -1919,7 +1919,7 @@
                     
                     // Re-enable disabled fields
                     document.getElementById('allocationType').disabled = false;
-                    document.getElementById('shiftDate').disabled = false;
+                    document.getElementById('allocationDate').disabled = false;
                     document.getElementById('startTime').disabled = false;
                     document.getElementById('endTime').disabled = false;
                     
