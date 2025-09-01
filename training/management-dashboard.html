@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Dashboard - MBH Staff Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .logo {
+            height: 60px;
+            width: auto;
+        }
+        
+        .title-section h1 {
+            font-size: 2rem;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .title-section p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .user-section {
+            text-align: right;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-white {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-white:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .dashboard-nav {
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+        
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tab.active {
+            color: #DC143C;
+            border-bottom-color: #DC143C;
+            font-weight: 600;
+        }
+        
+        .nav-tab:hover {
+            color: #8B0000;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Overview Grid */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .stat-icon.green {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .stat-icon.orange {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        
+        .stat-icon.red {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .stat-icon.blue {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* Action Cards */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .action-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .action-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .action-header.staff {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .action-header.vessel {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .action-header.announcement {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .action-header.reports {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .action-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .action-description {
+            opacity: 0.95;
+            font-size: 0.9rem;
+        }
+        
+        .action-body {
+            padding: 1.5rem;
+        }
+        
+        .action-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .action-stat:last-child {
+            border-bottom: none;
+        }
+        
+        /* Vessel Maintenance Section */
+        .vessel-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .vessel-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .vessel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .vessel-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .vessel-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-operational {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-maintenance {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        
+        .status-issue {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .checklist-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .checklist-item {
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #ccc;
+        }
+        
+        .checklist-item.complete {
+            border-left-color: #28a745;
+        }
+        
+        .checklist-item.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .checklist-item.overdue {
+            border-left-color: #dc3545;
+        }
+        
+        /* Announcement Section */
+        .announcement-form {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #DC143C;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .announcement-priority {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .priority-option {
+            flex: 1;
+        }
+        
+        .priority-option input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+        }
+        
+        .announcements-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .announcement-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #ddd;
+        }
+        
+        .announcement-card.high {
+            border-left-color: #dc3545;
+        }
+        
+        .announcement-card.medium {
+            border-left-color: #ffc107;
+        }
+        
+        .announcement-card.low {
+            border-left-color: #28a745;
+        }
+        
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #DC143C;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .overview-grid,
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="/images/mbh-logo.png" alt="MBH Logo" class="logo">
+                <div class="title-section">
+                    <h1><i class="fas fa-crown"></i> Management Dashboard</h1>
+                    <p>Manly Boat Hire Operations Center</p>
+                </div>
+            </div>
+            <div class="user-section">
+                <div class="user-info">
+                    <div>
+                        <div id="userEmail" style="margin-bottom: 0.25rem;">Loading...</div>
+                        <div style="font-size: 0.85rem; opacity: 0.8;">Administrator</div>
+                    </div>
+                    <button class="btn btn-white" onclick="window.location.href='dashboard.html'">
+                        <i class="fas fa-th"></i> Regular View
+                    </button>
+                    <button class="btn btn-white" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="dashboard-nav">
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('overview')">
+                <i class="fas fa-chart-line"></i> Overview
+            </button>
+            <button class="nav-tab" onclick="switchTab('staff')">
+                <i class="fas fa-users"></i> Staff Management
+            </button>
+            <button class="nav-tab" onclick="switchTab('vessels')">
+                <i class="fas fa-ship"></i> Vessel Maintenance
+            </button>
+            <button class="nav-tab" onclick="switchTab('announcements')">
+                <i class="fas fa-bullhorn"></i> Announcements
+            </button>
+            <button class="nav-tab" onclick="switchTab('reports')">
+                <i class="fas fa-chart-bar"></i> Reports
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <h2 style="margin-bottom: 1.5rem;">Today's Overview</h2>
+            
+            <div class="overview-grid">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-value" id="todayBookings">0</div>
+                    <div class="stat-label">Today's Bookings</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="staffOnDuty">0</div>
+                    <div class="stat-label">Staff on Duty</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-ship"></i>
+                    </div>
+                    <div class="stat-value" id="vesselsActive">0</div>
+                    <div class="stat-label">Vessels Active</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-value" id="pendingIssues">0</div>
+                    <div class="stat-label">Pending Issues</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem;">Quick Actions</h3>
+            <div class="action-grid">
+                <div class="action-card" onclick="window.location.href='management-allocations.html'">
+                    <div class="action-header staff">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-users-cog"></i>
+                                Staff Allocation
+                            </div>
+                            <div class="action-description">Manage staff schedules and allocations</div>
+                        </div>
+                    </div>
+                    <div class="action-body">
+                        <div class="action-stat">
+                            <span>Unallocated Shifts</span>
+                            <strong id="unallocatedShifts">0</strong>
+                        </div>
+                        <div class="action-stat">
+                            <span>Today's Allocations</span>
+                            <strong id="todayAllocations">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('vessels')">
+                    <div class="action-header vessel">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-tools"></i>
+                                Vessel Status
+                            </div>
+                            <div class="action-description">Check maintenance and checklists</div>
+                        </div>
+                    </div>
+                    <div class="action-body">
+                        <div class="action-stat">
+                            <span>Pending Checklists</span>
+                            <strong id="pendingChecklists">0</strong>
+                        </div>
+                        <div class="action-stat">
+                            <span>Due Maintenance</span>
+                            <strong id="dueMaintenance">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('announcements')">
+                    <div class="action-header announcement">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-megaphone"></i>
+                                Post Announcement
+                            </div>
+                            <div class="action-description">Communicate with all staff</div>
+                        </div>
+                    </div>
+                    <div class="action-body">
+                        <div class="action-stat">
+                            <span>Active Announcements</span>
+                            <strong id="activeAnnouncements">0</strong>
+                        </div>
+                        <div class="action-stat">
+                            <span>Last Posted</span>
+                            <strong id="lastPosted">None</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('reports')">
+                    <div class="action-header reports">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-chart-pie"></i>
+                                View Reports
+                            </div>
+                            <div class="action-description">Analytics and performance metrics</div>
+                        </div>
+                    </div>
+                    <div class="action-body">
+                        <div class="action-stat">
+                            <span>This Week Revenue</span>
+                            <strong id="weekRevenue">$0</strong>
+                        </div>
+                        <div class="action-stat">
+                            <span>Utilization Rate</span>
+                            <strong id="utilizationRate">0%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Management Tab -->
+        <div id="staff-tab" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Staff Management</h2>
+            
+            <div class="action-grid">
+                <div class="action-card" onclick="window.location.href='management-allocations.html'">
+                    <div class="action-header staff">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-calendar-alt"></i>
+                                Weekly Schedule
+                            </div>
+                            <div class="action-description">View and manage weekly staff allocations</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-card" onclick="window.location.href='employee-management.html'">
+                    <div class="action-header">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-user-plus"></i>
+                                Employee Directory
+                            </div>
+                            <div class="action-description">Manage employee records and contacts</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-card" onclick="window.location.href='roster-management.html'">
+                    <div class="action-header">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-clipboard-list"></i>
+                                Roster Planning
+                            </div>
+                            <div class="action-description">Plan future rosters and availability</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="staffList" style="margin-top: 2rem;">
+                <!-- Staff list will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Vessel Maintenance Tab -->
+        <div id="vessels-tab" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Vessel Maintenance & Checklists</h2>
+            
+            <div class="vessel-grid" id="vesselGrid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading vessel information...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcements Tab -->
+        <div id="announcements-tab" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Staff Announcements</h2>
+            
+            <div class="announcement-form">
+                <h3 style="margin-bottom: 1rem;">Post New Announcement</h3>
+                <form id="announcementForm">
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-input" id="announcementTitle" placeholder="Enter announcement title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-textarea" id="announcementMessage" placeholder="Enter your announcement message" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <div class="announcement-priority">
+                            <div class="priority-option">
+                                <label>
+                                    <input type="radio" name="priority" value="low" checked>
+                                    <span style="color: #28a745;">Low</span>
+                                </label>
+                            </div>
+                            <div class="priority-option">
+                                <label>
+                                    <input type="radio" name="priority" value="medium">
+                                    <span style="color: #ffc107;">Medium</span>
+                                </label>
+                            </div>
+                            <div class="priority-option">
+                                <label>
+                                    <input type="radio" name="priority" value="high">
+                                    <span style="color: #dc3545;">High</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Expires On (Optional)</label>
+                        <input type="date" class="form-input" id="announcementExpiry">
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane"></i> Post Announcement
+                    </button>
+                </form>
+            </div>
+            
+            <h3 style="margin: 2rem 0 1rem;">Active Announcements</h3>
+            <div class="announcements-list" id="announcementsList">
+                <!-- Announcements will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports-tab" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Reports & Analytics</h2>
+            
+            <div class="action-grid">
+                <div class="action-card">
+                    <div class="action-header reports">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-dollar-sign"></i>
+                                Revenue Report
+                            </div>
+                            <div class="action-description">Daily, weekly, and monthly revenue</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-card">
+                    <div class="action-header">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-user-clock"></i>
+                                Staff Performance
+                            </div>
+                            <div class="action-description">Attendance and allocation metrics</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-card">
+                    <div class="action-header">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-ship"></i>
+                                Fleet Utilization
+                            </div>
+                            <div class="action-description">Vessel usage and maintenance history</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-card">
+                    <div class="action-header">
+                        <div>
+                            <div class="action-title">
+                                <i class="fas fa-file-export"></i>
+                                Export Data
+                            </div>
+                            <div class="action-description">Download reports as CSV or PDF</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Airtable configuration
+        const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
+        const BASE_ID = 'applkAFOn2qxtu7tx';
+        const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
+        const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
+        const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX';
+        const VESSELS_TABLE_ID = 'tblVessels'; // You'll need to get the actual vessel table ID
+        const ANNOUNCEMENTS_TABLE_ID = 'tblAnnouncements'; // You'll need to create this table
+
+        let currentUser = null;
+
+        // Check authentication
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            // Check if user is management
+            const managementEmails = [
+                'harry@priceoffice.com.au',
+                'mmckelvey03@gmail.com',
+                'manager@mbh.com',
+                'admin@mbh.com',
+                'operations@mbh.com'
+            ];
+
+            if (!managementEmails.includes(user.email.toLowerCase()) && 
+                !user.email.includes('@mbh.com')) {
+                // Not a management user, redirect to regular dashboard
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            currentUser = user;
+            document.getElementById('userEmail').textContent = user.email;
+            
+            // Load initial data
+            loadOverviewData();
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Set active nav tab
+            event.target.closest('.nav-tab').classList.add('active');
+            
+            // Load tab-specific data
+            switch(tabName) {
+                case 'overview':
+                    loadOverviewData();
+                    break;
+                case 'vessels':
+                    loadVesselData();
+                    break;
+                case 'announcements':
+                    loadAnnouncements();
+                    break;
+                case 'staff':
+                    loadStaffData();
+                    break;
+                case 'reports':
+                    loadReportsData();
+                    break;
+            }
+        }
+
+        // Load overview data
+        async function loadOverviewData() {
+            try {
+                // Get today's date
+                const today = new Date();
+                const todayStr = formatDate(today);
+                
+                // Fetch today's bookings
+                const bookingsResponse = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
+                    `filterByFormula=${encodeURIComponent(`{Booking Date}='${todayStr}'`)}&` +
+                    `pageSize=100`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+                
+                if (bookingsResponse.ok) {
+                    const bookingsData = await bookingsResponse.json();
+                    const todayBookings = bookingsData.records.filter(r => 
+                        r.fields['Status'] === 'PAID' || r.fields['Status'] === 'Confirmed'
+                    );
+                    document.getElementById('todayBookings').textContent = todayBookings.length;
+                    
+                    // Count unallocated shifts
+                    const unallocated = todayBookings.filter(r => 
+                        !r.fields['Onboarding Employee'] || !r.fields['Deloading Employee']
+                    );
+                    document.getElementById('unallocatedShifts').textContent = unallocated.length;
+                }
+                
+                // Fetch allocations
+                const allocationsResponse = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
+                    `filterByFormula=${encodeURIComponent(`{Shift Date}='${todayStr}'`)}&` +
+                    `pageSize=100`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+                
+                if (allocationsResponse.ok) {
+                    const allocationsData = await allocationsResponse.json();
+                    document.getElementById('todayAllocations').textContent = allocationsData.records.length;
+                    
+                    // Count unique staff on duty
+                    const uniqueStaff = new Set(allocationsData.records.map(r => r.fields['Employee']?.[0]).filter(Boolean));
+                    document.getElementById('staffOnDuty').textContent = uniqueStaff.size;
+                }
+                
+                // Set some sample values for demonstration
+                document.getElementById('vesselsActive').textContent = '4';
+                document.getElementById('pendingIssues').textContent = '2';
+                document.getElementById('pendingChecklists').textContent = '3';
+                document.getElementById('dueMaintenance').textContent = '1';
+                document.getElementById('activeAnnouncements').textContent = '2';
+                document.getElementById('lastPosted').textContent = 'Yesterday';
+                document.getElementById('weekRevenue').textContent = '$12,450';
+                document.getElementById('utilizationRate').textContent = '78%';
+                
+            } catch (error) {
+                console.error('Error loading overview data:', error);
+            }
+        }
+
+        // Load vessel maintenance data
+        async function loadVesselData() {
+            const vesselGrid = document.getElementById('vesselGrid');
+            
+            // For now, show sample vessel data
+            vesselGrid.innerHTML = `
+                <div class="vessel-card">
+                    <div class="vessel-header">
+                        <div class="vessel-name">BBQ Boat 1</div>
+                        <div class="vessel-status status-operational">Operational</div>
+                    </div>
+                    <div class="checklist-summary">
+                        <div class="checklist-item complete">
+                            <strong>Pre-Departure</strong>
+                            <div style="font-size: 0.85rem; margin-top: 0.25rem;">Last: Today 8:30 AM</div>
+                        </div>
+                        <div class="checklist-item pending">
+                            <strong>Post-Departure</strong>
+                            <div style="font-size: 0.85rem; margin-top: 0.25rem;">Due: 5:30 PM</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vessel-card">
+                    <div class="vessel-header">
+                        <div class="vessel-name">BBQ Boat 2</div>
+                        <div class="vessel-status status-maintenance">Maintenance</div>
+                    </div>
+                    <div class="checklist-summary">
+                        <div class="checklist-item overdue">
+                            <strong>Service Check</strong>
+                            <div style="font-size: 0.85rem; margin-top: 0.25rem;">Overdue: 2 days</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vessel-card">
+                    <div class="vessel-header">
+                        <div class="vessel-name">Polycraft 1</div>
+                        <div class="vessel-status status-operational">Operational</div>
+                    </div>
+                    <div class="checklist-summary">
+                        <div class="checklist-item complete">
+                            <strong>Pre-Departure</strong>
+                            <div style="font-size: 0.85rem; margin-top: 0.25rem;">Last: Today 9:00 AM</div>
+                        </div>
+                        <div class="checklist-item complete">
+                            <strong>Post-Departure</strong>
+                            <div style="font-size: 0.85rem; margin-top: 0.25rem;">Completed: 1:00 PM</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load announcements
+        async function loadAnnouncements() {
+            const announcementsList = document.getElementById('announcementsList');
+            
+            // For now, show sample announcements
+            announcementsList.innerHTML = `
+                <div class="announcement-card high">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>Safety Protocol Update</strong>
+                        <span style="color: #dc3545; font-size: 0.85rem;">HIGH</span>
+                    </div>
+                    <p style="margin-bottom: 0.5rem;">All staff must complete the updated safety training by end of week. New protocols for emergency procedures are now in effect.</p>
+                    <div style="font-size: 0.85rem; color: #666;">
+                        Posted by Management • 2 days ago • Expires: Sept 7
+                    </div>
+                </div>
+                
+                <div class="announcement-card medium">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>Weekend Schedule Change</strong>
+                        <span style="color: #ffc107; font-size: 0.85rem;">MEDIUM</span>
+                    </div>
+                    <p style="margin-bottom: 0.5rem;">Due to increased bookings this weekend, all available staff are requested to confirm their availability.</p>
+                    <div style="font-size: 0.85rem; color: #666;">
+                        Posted by Management • Yesterday
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load staff data
+        async function loadStaffData() {
+            // This would load staff-specific management data
+            console.log('Loading staff management data...');
+        }
+
+        // Load reports data
+        async function loadReportsData() {
+            // This would load reports and analytics
+            console.log('Loading reports data...');
+        }
+
+        // Handle announcement form submission
+        document.getElementById('announcementForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('announcementTitle').value;
+            const message = document.getElementById('announcementMessage').value;
+            const priority = document.querySelector('input[name="priority"]:checked').value;
+            const expiry = document.getElementById('announcementExpiry').value;
+            
+            // Here you would save the announcement to Airtable or Supabase
+            console.log('Posting announcement:', { title, message, priority, expiry });
+            
+            // Show success message
+            alert('Announcement posted successfully!');
+            
+            // Reset form
+            e.target.reset();
+            
+            // Reload announcements
+            loadAnnouncements();
+        });
+
+        // Logout function
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'auth.html';
+        }
+
+        // Format date helper
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Initialize on page load
+        checkAuth();
+    </script>
+</body>
+</html>

@@ -546,11 +546,12 @@
                     'operations@mbh.com'
                 ];
                 
-                // Show management button if user is in management list
+                // Redirect management users to management dashboard
                 if (managementEmails.includes(user.email.toLowerCase()) || 
                     user.email.includes('@mbh.com')) {
-                    document.getElementById('managementButton').style.display = 'flex';
-                    isManagement = true;
+                    // Management users get redirected to the management dashboard
+                    window.location.href = 'management-dashboard.html';
+                    return; // Stop loading regular dashboard
                 }
                 
                 // Find employee record to get first name
