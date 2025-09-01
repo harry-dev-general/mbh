@@ -334,9 +334,14 @@
         
         .allocation-block:hover {
             z-index: 20;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            transform: scale(1.02);
-            min-width: 150px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .allocation-block:hover .allocation-info,
+        .allocation-block:hover .allocation-time {
+            white-space: normal;
+            word-break: break-word;
         }
         
         .allocation-info {
@@ -366,10 +371,14 @@
         }
         
         .booking-block:hover {
-            transform: scale(1.02);
             z-index: 15;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            min-width: 150px;
+            position: relative;
+        }
+        
+        .booking-block:hover > div {
+            white-space: normal;
+            word-break: break-word;
         }
         
         /* Smart layout for multiple items */
