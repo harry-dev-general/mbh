@@ -2468,9 +2468,44 @@
                 
                 // Check if staff is available on this day
                 const isAvailable = dayAvailability !== undefined;
-                const availableFrom = dayAvailability?.fields['Available From'] || '';
-                const availableUntil = dayAvailability?.fields['Available Until'] || '';
+                const availableFromRaw = dayAvailability?.fields['Available From'] || '';
+                const availableUntilRaw = dayAvailability?.fields['Available Until'] || '';
                 const notes = dayAvailability?.fields['Notes'] || '';
+                
+                // Function to format time from various formats
+                function formatAvailabilityTime(timeStr) {
+                    if (!timeStr) return '';
+                    
+                    // Check if it's an ISO datetime string
+                    if (timeStr.includes('T')) {
+                        const date = new Date(timeStr);
+                        let hours = date.getHours();
+                        const minutes = date.getMinutes();
+                        const ampm = hours >= 12 ? 'PM' : 'AM';
+                        hours = hours % 12 || 12;
+                        return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                    }
+                    
+                    // Check if it's already in 12-hour format
+                    if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) {
+                        return timeStr;
+                    }
+                    
+                    // Check if it's 24-hour format (HH:MM)
+                    if (timeStr.match(/^\d{1,2}:\d{2}$/)) {
+                        const [hourStr, minuteStr] = timeStr.split(':');
+                        let hours = parseInt(hourStr);
+                        const minutes = parseInt(minuteStr);
+                        const ampm = hours >= 12 ? 'PM' : 'AM';
+                        hours = hours % 12 || 12;
+                        return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                    }
+                    
+                    return timeStr; // Return as-is if format unknown
+                }
+                
+                const availableFrom = formatAvailabilityTime(availableFromRaw);
+                const availableUntil = formatAvailabilityTime(availableUntilRaw);
                 
                 html += `
                     <div class="availability-day ${isToday ? 'today' : ''}">
@@ -2484,7 +2519,7 @@
                         ${isAvailable && (availableFrom || availableUntil) ? `
                             <div class="availability-times">
                                 <i class="fas fa-clock"></i>
-                                ${availableFrom || '00:00'} - ${availableUntil || '23:59'}
+                                ${availableFrom || 'Start'} - ${availableUntil || 'End'}
                             </div>
                         ` : ''}
                         ${notes ? `
