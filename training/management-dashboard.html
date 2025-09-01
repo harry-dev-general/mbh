@@ -254,77 +254,136 @@
             font-size: 0.9rem;
         }
         
-        /* Action Cards */
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .action-card {
+        /* Weekly Calendar Styles */
+        .calendar-container {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            margin-top: 2rem;
         }
         
-        .action-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .action-header {
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .calendar-header {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
             color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .action-header.staff {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        .action-header.vessel {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-        
-        .action-header.announcement {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        }
-        
-        .action-header.reports {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-        
-        .action-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+        .calendar-header h3 {
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         
-        .action-description {
-            opacity: 0.95;
-            font-size: 0.9rem;
-        }
-        
-        .action-body {
-            padding: 1.5rem;
-        }
-        
-        .action-stat {
+        .week-nav {
             display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .week-nav button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .week-nav button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .week-display {
+            font-size: 0.95rem;
+            padding: 0 1rem;
+        }
+        
+        .time-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: 0;
+            min-height: 600px;
+        }
+        
+        .time-label {
+            padding: 0.5rem;
+            text-align: right;
+            font-size: 0.85rem;
+            color: #666;
+            border-right: 1px solid #e0e0e0;
             border-bottom: 1px solid #f0f0f0;
         }
         
-        .action-stat:last-child {
-            border-bottom: none;
+        .day-header {
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 600;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        .day-header.today-header {
+            background: #fee5e5;
+            color: #DC143C;
+            font-weight: 700;
+        }
+        
+        .day-column {
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            align-content: flex-start;
+            gap: 2px;
+            padding: 2px;
+            min-height: 40px;
+        }
+        
+        .day-column.today-column {
+            background: #fff8f8;
+        }
+        
+        .booking-block {
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: 100%;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .booking-block:hover {
+            z-index: 15;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .booking-block:hover > div {
+            white-space: normal;
+            word-break: break-word;
+        }
+        
+        /* Smart layout for multiple items */
+        .day-column:has(> :nth-child(2)) > * {
+            flex: 1 1 48%;
+        }
+        
+        .day-column:has(> :nth-child(3)) > * {
+            flex: 1 1 31%;
         }
         
         /* Vessel Maintenance Section */
@@ -533,9 +592,12 @@
                 gap: 0.5rem;
             }
             
-            .overview-grid,
-            .action-grid {
+            .overview-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .calendar-container {
+                margin-top: 1rem;
             }
         }
     </style>
@@ -586,9 +648,6 @@
             <button class="nav-tab" onclick="switchTab('announcements')">
                 <i class="fas fa-bullhorn"></i> Announcements
             </button>
-            <button class="nav-tab" onclick="switchTab('reports')">
-                <i class="fas fa-chart-bar"></i> Reports
-            </button>
         </div>
     </nav>
 
@@ -631,92 +690,21 @@
                 </div>
             </div>
 
-            <h3 style="margin: 2rem 0 1rem;">Quick Actions</h3>
-            <div class="action-grid">
-                <div class="action-card" onclick="window.location.href='management-allocations.html'">
-                    <div class="action-header staff">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-users-cog"></i>
-                                Staff Allocation
-                            </div>
-                            <div class="action-description">Manage staff schedules and allocations</div>
-                        </div>
-                    </div>
-                    <div class="action-body">
-                        <div class="action-stat">
-                            <span>Unallocated Shifts</span>
-                            <strong id="unallocatedShifts">0</strong>
-                        </div>
-                        <div class="action-stat">
-                            <span>Today's Allocations</span>
-                            <strong id="todayAllocations">0</strong>
-                        </div>
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3><i class="fas fa-calendar-week"></i> Weekly Bookings</h3>
+                    <div class="week-nav">
+                        <button onclick="changeWeek(-1)"><i class="fas fa-chevron-left"></i></button>
+                        <span class="week-display" id="weekDisplay">Loading...</span>
+                        <button onclick="changeWeek(1)"><i class="fas fa-chevron-right"></i></button>
+                        <button onclick="goToCurrentWeek()">Today</button>
                     </div>
                 </div>
-
-                <div class="action-card" onclick="switchTab('vessels')">
-                    <div class="action-header vessel">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-tools"></i>
-                                Vessel Status
-                            </div>
-                            <div class="action-description">Check maintenance and checklists</div>
-                        </div>
-                    </div>
-                    <div class="action-body">
-                        <div class="action-stat">
-                            <span>Pending Checklists</span>
-                            <strong id="pendingChecklists">0</strong>
-                        </div>
-                        <div class="action-stat">
-                            <span>Due Maintenance</span>
-                            <strong id="dueMaintenance">0</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="action-card" onclick="switchTab('announcements')">
-                    <div class="action-header announcement">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-megaphone"></i>
-                                Post Announcement
-                            </div>
-                            <div class="action-description">Communicate with all staff</div>
-                        </div>
-                    </div>
-                    <div class="action-body">
-                        <div class="action-stat">
-                            <span>Active Announcements</span>
-                            <strong id="activeAnnouncements">0</strong>
-                        </div>
-                        <div class="action-stat">
-                            <span>Last Posted</span>
-                            <strong id="lastPosted">None</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="action-card" onclick="switchTab('reports')">
-                    <div class="action-header reports">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-chart-pie"></i>
-                                View Reports
-                            </div>
-                            <div class="action-description">Analytics and performance metrics</div>
-                        </div>
-                    </div>
-                    <div class="action-body">
-                        <div class="action-stat">
-                            <span>This Week Revenue</span>
-                            <strong id="weekRevenue">$0</strong>
-                        </div>
-                        <div class="action-stat">
-                            <span>Utilization Rate</span>
-                            <strong id="utilizationRate">0%</strong>
+                <div class="calendar-body" style="padding: 1rem;">
+                    <div id="scheduleGrid" class="time-grid">
+                        <div class="loading" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                            <div class="spinner"></div>
+                            <p>Loading bookings...</p>
                         </div>
                     </div>
                 </div>
@@ -727,40 +715,34 @@
         <div id="staff-tab" class="tab-content">
             <h2 style="margin-bottom: 1.5rem;">Staff Management</h2>
             
-            <div class="action-grid">
-                <div class="action-card" onclick="window.location.href='management-allocations.html'">
-                    <div class="action-header staff">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-calendar-alt"></i>
-                                Weekly Schedule
-                            </div>
-                            <div class="action-description">View and manage weekly staff allocations</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer;" onclick="window.location.href='management-allocations.html'">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-calendar-alt"></i>
+                            Weekly Schedule
                         </div>
+                        <div style="opacity: 0.95; font-size: 0.9rem;">View and manage weekly staff allocations</div>
                     </div>
                 </div>
                 
-                <div class="action-card" onclick="window.location.href='employee-management.html'">
-                    <div class="action-header">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-user-plus"></i>
-                                Employee Directory
-                            </div>
-                            <div class="action-description">Manage employee records and contacts</div>
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer;" onclick="window.location.href='employee-management.html'">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-user-plus"></i>
+                            Employee Directory
                         </div>
+                        <div style="opacity: 0.95; font-size: 0.9rem;">Manage employee records and contacts</div>
                     </div>
                 </div>
                 
-                <div class="action-card" onclick="window.location.href='roster-management.html'">
-                    <div class="action-header">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-clipboard-list"></i>
-                                Roster Planning
-                            </div>
-                            <div class="action-description">Plan future rosters and availability</div>
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer;" onclick="window.location.href='roster-management.html'">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-clipboard-list"></i>
+                            Roster Planning
                         </div>
+                        <div style="opacity: 0.95; font-size: 0.9rem;">Plan future rosters and availability</div>
                     </div>
                 </div>
             </div>
@@ -840,60 +822,7 @@
             </div>
         </div>
 
-        <!-- Reports Tab -->
-        <div id="reports-tab" class="tab-content">
-            <h2 style="margin-bottom: 1.5rem;">Reports & Analytics</h2>
-            
-            <div class="action-grid">
-                <div class="action-card">
-                    <div class="action-header reports">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-dollar-sign"></i>
-                                Revenue Report
-                            </div>
-                            <div class="action-description">Daily, weekly, and monthly revenue</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="action-card">
-                    <div class="action-header">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-user-clock"></i>
-                                Staff Performance
-                            </div>
-                            <div class="action-description">Attendance and allocation metrics</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="action-card">
-                    <div class="action-header">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-ship"></i>
-                                Fleet Utilization
-                            </div>
-                            <div class="action-description">Vessel usage and maintenance history</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="action-card">
-                    <div class="action-header">
-                        <div>
-                            <div class="action-title">
-                                <i class="fas fa-file-export"></i>
-                                Export Data
-                            </div>
-                            <div class="action-description">Download reports as CSV or PDF</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <script>
@@ -912,6 +841,8 @@
         const ANNOUNCEMENTS_TABLE_ID = 'tblAnnouncements'; // You'll need to create this table
 
         let currentUser = null;
+        let currentWeekStart = null;
+        let bookingsData = [];
 
         // Check authentication
         async function checkAuth() {
@@ -976,15 +907,236 @@
                 case 'staff':
                     loadStaffData();
                     break;
-                case 'reports':
-                    loadReportsData();
-                    break;
             }
+        }
+
+        // Get Monday of current week
+        function getMonday(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+
+        // Format date for display
+        function formatWeekDisplay(date) {
+            const endDate = new Date(date);
+            endDate.setDate(endDate.getDate() + 6);
+            
+            const options = { month: 'short', day: 'numeric' };
+            const startStr = date.toLocaleDateString('en-AU', options);
+            const endStr = endDate.toLocaleDateString('en-AU', options);
+            
+            return `${startStr} - ${endStr}`;
+        }
+
+        // Change week navigation
+        function changeWeek(direction) {
+            currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+            updateWeekDisplay();
+            loadCalendarData();
+        }
+
+        // Go to current week
+        function goToCurrentWeek() {
+            currentWeekStart = getMonday(new Date());
+            updateWeekDisplay();
+            loadCalendarData();
+        }
+
+        // Update week display
+        function updateWeekDisplay() {
+            document.getElementById('weekDisplay').textContent = formatWeekDisplay(currentWeekStart);
+        }
+
+        // Load calendar data
+        async function loadCalendarData() {
+            try {
+                const startDate = formatDate(currentWeekStart);
+                const endDate = new Date(currentWeekStart);
+                endDate.setDate(endDate.getDate() + 6);
+                const endDateStr = formatDate(endDate);
+
+                // Fetch bookings for the week
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
+                    `pageSize=100&` +
+                    `filterByFormula=AND({Status}!='Cancelled', {Booking Date}>='${startDate}', {Booking Date}<='${endDateStr}')`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    bookingsData = data.records.filter(r => 
+                        r.fields['Status'] === 'PAID' || r.fields['Status'] === 'Confirmed'
+                    );
+                    renderScheduleGrid();
+                    renderBookingsOnGrid();
+                }
+            } catch (error) {
+                console.error('Error loading calendar data:', error);
+            }
+        }
+
+        // Render the weekly schedule grid
+        function renderScheduleGrid() {
+            const grid = document.getElementById('scheduleGrid');
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const hours = Array.from({length: 15}, (_, i) => i + 6); // 6am to 8pm
+            
+            // Get today's date for highlighting
+            const today = new Date();
+            const todayStr = formatDate(today);
+            
+            let html = '<div></div>'; // Empty corner cell
+            
+            // Day headers with dates
+            days.forEach((day, index) => {
+                const date = new Date(currentWeekStart);
+                date.setDate(date.getDate() + index);
+                const dateStr = formatDate(date);
+                const dayNum = date.getDate();
+                const month = date.getMonth() + 1;
+                const dateDisplay = `${dayNum.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+                
+                // Check if this is today
+                const isToday = dateStr === todayStr;
+                
+                html += `
+                    <div class="day-header ${isToday ? 'today-header' : ''}" data-date="${dateStr}">
+                        <div>${day}</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 2px;">${dateDisplay}</div>
+                    </div>
+                `;
+            });
+            
+            // Time slots and day columns
+            hours.forEach(hour => {
+                html += `<div class="time-label">${hour}:00</div>`;
+                days.forEach((day, dayIndex) => {
+                    const date = new Date(currentWeekStart);
+                    date.setDate(date.getDate() + dayIndex);
+                    const dateStr = formatDate(date);
+                    
+                    // Check if this is today
+                    const isToday = dateStr === todayStr;
+                    
+                    html += `
+                        <div class="day-column ${isToday ? 'today-column' : ''}" 
+                             data-date="${dateStr}" 
+                             data-hour="${hour}">
+                        </div>
+                    `;
+                });
+            });
+            
+            grid.innerHTML = html;
+        }
+
+        // Render bookings on the grid
+        function renderBookingsOnGrid() {
+            // Clear existing booking displays
+            document.querySelectorAll('.booking-block').forEach(block => block.remove());
+            
+            bookingsData.forEach(record => {
+                const booking = record.fields;
+                if (!booking['Booking Date']) return;
+                
+                const bookingDate = booking['Booking Date'];
+                const customerName = booking['Customer Name'] || 'Unknown Customer';
+                const onboardingTime = booking['Onboarding Time'] || booking['Start Time'] || '09:00';
+                const deloadingTime = booking['Deloading Time'] || booking['Finish Time'] || '17:00';
+                const vessel = booking['Vessel'] || '';
+                
+                // Check staffing status
+                const hasOnboardingStaff = booking['Onboarding Employee'] && booking['Onboarding Employee'].length > 0;
+                const hasDeloadingStaff = booking['Deloading Employee'] && booking['Deloading Employee'].length > 0;
+                const isFullyStaffed = hasOnboardingStaff && hasDeloadingStaff;
+                
+                // Create onboarding block
+                if (onboardingTime) {
+                    createBookingBlock(bookingDate, onboardingTime, 'onboarding', customerName, isFullyStaffed, vessel);
+                }
+                
+                // Create deloading block
+                if (deloadingTime && deloadingTime !== onboardingTime) {
+                    createBookingBlock(bookingDate, deloadingTime, 'deloading', customerName, isFullyStaffed, vessel);
+                }
+            });
+        }
+        
+        // Create a booking block on the grid
+        function createBookingBlock(date, time, type, customerName, isFullyStaffed, vessel) {
+            // Handle different time formats
+            let hour;
+            if (time.toLowerCase().includes('pm') || time.toLowerCase().includes('am')) {
+                const timeStr = time.replace(/\s/g, '').toLowerCase();
+                const hourMatch = timeStr.match(/(\d{1,2}):/);
+                if (hourMatch) {
+                    hour = parseInt(hourMatch[1]);
+                    if (timeStr.includes('pm') && hour !== 12) {
+                        hour += 12;
+                    } else if (timeStr.includes('am') && hour === 12) {
+                        hour = 0;
+                    }
+                }
+            } else {
+                const timeParts = time.split(':');
+                hour = parseInt(timeParts[0]);
+            }
+            
+            if (isNaN(hour)) return;
+            
+            // Find the cell for this booking
+            const cell = document.querySelector(`[data-date="${date}"][data-hour="${hour}"]`);
+            if (!cell) return;
+            
+            const bookingBlock = document.createElement('div');
+            bookingBlock.className = 'booking-block';
+            
+            // Color based on staffing and type
+            let bgColor, borderColor;
+            if (!isFullyStaffed) {
+                bgColor = '#ffebee';
+                borderColor = '#f44336';
+            } else if (type === 'onboarding') {
+                bgColor = '#e3f2fd';
+                borderColor = '#2196f3';
+            } else {
+                bgColor = '#fff3e0';
+                borderColor = '#ff9800';
+            }
+            
+            bookingBlock.style.cssText = `
+                background: ${bgColor};
+                border: 2px solid ${borderColor};
+            `;
+            
+            const icon = type === 'onboarding' ? '🚢' : '⚓';
+            const vesselText = vessel ? ` - ${vessel}` : '';
+            
+            bookingBlock.innerHTML = `
+                <div style="font-weight: 600;">${icon} ${customerName}</div>
+                <div style="font-size: 10px; opacity: 0.8;">${time}${vesselText}</div>
+            `;
+            
+            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} at ${time}${vesselText}\n${isFullyStaffed ? 'Fully Staffed' : 'NEEDS STAFF'}`;
+            
+            cell.appendChild(bookingBlock);
         }
 
         // Load overview data
         async function loadOverviewData() {
             try {
+                // Initialize calendar
+                currentWeekStart = getMonday(new Date());
+                updateWeekDisplay();
+                await loadCalendarData();
+                
                 // Get today's date
                 const today = new Date();
                 const todayStr = formatDate(today);
@@ -1008,11 +1160,10 @@
                     );
                     document.getElementById('todayBookings').textContent = todayBookings.length;
                     
-                    // Count unallocated shifts
+                    // Count unallocated shifts (no longer displayed but could be useful for stats)
                     const unallocated = todayBookings.filter(r => 
                         !r.fields['Onboarding Employee'] || !r.fields['Deloading Employee']
                     );
-                    document.getElementById('unallocatedShifts').textContent = unallocated.length;
                 }
                 
                 // Fetch allocations
@@ -1029,22 +1180,15 @@
                 
                 if (allocationsResponse.ok) {
                     const allocationsData = await allocationsResponse.json();
-                    document.getElementById('todayAllocations').textContent = allocationsData.records.length;
                     
                     // Count unique staff on duty
                     const uniqueStaff = new Set(allocationsData.records.map(r => r.fields['Employee']?.[0]).filter(Boolean));
                     document.getElementById('staffOnDuty').textContent = uniqueStaff.size;
                 }
                 
-                // Set some sample values for demonstration
+                // Set some sample values for demonstration (for cards that still exist)
                 document.getElementById('vesselsActive').textContent = '4';
                 document.getElementById('pendingIssues').textContent = '2';
-                document.getElementById('pendingChecklists').textContent = '3';
-                document.getElementById('dueMaintenance').textContent = '1';
-                document.getElementById('activeAnnouncements').textContent = '2';
-                document.getElementById('lastPosted').textContent = 'Yesterday';
-                document.getElementById('weekRevenue').textContent = '$12,450';
-                document.getElementById('utilizationRate').textContent = '78%';
                 
             } catch (error) {
                 console.error('Error loading overview data:', error);
@@ -1140,12 +1284,6 @@
         async function loadStaffData() {
             // This would load staff-specific management data
             console.log('Loading staff management data...');
-        }
-
-        // Load reports data
-        async function loadReportsData() {
-            // This would load reports and analytics
-            console.log('Loading reports data...');
         }
 
         // Handle announcement form submission
