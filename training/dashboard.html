@@ -63,10 +63,13 @@
         
         .user-actions {
             text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1rem;
         }
         
         .user-email {
-            margin-bottom: 0.5rem;
             opacity: 0.9;
         }
         
@@ -83,6 +86,60 @@
         
         .logout-btn:hover {
             background: rgba(255,255,255,0.3);
+        }
+        
+        .view-toggle {
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            margin-right: 1rem;
+        }
+        
+        .view-toggle.visible {
+            display: flex;
+        }
+        
+        .toggle-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 28px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .toggle-switch.management {
+            background: #DC143C;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .toggle-switch.management .toggle-slider {
+            transform: translateX(32px);
+        }
+        
+        .toggle-text {
+            font-size: 0.85rem;
+            font-weight: 500;
         }
         
         .toolbar {
@@ -396,6 +453,14 @@
             </div>
             <div class="user-actions">
                 <div class="user-email" id="userEmail"></div>
+                <div class="view-toggle" id="viewToggle">
+                    <span class="toggle-label">View:</span>
+                    <span class="toggle-text">Employee</span>
+                    <div class="toggle-switch" id="toggleSwitch" onclick="toggleView()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <span class="toggle-text">Manager</span>
+                </div>
                 <button class="logout-btn" onclick="logout()">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
@@ -546,12 +611,24 @@
                     'operations@mbh.com'
                 ];
                 
-                // Redirect management users to management dashboard
+                // Check if management user wants to view regular dashboard
+                const urlParams = new URLSearchParams(window.location.search);
+                const viewMode = urlParams.get('view');
+                
+                // Redirect management users to management dashboard UNLESS they explicitly chose regular view
                 if (managementEmails.includes(user.email.toLowerCase()) || 
                     user.email.includes('@mbh.com')) {
-                    // Management users get redirected to the management dashboard
-                    window.location.href = 'management-dashboard.html';
-                    return; // Stop loading regular dashboard
+                    isManagement = true;
+                    
+                    // Only redirect if they haven't explicitly chosen regular view
+                    if (viewMode !== 'regular') {
+                        window.location.href = 'management-dashboard.html';
+                        return; // Stop loading regular dashboard
+                    }
+                    
+                    // They are management but want regular view - show the toggle button and view switcher
+                    document.getElementById('managementButton').style.display = 'flex';
+                    document.getElementById('viewToggle').classList.add('visible');
                 }
                 
                 // Find employee record to get first name
@@ -610,6 +687,12 @@
                 // Always redirect to auth page
                 window.location.href = 'auth.html';
             }
+        }
+        
+        // Toggle between employee and manager view
+        function toggleView() {
+            // Since we're on the regular dashboard, toggle to management view
+            window.location.href = 'management-dashboard.html';
         }
 
         // Listen for auth state changes
