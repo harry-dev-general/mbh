@@ -273,6 +273,13 @@
         .day-column {
             border-right: 1px solid #e0e0e0;
             position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            align-content: flex-start;
+            gap: 2px;
+            padding: 2px;
+            min-height: 60px;
         }
         
         .day-column.today-column {
@@ -301,17 +308,18 @@
         }
         
         .allocation-block {
-            position: absolute;
-            left: 2px;
-            right: 2px;
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: 100%;
             background: #e3f2fd;
             border: 1px solid #2196f3;
             border-radius: 4px;
-            padding: 0.25rem;
-            font-size: 0.75rem;
+            padding: 4px 6px;
+            font-size: 11px;
             cursor: pointer;
             overflow: hidden;
             z-index: 10;
+            transition: all 0.2s ease;
         }
         
         .allocation-block.booking {
@@ -327,6 +335,8 @@
         .allocation-block:hover {
             z-index: 20;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transform: scale(1.02);
+            min-width: 150px;
         }
         
         .allocation-info {
@@ -337,22 +347,42 @@
         }
         
         .allocation-time {
-            font-size: 0.7rem;
-            color: #666;
+            font-size: 10px;
+            color: rgba(255,255,255,0.9);
         }
         
         .booking-block {
-            display: inline-block;
-            margin: 2px;
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: 100%;
+            padding: 4px 6px;
+            border-radius: 4px;
             font-size: 11px;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
             transition: all 0.2s ease;
         }
         
         .booking-block:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
             z-index: 15;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            min-width: 150px;
+        }
+        
+        /* Smart layout for multiple items */
+        .day-column:has(> :nth-child(2)) > * {
+            flex: 1 1 48%;
+        }
+        
+        .day-column:has(> :nth-child(3)) > * {
+            flex: 1 1 31%;
+        }
+        
+        .day-column > *:only-child {
+            flex: 1 1 100%;
         }
         
         .bookings-panel {
@@ -1514,19 +1544,14 @@
                     allocationBlock.style.cssText = `
                         background: ${backgroundColor};
                         color: white;
-                        padding: 6px;
+                        padding: 4px 6px;
                         border-radius: 4px;
                         font-size: 11px;
-                        margin: 2px;
                         cursor: pointer;
-                        position: absolute;
-                        left: 2px;
-                        right: 2px;
-                        top: 2px;
-                        height: ${blockHeight}px;
-                        z-index: 10;
                         box-shadow: 0 1px 3px rgba(0,0,0,0.2);
                         overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
                         border: 2px solid ${borderColor};
                         opacity: ${responseStatus === 'Pending' || !responseStatus ? '0.9' : '1'};
                     `;
@@ -1645,15 +1670,13 @@
             bookingBlock.style.cssText = `
                 background: ${baseColor};
                 color: white;
-                padding: 4px 8px;
+                padding: 4px 6px;
                 border-radius: 4px;
                 font-size: 11px;
-                margin: 2px;
                 cursor: pointer;
-                position: relative;
-                display: inline-block;
-                max-width: calc(100% - 4px);
                 overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
                 opacity: ${opacity};
                 border: 2px solid ${isFullyStaffed ? '#2e7d32' : '#c62828'};
                 box-shadow: 0 1px 3px rgba(0,0,0,0.2);
