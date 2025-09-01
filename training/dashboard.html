@@ -500,7 +500,7 @@
                 <div class="description">Pre & post departure checks</div>
             </a>
             
-            <!-- Management Only Section -->
+            <!-- Management Only Section - Only visible to management users, even when viewing employee dashboard -->
             <a href="management-allocations.html" class="nav-button" id="managementButton" style="display: none; background: linear-gradient(135deg, #8B0000, #DC143C); color: white;">
                 <i class="fas fa-users-cog" style="color: white;"></i>
                 <div class="title">Staff Allocation</div>
@@ -615,7 +615,7 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const viewMode = urlParams.get('view');
                 
-                // Redirect management users to management dashboard UNLESS they explicitly chose regular view
+                // Check if user is management
                 if (managementEmails.includes(user.email.toLowerCase()) || 
                     user.email.includes('@mbh.com')) {
                     isManagement = true;
@@ -626,9 +626,14 @@
                         return; // Stop loading regular dashboard
                     }
                     
-                    // They are management but want regular view - show the toggle button and view switcher
+                    // They are management but want regular view - show the toggle button, view switcher, and Staff Allocation button
                     document.getElementById('managementButton').style.display = 'flex';
                     document.getElementById('viewToggle').classList.add('visible');
+                } else {
+                    // Regular employee - ensure management features are hidden
+                    isManagement = false;
+                    document.getElementById('managementButton').style.display = 'none';
+                    document.getElementById('viewToggle').classList.remove('visible');
                 }
                 
                 // Find employee record to get first name
