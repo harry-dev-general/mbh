@@ -1,0 +1,29 @@
+{
+  "markdown": "[Skip to main content](https://support.checkfront.com/hc/en-us/articles/19868073966492-How-do-I-add-Staff-only-notes-to-a-Customer-Profile#main-content)\n\n* * *\n\nLearn how to [add a Staff-only note](https://support.checkfront.com/hc/en-us/articles/19868073966492-How-do-I-add-Staff-only-notes-to-a-Customer-Profile#h_01HS48VEFFA9PPP9BTTPM11ZM8) to a Customer Profile in the Customers Directory.\n\n* * *\n\n## **Accessing the features mentioned in this article**\n\n**Where can I find this feature using the top menu?**\n\n- Booking Form: Manage > Layout > Booking Form\n- Customers Directory: Customers > Directory\n\n\n**What more do I need to use this feature?**\n\n- [Admin](https://support.checkfront.com/hc/articles/19868502205212) permissions to manage your account.\n\n\n**Which Checkfront version supports this feature - classic items, classic products, or both?**\n\n- This feature is available in both our classic version using classic items (Inventory > Items) and our classic version using classic products (Inventory > Products).  → [Learn more about products](https://support.checkfront.com/hc/articles/19868100241052)\n\n* * *\n\n## Adding a Staff-only note to a Customer profile\n\n[Back to top](https://support.checkfront.com/hc/en-us/articles/19868073966492-How-do-I-add-Staff-only-notes-to-a-Customer-Profile# \"Back to top\")\n\nDo you want to add a note field to a Customer profile that only Staff can fill out? Keeping notes in Customer profiles regarding their preferences, allergies, or any other relevant information can be helpful.\n\nYou can follow these steps to set this up:\n\n![Manage Layout](https://support.checkfront.com/hc/article_attachments/19868074442652)\n\n1\\. Navigate to the **Booking Form** area (Manage > Layout > Booking Form).\n\n![Add New Field](https://support.checkfront.com/hc/article_attachments/19868074457756)\n\n2\\. Choose **\\+ Add new field** to open the Create Form Field window, e.g. _Single Line Text or_ _Paragraph Text_ type.\n\n![Form General](https://support.checkfront.com/hc/article_attachments/19868073830044)\n\n3\\. Fill out the General tab fields, including Type, Label, and ID.\n\n![Form Options](https://support.checkfront.com/hc/article_attachments/19868062558620)\n\n4\\. Select the **Options** tab.\n\n![Form Staff-only Settings](https://support.checkfront.com/hc/article_attachments/19868074520476)\n\n5\\. Check _Show on form_ from the Staff options list. Uncheck any other Customer or Staff options.\n\n6\\. Check the _Attach this field to the customer profile_ option. This option is available with all field types.\n\n7\\. Select **Add**(or Update).\n\n![Staff-only Notes](https://support.checkfront.com/hc/article_attachments/19868073893148)\n\nYou can then access and edit the field from the list of Booking Details.\n\n![Customer Profile Forms](https://support.checkfront.com/hc/article_attachments/19868039520028)\n\nStaff can now view and access the field within all Customer profiles from the Customers Directory (Customers > Directory > Customer Profile). The field is not displayed on any Customer-facing forms or invoices.\n\n|     |     |\n| --- | --- |\n| ![Learn More](https://support.checkfront.com/hc/article_attachments/19868073937436) | Learn more about the Booking Form and Customer Profiles here:<br>- [Introduction to booking form fields](https://support.checkfront.com/hc/articles/19868132384924)<br>- [Introduction to the Customers Directory and Customer Profiles](https://support.checkfront.com/hc/articles/19868143505820) |",
+  "metadata": {
+    "viewport": "width=device-width, initial-scale=1.0",
+    "ogTitle": "How do I add Staff-only notes to a Customer Profile",
+    "ogImage": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "og:site_name": "Checkfront",
+    "og:description": "Learn how to add a Staff-only note to a Customer Profile in the Customers Directory.\n \n\nAccessing the features mentioned in this article\nWhere can I find this feature using the top menu?\n\nBooking F...",
+    "ogDescription": "Learn how to add a Staff-only note to a Customer Profile in the Customers Directory.\n \n\nAccessing the features mentioned in this article\nWhere can I find this feature using the top menu?\n\nBooking F...",
+    "title": "How do I add Staff-only notes to a Customer Profile – Checkfront",
+    "ogUrl": "https://support.checkfront.com/hc/en-us/articles/19868073966492-How-do-I-add-Staff-only-notes-to-a-Customer-Profile",
+    "og:image": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "og:title": "How do I add Staff-only notes to a Customer Profile",
+    "og:url": "https://support.checkfront.com/hc/en-us/articles/19868073966492-How-do-I-add-Staff-only-notes-to-a-Customer-Profile",
+    "ogSiteName": "Checkfront",
+    "favicon": "https://support.checkfront.com/hc/theming_assets/01JTH7E0FXR755AG7RV2QDPEZG",
+    "og:type": "website",
+    "robots": "noindex",
+    "language": "en-US",
+    "description": "Learn how to add a Staff-only note to a Customer Profile in the Customers Directory.    Accessing the features mentioned in this article...",
+    "scrapeId": "f4d123b7-3c7d-4732-a0d4-fba45cd4bee9",
+    "sourceURL": "https://support.checkfront.com/hc/en-us/articles/19868073966492-How-do-I-add-Staff-only-notes-to-a-Customer-Profile",
+    "url": "https://support.checkfront.com/hc/en-us/articles/19868073966492-How-do-I-add-Staff-only-notes-to-a-Customer-Profile",
+    "statusCode": 200,
+    "contentType": "text/html; charset=utf-8",
+    "proxyUsed": "basic",
+    "creditsUsed": 1
+  }
+}

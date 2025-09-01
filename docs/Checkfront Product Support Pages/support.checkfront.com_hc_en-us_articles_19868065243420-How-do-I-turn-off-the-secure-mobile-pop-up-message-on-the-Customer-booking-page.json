@@ -1,0 +1,29 @@
+{
+  "markdown": "[Skip to main content](https://support.checkfront.com/hc/en-us/articles/19868065243420-How-do-I-turn-off-the-secure-mobile-pop-up-message-on-the-Customer-booking-page#main-content)\n\n* * *\n\nLearn how to [disable](https://support.checkfront.com/hc/en-us/articles/19868065243420-How-do-I-turn-off-the-secure-mobile-pop-up-message-on-the-Customer-booking-page#h_01GS10SMZV9A2PFVD9KFHATDYP) the secure mobile pop-up message on the Customer booking page.\n\n* * *\n\n## Accessing the features mentioned in this article\n\n**Where can I find this feature using the top menu?**\n\nManage > Layout > Booking Page\n\n**What more do I need to use this feature?**\n\n- [Admin](https://support.checkfront.com/hc/articles/19868502205212) permissions to configure Booking Page options.\n\n\n**Which Checkfront version supports this feature - classic items, classic products, or both?**\n\n- This feature is available in both our classic version using classic items (Inventory > Items) and our classic version using classic products (Inventory > Products).  → [Learn more about products](https://support.checkfront.com/hc/articles/19868100241052)\n\n* * *\n\n## Turning off the secure mobile pop-up message\n\n![Mobile Message](https://support.checkfront.com/hc/article_attachments/19868109214236)\n\nCustomers on mobile devices may see the message _Go to our secure mobile booking page?_ with the option to select **OK** or **Cancel**.\n\nCustomers who click **OK** are redirected to the mobile-friendly Customer booking page.\n\nThis is a helpful option if you have the booking page embedded in your website (e.g. via the [Booking Widget](https://support.checkfront.com/hc/articles/19868141953692)) but your website is not optimized for mobile screens.\n\nHowever, this message can be disabled via your Booking Page settings, as described below.\n\n![Layout Booking Page Mobile](https://support.checkfront.com/hc/article_attachments/19868093431836)\n\nTo do this, you must uncheck the _Redirect mobile devices to mobile booking page_ (Manage > Layout > Booking Page) setting.\n\nOnce unchecked, Customers are no longer redirected to the mobile booking page.\n\n|     |     |\n| --- | --- |\n| ![Learn More](https://support.checkfront.com/hc/article_attachments/19868093454108) | Learn more about these topics here:<br>- [Website Integrations](https://support.checkfront.com/hc/en-us/categories/360000576093-Website-Integrations)<br>- [Introduction to managing booking page layouts](https://support.checkfront.com/hc/articles/19868193188124) |",
+  "metadata": {
+    "og:type": "website",
+    "language": "en-US",
+    "ogImage": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "og:site_name": "Checkfront",
+    "og:description": "Learn how to disable the secure mobile pop-up message on the Customer booking page.\n \n\nAccessing the features mentioned in this article\nWhere can I find this feature using the top menu?\nManage >...",
+    "og:url": "https://support.checkfront.com/hc/en-us/articles/19868065243420-How-do-I-turn-off-the-secure-mobile-pop-up-message-on-the-Customer-booking-page",
+    "description": "Learn how to disable the secure mobile pop-up message on the Customer booking page.    Accessing the features mentioned in this article...",
+    "title": "How do I turn off the secure mobile pop-up message on the Customer booking page? – Checkfront",
+    "og:image": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "ogDescription": "Learn how to disable the secure mobile pop-up message on the Customer booking page.\n \n\nAccessing the features mentioned in this article\nWhere can I find this feature using the top menu?\nManage >...",
+    "og:title": "How do I turn off the secure mobile pop-up message on the Customer booking page?",
+    "ogSiteName": "Checkfront",
+    "robots": "noindex",
+    "ogTitle": "How do I turn off the secure mobile pop-up message on the Customer booking page?",
+    "favicon": "https://support.checkfront.com/hc/theming_assets/01JTH7E0FXR755AG7RV2QDPEZG",
+    "viewport": "width=device-width, initial-scale=1.0",
+    "ogUrl": "https://support.checkfront.com/hc/en-us/articles/19868065243420-How-do-I-turn-off-the-secure-mobile-pop-up-message-on-the-Customer-booking-page",
+    "scrapeId": "eb6c64bd-968a-4513-a2da-86dd6f393fcd",
+    "sourceURL": "https://support.checkfront.com/hc/en-us/articles/19868065243420-How-do-I-turn-off-the-secure-mobile-pop-up-message-on-the-Customer-booking-page",
+    "url": "https://support.checkfront.com/hc/en-us/articles/19868065243420-How-do-I-turn-off-the-secure-mobile-pop-up-message-on-the-Customer-booking-page",
+    "statusCode": 200,
+    "contentType": "text/html; charset=utf-8",
+    "proxyUsed": "basic",
+    "creditsUsed": 1
+  }
+}

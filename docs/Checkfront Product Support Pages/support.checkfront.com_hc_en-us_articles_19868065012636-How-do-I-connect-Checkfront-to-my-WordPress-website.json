@@ -1,0 +1,29 @@
+{
+  "markdown": "[Skip to main content](https://support.checkfront.com/hc/en-us/articles/19868065012636-How-do-I-connect-Checkfront-to-my-WordPress-website#main-content)\n\n* * *\n\nLearn how to [connect](https://support.checkfront.com/hc/en-us/articles/19868065012636-How-do-I-connect-Checkfront-to-my-WordPress-website#h_01HAQMMCSBE312Z5WT5GD44WQS) _[Checkfront](https://www.checkfront.com/)_ to your _WordPress_ website with our step-by-step instructions.\n\n* * *\n\n## **Accessing the features mentioned in this article**\n\n**Where can I find this feature using the top menu?**\n\nManage > Integrations > Website Integration > WordPress\n\n**What more do I need to use this feature?**\n\n- [Admin](https://support.checkfront.com/hc/articles/19868502205212) permissions to manage integrations.\n- [WordPress.com](http://wordpress.com/) account with a Business plan or a hosted website with the free [WordPress.org](http://wordpress.org/) software.\n- Abilityto copy and paste into your website code or have some helpful person do this for you!\n\n\n**Which Checkfront version supports this feature - classic items, classic products, or both?**\n\n- This feature is available in both our classic items version using classic items (Inventory > Items) and our classic products version using classic products (Inventory > Products).  → [Learn more about products](https://support.checkfront.com/hc/articles/19868100241052)\n\n* * *\n\n## Connecting to your WordPress website\n\n[Back to top](https://support.checkfront.com/hc/en-us/articles/19868065012636-How-do-I-connect-Checkfront-to-my-WordPress-website# \"Back to top\")\n\n![WordPress](https://support.checkfront.com/hc/article_attachments/19868109002908)\n\n_[Checkfront](https://www.checkfront.com/)_ has created a plugin for _WordPress_ which enables you to generate a shortcode, paste the code into your webpage, and publish a booking portal for your Customers to reserve their items/products.\n\nTo embed our plugin into your _WordPress_ website, follow these steps:\n\n1. Search for the _[Checkfront](https://www.checkfront.com/)_ plugin in the _WordPress_ Plugin Directory.\n2. Install and activate the plugin.\n3. Enter your Checkfront Host URL in the plugin settings.\n4. Generate the required shortcode through the plugin or from within your _[Checkfront](https://www.checkfront.com/)_ account.\n5. Embed the generated shortcode in your _WordPress_ webpage.\n\n|     |     |\n| --- | --- |\n| ![Learn More](https://support.checkfront.com/hc/article_attachments/19868093223324) | Learn more about each step in our detailed setup guide here:<br>- [Introduction to the WordPress plugin](https://support.checkfront.com/hc/articles/19868150051740) |\n\n|     |     |\n| --- | --- |\n| ![Learn More](https://support.checkfront.com/hc/article_attachments/19868093223324) | Learn about the Booking Widget as an alternative to the _WordPress_ plugin here:<br>- [Introduction to the Booking Widget](https://support.checkfront.com/hc/articles/19868141953692) |",
+  "metadata": {
+    "title": "How do I connect Checkfront to my WordPress website? – Checkfront",
+    "language": "en-US",
+    "ogImage": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "viewport": "width=device-width, initial-scale=1.0",
+    "ogTitle": "How do I connect Checkfront to my WordPress website?",
+    "ogSiteName": "Checkfront",
+    "og:type": "website",
+    "ogUrl": "https://support.checkfront.com/hc/en-us/articles/19868065012636-How-do-I-connect-Checkfront-to-my-WordPress-website",
+    "og:title": "How do I connect Checkfront to my WordPress website?",
+    "ogDescription": "Learn how to connect Checkfront to your WordPress website with our step-by-step instructions.\n \n\nAccessing the features mentioned in this article\nWhere can I find this feature using the top menu?\nM...",
+    "og:image": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "og:url": "https://support.checkfront.com/hc/en-us/articles/19868065012636-How-do-I-connect-Checkfront-to-my-WordPress-website",
+    "og:site_name": "Checkfront",
+    "favicon": "https://support.checkfront.com/hc/theming_assets/01JTH7E0FXR755AG7RV2QDPEZG",
+    "robots": "noindex",
+    "description": "Learn how to connect Checkfront to your WordPress website with our step-by-step instructions.    Accessing the features mentioned in this...",
+    "og:description": "Learn how to connect Checkfront to your WordPress website with our step-by-step instructions.\n \n\nAccessing the features mentioned in this article\nWhere can I find this feature using the top menu?\nM...",
+    "scrapeId": "a7c525df-1f45-4792-a67c-3e80ee76657c",
+    "sourceURL": "https://support.checkfront.com/hc/en-us/articles/19868065012636-How-do-I-connect-Checkfront-to-my-WordPress-website",
+    "url": "https://support.checkfront.com/hc/en-us/articles/19868065012636-How-do-I-connect-Checkfront-to-my-WordPress-website",
+    "statusCode": 200,
+    "contentType": "text/html; charset=utf-8",
+    "proxyUsed": "basic",
+    "creditsUsed": 1
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "markdown": "[Skip to main content](https://support.checkfront.com/hc/en-us/articles/19868053471004-Accessing-your-Stripe-dashboard-for-reporting-on-Checkfront-Payments-payouts#main-content)\n\n* * *\n\nFor those using _Checkfront Payments_ as their payment provider, you can report on payouts using your [Stripe Dashboard](https://dashboard.stripe.com/login), as _Stripe_ powers _Checkfront Payments_.\n\n|     |     |\n| --- | --- |\n| ![354032 - aim bullseye goal sea target.png](https://support.checkfront.com/hc/article_attachments/19868069646364) | **What are payouts?**<br>Payouts represent your share of the funds from booking payment transactions deposited into your bank account. |\n\n|     |     |\n| --- | --- |\n| ![stripe@192.png](https://support.checkfront.com/hc/article_attachments/19868053457564) | Follow this quick link to access your _Stripe_ Dashboard:<br>- [https://dashboard.stripe.com/login](https://dashboard.stripe.com/login) |\n\n* * *\n\n## How to access the Stripe Dashboard and Payouts\n\n[Back to top](https://support.checkfront.com/hc/en-us/articles/19868053471004-Accessing-your-Stripe-dashboard-for-reporting-on-Checkfront-Payments-payouts# \"Back to top\")\n\nYou can follow these steps to access your _Stripe_ Dashboard and report on payouts.\n\n1. Go to the [Stripe Dashboard](https://dashboard.stripe.com/login).\n2. Log in with your _Stripe_ email address and password. [Trouble signing in?](https://support.stripe.com/questions/trouble-signing-in)\n3. Go to **Balances** in the left navigation menu.\n4. Select the **Payouts** tab.\n\n|     |     |\n| --- | --- |\n| ![stripe@192.png](https://support.checkfront.com/hc/article_attachments/19868053457564) | **Do you need help with Stripe?**<br>You can find many helpful online resources through [Stripe Support](https://support.stripe.com/), including information on:<br>- [Payouts](https://support.stripe.com/topics/payouts)<br>- [Dashboard](https://support.stripe.com/topics/dashboard)<br>Reach out to Stripe for live support here:<br>- [Contact Stripe Support](https://support.stripe.com/contact/login) |\n\n* * *\n\n## Frequently Asked Questions\n\n[Back to top](https://support.checkfront.com/hc/en-us/articles/19868053471004-Accessing-your-Stripe-dashboard-for-reporting-on-Checkfront-Payments-payouts# \"Back to top\")\n\n**What do I need to use the feature mentioned in this article?**\n\n- You must have [_Checkfront Payments_](https://support.checkfront.com/hc/articles/19868181139868) (or _[Stripe](https://support.checkfront.com/hc/articles/19868666047772))_ as your Payment Provider.\n- You need your _Stripe_ email address and password to access your _Stripe_ dashboard.\n- You require [Admin](https://support.checkfront.com/hc/articles/19868502205212) permissions to manage payments in _Checkfront_.",
+  "metadata": {
+    "robots": "noindex",
+    "og:image": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "language": "en-US",
+    "title": "Accessing your Stripe dashboard for reporting on Checkfront Payments payouts – Checkfront",
+    "og:site_name": "Checkfront",
+    "description": "For those using Checkfront Payments as their payment provider, you can report on payouts using your Stripe Dashboard, as Stripe powers...",
+    "favicon": "https://support.checkfront.com/hc/theming_assets/01JTH7E0FXR755AG7RV2QDPEZG",
+    "og:description": "For those using Checkfront Payments as their payment provider, you can report on payouts using your Stripe Dashboard, as Stripe powers Checkfront Payments.\n \n\n\n\n\n\nWhat are payouts?\nPayouts represen...",
+    "ogDescription": "For those using Checkfront Payments as their payment provider, you can report on payouts using your Stripe Dashboard, as Stripe powers Checkfront Payments.\n \n\n\n\n\n\nWhat are payouts?\nPayouts represen...",
+    "ogUrl": "https://support.checkfront.com/hc/en-us/articles/19868053471004-Accessing-your-Stripe-dashboard-for-reporting-on-Checkfront-Payments-payouts",
+    "ogSiteName": "Checkfront",
+    "ogImage": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "og:title": "Accessing your Stripe dashboard for reporting on Checkfront Payments payouts",
+    "viewport": "width=device-width, initial-scale=1.0",
+    "og:url": "https://support.checkfront.com/hc/en-us/articles/19868053471004-Accessing-your-Stripe-dashboard-for-reporting-on-Checkfront-Payments-payouts",
+    "ogTitle": "Accessing your Stripe dashboard for reporting on Checkfront Payments payouts",
+    "og:type": "website",
+    "scrapeId": "cd6e4a3b-8509-4b63-8b8b-e22b3bf308e4",
+    "sourceURL": "https://support.checkfront.com/hc/en-us/articles/19868053471004-Accessing-your-Stripe-dashboard-for-reporting-on-Checkfront-Payments-payouts",
+    "url": "https://support.checkfront.com/hc/en-us/articles/19868053471004-Accessing-your-Stripe-dashboard-for-reporting-on-Checkfront-Payments-payouts",
+    "statusCode": 200,
+    "contentType": "text/html; charset=utf-8",
+    "proxyUsed": "basic",
+    "creditsUsed": 1
+  }
+}

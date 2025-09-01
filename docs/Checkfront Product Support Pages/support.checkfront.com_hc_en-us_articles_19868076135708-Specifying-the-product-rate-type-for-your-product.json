@@ -1,0 +1,29 @@
+{
+  "markdown": "[Skip to main content](https://support.checkfront.com/hc/en-us/articles/19868076135708-Specifying-the-product-rate-type-for-your-product#main-content)\n\n* * *\n\nLearn how to [specify the product rate type](https://support.checkfront.com/hc/en-us/articles/19868076135708-Specifying-the-product-rate-type-for-your-product#h_01GP99RGR65M0F0GD6EJTMWTPA) for your product to determine at which increments products are priced (e.g. Per Hour, Per Booking...).\n\nLearn more about the Pricing tab here: [Step 4: Configuring pricing for your product](https://support.checkfront.com/hc/articles/19868447240860)\n\nNew to the Product Builder _?_ Read the [first article in this series](https://support.checkfront.com/hc/articles/19868111632796) for an introduction to the Product feature.\n\n* * *\n\n## **Accessing the features mentioned in this article**\n\n**Where can I find this feature using the top menu?**\n\nInventory > Products > Products > Add Product/Add New Product/Edit Product > Pricing\n\n**What more do I need to use this feature?**\n\n- [Admin](https://support.checkfront.com/hc/articles/19868502205212) permissions to manage inventory or [restricted permissions](https://support.checkfront.com/hc/articles/19868490374428) to _View products and assets_ and _Manage products and assets_.\n\n\n**Which Checkfront version supports this feature - classic items, classic products, or both?**\n\n- Your account must have access to classic products (Inventory > Products), a key feature of our classic products version of [_Checkfront_](https://www.checkfront.com/). This feature is **not available for use with classic items**(Inventory > Items) in our classic items version. → [Learn more about products](https://support.checkfront.com/hc/articles/19868100241052).\n\n\n* * *\n\n## Specifying the product rate type\n\n[Back to top](https://support.checkfront.com/hc/en-us/articles/19868076135708-Specifying-the-product-rate-type-for-your-product# \"Back to top\")\n\n![Rate Type](https://support.checkfront.com/hc/article_attachments/19868092212380)\n\nDefine how pricing is calculated when this product is added to a booking. The options presented here depend on how you have configured your product under the **Availability** tab ( _All Day_, _Nightly_, _Timeslots_, or _Flextime_). The following table illustrates these options.\n\n|     |     |     |     |     |\n| --- | --- | --- | --- | --- |\n| **Availability** | **Per Booking** | **Per 24 Hours** | **Per Time Increment** | **Example** |\n| _All Day_ | ✓ | X | ✓ Per Day | All-day bike rentals at $50.00 per day. |\n| _Nightly_ | ✓ | X | ✓ Per Night | Room rentals at $100.00 per night. |\n| _Timeslots_ | X | X | ✓ Per timeslot/Per hour | Kayak rentals at $25.00 per hour. |\n| _Flextime: 10 minutes_ | ✓ | ✓ | ✓ per 10 minutes | Zipline bookings are scheduled at 15-minute increments and are charged $75.00 per booking. |\n| _Flextime: 15 minutes_ | ✓ | ✓ | ✓ per 15 minutes |\n| _Flextime: 20 minutes_ | ✓ | ✓ | ✓ per 20 minutes |\n| _Flextime: 30 minutes_ | ✓ | ✓ | ✓ per 30 minutes |\n| _Flextime: 1 Hour_ | ✓ | ✓ | ✓ per Hour |\n\n|     |     |\n| --- | --- |\n| ![Example](https://support.checkfront.com/hc/article_attachments/19868064073244) | **Per Booking vs. Per Time Increment Example**<br>For example, if you configured a room rental with a base rate of $100.00 and a time increment of _Per Day_, a 5-day booking would be billed at $500.00. The same product would be billed at $100.00 for all 5 days if configured _Per Booking_. |\n\nWith the next article in this series, we look at configuring the base rates for your product.\n\n* * *\n\n\\|    [Configuring base rates for your product >](https://support.checkfront.com/hc/articles/19868202955932)\n\n* * *",
+  "metadata": {
+    "ogSiteName": "Checkfront",
+    "title": "Specifying the product rate type for your product – Checkfront",
+    "ogDescription": "Learn how to specify the product rate type for your product to determine at which increments products are priced (e.g. Per Hour, Per Booking...).\nLearn more about the Pricing tab here: Step 4: Conf...",
+    "description": "Learn how to specify the product rate type for your product to determine at which increments products are priced (e.g. Per Hour, Per...",
+    "language": "en-US",
+    "ogTitle": "Specifying the product rate type for your product",
+    "ogUrl": "https://support.checkfront.com/hc/en-us/articles/19868076135708-Specifying-the-product-rate-type-for-your-product",
+    "og:description": "Learn how to specify the product rate type for your product to determine at which increments products are priced (e.g. Per Hour, Per Booking...).\nLearn more about the Pricing tab here: Step 4: Conf...",
+    "robots": "noindex",
+    "favicon": "https://support.checkfront.com/hc/theming_assets/01JTH7E0FXR755AG7RV2QDPEZG",
+    "og:type": "website",
+    "ogImage": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "viewport": "width=device-width, initial-scale=1.0",
+    "og:url": "https://support.checkfront.com/hc/en-us/articles/19868076135708-Specifying-the-product-rate-type-for-your-product",
+    "og:site_name": "Checkfront",
+    "og:title": "Specifying the product rate type for your product",
+    "og:image": "https://support.checkfront.com/hc/theming_assets/01JTH7ATM7AVQMBA28BEC1F89W",
+    "scrapeId": "b5282cf2-06b8-4178-b153-29c5899ec081",
+    "sourceURL": "https://support.checkfront.com/hc/en-us/articles/19868076135708-Specifying-the-product-rate-type-for-your-product",
+    "url": "https://support.checkfront.com/hc/en-us/articles/19868076135708-Specifying-the-product-rate-type-for-your-product",
+    "statusCode": 200,
+    "contentType": "text/html; charset=utf-8",
+    "proxyUsed": "basic",
+    "creditsUsed": 1
+  }
+}
