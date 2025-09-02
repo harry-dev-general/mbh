@@ -638,16 +638,16 @@
 
     <nav class="dashboard-nav">
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('overview')">
+            <button class="nav-tab active" onclick="switchTab('overview', event)">
                 <i class="fas fa-chart-line"></i> Overview
             </button>
-            <button class="nav-tab" onclick="switchTab('staff')">
+            <button class="nav-tab" onclick="switchTab('staff', event)">
                 <i class="fas fa-users"></i> Staff Management
             </button>
-            <button class="nav-tab" onclick="switchTab('vessels')">
+            <button class="nav-tab" onclick="switchTab('vessels', event)">
                 <i class="fas fa-ship"></i> Vessel Maintenance
             </button>
-            <button class="nav-tab" onclick="switchTab('announcements')">
+            <button class="nav-tab" onclick="switchTab('announcements', event)">
                 <i class="fas fa-bullhorn"></i> Announcements
             </button>
         </div>
@@ -876,7 +876,7 @@
         }
 
         // Tab switching
-        function switchTab(tabName) {
+        function switchTab(tabName, event) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -891,7 +891,17 @@
             document.getElementById(`${tabName}-tab`).classList.add('active');
             
             // Set active nav tab
-            event.target.closest('.nav-tab').classList.add('active');
+            if (event && event.target) {
+                // Called from click event
+                event.target.closest('.nav-tab').classList.add('active');
+            } else {
+                // Called programmatically - find the correct button
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    if (tab.getAttribute('onclick').includes(`'${tabName}'`)) {
+                        tab.classList.add('active');
+                    }
+                });
+            }
             
             // Load tab-specific data
             switch(tabName) {
