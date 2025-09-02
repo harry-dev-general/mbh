@@ -484,13 +484,14 @@
         const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
         const AVAILABILITY_TABLE_ID = 'tblcBoyuVsbB1dt1I';
         const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX';
+        const LEAVE_TABLE_ID = 'tblTBEimQK9vyWs8r';
 
         // State
         let employeeData = [];
         let availabilityData = [];
         let allocationsData = [];
         let currentWeekStart = null;
-        let leaveData = {}; // Store leave data by employee ID
+        let leaveData = []; // Store leave records from Airtable
 
         // Check authentication
         async function checkAuth() {
@@ -527,38 +528,54 @@
             today.setFullYear(2025); // Ensure 2025 context
             currentWeekStart = getMonday(today);
             updateWeekDisplay();
-            loadLeaveData(); // Load saved leave data
         }
         
-        // Load leave data from localStorage
-        function loadLeaveData() {
-            const savedLeave = localStorage.getItem('mbh_leave_data');
-            if (savedLeave) {
-                leaveData = JSON.parse(savedLeave);
+        // Load leave data from Airtable
+        async function loadLeaveData() {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${LEAVE_TABLE_ID}?` +
+                    `filterByFormula=${encodeURIComponent(`{Status}!='Cancelled'`)}&` +
+                    `pageSize=100`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                if (response.ok) {
+                    const result = await response.json();
+                    leaveData = result.records || [];
+                    console.log(`Loaded ${leaveData.length} leave records from Airtable`);
+                }
+            } catch (error) {
+                console.error('Error loading leave data:', error);
             }
-        }
-        
-        // Save leave data to localStorage
-        function saveLeaveData() {
-            localStorage.setItem('mbh_leave_data', JSON.stringify(leaveData));
         }
         
         // Check if employee is on leave
         function getLeaveStatus(employeeId) {
-            const leaves = leaveData[employeeId] || [];
             const today = new Date();
             today.setFullYear(2025);
             const todayStr = formatDate(today);
             
-            const currentLeave = leaves.find(leave => {
-                return leave.startDate <= todayStr && leave.endDate >= todayStr;
+            const employeeLeaves = leaveData.filter(record => 
+                record.fields['Employee'] && 
+                record.fields['Employee'][0] === employeeId &&
+                record.fields['Status'] === 'Approved'
+            );
+            
+            const currentLeave = employeeLeaves.find(record => {
+                const leave = record.fields;
+                return leave['Start Date'] <= todayStr && leave['End Date'] >= todayStr;
             });
             
             if (currentLeave) {
                 return {
                     onLeave: true,
-                    type: currentLeave.type,
-                    endDate: currentLeave.endDate
+                    type: currentLeave.fields['Leave Type'],
+                    endDate: currentLeave.fields['End Date']
                 };
             }
             
@@ -663,6 +680,9 @@
                     const allocationsResult = await allocationsResponse.json();
                     allocationsData = allocationsResult.records || [];
                 }
+
+                // Load leave data
+                await loadLeaveData();
 
                 renderEmployeeList();
             } catch (error) {
@@ -901,31 +921,56 @@
             const endDate = document.getElementById('leaveEndDate').value;
             const notes = document.getElementById('leaveNotes').value;
 
-            // Initialize leave array for employee if it doesn't exist
-            if (!leaveData[employeeId]) {
-                leaveData[employeeId] = [];
+            try {
+                // Get current user for submitted by field
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                // Create leave record in Airtable
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${LEAVE_TABLE_ID}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            fields: {
+                                'Leave ID': `LEAVE-${Date.now()}`,
+                                'Employee': [employeeId],
+                                'Leave Type': leaveType,
+                                'Start Date': startDate,
+                                'End Date': endDate,
+                                'Notes': notes || '',
+                                'Status': 'Approved', // Auto-approve for now
+                                'Submitted Date': formatDate(new Date()),
+                                'Submitted By': user?.email || 'Management'
+                            }
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to create leave record');
+                }
+
+                const newRecord = await response.json();
+                console.log('Leave created:', newRecord);
+                
+                // Add to local data
+                leaveData.push(newRecord);
+                
+                // Show success message
+                alert(`Leave successfully recorded for ${employeeName}\n${leaveType}: ${startDate} to ${endDate}`);
+                
+                closeLeaveModal();
+                
+                // Refresh the employee list to show the new leave status
+                renderEmployeeList();
+            } catch (error) {
+                console.error('Error creating leave:', error);
+                alert('Failed to create leave record. Please try again.');
             }
-            
-            // Add leave record
-            leaveData[employeeId].push({
-                id: Date.now().toString(), // Simple ID generation
-                type: leaveType,
-                startDate: startDate,
-                endDate: endDate,
-                notes: notes,
-                createdAt: new Date().toISOString()
-            });
-            
-            // Save to localStorage
-            saveLeaveData();
-            
-            // Show success message
-            alert(`Leave successfully recorded for ${employeeName}\n${leaveType}: ${startDate} to ${endDate}`);
-            
-            closeLeaveModal();
-            
-            // Refresh the employee list to show the new leave status
-            renderEmployeeList();
         });
 
         // Search functionality
