@@ -404,12 +404,13 @@
                         <th style="text-align: center;">Active Roster</th>
                         <th>Hours This Week</th>
                         <th>Availability Status</th>
+                        <th>Leave Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="employeeList">
                     <tr>
-                        <td colspan="7" class="loading">
+                        <td colspan="8" class="loading">
                             <div class="spinner"></div>
                             <p>Loading employees...</p>
                         </td>
@@ -489,6 +490,7 @@
         let availabilityData = [];
         let allocationsData = [];
         let currentWeekStart = null;
+        let leaveData = {}; // Store leave data by employee ID
 
         // Check authentication
         async function checkAuth() {
@@ -525,6 +527,42 @@
             today.setFullYear(2025); // Ensure 2025 context
             currentWeekStart = getMonday(today);
             updateWeekDisplay();
+            loadLeaveData(); // Load saved leave data
+        }
+        
+        // Load leave data from localStorage
+        function loadLeaveData() {
+            const savedLeave = localStorage.getItem('mbh_leave_data');
+            if (savedLeave) {
+                leaveData = JSON.parse(savedLeave);
+            }
+        }
+        
+        // Save leave data to localStorage
+        function saveLeaveData() {
+            localStorage.setItem('mbh_leave_data', JSON.stringify(leaveData));
+        }
+        
+        // Check if employee is on leave
+        function getLeaveStatus(employeeId) {
+            const leaves = leaveData[employeeId] || [];
+            const today = new Date();
+            today.setFullYear(2025);
+            const todayStr = formatDate(today);
+            
+            const currentLeave = leaves.find(leave => {
+                return leave.startDate <= todayStr && leave.endDate >= todayStr;
+            });
+            
+            if (currentLeave) {
+                return {
+                    onLeave: true,
+                    type: currentLeave.type,
+                    endDate: currentLeave.endDate
+                };
+            }
+            
+            return { onLeave: false };
         }
 
         // Get Monday of week
@@ -594,6 +632,7 @@
                 if (availabilityResponse.ok) {
                     const availabilityResult = await availabilityResponse.json();
                     availabilityData = availabilityResult.records || [];
+                    console.log(`Found ${availabilityData.length} availability submissions for week starting ${weekStartStr}`, availabilityData);
                 }
 
                 // Fetch allocations for current week
@@ -621,7 +660,7 @@
                 console.error('Error loading employee data:', error);
                 document.getElementById('employeeList').innerHTML = `
                     <tr>
-                        <td colspan="7" style="text-align: center; color: red;">
+                        <td colspan="8" style="text-align: center; color: red;">
                             Error loading employee data. Please refresh.
                         </td>
                     </tr>
@@ -710,7 +749,7 @@
             if (filteredEmployees.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" style="text-align: center; color: #666;">
+                        <td colspan="8" style="text-align: center; color: #666;">
                             No employees found matching your criteria.
                         </td>
                     </tr>
@@ -722,9 +761,29 @@
                 const fields = employee.fields;
                 const hours = calculateHoursForWeek(employee.id);
                 const availabilityStatus = getAvailabilityStatus(employee.id);
+                const leaveStatus = getLeaveStatus(employee.id);
+                
+                // Debug logging for Max Mckelvey
+                if (fields['Name'] && fields['Name'].toLowerCase().includes('max')) {
+                    console.log('Max Mckelvey debug:', {
+                        employeeId: employee.id,
+                        name: fields['Name'],
+                        availabilityStatus: availabilityStatus,
+                        weekStart: formatDate(currentWeekStart)
+                    });
+                }
+
+                let leaveDisplay = '-';
+                if (leaveStatus.onLeave) {
+                    const endDate = new Date(leaveStatus.endDate);
+                    const endDateStr = endDate.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' });
+                    leaveDisplay = `<span style="color: #dc3545; font-weight: 500;">
+                        <i class="fas fa-plane"></i> ${leaveStatus.type} until ${endDateStr}
+                    </span>`;
+                }
 
                 return `
-                    <tr>
+                    <tr ${leaveStatus.onLeave ? 'style="background-color: #fff3e0;"' : ''}>
                         <td><strong>${fields['Name'] || 'Unknown'}</strong></td>
                         <td>${fields['Email'] || '-'}</td>
                         <td>${fields['Mobile Number'] || '-'}</td>
@@ -741,6 +800,7 @@
                                 ${availabilityStatus.text}
                             </span>
                         </td>
+                        <td>${leaveDisplay}</td>
                         <td>
                             <div class="action-buttons">
                                 <button class="btn btn-primary btn-small" 
@@ -825,16 +885,31 @@
             const endDate = document.getElementById('leaveEndDate').value;
             const notes = document.getElementById('leaveNotes').value;
 
-            // Here you would typically create leave records in Airtable
-            // For now, we'll just show a success message
-            alert(`Leave recorded for ${employeeName}\n${leaveType}: ${startDate} to ${endDate}`);
+            // Initialize leave array for employee if it doesn't exist
+            if (!leaveData[employeeId]) {
+                leaveData[employeeId] = [];
+            }
+            
+            // Add leave record
+            leaveData[employeeId].push({
+                id: Date.now().toString(), // Simple ID generation
+                type: leaveType,
+                startDate: startDate,
+                endDate: endDate,
+                notes: notes,
+                createdAt: new Date().toISOString()
+            });
+            
+            // Save to localStorage
+            saveLeaveData();
+            
+            // Show success message
+            alert(`Leave successfully recorded for ${employeeName}\n${leaveType}: ${startDate} to ${endDate}`);
             
             closeLeaveModal();
             
-            // Note: In a real implementation, you would:
-            // 1. Create a leave record in a Leave/Holiday table
-            // 2. Update availability for affected dates
-            // 3. Possibly send notifications
+            // Refresh the employee list to show the new leave status
+            renderEmployeeList();
         });
 
         // Search functionality
