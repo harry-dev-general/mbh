@@ -682,7 +682,9 @@
 
                 const allocationsResponse = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`AND({Shift Date}>='${weekStartStr}', {Shift Date}<='${weekEndStr}')`)}&pageSize=100`,
+                    `filterByFormula=${encodeURIComponent(`AND({Shift Date}>='${weekStartStr}', {Shift Date}<='${weekEndStr}')`)}&` +
+                    `fields[]=Employee&fields[]=Start Time&fields[]=End Time&fields[]=Shift Date&fields[]=Duration&fields[]=Shift Type&` +
+                    `pageSize=100`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -693,6 +695,7 @@
                 if (allocationsResponse.ok) {
                     const allocationsResult = await allocationsResponse.json();
                     allocationsData = allocationsResult.records || [];
+                    console.log(`Loaded ${allocationsData.length} allocations for week starting ${weekStartStr}`);
                 }
 
                 // Load leave data
@@ -719,20 +722,53 @@
 
             let totalMinutes = 0;
             employeeAllocations.forEach(allocation => {
-                const duration = allocation.fields['Duration'];
-                if (duration) {
-                    // Parse duration format (e.g., "6:30" or "6.5")
-                    if (duration.includes(':')) {
-                        const [hours, minutes] = duration.split(':').map(Number);
-                        totalMinutes += hours * 60 + (minutes || 0);
-                    } else {
-                        totalMinutes += parseFloat(duration) * 60;
+                const startTime = allocation.fields['Start Time'];
+                const endTime = allocation.fields['End Time'];
+                
+                if (startTime && endTime) {
+                    try {
+                        // Parse hours and minutes from time strings
+                        const [startHour, startMin] = startTime.split(':').map(Number);
+                        const [endHour, endMin] = endTime.split(':').map(Number);
+                        
+                        // Calculate duration in minutes
+                        const startTotalMinutes = startHour * 60 + (startMin || 0);
+                        const endTotalMinutes = endHour * 60 + (endMin || 0);
+                        let durationMinutes = endTotalMinutes - startTotalMinutes;
+                        
+                        // Handle overnight shifts (if end time is before start time)
+                        if (durationMinutes < 0) {
+                            durationMinutes += 24 * 60; // Add 24 hours
+                        }
+                        
+                        totalMinutes += durationMinutes;
+                    } catch (error) {
+                        console.error('Error calculating duration for allocation:', {
+                            startTime,
+                            endTime,
+                            shiftDate: allocation.fields['Shift Date'],
+                            error: error.message
+                        });
+                    }
+                } else {
+                    // Log allocations missing time data
+                    if (allocation.fields['Shift Date']) {
+                        console.warn('Allocation missing time data:', {
+                            shiftDate: allocation.fields['Shift Date'],
+                            startTime: startTime || 'missing',
+                            endTime: endTime || 'missing',
+                            employeeId
+                        });
                     }
                 }
             });
 
             const hours = Math.floor(totalMinutes / 60);
             const minutes = totalMinutes % 60;
+            
+            if (totalMinutes === 0) {
+                return '0h';
+            }
             return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
         }
 
