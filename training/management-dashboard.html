@@ -871,8 +871,16 @@
             currentUser = user;
             document.getElementById('userEmail').textContent = user.email;
             
-            // Load initial data
-            loadOverviewData();
+            // Check for tab parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam && ['overview', 'staff', 'vessels', 'announcements'].includes(tabParam)) {
+                // Switch to specified tab
+                switchTab(tabParam);
+            } else {
+                // Load initial data for overview
+                loadOverviewData();
+            }
         }
 
         // Tab switching
