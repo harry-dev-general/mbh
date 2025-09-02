@@ -619,9 +619,10 @@
 
                 // Fetch availability submissions for current week
                 const weekStartStr = formatDate(currentWeekStart);
+                // Use a simpler approach - fetch all recent submissions then filter client-side
                 const availabilityResponse = await fetch(
                     `https://api.airtable.com/v0/${BASE_ID}/${AVAILABILITY_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`{Week Starting}='${weekStartStr}'`)}&pageSize=100`,
+                    `sort[0][field]=Week Starting&sort[0][direction]=desc&pageSize=100`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -631,8 +632,16 @@
 
                 if (availabilityResponse.ok) {
                     const availabilityResult = await availabilityResponse.json();
-                    availabilityData = availabilityResult.records || [];
+                    const allSubmissions = availabilityResult.records || [];
+                    // Filter for current week client-side
+                    availabilityData = allSubmissions.filter(record => 
+                        record.fields['Week Starting'] === weekStartStr
+                    );
                     console.log(`Found ${availabilityData.length} availability submissions for week starting ${weekStartStr}`, availabilityData);
+                    console.log('All submissions:', allSubmissions.map(r => ({
+                        employee: r.fields['Employee'],
+                        weekStarting: r.fields['Week Starting']
+                    })));
                 }
 
                 // Fetch allocations for current week
@@ -704,6 +713,8 @@
             }
 
             const processingStatus = submission.fields['Processing Status'];
+            console.log(`Processing status for employee ${employeeId}:`, processingStatus);
+            
             if (processingStatus === 'Processed') {
                 return { status: 'submitted', text: 'Submitted' };
             } else {
@@ -769,7 +780,12 @@
                         employeeId: employee.id,
                         name: fields['Name'],
                         availabilityStatus: availabilityStatus,
-                        weekStart: formatDate(currentWeekStart)
+                        weekStart: formatDate(currentWeekStart),
+                        availableSubmissions: availabilityData.map(a => ({
+                            employeeId: a.fields['Employee']?.[0],
+                            weekStarting: a.fields['Week Starting'],
+                            status: a.fields['Processing Status']
+                        }))
                     });
                 }
 
