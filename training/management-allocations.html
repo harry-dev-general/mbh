@@ -811,8 +811,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="employeeSelect">Staff Member</label>
-                    <select id="employeeSelect" required>
+                    <label for="employeeSelect">
+                        Staff Member 
+                        <span id="staffOptionalLabel" class="text-muted" style="font-size: 0.85rem; display: none;">(Optional)</span>
+                    </label>
+                    <select id="employeeSelect">
                         <option value="">Select Staff Member</option>
                     </select>
                 </div>
@@ -856,7 +859,7 @@
                 <div class="form-group" id="boatGroup" style="display: none;">
                     <label for="boatSelect">
                         <i class="fas fa-ship"></i> Assign Boat
-                        <span class="field-required">*</span>
+                        <span class="text-muted" style="font-size: 0.85rem;">(Optional)</span>
                     </label>
                     <select id="boatSelect" class="form-control">
                         <option value="">Select Boat</option>
@@ -1917,7 +1920,7 @@
                 }, 100);
             }
             
-            // Show booking fields
+            // Show booking fields (this will also show the optional labels)
             toggleBookingField();
             
             // Display current boat if any
@@ -2180,16 +2183,21 @@
             const bookingGroup = document.getElementById('bookingGroup');
             const roleGroup = document.getElementById('roleGroup');
             const boatGroup = document.getElementById('boatGroup');
+            const staffOptionalLabel = document.getElementById('staffOptionalLabel');
             
             // Show booking selection for Boat Hire or Ice Cream Boat Operations
             if (type === 'Boat Hire' || type === 'Ice Cream Boat Operations') {
                 bookingGroup.style.display = 'block';
                 roleGroup.style.display = 'block';
                 boatGroup.style.display = 'block';
+                // Staff is optional for booking allocations
+                staffOptionalLabel.style.display = 'inline';
             } else {
                 bookingGroup.style.display = 'none';
                 roleGroup.style.display = 'none';
                 boatGroup.style.display = 'none';
+                // Staff is required for general allocations
+                staffOptionalLabel.style.display = 'none';
             }
         }
 
@@ -2328,18 +2336,21 @@
                     return;
                 }
                 // Check if this is a booking-specific allocation
-                if ((allocationType === 'Boat Hire' || allocationType === 'Ice Cream Boat Operations') && bookingId && roleValue) {
-                    // For booking allocations, update the booking's employee fields
+                if ((allocationType === 'Boat Hire' || allocationType === 'Ice Cream Boat Operations') && bookingId) {
+                    // For booking allocations, update the booking's employee and/or boat fields
                     // Using global BOOKINGS_TABLE_ID constant
                     
-                    // Determine which field to update based on role
                     let updateFields = {};
-                    if (roleValue === 'Onboarding') {
-                        updateFields['Onboarding Employee'] = [employeeId];
-                        console.log('Updating booking with Onboarding Employee:', employeeId);
-                    } else if (roleValue === 'Deloading') {
-                        updateFields['Deloading Employee'] = [employeeId];
-                        console.log('Updating booking with Deloading Employee:', employeeId);
+                    
+                    // Update staff if both role and employee are selected
+                    if (roleValue && employeeId) {
+                        if (roleValue === 'Onboarding') {
+                            updateFields['Onboarding Employee'] = [employeeId];
+                            console.log('Updating booking with Onboarding Employee:', employeeId);
+                        } else if (roleValue === 'Deloading') {
+                            updateFields['Deloading Employee'] = [employeeId];
+                            console.log('Updating booking with Deloading Employee:', employeeId);
+                        }
                     }
                     
                     // Add boat assignment if selected
@@ -2347,6 +2358,17 @@
                     if (selectedBoatId) {
                         updateFields['Boat'] = [selectedBoatId];
                         console.log('Updating booking with Boat:', selectedBoatId);
+                    }
+                    
+                    // Validate that at least one field is being updated
+                    if (Object.keys(updateFields).length === 0) {
+                        alert('Please select either a staff member or a boat to assign to this booking.');
+                        isSubmitting = false;
+                        if (submitBtn) {
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                        }
+                        return;
                     }
                     
                     // Update the booking record
@@ -2433,12 +2455,22 @@
                         
                         // Small delay to ensure Airtable has processed the update
                         setTimeout(async () => {
-                            // Force reload of bookings to show updated staff assignments
+                            // Force reload of bookings to show updated staff and boat assignments
                             await loadBookings();
                             renderBookingsList();
                             renderBookingsOnGrid();
-                            // Note: We don't reload allocations here since we didn't create one
-                            alert('Staff allocated to booking successfully!');
+                            
+                            // Create appropriate success message based on what was updated
+                            let successMessage = 'Booking updated successfully!';
+                            if ((roleValue && employeeId) && selectedBoatId) {
+                                successMessage = 'Staff and boat assigned to booking successfully!';
+                            } else if (roleValue && employeeId) {
+                                successMessage = 'Staff allocated to booking successfully!';
+                            } else if (selectedBoatId) {
+                                successMessage = 'Boat assigned to booking successfully!';
+                            }
+                            
+                            alert(successMessage);
                         }, 1000);
                         
                         return; // Exit early - don't create allocation record for booking-specific allocations
@@ -2446,6 +2478,17 @@
                 }
                 
                 // For general (non-booking) allocations, create an allocation record
+                // Employee is required for general allocations
+                if (!employeeId) {
+                    alert('Please select a staff member for this allocation.');
+                    isSubmitting = false;
+                    if (submitBtn) {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    }
+                    return;
+                }
+                
                 const fields = {
                     'Name': `${document.getElementById('allocationDate').value} - ${document.getElementById('employeeSelect').options[document.getElementById('employeeSelect').selectedIndex].text}`,
                     'Employee': [employeeId],
