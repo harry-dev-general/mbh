@@ -823,15 +823,20 @@
         }
 
         // Select a booking for checklist
-        function selectBooking(booking, boatName) {
+        function selectBooking(booking, boatName, element = null) {
             selectedBooking = booking;
             selectedBoatName = boatName;
             
-            // Update UI
-            document.querySelectorAll('.booking-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
+            // Update UI - only update cards if called from a click event
+            if (element || (typeof event !== 'undefined' && event.currentTarget)) {
+                document.querySelectorAll('.booking-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                const targetElement = element || event.currentTarget;
+                if (targetElement) {
+                    targetElement.classList.add('selected');
+                }
+            }
 
             // Show checklist form
             document.getElementById('bookingsSection').style.display = 'none';
