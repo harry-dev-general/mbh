@@ -1479,8 +1479,18 @@
                         <i class="fas fa-ship"></i> No boat
                     </span>`;
                 
-                // Get booked boat type
-                const bookedBoatType = fields['Booked Boat Type'];
+                // Parse boat type from Booking Items field
+                const bookingItems = (fields['Booking Items'] || '').toLowerCase();
+                let bookedBoatType = '';
+                
+                if (bookingItems.includes('12person')) {
+                    bookedBoatType = '12 Person BBQ Boat';
+                } else if (bookingItems.includes('8person')) {
+                    bookedBoatType = '8 Person BBQ Boat';
+                } else if (bookingItems.includes('4person')) {
+                    bookedBoatType = '4 Person Polycraft';
+                }
+                
                 const boatTypeBadge = bookedBoatType ? 
                     `<span class="staff-badge" style="background: #1976d2; color: white;">
                         <i class="fas fa-anchor"></i> ${bookedBoatType}
@@ -1868,8 +1878,18 @@
             const boatName = boatId ? boatsData.find(b => b.id === boatId)?.fields['Name'] : null;
             const boatInfo = boatName ? `<div style="font-size: 8px; opacity: 0.8;"><i class="fas fa-ship"></i> ${boatName}</div>` : '';
             
-            // Get booked boat type from formula field
-            const bookedBoatType = booking['Booked Boat Type'];
+            // Parse boat type from Booking Items field
+            const bookingItems = (booking['Booking Items'] || '').toLowerCase();
+            let bookedBoatType = '';
+            
+            if (bookingItems.includes('12person')) {
+                bookedBoatType = '12 Person BBQ Boat';
+            } else if (bookingItems.includes('8person')) {
+                bookedBoatType = '8 Person BBQ Boat';
+            } else if (bookingItems.includes('4person')) {
+                bookedBoatType = '4 Person Polycraft';
+            }
+            
             const boatTypeInfo = bookedBoatType ? 
                 `<div style="font-size: 8px; opacity: 0.9; color: #1976d2;">
                     <i class="fas fa-anchor"></i> ${bookedBoatType}
@@ -1907,7 +1927,18 @@
             const startTime = booking['Start Time'] || '';
             const finishTime = booking['Finish Time'] || '';
             const onboardingTime = booking['Onboarding Time'] || '';
-            const bookedBoatType = booking['Booked Boat Type'] || 'Not specified';
+            
+            // Parse boat type from Booking Items field
+            const bookingItems = (booking['Booking Items'] || '').toLowerCase();
+            let bookedBoatType = 'Not specified';
+            
+            if (bookingItems.includes('12person')) {
+                bookedBoatType = '12 Person BBQ Boat';
+            } else if (bookingItems.includes('8person')) {
+                bookedBoatType = '8 Person BBQ Boat';
+            } else if (bookingItems.includes('4person')) {
+                bookedBoatType = '4 Person Polycraft';
+            }
             
             // Populate summary section
             document.getElementById('summaryCustomerName').textContent = customerName;
@@ -1938,11 +1969,17 @@
             
             // Handle boat selection with filtering
             const boatFilterInfo = document.getElementById('boatFilterInfo');
+            console.log('Booking Items:', booking['Booking Items']);
+            console.log('Parsed Boat Type:', bookedBoatType);
+            
             if (bookedBoatType && bookedBoatType !== 'Not specified') {
                 // Filter boats by type
                 const filteredBoats = boatsData.filter(boat => 
                     boat.fields['Boat Type'] === bookedBoatType
                 );
+                
+                console.log('Available boats:', boatsData.map(b => ({ name: b.fields.Name, type: b.fields['Boat Type'] })));
+                console.log('Filtered boats:', filteredBoats.map(b => b.fields.Name));
                 
                 // Show filter info
                 boatFilterInfo.style.display = 'block';
