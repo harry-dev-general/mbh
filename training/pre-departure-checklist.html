@@ -563,6 +563,10 @@
         let employeeRecordId = null;
         let selectedBooking = null;
         let assignedBookings = [];
+        
+        // Check for booking ID from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingIdParam = urlParams.get('bookingId');
 
         // Check authentication
         async function checkAuth() {
@@ -646,6 +650,23 @@
                 if (assignedBookings.length === 0) {
                     showNoBookings();
                 } else {
+                    // Auto-select booking if ID provided in URL
+                    if (bookingIdParam) {
+                        const targetBooking = assignedBookings.find(booking => booking.id === bookingIdParam);
+                        if (targetBooking) {
+                            const boatName = targetBooking.fields['Boat'] && targetBooking.fields['Boat'][0] ? 
+                                           await getBoatName(targetBooking.fields['Boat'][0]) : 'Unknown Vessel';
+                            
+                            // Hide booking selection, show checklist form
+                            document.getElementById('bookingsSection').style.display = 'none';
+                            selectBooking(targetBooking, boatName);
+                            
+                            // Hide loading indicator
+                            loadingDiv.style.display = 'none';
+                            return;
+                        }
+                    }
+                    
                     displayBookings(assignedBookings);
                 }
             } catch (error) {

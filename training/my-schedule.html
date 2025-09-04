@@ -1723,6 +1723,33 @@
                 </div>
             `;
             
+            // Add vessel checklist link for booking allocations
+            if (shift.source === 'booking') {
+                const checklistType = shift.role === 'Onboarding' ? 'Pre-Departure' : 'Post-Departure';
+                const checklistPage = shift.role === 'Onboarding' ? 
+                    'pre-departure-checklist.html' : 'post-departure-checklist.html';
+                
+                modalHTML += `
+                    <div class="checklist-section" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0;">
+                        <h4 style="margin-bottom: 1rem; color: #2E86AB;">
+                            <i class="fas fa-clipboard-check"></i> Vessel Checklist
+                        </h4>
+                        <a href="${checklistPage}?bookingId=${shift.id}" 
+                           class="btn btn-primary" 
+                           style="width: 100%; background: #2E86AB; color: white; padding: 0.75rem; 
+                                  text-align: center; border-radius: 4px; text-decoration: none; display: block;">
+                            <i class="fas fa-clipboard-list"></i> 
+                            Complete ${checklistType} Checklist
+                        </a>
+                        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666; text-align: center;">
+                            ${checklistType === 'Pre-Departure' ? 
+                              'Complete safety checks before customer boards' : 
+                              'Complete vessel checks after customer departs'}
+                        </p>
+                    </div>
+                `;
+            }
+            
             // Update modal title
             const modalTitle = isBooking ? 'Booking Allocation Details' : 'Shift Details';
             document.getElementById('modalTitle').innerHTML = `<i class="fas fa-${isBooking ? 'anchor' : 'calendar-check'}"></i> ${modalTitle}`;
