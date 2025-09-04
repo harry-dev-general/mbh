@@ -35,9 +35,7 @@ async function handleShiftResponse(token) {
         let responseStatus = action === 'accept' ? 'Accepted' : 'Declined';
         
         if (isBookingAllocation) {
-            // For booking allocations, we don't have a separate allocation record
-            // Just mark as successful and send confirmation
-            // In the future, we could track this in a separate table or add fields to Bookings
+            // For booking allocations, update the booking record with response status
             
             // Get booking details
             const bookingResponse = await axios.get(
@@ -51,6 +49,30 @@ async function handleShiftResponse(token) {
             
             if (bookingResponse.status === 200) {
                 const booking = bookingResponse.data.fields;
+                
+                // Determine which field to update based on role
+                const responseFieldName = role === 'Onboarding' ? 'Onboarding Response' : 'Deloading Response';
+                
+                // Update the booking record with the response status
+                const updateResponse = await axios.patch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}/${allocationId}`,
+                    {
+                        fields: {
+                            [responseFieldName]: responseStatus
+                        }
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                if (updateResponse.status === 200) {
+                    console.log(`✅ Updated booking ${allocationId}: ${responseFieldName} = ${responseStatus}`);
+                }
+                
                 allocationData = {
                     'Shift Date': booking['Booking Date'],
                     'Start Time': role === 'Onboarding' ? booking['Onboarding Time'] : booking['Finish Time'],
@@ -59,7 +81,7 @@ async function handleShiftResponse(token) {
                     'Role': role
                 };
                 
-                // Log the response for tracking (could be sent to a separate table in the future)
+                // Log the response for tracking
                 console.log(`Booking allocation response: ${employeeId} ${responseStatus} ${role} for booking ${allocationId}`);
             }
         } else {
