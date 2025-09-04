@@ -1236,15 +1236,26 @@
         }
         
         // Populate boat select dropdown
-        function populateBoatSelect() {
+        function populateBoatSelect(filteredBoats = null, filterType = null) {
             const boatSelect = document.getElementById('boatSelect');
             if (!boatSelect) return;
             
             boatSelect.innerHTML = '<option value="">Select Boat</option>';
             
-            boatsData.forEach(boat => {
+            // Use filtered boats if provided, otherwise show all
+            const boatsToShow = filteredBoats || boatsData;
+            
+            if (boatsToShow.length === 0 && filterType) {
+                boatSelect.innerHTML += `
+                    <option value="" disabled>No ${filterType} vessels available</option>
+                `;
+                return;
+            }
+            
+            boatsToShow.forEach(boat => {
                 const name = boat.fields['Name'];
                 const description = boat.fields['Description'] || '';
+                const boatType = boat.fields['Boat Type'];
                 const label = description ? `${name} - ${description}` : name;
                 
                 boatSelect.innerHTML += `
@@ -1393,6 +1404,13 @@
                         <i class="fas fa-ship"></i> No boat
                     </span>`;
                 
+                // Get booked boat type
+                const bookedBoatType = fields['Booked Boat Type'];
+                const boatTypeBadge = bookedBoatType ? 
+                    `<span class="staff-badge" style="background: #1976d2; color: white;">
+                        <i class="fas fa-anchor"></i> ${bookedBoatType}
+                    </span>` : '';
+                
                 html += `
                     <div class="booking-item">
                         <div class="booking-time">
@@ -1408,6 +1426,7 @@
                             <span class="staff-badge ${deloadingStaff ? 'assigned' : 'needed'}">
                                 Deloading: ${deloadingStaff ? '✓' : 'Needed'}
                             </span>
+                            ${boatTypeBadge}
                             ${boatBadge}
                         </div>
                     </div>
@@ -1774,6 +1793,13 @@
             const boatName = boatId ? boatsData.find(b => b.id === boatId)?.fields['Name'] : null;
             const boatInfo = boatName ? `<div style="font-size: 8px; opacity: 0.8;"><i class="fas fa-ship"></i> ${boatName}</div>` : '';
             
+            // Get booked boat type from formula field
+            const bookedBoatType = booking['Booked Boat Type'];
+            const boatTypeInfo = bookedBoatType ? 
+                `<div style="font-size: 8px; opacity: 0.9; color: #1976d2;">
+                    <i class="fas fa-anchor"></i> ${bookedBoatType}
+                </div>` : '';
+            
             bookingBlock.innerHTML = `
                 <div style="font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     ${typeLabel} ${customerName}
@@ -1781,11 +1807,13 @@
                 <div style="font-size: 9px; opacity: 0.9;">
                     ${displayTime} ${staffIcon}
                 </div>
+                ${boatTypeInfo}
                 ${boatInfo}
             `;
             
-            const boatTitle = boatName ? `\nBoat: ${boatName}` : '\nBoat: Not assigned';
-            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Booking Start' : 'Booking Finish'}: ${displayTime}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} Time: ${time}\nStaff: ${hasStaff ? 'Assigned' : 'NEEDED'}${boatTitle}\nClick to manage allocation`;
+            const boatTitle = boatName ? `\nBoat Assigned: ${boatName}` : '\nBoat Assigned: None';
+            const boatTypeTitle = bookedBoatType ? `\nBoat Type: ${bookedBoatType}` : '';
+            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Booking Start' : 'Booking Finish'}: ${displayTime}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} Time: ${time}\nStaff: ${hasStaff ? 'Assigned' : 'NEEDED'}${boatTypeTitle}${boatTitle}\nClick to manage allocation`;
             
             // Add click handler to open allocation modal
             bookingBlock.onclick = (e) => {
@@ -1922,6 +1950,37 @@
             
             // Show booking fields (this will also show the optional labels)
             toggleBookingField();
+            
+            // Get booked boat type and filter available boats
+            const bookedBoatType = booking['Booked Boat Type'];
+            const boatGroup = document.getElementById('boatGroup');
+            
+            // Remove any existing filter info
+            const existingFilterInfo = boatGroup.querySelector('.filter-info');
+            if (existingFilterInfo) existingFilterInfo.remove();
+            
+            if (bookedBoatType) {
+                // Filter boats by the booked type
+                const filteredBoats = boatsData.filter(boat => 
+                    boat.fields['Boat Type'] === bookedBoatType
+                );
+                
+                // Add info message about filtering
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'filter-info';
+                infoDiv.style.cssText = 'font-size: 0.85rem; color: #1976d2; margin-bottom: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px;';
+                infoDiv.innerHTML = `
+                    <i class="fas fa-info-circle"></i> 
+                    Customer booked: <strong>${bookedBoatType}</strong> - showing matching vessels only
+                `;
+                boatGroup.insertBefore(infoDiv, boatGroup.querySelector('label'));
+                
+                // Populate with filtered boats
+                populateBoatSelect(filteredBoats, bookedBoatType);
+            } else {
+                // No boat type detected, show all boats
+                populateBoatSelect();
+            }
             
             // Display current boat if any
             const currentBoatId = booking['Boat'] && booking['Boat'][0];
