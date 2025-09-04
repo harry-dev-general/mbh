@@ -884,6 +884,81 @@
         </div>
     </div>
 
+    <!-- Booking Allocation Modal (Simplified) -->
+    <div id="bookingAllocationModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="modal-title">Manage Booking Allocation</h3>
+                <button type="button" class="close-btn" onclick="closeBookingAllocationModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            
+            <!-- Booking Summary Section -->
+            <div id="bookingSummary" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h4 style="margin-top: 0; color: #2E86AB; margin-bottom: 1rem;">Booking Details</h4>
+                <div style="display: grid; gap: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: 500;">Customer:</span>
+                        <span id="summaryCustomerName"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: 500;">Booking Date:</span>
+                        <span id="summaryBookingDate"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: 500;">Booking Time:</span>
+                        <span id="summaryBookingTime"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: 500;">Boat Type:</span>
+                        <span id="summaryBoatType" style="color: #1976d2; font-weight: 500;"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: 500;">Onboarding Time:</span>
+                        <span id="summaryOnboardingTime" style="color: #d32f2f; font-weight: 500;"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="bookingAllocationForm">
+                <!-- Hidden fields for booking data -->
+                <input type="hidden" id="bookingId" />
+                <input type="hidden" id="allocationType" />
+                
+                <!-- Staff Member Selection -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="bookingStaffSelect" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                        <i class="fas fa-user"></i> Allocate Staff Member
+                        <span class="text-muted" style="font-size: 0.85rem;">(Optional)</span>
+                    </label>
+                    <select id="bookingStaffSelect" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">Select Staff Member</option>
+                    </select>
+                    <small class="form-text text-muted" id="currentStaffInfo" style="margin-top: 0.25rem;"></small>
+                </div>
+                
+                <!-- Boat Selection -->
+                <div class="form-group" id="bookingBoatGroup" style="margin-bottom: 1.5rem;">
+                    <div class="filter-info" id="boatFilterInfo" style="display: none; font-size: 0.85rem; color: #1976d2; margin-bottom: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px;">
+                        <!-- Filter info will be inserted here -->
+                    </div>
+                    <label for="bookingBoatSelect" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                        <i class="fas fa-ship"></i> Allocate Boat
+                        <span class="text-muted" style="font-size: 0.85rem;">(Optional)</span>
+                    </label>
+                    <select id="bookingBoatSelect" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">Select Boat</option>
+                    </select>
+                    <small class="form-text text-muted" id="currentBoatInfo" style="margin-top: 0.25rem;"></small>
+                </div>
+                
+                <div class="modal-footer" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e0e0e0;">
+                    <button type="button" class="btn btn-secondary" onclick="closeBookingAllocationModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Allocation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Initialize Supabase
         const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
@@ -1824,188 +1899,241 @@
             cell.appendChild(bookingBlock);
         }
         
-        // Open allocation modal for a specific booking
+        // New simplified booking allocation modal
         function openBookingAllocationModal(bookingRecord, allocationType) {
             const booking = bookingRecord.fields;
             const customerName = booking['Customer Name'] || 'Unknown Customer';
             const bookingDate = booking['Booking Date'];
+            const startTime = booking['Start Time'] || '';
+            const finishTime = booking['Finish Time'] || '';
+            const onboardingTime = booking['Onboarding Time'] || '';
+            const bookedBoatType = booking['Booked Boat Type'] || 'Not specified';
             
-            // Pre-fill the form
-            document.getElementById('allocationDate').value = bookingDate;
-            document.getElementById('allocationType').value = 'Boat Hire';
-            document.getElementById('bookingSelect').value = bookingRecord.id;
+            // Populate summary section
+            document.getElementById('summaryCustomerName').textContent = customerName;
+            document.getElementById('summaryBookingDate').textContent = formatDisplayDate(bookingDate);
+            document.getElementById('summaryBookingTime').textContent = `${startTime} - ${finishTime}`;
+            document.getElementById('summaryBoatType').textContent = bookedBoatType;
+            document.getElementById('summaryOnboardingTime').textContent = onboardingTime;
             
-            // Populate staff dropdown with staff available on this specific date
-            populateStaffForDate(bookingDate);
+            // Store booking data in hidden fields
+            document.getElementById('bookingId').value = bookingRecord.id;
+            document.getElementById('allocationType').value = allocationType;
             
-            // Function to convert 12-hour time to 24-hour format for HTML input
-            function convertTo24Hour(timeStr) {
-                if (!timeStr) return '09:00';
-                
-                // Clean the time string
-                const cleanTime = timeStr.replace(/\s/g, '').toLowerCase();
-                
-                // Check if it's already in 24-hour format
-                if (!cleanTime.includes('am') && !cleanTime.includes('pm')) {
-                    // Already in 24-hour format, ensure it's properly formatted
-                    const parts = timeStr.split(':');
-                    if (parts.length === 2) {
-                        const hours = parts[0].padStart(2, '0');
-                        const minutes = parts[1].padStart(2, '0');
-                        return `${hours}:${minutes}`;
-                    }
-                    return timeStr;
-                }
-                
-                // Parse 12-hour format
-                const match = cleanTime.match(/(\d{1,2}):(\d{2})(am|pm)/);
-                if (!match) return '09:00';
-                
-                let hours = parseInt(match[1]);
-                const minutes = match[2];
-                const period = match[3];
-                
-                // Convert to 24-hour
-                if (period === 'pm' && hours !== 12) {
-                    hours += 12;
-                } else if (period === 'am' && hours === 12) {
-                    hours = 0;
-                }
-                
-                return `${hours.toString().padStart(2, '0')}:${minutes}`;
-            }
+            // Populate staff dropdown with available staff for this date
+            populateBookingStaffDropdown(bookingDate);
             
-            // Function to add time to a time string
-            function addTime(timeStr, hoursToAdd, minutesToAdd = 0) {
-                const [hours, minutes] = timeStr.split(':').map(Number);
-                let newHours = hours + hoursToAdd;
-                let newMinutes = minutes + minutesToAdd;
-                
-                // Handle minute overflow
-                if (newMinutes >= 60) {
-                    newHours += Math.floor(newMinutes / 60);
-                    newMinutes = newMinutes % 60;
-                }
-                
-                // Handle hour overflow
-                if (newHours >= 24) newHours = newHours % 24;
-                
-                return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
-            }
+            // Set current staff if assigned
+            const currentStaffInfo = document.getElementById('currentStaffInfo');
+            const currentEmployeeId = allocationType === 'onboarding' ? 
+                booking['Onboarding Employee']?.[0] : booking['Deloading Employee']?.[0];
             
-            // Function to subtract time from a time string
-            function subtractTime(timeStr, hoursToSubtract, minutesToSubtract = 0) {
-                const [hours, minutes] = timeStr.split(':').map(Number);
-                let newHours = hours - hoursToSubtract;
-                let newMinutes = minutes - minutesToSubtract;
-                
-                // Handle minute underflow
-                if (newMinutes < 0) {
-                    newHours -= Math.ceil(Math.abs(newMinutes) / 60);
-                    newMinutes = (60 + (newMinutes % 60)) % 60;
-                }
-                
-                // Handle hour underflow
-                if (newHours < 0) newHours = 24 + (newHours % 24);
-                
-                return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
-            }
-            
-            // Set the appropriate time and role
-            if (allocationType === 'onboarding') {
-                // For onboarding: Start 30 minutes before booking start time, end 1 hour after allocation start
-                const bookingStartTime = booking['Start Time'] || '09:00 am';
-                const startTime24 = subtractTime(convertTo24Hour(bookingStartTime), 0, 30);
-                const endTime24 = addTime(startTime24, 1, 0);
-                
-                document.getElementById('startTime').value = startTime24;
-                document.getElementById('endTime').value = endTime24;
-                document.getElementById('roleSelect').value = 'Onboarding';
-                
-                // Pre-select currently assigned employee if exists (after dropdown is populated)
-                setTimeout(() => {
-                    const currentEmployee = booking['Onboarding Employee'];
-                    if (currentEmployee && currentEmployee.length > 0) {
-                        document.getElementById('employeeSelect').value = currentEmployee[0];
-                    }
-                }, 100);
+            if (currentEmployeeId) {
+                const staff = staffData.find(s => s.id === currentEmployeeId);
+                currentStaffInfo.textContent = `Currently assigned: ${staff?.fields.Name || 'Unknown'}`;
+                document.getElementById('bookingStaffSelect').value = currentEmployeeId;
             } else {
-                // For deloading: Start 30 minutes before booking finish time, end 1 hour after allocation start
-                const bookingFinishTime = booking['Finish Time'] || '05:00 pm';
-                const startTime24 = subtractTime(convertTo24Hour(bookingFinishTime), 0, 30);
-                const endTime24 = addTime(startTime24, 1, 0);
-                
-                document.getElementById('startTime').value = startTime24;
-                document.getElementById('endTime').value = endTime24;
-                document.getElementById('roleSelect').value = 'Deloading';
-                
-                // Pre-select currently assigned employee if exists (after dropdown is populated)
-                setTimeout(() => {
-                    const currentEmployee = booking['Deloading Employee'];
-                    if (currentEmployee && currentEmployee.length > 0) {
-                        document.getElementById('employeeSelect').value = currentEmployee[0];
-                    }
-                }, 100);
+                currentStaffInfo.textContent = 'Currently: Not assigned';
             }
             
-            // Show booking fields (this will also show the optional labels)
-            toggleBookingField();
-            
-            // Get booked boat type and filter available boats
-            const bookedBoatType = booking['Booked Boat Type'];
-            const boatGroup = document.getElementById('boatGroup');
-            
-            // Remove any existing filter info
-            const existingFilterInfo = boatGroup.querySelector('.filter-info');
-            if (existingFilterInfo) existingFilterInfo.remove();
-            
-            if (bookedBoatType) {
-                // Filter boats by the booked type
+            // Handle boat selection with filtering
+            const boatFilterInfo = document.getElementById('boatFilterInfo');
+            if (bookedBoatType && bookedBoatType !== 'Not specified') {
+                // Filter boats by type
                 const filteredBoats = boatsData.filter(boat => 
                     boat.fields['Boat Type'] === bookedBoatType
                 );
                 
-                // Add info message about filtering
-                const infoDiv = document.createElement('div');
-                infoDiv.className = 'filter-info';
-                infoDiv.style.cssText = 'font-size: 0.85rem; color: #1976d2; margin-bottom: 0.5rem; padding: 0.5rem; background: #e3f2fd; border-radius: 4px;';
-                infoDiv.innerHTML = `
+                // Show filter info
+                boatFilterInfo.style.display = 'block';
+                boatFilterInfo.innerHTML = `
                     <i class="fas fa-info-circle"></i> 
-                    Customer booked: <strong>${bookedBoatType}</strong> - showing matching vessels only
+                    Showing only ${bookedBoatType} vessels
                 `;
-                boatGroup.insertBefore(infoDiv, boatGroup.querySelector('label'));
                 
-                // Populate with filtered boats
-                populateBoatSelect(filteredBoats, bookedBoatType);
+                // Populate filtered boats
+                populateBookingBoatDropdown(filteredBoats);
             } else {
-                // No boat type detected, show all boats
-                populateBoatSelect();
+                // No filter, show all boats
+                boatFilterInfo.style.display = 'none';
+                populateBookingBoatDropdown(boatsData);
             }
             
-            // Display current boat if any
-            const currentBoatId = booking['Boat'] && booking['Boat'][0];
-            const currentBoatSpan = document.getElementById('currentBoat');
+            // Set current boat if assigned
+            const currentBoatInfo = document.getElementById('currentBoatInfo');
+            const currentBoatId = booking['Boat']?.[0];
             
             if (currentBoatId) {
                 const boat = boatsData.find(b => b.id === currentBoatId);
-                currentBoatSpan.textContent = boat ? boat.fields['Name'] : 'Unknown boat';
-                document.getElementById('boatSelect').value = currentBoatId;
+                currentBoatInfo.textContent = `Currently assigned: ${boat?.fields.Name || 'Unknown'}`;
+                document.getElementById('bookingBoatSelect').value = currentBoatId;
             } else {
-                currentBoatSpan.textContent = 'None assigned';
-                document.getElementById('boatSelect').value = '';
+                currentBoatInfo.textContent = 'Currently: Not assigned';
             }
             
             // Update modal title
-            const modalTitle = document.querySelector('.modal-title');
-            if (modalTitle) {
-                const staffStatus = allocationType === 'onboarding' 
-                    ? (booking['Onboarding Employee']?.length > 0 ? ' (Currently: ' + staffData.find(s => s.id === booking['Onboarding Employee'][0])?.fields.Name + ')' : '')
-                    : (booking['Deloading Employee']?.length > 0 ? ' (Currently: ' + staffData.find(s => s.id === booking['Deloading Employee'][0])?.fields.Name + ')' : '');
-                modalTitle.textContent = `Allocate Staff for ${customerName} - ${allocationType === 'onboarding' ? 'Onboarding' : 'Deloading'}${staffStatus}`;
+            const modalTitle = document.querySelector('#bookingAllocationModal .modal-title');
+            modalTitle.textContent = `${allocationType === 'onboarding' ? 'Onboarding' : 'Deloading'} Allocation - ${customerName}`;
+            
+            // Show the new modal
+            document.getElementById('bookingAllocationModal').classList.add('show');
+        }
+        
+        // Helper function to format date for display
+        function formatDisplayDate(dateStr) {
+            if (!dateStr) return 'Not specified';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-AU', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+        
+        // Populate staff dropdown for booking allocation
+        function populateBookingStaffDropdown(bookingDate) {
+            const staffSelect = document.getElementById('bookingStaffSelect');
+            staffSelect.innerHTML = '<option value="">Select Staff Member</option>';
+            
+            // Get available staff for this date
+            const dateKey = bookingDate;
+            const availableStaff = [];
+            
+            staffData.forEach(staff => {
+                const staffId = staff.id;
+                if (staffAvailability[staffId] && staffAvailability[staffId][dateKey]) {
+                    availableStaff.push(staff);
+                }
+            });
+            
+            // Sort by name and add to dropdown
+            availableStaff.sort((a, b) => 
+                (a.fields.Name || '').localeCompare(b.fields.Name || '')
+            );
+            
+            availableStaff.forEach(staff => {
+                staffSelect.innerHTML += `
+                    <option value="${staff.id}">${staff.fields.Name}</option>
+                `;
+            });
+            
+            if (availableStaff.length === 0) {
+                staffSelect.innerHTML += '<option value="" disabled>No staff available on this date</option>';
+            }
+        }
+        
+        // Populate boat dropdown for booking allocation
+        function populateBookingBoatDropdown(boats) {
+            const boatSelect = document.getElementById('bookingBoatSelect');
+            boatSelect.innerHTML = '<option value="">Select Boat</option>';
+            
+            if (boats.length === 0) {
+                boatSelect.innerHTML += '<option value="" disabled>No boats available</option>';
+                return;
             }
             
-            openAllocationModal();
+            boats.forEach(boat => {
+                const name = boat.fields['Name'];
+                const description = boat.fields['Description'] || '';
+                const label = description ? `${name} - ${description}` : name;
+                
+                boatSelect.innerHTML += `
+                    <option value="${boat.id}">${label}</option>
+                `;
+            });
         }
+        
+        // Close the new booking allocation modal
+        function closeBookingAllocationModal() {
+            document.getElementById('bookingAllocationModal').classList.remove('show');
+            document.getElementById('bookingAllocationForm').reset();
+        }
+        
+        // Handle new booking allocation form submission
+        document.getElementById('bookingAllocationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const bookingId = document.getElementById('bookingId').value;
+            const allocationType = document.getElementById('allocationType').value;
+            const selectedStaffId = document.getElementById('bookingStaffSelect').value;
+            const selectedBoatId = document.getElementById('bookingBoatSelect').value;
+            
+            // At least one should be selected
+            if (!selectedStaffId && !selectedBoatId) {
+                alert('Please select at least a staff member or a boat');
+                return;
+            }
+            
+            try {
+                // Prepare update fields
+                const updateFields = {};
+                
+                if (allocationType === 'onboarding') {
+                    if (selectedStaffId) {
+                        updateFields['Onboarding Employee'] = [selectedStaffId];
+            } else {
+                        updateFields['Onboarding Employee'] = [];
+                    }
+                } else {
+                    if (selectedStaffId) {
+                        updateFields['Deloading Employee'] = [selectedStaffId];
+                    } else {
+                        updateFields['Deloading Employee'] = [];
+                    }
+                }
+                
+                if (selectedBoatId) {
+                    updateFields['Boat'] = [selectedBoatId];
+                } else if (selectedBoatId === '') {
+                    // Only clear boat if explicitly deselected
+                    const currentValue = document.getElementById('currentBoatInfo').textContent;
+                    if (!currentValue.includes('Not assigned')) {
+                        updateFields['Boat'] = [];
+                    }
+                }
+                
+                // Update booking in Airtable
+                const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}/${bookingId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fields: updateFields })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'Failed to update allocation');
+                }
+                
+                // Success message
+                let message = 'Allocation updated successfully!';
+                if (selectedStaffId && selectedBoatId) {
+                    message = 'Staff and boat assigned successfully!';
+                } else if (selectedStaffId) {
+                    message = 'Staff member assigned successfully!';
+                } else if (selectedBoatId) {
+                    message = 'Boat assigned successfully!';
+                }
+                
+                alert(message);
+                closeBookingAllocationModal();
+                
+                // Reload data to show updates
+                await loadWeekData();
+                
+                // Send SMS notification if staff was assigned
+                if (selectedStaffId) {
+                    await sendStaffNotification(bookingId, selectedStaffId, allocationType);
+                }
+                
+            } catch (error) {
+                console.error('Error updating allocation:', error);
+                alert('Error updating allocation: ' + error.message);
+            }
+        });
 
         // Populate staff dropdown based on specific date
         function populateStaffForDate(date) {
@@ -2403,12 +2531,12 @@
                     
                     // Update staff if both role and employee are selected
                     if (roleValue && employeeId) {
-                        if (roleValue === 'Onboarding') {
-                            updateFields['Onboarding Employee'] = [employeeId];
-                            console.log('Updating booking with Onboarding Employee:', employeeId);
-                        } else if (roleValue === 'Deloading') {
-                            updateFields['Deloading Employee'] = [employeeId];
-                            console.log('Updating booking with Deloading Employee:', employeeId);
+                    if (roleValue === 'Onboarding') {
+                        updateFields['Onboarding Employee'] = [employeeId];
+                        console.log('Updating booking with Onboarding Employee:', employeeId);
+                    } else if (roleValue === 'Deloading') {
+                        updateFields['Deloading Employee'] = [employeeId];
+                        console.log('Updating booking with Deloading Employee:', employeeId);
                         }
                     }
                     
