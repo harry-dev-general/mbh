@@ -1996,25 +1996,32 @@
             const staffSelect = document.getElementById('bookingStaffSelect');
             staffSelect.innerHTML = '<option value="">Select Staff Member</option>';
             
-            // Get available staff for this date
-            const dateKey = bookingDate;
+            // Find staff available on this specific date
             const availableStaff = [];
-            
-            staffData.forEach(staff => {
-                const staffId = staff.id;
-                if (staffAvailability[staffId] && staffAvailability[staffId][dateKey]) {
-                    availableStaff.push(staff);
+            rosterData.forEach(record => {
+                const rosterDate = record.fields['Date'];
+                const employeeId = record.fields['Employee']?.[0];
+                const employeeName = record.fields['Employee Name'];
+                
+                if (rosterDate === bookingDate && employeeId) {
+                    // Check if we haven't already added this employee
+                    if (!availableStaff.some(s => s.id === employeeId)) {
+                        availableStaff.push({
+                            id: employeeId,
+                            name: employeeName
+                        });
+                    }
                 }
             });
             
             // Sort by name and add to dropdown
             availableStaff.sort((a, b) => 
-                (a.fields.Name || '').localeCompare(b.fields.Name || '')
+                (a.name || '').localeCompare(b.name || '')
             );
             
             availableStaff.forEach(staff => {
                 staffSelect.innerHTML += `
-                    <option value="${staff.id}">${staff.fields.Name}</option>
+                    <option value="${staff.id}">${staff.name}</option>
                 `;
             });
             
