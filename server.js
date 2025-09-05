@@ -12,6 +12,9 @@ const PORT = process.env.PORT || 8080;
 const notifications = require('./api/notifications');
 const shiftResponseHandler = require('./api/shift-response-handler');
 
+// Import vessel maintenance routes
+const vesselRoutes = require('./api/routes/vessel-maintenance');
+
 // Security middleware with exceptions for shift confirmation
 app.use((req, res, next) => {
   // Skip helmet CSP for shift confirmation page to avoid loading issues
@@ -69,6 +72,9 @@ app.get('/training/shift-confirmation.html', (req, res) => {
 
 // Serve static files from the training directory
 app.use(express.static(path.join(__dirname, 'training')));
+
+// Add vessel maintenance routes
+app.use('/api/vessels', vesselRoutes);
 
 // API proxy endpoint for Airtable requests
 app.post('/api/airtable/*', async (req, res) => {
