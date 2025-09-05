@@ -463,4 +463,6 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`MBH Staff Portal running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`AIRTABLE_API_KEY is ${process.env.AIRTABLE_API_KEY ? 'SET' : 'NOT SET'}`);
+  console.log(`Available env vars:`, Object.keys(process.env).filter(key => !key.includes('npm')).sort());
 });

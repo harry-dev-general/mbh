@@ -6,6 +6,11 @@ const axios = require('axios');
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY; // Set in environment variables
 const BASE_ID = 'applkAFOn2qxtu7tx';
 
+// Check if API key is available
+if (!AIRTABLE_API_KEY) {
+    console.error('WARNING: AIRTABLE_API_KEY not set in environment variables');
+}
+
 // Table IDs
 const BOATS_TABLE_ID = 'tblNLoBNb4daWzjob';
 const PRE_DEP_TABLE_ID = 'tbl9igu5g1bPG4Ahu';
@@ -112,6 +117,13 @@ function generateAlerts(status, daysSinceCheck) {
 // Get all vessel maintenance status
 async function getVesselMaintenanceStatus() {
     try {
+        // Check if API key is available
+        if (!AIRTABLE_API_KEY) {
+            return {
+                success: false,
+                error: 'Airtable API key not configured. Please set AIRTABLE_API_KEY environment variable.'
+            };
+        }
         // 1. Fetch all boats
         const boatsResponse = await axios.get(
             `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE_ID}`,
