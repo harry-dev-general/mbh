@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vessel Maintenance Dashboard - MBH Staff Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            background: #2E86AB;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .filter-btn.active {
+            background: #2E86AB;
+            color: white;
+            border-color: #2E86AB;
+        }
+        
+        .vessel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .vessel-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .vessel-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .vessel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .vessel-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2E86AB;
+        }
+        
+        .vessel-type {
+            font-size: 0.875rem;
+            color: #666;
+        }
+        
+        .vessel-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+        }
+        
+        .status-ready {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-warning {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .status-critical {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .gauge-container {
+            margin: 1rem 0;
+        }
+        
+        .gauge {
+            margin-bottom: 1rem;
+        }
+        
+        .gauge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .gauge-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .gauge-value {
+            font-weight: 600;
+        }
+        
+        .gauge-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .gauge-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .gauge-fill.high {
+            background: #4caf50;
+        }
+        
+        .gauge-fill.medium {
+            background: #ffc107;
+        }
+        
+        .gauge-fill.low {
+            background: #ff9800;
+        }
+        
+        .gauge-fill.critical {
+            background: #f44336;
+        }
+        
+        .vessel-footer {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            font-size: 0.875rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .last-check {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .view-details {
+            color: #2E86AB;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .view-details:hover {
+            text-decoration: underline;
+        }
+        
+        .alert-banner {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .alert-icon {
+            color: #f39c12;
+            font-size: 1.5rem;
+        }
+        
+        .alert-content h3 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .alert-content p {
+            font-size: 0.875rem;
+            color: #666;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            background: #2E86AB;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .vessel-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .vessel-detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .detail-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .detail-section h3 {
+            margin-bottom: 1rem;
+            color: #2E86AB;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #2E86AB;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #236a88;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .checklist-history {
+            margin-top: 1rem;
+        }
+        
+        .checklist-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .checklist-type {
+            font-weight: 500;
+            color: #2E86AB;
+        }
+        
+        .checklist-info {
+            font-size: 0.875rem;
+            color: #666;
+        }
+        
+        .consumption-info {
+            font-size: 0.875rem;
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-ship"></i> Vessel Maintenance Dashboard</h1>
+    </div>
+    
+    <div class="container">
+        <!-- Alert Banner -->
+        <div class="alert-banner">
+            <i class="fas fa-exclamation-triangle alert-icon"></i>
+            <div class="alert-content">
+                <h3>2 Vessels Need Attention</h3>
+                <p>Junior and Sandstone have low fuel levels and require refueling before next bookings.</p>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filters">
+            <button class="filter-btn active">All Vessels</button>
+            <button class="filter-btn">12 Person BBQ</button>
+            <button class="filter-btn">8 Person BBQ</button>
+            <button class="filter-btn">4 Person Polycraft</button>
+            <button class="filter-btn">Work Boats</button>
+            <button class="filter-btn" style="border-color: #f44336; color: #f44336;">
+                <i class="fas fa-exclamation-circle"></i> Needs Attention
+            </button>
+        </div>
+        
+        <!-- Vessel Grid -->
+        <div class="vessel-grid">
+            <!-- Pumice Stone -->
+            <div class="vessel-card" onclick="showVesselDetail('Pumice Stone')">
+                <div class="vessel-header">
+                    <div>
+                        <div class="vessel-name">Pumice Stone</div>
+                        <div class="vessel-type">12 Person BBQ Boat</div>
+                    </div>
+                    <div class="vessel-status status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                </div>
+                
+                <div class="gauge-container">
+                    <div class="gauge">
+                        <div class="gauge-header">
+                            <div class="gauge-label">
+                                <span>⛽</span> Fuel
+                            </div>
+                            <div class="gauge-value">75%</div>
+                        </div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill high" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="gauge">
+                        <div class="gauge-header">
+                            <div class="gauge-label">
+                                <span>🔥</span> Gas
+                            </div>
+                            <div class="gauge-value">50%</div>
+                        </div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill medium" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="gauge">
+                        <div class="gauge-header">
+                            <div class="gauge-label">
+                                <span>💧</span> Water
+                            </div>
+                            <div class="gauge-value">90%</div>
+                        </div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill high" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vessel-footer">
+                    <div class="last-check">
+                        <i class="fas fa-clock"></i> Last check: 2 hours ago
+                    </div>
+                    <a href="#" class="view-details">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Junior -->
+            <div class="vessel-card" onclick="showVesselDetail('Junior')">
+                <div class="vessel-header">
+                    <div>
+                        <div class="vessel-name">Junior</div>
+                        <div class="vessel-type">12 Person BBQ Boat</div>
+                    </div>
+                    <div class="vessel-status status-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Low Resources
+                    </div>
+                </div>
+                
+                <div class="gauge-container">
+                    <div class="gauge">
+                        <div class="gauge-header">
+                            <div class="gauge-label">
+                                <span>⛽</span> Fuel
+                            </div>
+                            <div class="gauge-value">25% ⚠️</div>
+                        </div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill critical" style="width: 25%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="gauge">
+                        <div class="gauge-header">
+                            <div class="gauge-label">
+                                <span>🔥</span> Gas
+                            </div>
+                            <div class="gauge-value">25% ⚠️</div>
+                        </div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill critical" style="width: 25%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="gauge">
+                        <div class="gauge-header">
+                            <div class="gauge-label">
+                                <span>💧</span> Water
+                            </div>
+                            <div class="gauge-value">75%</div>
+                        </div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill high" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vessel-footer">
+                    <div class="last-check">
+                        <i class="fas fa-clock"></i> Last check: 1 day ago
+                    </div>
+                    <a href="#" class="view-details">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Sandstone -->
+            <div class="vessel-card" onclick="showVesselDetail('Sandstone')">
+                <div class="vessel-header">
+                    <div>
+                        <div class="vessel-name">Sandstone</div>
+                        <div class="vessel-type">8 Person BBQ Boat</div>
+                    </div>
+                    <div class="vessel-status status-ready">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </div>
+                </div>
+                
+                <div class="gauge-container">
+                    <div class="gauge">
+                        <div class="gauge-header">
+                            <div class="gauge-label">
+                                <span>⛽</span> Fuel
+                            </div>
+                            <div class="gauge-value">90%</div>
+                        </div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill high" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="gauge">
+                        <div class="gauge-header">
+                            <div class="gauge-label">
+                                <span>🔥</span> Gas
+                            </div>
+                            <div class="gauge-value">75%</div>
+                        </div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill high" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="gauge">
+                        <div class="gauge-header">
+                            <div class="gauge-label">
+                                <span>💧</span> Water
+                            </div>
+                            <div class="gauge-value">50%</div>
+                        </div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill medium" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="vessel-footer">
+                    <div class="last-check">
+                        <i class="fas fa-clock"></i> Last check: 3 hours ago
+                    </div>
+                    <a href="#" class="view-details">
+                        View Details <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Additional vessels would go here -->
+        </div>
+    </div>
+    
+    <!-- Vessel Detail Modal -->
+    <div id="vesselModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalVesselName">Junior - Detail View</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="vessel-detail-grid">
+                    <div class="detail-section">
+                        <h3>Current Status</h3>
+                        <div class="gauge-container">
+                            <div class="gauge">
+                                <div class="gauge-header">
+                                    <div class="gauge-label">
+                                        <span>⛽</span> Fuel
+                                    </div>
+                                    <div class="gauge-value">25% ⚠️</div>
+                                </div>
+                                <div class="gauge-bar">
+                                    <div class="gauge-fill critical" style="width: 25%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="gauge">
+                                <div class="gauge-header">
+                                    <div class="gauge-label">
+                                        <span>🔥</span> Gas
+                                    </div>
+                                    <div class="gauge-value">25% ⚠️</div>
+                                </div>
+                                <div class="gauge-bar">
+                                    <div class="gauge-fill critical" style="width: 25%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="gauge">
+                                <div class="gauge-header">
+                                    <div class="gauge-label">
+                                        <span>💧</span> Water
+                                    </div>
+                                    <div class="gauge-value">75%</div>
+                                </div>
+                                <div class="gauge-bar">
+                                    <div class="gauge-fill high" style="width: 75%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 1rem;">
+                            <p><strong>Location:</strong> Seaforth Mooring</p>
+                            <p><strong>Overall Condition:</strong> ✅ Good - Ready for Next Booking</p>
+                            <p><strong>Engine:</strong> Average</p>
+                            <p><strong>Safety Equipment:</strong> ✅ All Present & Good</p>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-gas-pump"></i> Log Refuel
+                            </button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-clipboard-check"></i> Quick Check
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Recent Activity</h3>
+                        <div class="checklist-history">
+                            <div class="checklist-item">
+                                <div>
+                                    <div class="checklist-type">✅ Post-Departure Checklist</div>
+                                    <div class="checklist-info">07/08 10:38 AM - Harry Price</div>
+                                    <div class="consumption-info">Fuel: 100% → 25% | Gas: 100% → 25%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="checklist-item">
+                                <div>
+                                    <div class="checklist-type">✅ Pre-Departure Checklist</div>
+                                    <div class="checklist-info">07/08 08:00 AM - Test Staff</div>
+                                    <div class="checklist-info">All checks passed</div>
+                                </div>
+                            </div>
+                            
+                            <div class="checklist-item">
+                                <div>
+                                    <div class="checklist-type">⛽ Fuel Refilled</div>
+                                    <div class="checklist-info">05/08 02:30 PM - Max McKelvey</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 2rem;">
+                            <h4 style="margin-bottom: 0.5rem;">Maintenance Alerts</h4>
+                            <div style="background: #ffebee; padding: 0.75rem; border-radius: 4px; font-size: 0.875rem;">
+                                <p style="color: #c62828; margin-bottom: 0.25rem;">
+                                    <i class="fas fa-exclamation-circle"></i> Low fuel - needs refill before next booking
+                                </p>
+                                <p style="color: #c62828;">
+                                    <i class="fas fa-exclamation-circle"></i> Gas bottle low - replace soon
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <h4 style="margin-bottom: 0.5rem;">Upcoming Bookings</h4>
+                            <div style="font-size: 0.875rem;">
+                                <p>• 08/09 - 9:00 AM: Smith Family</p>
+                                <p>• 10/09 - 1:00 PM: Johnson Group</p>
+                                <p>• 12/09 - 10:00 AM: Williams Party</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showVesselDetail(vesselName) {
+            document.getElementById('modalVesselName').textContent = vesselName + ' - Detail View';
+            document.getElementById('vesselModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('vesselModal').classList.remove('show');
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('vesselModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+        
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                // Filter logic would go here
+            });
+        });
+    </script>
+</body>
+</html>
