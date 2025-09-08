@@ -922,7 +922,7 @@
             <form id="bookingAllocationForm">
                 <!-- Hidden fields for booking data -->
                 <input type="hidden" id="bookingId" />
-                <input type="hidden" id="allocationType" />
+                <input type="hidden" id="bookingAllocationType" />
                 
                 <!-- Staff Member Selection -->
                 <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -1924,7 +1924,7 @@
             
             // Store booking data in hidden fields
             document.getElementById('bookingId').value = bookingRecord.id;
-            document.getElementById('allocationType').value = allocationType;
+            document.getElementById('bookingAllocationType').value = allocationType;
             
             // Populate staff dropdown with available staff for this date
             populateBookingStaffDropdown(bookingDate);
@@ -2070,7 +2070,7 @@
             console.log('Booking allocation form submitted');
             
             const bookingId = document.getElementById('bookingId').value;
-            const allocationType = document.getElementById('allocationType').value;
+            const allocationType = document.getElementById('bookingAllocationType').value;
             const selectedStaffId = document.getElementById('bookingStaffSelect').value;
             const selectedBoatId = document.getElementById('bookingBoatSelect').value;
             
