@@ -429,17 +429,33 @@
             }
         }
 
-        // Set default week starting date to next Monday
+        // Set default week starting date to current week's Monday (or next Monday if today is Sunday)
         function setDefaultWeekStarting() {
             const today = new Date();
-            const dayOfWeek = today.getDay();
-            const daysUntilMonday = dayOfWeek === 0 ? 1 : (8 - dayOfWeek);
-            const nextMonday = new Date(today);
-            nextMonday.setDate(today.getDate() + daysUntilMonday);
+            const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
             
-            const dateString = nextMonday.toISOString().split('T')[0];
+            let targetMonday = new Date(today);
+            
+            if (dayOfWeek === 0) {
+                // If it's Sunday, show next Monday
+                targetMonday.setDate(today.getDate() + 1);
+            } else {
+                // If it's Monday-Saturday, show this week's Monday
+                const daysBackToMonday = dayOfWeek - 1;
+                targetMonday.setDate(today.getDate() - daysBackToMonday);
+            }
+            
+            const dateString = targetMonday.toISOString().split('T')[0];
             document.getElementById('weekStarting').value = dateString;
-            document.getElementById('weekStarting').min = dateString;
+            
+            // Set minimum date to current week's Monday (don't allow past weeks)
+            const currentWeekMonday = new Date(today);
+            if (dayOfWeek === 0) {
+                currentWeekMonday.setDate(today.getDate() - 6);
+            } else {
+                currentWeekMonday.setDate(today.getDate() - (dayOfWeek - 1));
+            }
+            document.getElementById('weekStarting').min = currentWeekMonday.toISOString().split('T')[0];
         }
 
         // Handle form submission
