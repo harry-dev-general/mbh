@@ -2146,8 +2146,58 @@
                 // Reload data to show updates
                 await loadWeekData();
                 
-                // Note: SMS notifications are handled by Airtable automations
-                // when staff are assigned to bookings
+                // Send SMS notification if staff was assigned
+                if (selectedStaffId) {
+                    try {
+                        // Get booking details for the SMS
+                        const booking = bookingsData.find(b => b.id === bookingId);
+                        if (booking && booking.fields) {
+                            const roleValue = allocationType === 'onboarding' ? 'Onboarding' : 'Deloading';
+                            const bookingDate = booking.fields['Booking Date'];
+                            const customerName = booking.fields['Customer Name'] || 'Unknown Customer';
+                            
+                            let shiftStart, shiftEnd;
+                            if (allocationType === 'onboarding') {
+                                shiftStart = booking.fields['Onboarding Time'] || booking.fields['Start Time'] || '9:00 AM';
+                                shiftEnd = booking.fields['Start Time'] || '10:00 AM';
+                            } else {
+                                shiftStart = booking.fields['Deloading Time'] || booking.fields['Finish Time'] || '4:00 PM';
+                                shiftEnd = booking.fields['Finish Time'] || '5:00 PM';
+                            }
+                            
+                            const notificationData = {
+                                employeeId: selectedStaffId,
+                                allocationId: bookingId,
+                                shiftType: `${roleValue} - ${booking.fields['Booking Code'] || 'Booking'}`,
+                                shiftDate: bookingDate,
+                                startTime: shiftStart,
+                                endTime: shiftEnd,
+                                customerName: customerName,
+                                role: roleValue,
+                                isBookingAllocation: true
+                            };
+                            
+                            console.log('Sending SMS notification for booking allocation:', notificationData);
+                            
+                            const notifyResponse = await fetch('/api/send-shift-notification', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(notificationData)
+                            });
+                            
+                            if (notifyResponse.ok) {
+                                const result = await notifyResponse.json();
+                                console.log('SMS notification sent successfully:', result);
+                            } else {
+                                const error = await notifyResponse.text();
+                                console.error('Failed to send SMS notification:', error);
+                            }
+                        }
+                    } catch (notifyError) {
+                        console.error('Error sending SMS notification:', notifyError);
+                        // Don't fail the allocation if SMS fails
+                    }
+                }
                 
             } catch (error) {
                 console.error('Error updating allocation:', error);
