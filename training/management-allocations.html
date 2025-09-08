@@ -698,11 +698,11 @@
             <span><strong>Legend:</strong></span>
             <span style="display: flex; align-items: center; gap: 5px;">
                 <span style="display: inline-block; width: 20px; height: 20px; background: #4caf50; border: 2px solid #2e7d32; border-radius: 3px;"></span>
-                Fully Staffed Booking
+                Complete Allocation (Staff + Boat)
             </span>
             <span style="display: flex; align-items: center; gap: 5px;">
                 <span style="display: inline-block; width: 20px; height: 20px; background: #f44336; border: 2px solid #c62828; border-radius: 3px;"></span>
-                Needs Staff
+                Incomplete (Missing Staff/Boat)
             </span>
             <span style="display: flex; align-items: center; gap: 5px;">
                 <span style="display: inline-block; width: 20px; height: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 3px;"></span>
@@ -1842,9 +1842,26 @@
             const bookingBlock = document.createElement('div');
             bookingBlock.className = 'booking-block';
             
-            // Style based on staffing status
-            const baseColor = isFullyStaffed ? '#4caf50' : '#f44336'; // Green if fully staffed, red if not
-            const opacity = hasStaff ? '1' : '0.7'; // Slightly transparent if this specific role isn't staffed
+            // Get boat info if assigned
+            const booking = bookingRecord.fields;
+            const boatId = booking['Boat'] && booking['Boat'][0];
+            const boatName = boatId ? boatsData.find(b => b.id === boatId)?.fields['Name'] : null;
+            const hasBoat = !!boatId;
+            
+            // Check if this specific allocation is complete (has both staff AND boat)
+            const isAllocationComplete = hasStaff && hasBoat;
+            
+            // Style based on allocation completion status
+            const baseColor = isAllocationComplete ? '#4caf50' : '#f44336'; // Green if complete, red if not
+            const borderColor = isAllocationComplete ? '#2e7d32' : '#c62828';
+            
+            // Use different opacity based on what's missing
+            let opacity = '1';
+            if (!hasStaff && !hasBoat) {
+                opacity = '0.7'; // Both missing
+            } else if (!hasStaff || !hasBoat) {
+                opacity = '0.85'; // One missing
+            }
             
             bookingBlock.style.cssText = `
                 background: ${baseColor};
@@ -1857,20 +1874,16 @@
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 opacity: ${opacity};
-                border: 2px solid ${isFullyStaffed ? '#2e7d32' : '#c62828'};
+                border: 2px solid ${borderColor};
                 box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             `;
             
             const typeLabel = type === 'onboarding' ? '🚢 ON' : '🏁 OFF';
             const staffIcon = hasStaff ? '✓' : '✗';
+            const boatIcon = hasBoat ? '⚓' : '✗';
             
             // Use the actual booking time for display
             const displayTime = actualBookingTime || time;
-            
-            // Get boat info if assigned
-            const booking = bookingRecord.fields;
-            const boatId = booking['Boat'] && booking['Boat'][0];
-            const boatName = boatId ? boatsData.find(b => b.id === boatId)?.fields['Name'] : null;
             const boatInfo = boatName ? `<div style="font-size: 8px; opacity: 0.8;"><i class="fas fa-ship"></i> ${boatName}</div>` : '';
             
             // Get booked boat type from Airtable field
@@ -1886,7 +1899,7 @@
                     ${typeLabel} ${customerName}
                 </div>
                 <div style="font-size: 9px; opacity: 0.9;">
-                    ${displayTime} ${staffIcon}
+                    ${displayTime} Staff:${staffIcon} Boat:${boatIcon}
                 </div>
                 ${boatTypeInfo}
                 ${boatInfo}
@@ -1894,7 +1907,8 @@
             
             const boatTitle = boatName ? `\nBoat Assigned: ${boatName}` : '\nBoat Assigned: None';
             const boatTypeTitle = bookedBoatType ? `\nBoat Type: ${bookedBoatType}` : '';
-            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Booking Start' : 'Booking Finish'}: ${displayTime}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} Time: ${time}\nStaff: ${hasStaff ? 'Assigned' : 'NEEDED'}${boatTypeTitle}${boatTitle}\nClick to manage allocation`;
+            const completionStatus = isAllocationComplete ? 'COMPLETE ✅' : (hasStaff ? 'Needs Boat' : (hasBoat ? 'Needs Staff' : 'Needs Staff & Boat'));
+            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Booking Start' : 'Booking Finish'}: ${displayTime}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} Time: ${time}\nStaff: ${hasStaff ? 'Assigned' : 'NEEDED'}\nBoat: ${hasBoat ? boatName || 'Assigned' : 'NEEDED'}${boatTypeTitle}\nStatus: ${completionStatus}\nClick to manage allocation`;
             
             // Add click handler to open allocation modal
             bookingBlock.onclick = (e) => {
