@@ -2134,10 +2134,8 @@
                 // Reload data to show updates
                 await loadWeekData();
                 
-                // Send SMS notification if staff was assigned
-                if (selectedStaffId) {
-                    await sendStaffNotification(bookingId, selectedStaffId, allocationType);
-                }
+                // Note: SMS notifications are handled by Airtable automations
+                // when staff are assigned to bookings
                 
             } catch (error) {
                 console.error('Error updating allocation:', error);
