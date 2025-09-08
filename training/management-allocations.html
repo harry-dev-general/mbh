@@ -2076,8 +2076,16 @@
             
             console.log('Form values:', { bookingId, allocationType, selectedStaffId, selectedBoatId });
             
-            // At least one should be selected
-            if (!selectedStaffId && !selectedBoatId) {
+            // Check if we're just clearing existing assignments
+            const currentStaffInfo = document.getElementById('currentStaffInfo').textContent;
+            const currentBoatInfo = document.getElementById('currentBoatInfo').textContent;
+            const hasCurrentStaff = !currentStaffInfo.includes('Not assigned');
+            const hasCurrentBoat = !currentBoatInfo.includes('Not assigned');
+            
+            // Allow submission if:
+            // 1. New staff or boat is selected, OR
+            // 2. We're clearing existing staff/boat assignments
+            if (!selectedStaffId && !selectedBoatId && !hasCurrentStaff && !hasCurrentBoat) {
                 alert('Please select at least a staff member or a boat');
                 return;
             }
