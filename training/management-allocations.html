@@ -2063,11 +2063,14 @@
         // Handle new booking allocation form submission
         document.getElementById('bookingAllocationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Booking allocation form submitted');
             
             const bookingId = document.getElementById('bookingId').value;
             const allocationType = document.getElementById('allocationType').value;
             const selectedStaffId = document.getElementById('bookingStaffSelect').value;
             const selectedBoatId = document.getElementById('bookingBoatSelect').value;
+            
+            console.log('Form values:', { bookingId, allocationType, selectedStaffId, selectedBoatId });
             
             // At least one should be selected
             if (!selectedStaffId && !selectedBoatId) {
@@ -2103,6 +2106,8 @@
                     }
                 }
                 
+                console.log('Updating booking with fields:', updateFields);
+                
                 // Update booking in Airtable
                 const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}/${bookingId}`, {
                     method: 'PATCH',
@@ -2113,8 +2118,11 @@
                     body: JSON.stringify({ fields: updateFields })
                 });
                 
+                console.log('API response status:', response.status);
+                
                 if (!response.ok) {
                     const error = await response.json();
+                    console.error('API error:', error);
                     throw new Error(error.error?.message || 'Failed to update allocation');
                 }
                 
@@ -3079,6 +3087,14 @@
                 populateStaffForDate(selectedDate);
             }
         });
+        
+        // Ensure booking allocation form event listener is attached
+        const bookingForm = document.getElementById('bookingAllocationForm');
+        if (bookingForm) {
+            console.log('Booking allocation form found, attaching submit handler');
+        } else {
+            console.error('Booking allocation form not found!');
+        }
     </script>
 </body>
 </html>
