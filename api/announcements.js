@@ -19,18 +19,17 @@ const TWILIO_FROM_NUMBER = process.env.TWILIO_FROM_NUMBER;
  */
 async function getAnnouncements(includeExpired = false) {
     try {
-        // Debug logging
-        console.log('Getting announcements with:', {
-            BASE_ID,
-            ANNOUNCEMENTS_TABLE_ID,
-            AIRTABLE_API_KEY: AIRTABLE_API_KEY ? 'Set' : 'Not set'
-        });
+        // Build URL with optional date filtering
+        let url = `https://api.airtable.com/v0/${BASE_ID}/${ANNOUNCEMENTS_TABLE_ID}?`;
         
-        // For now, let's skip filtering to debug the issue
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${ANNOUNCEMENTS_TABLE_ID}?` +
-            `sort[0][field]=Title&sort[0][direction]=desc`;
+        if (!includeExpired) {
+            // Filter to show announcements that either have no expiry date OR haven't expired yet
+            const today = new Date().toISOString().split('T')[0];
+            const filter = `OR(NOT({Expiry Date}), {Expiry Date} >= '${today}')`;
+            url += `filterByFormula=${encodeURIComponent(filter)}&`;
+        }
         
-        console.log('Fetching from URL:', url);
+        url += `sort[0][field]=Title&sort[0][direction]=desc`;
 
         const response = await fetch(url,
             {
@@ -67,15 +66,6 @@ async function createAnnouncement(data) {
     try {
         const { title, message, priority, expiryDate, sendSMS, postedBy } = data;
         
-        console.log('Creating announcement with:', {
-            title,
-            priority,
-            hasExpiryDate: !!expiryDate,
-            sendSMS,
-            postedBy,
-            AIRTABLE_API_KEY: AIRTABLE_API_KEY ? 'Set' : 'Not set'
-        });
-        
         // Create announcement in Airtable
         const response = await fetch(
             `https://api.airtable.com/v0/${BASE_ID}/${ANNOUNCEMENTS_TABLE_ID}`,
@@ -90,7 +80,7 @@ async function createAnnouncement(data) {
                         'Title': title,
                         'Message': message,
                         'Priority': priority || 'Low',
-                        'Expiry Date': expiryDate || '',
+                        ...(expiryDate ? { 'Expiry Date': expiryDate } : {}),
                         'Posted By': postedBy,
                         'SMS Sent': false
                     }
