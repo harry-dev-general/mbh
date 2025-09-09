@@ -1,7 +1,9 @@
 // Announcements API Handler
 // Manages announcements creation, updates, deletion, and SMS notifications
 
-const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+// For Railway deployment, these are set in environment variables
+// For local development, you can hardcode them temporarily
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
 const BASE_ID = process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx';
 const ANNOUNCEMENTS_TABLE_ID = 'tblDCSmGREv0tF0Rq'; // Announcements table
 const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
@@ -17,16 +19,20 @@ const TWILIO_FROM_NUMBER = process.env.TWILIO_FROM_NUMBER;
  */
 async function getAnnouncements(includeExpired = false) {
     try {
-        let filter = '';
-        if (!includeExpired) {
-            const today = new Date().toISOString().split('T')[0];
-            filter = `OR({Expiry Date}='', {Expiry Date}>='${today}')`;
-        }
+        // Debug logging
+        console.log('Getting announcements with:', {
+            BASE_ID,
+            ANNOUNCEMENTS_TABLE_ID,
+            AIRTABLE_API_KEY: AIRTABLE_API_KEY ? 'Set' : 'Not set'
+        });
+        
+        // For now, let's skip filtering to debug the issue
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${ANNOUNCEMENTS_TABLE_ID}?` +
+            `sort[0][field]=Title&sort[0][direction]=desc`;
+        
+        console.log('Fetching from URL:', url);
 
-        const response = await fetch(
-            `https://api.airtable.com/v0/${BASE_ID}/${ANNOUNCEMENTS_TABLE_ID}?` +
-            `filterByFormula=${encodeURIComponent(filter)}&` +
-            `sort[0][field]=Created Time&sort[0][direction]=desc`,
+        const response = await fetch(url,
             {
                 headers: {
                     'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -35,7 +41,9 @@ async function getAnnouncements(includeExpired = false) {
         );
 
         if (!response.ok) {
-            throw new Error('Failed to fetch announcements');
+            const errorText = await response.text();
+            console.error('Airtable error:', response.status, errorText);
+            throw new Error(`Failed to fetch announcements: ${response.status} ${errorText}`);
         }
 
         const data = await response.json();
@@ -58,6 +66,15 @@ async function getAnnouncements(includeExpired = false) {
 async function createAnnouncement(data) {
     try {
         const { title, message, priority, expiryDate, sendSMS, postedBy } = data;
+        
+        console.log('Creating announcement with:', {
+            title,
+            priority,
+            hasExpiryDate: !!expiryDate,
+            sendSMS,
+            postedBy,
+            AIRTABLE_API_KEY: AIRTABLE_API_KEY ? 'Set' : 'Not set'
+        });
         
         // Create announcement in Airtable
         const response = await fetch(
@@ -82,7 +99,9 @@ async function createAnnouncement(data) {
         );
 
         if (!response.ok) {
-            throw new Error('Failed to create announcement');
+            const errorText = await response.text();
+            console.error('Airtable create error:', response.status, errorText);
+            throw new Error(`Failed to create announcement: ${response.status} ${errorText}`);
         }
 
         const announcement = await response.json();
