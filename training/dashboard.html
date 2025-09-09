@@ -1069,11 +1069,11 @@
                     const div = document.createElement('div');
                     div.style.cssText = 'margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;';
                     
-                    const priorityColor = announcement.Priority === 'high' ? '#dc3545' : 
-                                        announcement.Priority === 'medium' ? '#ffc107' : '#28a745';
+                    const priorityColor = announcement.Priority === 'High' ? '#dc3545' : 
+                                        announcement.Priority === 'Medium' ? '#ffc107' : '#28a745';
                     
-                    const priorityEmoji = announcement.Priority === 'high' ? '🚨' : 
-                                        announcement.Priority === 'medium' ? '⚠️' : 'ℹ️';
+                    const priorityEmoji = announcement.Priority === 'High' ? '🚨' : 
+                                        announcement.Priority === 'Medium' ? '⚠️' : 'ℹ️';
                     
                     div.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">

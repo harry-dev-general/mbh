@@ -3,7 +3,7 @@
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const BASE_ID = process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx';
-const ANNOUNCEMENTS_TABLE_ID = 'tblAnnouncements'; // You'll need to create this table
+const ANNOUNCEMENTS_TABLE_ID = 'tblDCSmGREv0tF0Rq'; // Announcements table
 const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
 const ROSTER_TABLE_ID = 'tblwwK1jWGxnfuzAN';
 
@@ -72,7 +72,7 @@ async function createAnnouncement(data) {
                     fields: {
                         'Title': title,
                         'Message': message,
-                        'Priority': priority || 'low',
+                        'Priority': priority || 'Low',
                         'Expiry Date': expiryDate || '',
                         'Posted By': postedBy,
                         'SMS Sent': false
@@ -231,7 +231,7 @@ async function sendAnnouncementSMS(title, message, priority) {
         const employeeData = await employeeResponse.json();
         
         // Prepare SMS message
-        const priorityEmoji = priority === 'high' ? '🚨' : priority === 'medium' ? '⚠️' : 'ℹ️';
+        const priorityEmoji = priority === 'High' ? '🚨' : priority === 'Medium' ? '⚠️' : 'ℹ️';
         const smsMessage = `${priorityEmoji} MBH Staff Announcement
 
 ${title.toUpperCase()}

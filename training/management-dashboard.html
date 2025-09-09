@@ -778,19 +778,19 @@
                         <div class="announcement-priority">
                             <div class="priority-option">
                                 <label>
-                                    <input type="radio" name="priority" value="low" checked>
+                                    <input type="radio" name="priority" value="Low" checked>
                                     <span style="color: #28a745;">Low</span>
                                 </label>
                             </div>
                             <div class="priority-option">
                                 <label>
-                                    <input type="radio" name="priority" value="medium">
+                                    <input type="radio" name="priority" value="Medium">
                                     <span style="color: #ffc107;">Medium</span>
                                 </label>
                             </div>
                             <div class="priority-option">
                                 <label>
-                                    <input type="radio" name="priority" value="high">
+                                    <input type="radio" name="priority" value="High">
                                     <span style="color: #dc3545;">High</span>
                                 </label>
                             </div>
@@ -1460,7 +1460,7 @@
                 result.announcements.forEach(record => {
                     const announcement = record.fields;
                     const card = document.createElement('div');
-                    card.className = `announcement-card ${announcement.Priority || 'low'}`;
+                    card.className = `announcement-card ${(announcement.Priority || 'Low').toLowerCase()}`;
                     
                     const isExpired = announcement['Expiry Date'] && 
                                     new Date(announcement['Expiry Date']) < new Date();
@@ -1473,8 +1473,8 @@
                             <strong>${announcement.Title}</strong>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <span style="color: ${
-                                    announcement.Priority === 'high' ? '#dc3545' : 
-                                    announcement.Priority === 'medium' ? '#ffc107' : '#28a745'
+                                    announcement.Priority === 'High' ? '#dc3545' : 
+                                    announcement.Priority === 'Medium' ? '#ffc107' : '#28a745'
                                 }; font-size: 0.85rem; text-transform: uppercase;">
                                     ${announcement.Priority || 'LOW'}
                                 </span>
