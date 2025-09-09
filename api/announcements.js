@@ -188,44 +188,12 @@ async function deleteAnnouncement(id) {
  */
 async function sendAnnouncementSMS(title, message, priority) {
     try {
-        // Get current week for roster lookup
-        const today = new Date();
-        const monday = new Date(today);
-        monday.setDate(today.getDate() - today.getDay() + 1);
-        const weekStart = monday.toISOString().split('T')[0];
-
-        // Get staff on roster this week
-        const rosterResponse = await fetch(
-            `https://api.airtable.com/v0/${BASE_ID}/${ROSTER_TABLE_ID}?` +
-            `filterByFormula=${encodeURIComponent(`{Week Starting}='${weekStart}'`)}`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                }
-            }
-        );
-
-        if (!rosterResponse.ok) {
-            throw new Error('Failed to fetch roster');
-        }
-
-        const rosterData = await rosterResponse.json();
-        const employeeIds = new Set();
-
-        // Collect unique employee IDs from roster
-        rosterData.records.forEach(record => {
-            const employeeId = record.fields['Employee']?.[0];
-            if (employeeId) {
-                employeeIds.add(employeeId);
-            }
-        });
-
-        // Get employee details for phone numbers
-        const employeeFilter = `OR(${Array.from(employeeIds).map(id => `RECORD_ID()='${id}'`).join(',')})`;
+        // Get all employees with Active Roster checked
+        console.log('Fetching active roster employees...');
         
         const employeeResponse = await fetch(
             `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}?` +
-            `filterByFormula=${encodeURIComponent(employeeFilter)}`,
+            `filterByFormula=${encodeURIComponent(`{Active Roster}=1`)}`,
             {
                 headers: {
                     'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -234,10 +202,24 @@ async function sendAnnouncementSMS(title, message, priority) {
         );
 
         if (!employeeResponse.ok) {
+            const errorText = await employeeResponse.text();
+            console.error('Employee fetch error:', errorText);
             throw new Error('Failed to fetch employee details');
         }
 
         const employeeData = await employeeResponse.json();
+        console.log(`Found ${employeeData.records.length} active roster employees`);
+        
+        if (employeeData.records.length === 0) {
+            console.log('No active roster employees found');
+            return {
+                success: true,
+                sent: 0,
+                failed: 0,
+                total: 0,
+                message: 'No active roster employees found'
+            };
+        }
         
         // Prepare SMS message
         const priorityEmoji = priority === 'High' ? '🚨' : priority === 'Medium' ? '⚠️' : 'ℹ️';
@@ -249,6 +231,22 @@ ${message}
 
 Check your dashboard for more details.`;
 
+        // Check if Twilio credentials are configured
+        if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM_NUMBER) {
+            console.error('Twilio credentials not configured:', {
+                SID: !!TWILIO_SID,
+                TOKEN: !!TWILIO_TOKEN,
+                FROM: !!TWILIO_FROM_NUMBER
+            });
+            return {
+                success: false,
+                error: 'SMS service not configured',
+                sent: 0,
+                failed: 0,
+                total: employeeData.records.length
+            };
+        }
+
         // Send SMS to each staff member
         const authString = `${TWILIO_SID}:${TWILIO_TOKEN}`;
         const encodedAuth = Buffer.from(authString).toString('base64');
@@ -257,11 +255,12 @@ Check your dashboard for more details.`;
         let failCount = 0;
 
         for (const employee of employeeData.records) {
-            const phone = employee.fields['Mobile Number'];
+            const phone = employee.fields['Mobile Number'] || employee.fields['Mobile'] || employee.fields['Phone'];
             const name = employee.fields['Name'];
             
             if (!phone) {
                 console.log(`No phone number for ${name}`);
+                failCount++;
                 continue;
             }
 
@@ -302,7 +301,7 @@ Check your dashboard for more details.`;
             success: true,
             sent: successCount,
             failed: failCount,
-            total: employeeIds.size
+            total: employeeData.records.length
         };
         
     } catch (error) {
