@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 8080;
 // Import notification handlers
 const notifications = require('./api/notifications');
 const shiftResponseHandler = require('./api/shift-response-handler');
+const announcements = require('./api/announcements');
 
 // Import vessel maintenance routes
 const vesselRoutes = require('./api/routes/vessel-maintenance');
@@ -75,6 +76,44 @@ app.use(express.static(path.join(__dirname, 'training')));
 
 // Add vessel maintenance routes
 app.use('/api/vessels', vesselRoutes);
+
+// Announcements API endpoints
+app.get('/api/announcements', async (req, res) => {
+  try {
+    const includeExpired = req.query.includeExpired === 'true';
+    const result = await announcements.getAnnouncements(includeExpired);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/announcements', async (req, res) => {
+  try {
+    const result = await announcements.createAnnouncement(req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.patch('/api/announcements/:id', async (req, res) => {
+  try {
+    const result = await announcements.updateAnnouncement(req.params.id, req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.delete('/api/announcements/:id', async (req, res) => {
+  try {
+    const result = await announcements.deleteAnnouncement(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // API proxy endpoint for Airtable requests
 app.post('/api/airtable/*', async (req, res) => {

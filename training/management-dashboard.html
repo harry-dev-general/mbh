@@ -1427,30 +1427,125 @@
         async function loadAnnouncements() {
             const announcementsList = document.getElementById('announcementsList');
             
-            // For now, show sample announcements
+            // Show loading state
             announcementsList.innerHTML = `
-                <div class="announcement-card high">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <strong>Safety Protocol Update</strong>
-                        <span style="color: #dc3545; font-size: 0.85rem;">HIGH</span>
-                    </div>
-                    <p style="margin-bottom: 0.5rem;">All staff must complete the updated safety training by end of week. New protocols for emergency procedures are now in effect.</p>
-                    <div style="font-size: 0.85rem; color: #666;">
-                        Posted by Management • 2 days ago • Expires: Sept 7
-                    </div>
-                </div>
-                
-                <div class="announcement-card medium">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <strong>Weekend Schedule Change</strong>
-                        <span style="color: #ffc107; font-size: 0.85rem;">MEDIUM</span>
-                    </div>
-                    <p style="margin-bottom: 0.5rem;">Due to increased bookings this weekend, all available staff are requested to confirm their availability.</p>
-                    <div style="font-size: 0.85rem; color: #666;">
-                        Posted by Management • Yesterday
-                    </div>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading announcements...</p>
                 </div>
             `;
+            
+            try {
+                const response = await fetch('/api/announcements?includeExpired=true');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load announcements');
+                }
+                
+                if (result.announcements.length === 0) {
+                    announcementsList.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #666;">
+                            <i class="fas fa-bullhorn" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                            <p>No announcements yet</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Clear loading state
+                announcementsList.innerHTML = '';
+                
+                // Display each announcement
+                result.announcements.forEach(record => {
+                    const announcement = record.fields;
+                    const card = document.createElement('div');
+                    card.className = `announcement-card ${announcement.Priority || 'low'}`;
+                    
+                    const isExpired = announcement['Expiry Date'] && 
+                                    new Date(announcement['Expiry Date']) < new Date();
+                    
+                    const createdTime = new Date(record.createdTime);
+                    const timeAgo = getTimeSince(createdTime);
+                    
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong>${announcement.Title}</strong>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <span style="color: ${
+                                    announcement.Priority === 'high' ? '#dc3545' : 
+                                    announcement.Priority === 'medium' ? '#ffc107' : '#28a745'
+                                }; font-size: 0.85rem; text-transform: uppercase;">
+                                    ${announcement.Priority || 'LOW'}
+                                </span>
+                                <button onclick="editAnnouncement('${record.id}')" 
+                                        class="btn btn-sm" 
+                                        style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteAnnouncementConfirm('${record.id}', '${announcement.Title}')" 
+                                        class="btn btn-sm" 
+                                        style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #dc3545; color: white;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p style="margin-bottom: 0.5rem; ${isExpired ? 'opacity: 0.6;' : ''}">${announcement.Message}</p>
+                        <div style="font-size: 0.85rem; color: #666;">
+                            Posted by ${announcement['Posted By'] || 'Management'} • ${timeAgo}
+                            ${announcement['Expiry Date'] ? ` • Expires: ${new Date(announcement['Expiry Date']).toLocaleDateString()}` : ''}
+                            ${isExpired ? ' • <span style="color: #dc3545;">EXPIRED</span>' : ''}
+                            ${announcement['SMS Sent'] ? ' • <i class="fas fa-sms"></i> SMS Sent' : ''}
+                        </div>
+                    `;
+                    
+                    announcementsList.appendChild(card);
+                });
+                
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+                announcementsList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 1rem; color: #dc3545;"></i>
+                        <p>Failed to load announcements</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
+                        <button onclick="loadAnnouncements()" class="btn btn-primary" style="margin-top: 1rem;">
+                            <i class="fas fa-sync"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Delete announcement with confirmation
+        async function deleteAnnouncementConfirm(id, title) {
+            if (!confirm(`Are you sure you want to delete the announcement "${title}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/announcements/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Announcement deleted successfully');
+                    loadAnnouncements();
+                } else {
+                    throw new Error(result.error || 'Failed to delete announcement');
+                }
+            } catch (error) {
+                console.error('Error deleting announcement:', error);
+                alert('Failed to delete announcement: ' + error.message);
+            }
+        }
+        
+        // Edit announcement (placeholder for now)
+        function editAnnouncement(id) {
+            alert('Edit functionality coming soon!');
+            // TODO: Implement edit modal or inline editing
         }
 
         // Load staff data
@@ -1463,22 +1558,59 @@
         document.getElementById('announcementForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+            
             const title = document.getElementById('announcementTitle').value;
             const message = document.getElementById('announcementMessage').value;
             const priority = document.querySelector('input[name="priority"]:checked').value;
             const expiry = document.getElementById('announcementExpiry').value;
             
-            // Here you would save the announcement to Airtable or Supabase
-            console.log('Posting announcement:', { title, message, priority, expiry });
+            // Ask if they want to send SMS
+            const sendSMS = confirm('Do you want to send this announcement as SMS to all active staff?');
             
-            // Show success message
-            alert('Announcement posted successfully!');
-            
-            // Reset form
-            e.target.reset();
-            
-            // Reload announcements
-            loadAnnouncements();
+            try {
+                const response = await fetch('/api/announcements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title,
+                        message,
+                        priority,
+                        expiryDate: expiry,
+                        sendSMS,
+                        postedBy: currentUser.email
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    let successMsg = 'Announcement posted successfully!';
+                    if (sendSMS) {
+                        successMsg += ` SMS sent to ${result.sent || 0} staff members.`;
+                    }
+                    alert(successMsg);
+                    
+                    // Reset form
+                    e.target.reset();
+                    
+                    // Reload announcements
+                    loadAnnouncements();
+                } else {
+                    throw new Error(result.error || 'Failed to post announcement');
+                }
+            } catch (error) {
+                console.error('Error posting announcement:', error);
+                alert('Failed to post announcement: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
         });
 
         // Logout function

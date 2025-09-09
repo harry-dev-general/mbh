@@ -535,12 +535,11 @@
                 </ul>
             </div>
 
-            <div class="info-card">
+            <div class="info-card" id="announcementsCard">
                 <h3><i class="fas fa-bell"></i> Announcements</h3>
-                <p style="color: #666;">No new announcements at this time.</p>
-                <p style="margin-top: 1rem; font-size: 0.9rem; color: #999;">
-                    Check back regularly for updates from management.
-                </p>
+                <div id="announcementsList">
+                    <p style="color: #666;">Loading announcements...</p>
+                </div>
             </div>
 
             <!-- This card will be dynamically populated based on user role -->
@@ -641,6 +640,9 @@
                 
                 // Load appropriate content based on role
                 await loadDynamicCard();
+                
+                // Load announcements
+                await loadAnnouncements();
                 
                 // Hide loading, show content
                 document.getElementById('loading').style.display = 'none';
@@ -1037,6 +1039,81 @@
             }
         }
         
+        // Load announcements
+        async function loadAnnouncements() {
+            const announcementsList = document.getElementById('announcementsList');
+            
+            try {
+                const response = await fetch('/api/announcements');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load announcements');
+                }
+                
+                if (result.announcements.length === 0) {
+                    announcementsList.innerHTML = `
+                        <p style="color: #666;">No new announcements at this time.</p>
+                        <p style="margin-top: 1rem; font-size: 0.9rem; color: #999;">
+                            Check back regularly for updates from management.
+                        </p>
+                    `;
+                    return;
+                }
+                
+                // Display announcements
+                announcementsList.innerHTML = '';
+                
+                result.announcements.forEach(record => {
+                    const announcement = record.fields;
+                    const div = document.createElement('div');
+                    div.style.cssText = 'margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee;';
+                    
+                    const priorityColor = announcement.Priority === 'high' ? '#dc3545' : 
+                                        announcement.Priority === 'medium' ? '#ffc107' : '#28a745';
+                    
+                    const priorityEmoji = announcement.Priority === 'high' ? '🚨' : 
+                                        announcement.Priority === 'medium' ? '⚠️' : 'ℹ️';
+                    
+                    div.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="font-size: 1.2rem;">${priorityEmoji}</span>
+                            <strong style="color: #333;">${announcement.Title}</strong>
+                            <span style="font-size: 0.75rem; padding: 0.2rem 0.5rem; 
+                                       background: ${priorityColor}; color: white; 
+                                       border-radius: 3px; text-transform: uppercase;">
+                                ${announcement.Priority || 'LOW'}
+                            </span>
+                        </div>
+                        <p style="margin: 0.5rem 0; color: #555; line-height: 1.5;">
+                            ${announcement.Message}
+                        </p>
+                        ${announcement['Expiry Date'] ? 
+                            `<p style="font-size: 0.85rem; color: #999; margin-top: 0.5rem;">
+                                Valid until: ${new Date(announcement['Expiry Date']).toLocaleDateString()}
+                            </p>` : ''}
+                    `;
+                    
+                    announcementsList.appendChild(div);
+                });
+                
+                // Remove last border
+                const lastAnnouncement = announcementsList.lastElementChild;
+                if (lastAnnouncement) {
+                    lastAnnouncement.style.borderBottom = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+                announcementsList.innerHTML = `
+                    <p style="color: #666;">Unable to load announcements.</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #999;">
+                        Please refresh the page to try again.
+                    </p>
+                `;
+            }
+        }
+
         // Initialize on page load
         checkAuth();
     </script>
