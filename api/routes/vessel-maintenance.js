@@ -221,7 +221,9 @@ router.post('/update-location', async (req, res) => {
         // Find the most recent checklist for this specific vessel
         let latestPostDep = null;
         if (postDepResponse.data.records) {
+            console.log(`Searching through ${postDepResponse.data.records.length} Post-Departure records for vessel ${vesselId}`);
             for (const record of postDepResponse.data.records) {
+                console.log(`Record ${record.id} has vessels:`, record.fields['Vessel']);
                 if (record.fields['Vessel'] && record.fields['Vessel'].includes(vesselId)) {
                     latestPostDep = record;
                     break;
@@ -316,15 +318,18 @@ router.post('/update-location', async (req, res) => {
         console.log(`Updating checklist ${checklistId} with new location data`);
         
         // Update ONLY the location fields on the existing checklist
+        // Match the exact same structure as Post-Departure checklist
         const updateData = {
             fields: {
-                'GPS Latitude': latitude,
-                'GPS Longitude': longitude,
+                'GPS Latitude': Number(latitude),
+                'GPS Longitude': Number(longitude),
                 'Location Address': address || 'Manual location update',
                 'Location Captured': true,
-                'Location Accuracy': 10 // Default accuracy for manual updates
+                'Location Accuracy': Number(10) // Default accuracy for manual updates
             }
         };
+        
+        console.log('Update payload:', JSON.stringify(updateData, null, 2));
         
         // Update the existing checklist record
         const response = await axios.patch(

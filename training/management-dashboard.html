@@ -2143,8 +2143,9 @@
                     // Close modal
                     closeLocationUpdateModal();
                     
-                    // Reload vessel data
-                    if (activeTab === 'vessels') {
+                    // Reload vessel data if on vessels tab
+                    const activeTabElement = document.querySelector('.tab-content.active');
+                    if (activeTabElement && activeTabElement.id === 'vessels-tab') {
                         loadVessels();
                     }
                     
