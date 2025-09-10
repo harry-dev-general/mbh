@@ -1,6 +1,8 @@
 // Announcements API Handler
 // Manages announcements creation, updates, deletion, and SMS notifications
 
+const axios = require('axios');
+
 // For Railway deployment, these are set in environment variables
 // For local development, you can hardcode them temporarily
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
@@ -31,30 +33,22 @@ async function getAnnouncements(includeExpired = false) {
         
         url += `sort[0][field]=Title&sort[0][direction]=desc`;
 
-        const response = await fetch(url,
-            {
-                headers: {
-                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                }
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': `Bearer ${AIRTABLE_API_KEY}`
             }
-        );
+        });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Airtable error:', response.status, errorText);
-            throw new Error(`Failed to fetch announcements: ${response.status} ${errorText}`);
-        }
-
-        const data = await response.json();
+        const data = response.data;
         return {
             success: true,
             announcements: data.records
         };
     } catch (error) {
-        console.error('Error fetching announcements:', error);
+        console.error('Error fetching announcements:', error.response?.data || error.message);
         return {
             success: false,
-            error: error.message
+            error: error.response?.data?.error?.message || error.message
         };
     }
 }
@@ -67,34 +61,27 @@ async function createAnnouncement(data) {
         const { title, message, priority, expiryDate, sendSMS, postedBy } = data;
         
         // Create announcement in Airtable
-        const response = await fetch(
+        const response = await axios.post(
             `https://api.airtable.com/v0/${BASE_ID}/${ANNOUNCEMENTS_TABLE_ID}`,
             {
-                method: 'POST',
+                fields: {
+                    'Title': title,
+                    'Message': message,
+                    'Priority': priority || 'Low',
+                    ...(expiryDate ? { 'Expiry Date': expiryDate } : {}),
+                    'Posted By': postedBy,
+                    'SMS Sent': false
+                }
+            },
+            {
                 headers: {
                     'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    fields: {
-                        'Title': title,
-                        'Message': message,
-                        'Priority': priority || 'Low',
-                        ...(expiryDate ? { 'Expiry Date': expiryDate } : {}),
-                        'Posted By': postedBy,
-                        'SMS Sent': false
-                    }
-                })
+                }
             }
         );
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Airtable create error:', response.status, errorText);
-            throw new Error(`Failed to create announcement: ${response.status} ${errorText}`);
-        }
-
-        const announcement = await response.json();
+        const announcement = response.data;
 
         // Send SMS if requested
         if (sendSMS) {
@@ -109,10 +96,10 @@ async function createAnnouncement(data) {
             announcement
         };
     } catch (error) {
-        console.error('Error creating announcement:', error);
+        console.error('Error creating announcement:', error.response?.data || error.message);
         return {
             success: false,
-            error: error.message
+            error: error.response?.data?.error?.message || error.message
         };
     }
 }
@@ -122,32 +109,27 @@ async function createAnnouncement(data) {
  */
 async function updateAnnouncement(id, updates) {
     try {
-        const response = await fetch(
+        const response = await axios.patch(
             `https://api.airtable.com/v0/${BASE_ID}/${ANNOUNCEMENTS_TABLE_ID}/${id}`,
+            { fields: updates },
             {
-                method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ fields: updates })
+                }
             }
         );
 
-        if (!response.ok) {
-            throw new Error('Failed to update announcement');
-        }
-
-        const announcement = await response.json();
+        const announcement = response.data;
         return {
             success: true,
             announcement
         };
     } catch (error) {
-        console.error('Error updating announcement:', error);
+        console.error('Error updating announcement:', error.response?.data || error.message);
         return {
             success: false,
-            error: error.message
+            error: error.response?.data?.error?.message || error.message
         };
     }
 }
@@ -157,28 +139,23 @@ async function updateAnnouncement(id, updates) {
  */
 async function deleteAnnouncement(id) {
     try {
-        const response = await fetch(
+        await axios.delete(
             `https://api.airtable.com/v0/${BASE_ID}/${ANNOUNCEMENTS_TABLE_ID}/${id}`,
             {
-                method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${AIRTABLE_API_KEY}`
                 }
             }
         );
 
-        if (!response.ok) {
-            throw new Error('Failed to delete announcement');
-        }
-
         return {
             success: true
         };
     } catch (error) {
-        console.error('Error deleting announcement:', error);
+        console.error('Error deleting announcement:', error.response?.data || error.message);
         return {
             success: false,
-            error: error.message
+            error: error.response?.data?.error?.message || error.message
         };
     }
 }
@@ -191,7 +168,7 @@ async function sendAnnouncementSMS(title, message, priority) {
         // Get all employees with Active Roster checked
         console.log('Fetching active roster employees...');
         
-        const employeeResponse = await fetch(
+        const employeeResponse = await axios.get(
             `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}?` +
             `filterByFormula=${encodeURIComponent(`{Active Roster}=1`)}`,
             {
@@ -201,13 +178,7 @@ async function sendAnnouncementSMS(title, message, priority) {
             }
         );
 
-        if (!employeeResponse.ok) {
-            const errorText = await employeeResponse.text();
-            console.error('Employee fetch error:', errorText);
-            throw new Error('Failed to fetch employee details');
-        }
-
-        const employeeData = await employeeResponse.json();
+        const employeeData = employeeResponse.data;
         console.log(`Found ${employeeData.records.length} active roster employees`);
         
         if (employeeData.records.length === 0) {
@@ -265,33 +236,28 @@ Check your dashboard for more details.`;
             }
 
             try {
-                const response = await fetch(
+                const response = await axios.post(
                     `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
+                    new URLSearchParams({
+                        'From': TWILIO_FROM_NUMBER,
+                        'To': phone,
+                        'Body': smsMessage
+                    }),
                     {
-                        method: 'POST',
                         headers: {
                             'Authorization': `Basic ${encodedAuth}`,
                             'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: new URLSearchParams({
-                            'From': TWILIO_FROM_NUMBER,
-                            'To': phone,
-                            'Body': smsMessage
-                        })
+                        }
                     }
                 );
 
-                if (response.ok) {
-                    successCount++;
-                    console.log(`✅ SMS sent to ${name} (${phone})`);
-                } else {
-                    failCount++;
-                    const error = await response.text();
-                    console.error(`❌ Failed to send SMS to ${name}: ${error}`);
-                }
+                successCount++;
+                console.log(`✅ SMS sent to ${name} (${phone})`);
+            
             } catch (error) {
                 failCount++;
-                console.error(`❌ Error sending SMS to ${name}:`, error);
+                const errorMessage = error.response?.data || error.message;
+                console.error(`❌ Error sending SMS to ${name}:`, errorMessage);
             }
         }
 
@@ -305,10 +271,10 @@ Check your dashboard for more details.`;
         };
         
     } catch (error) {
-        console.error('Error sending announcement SMS:', error);
+        console.error('Error sending announcement SMS:', error.response?.data || error.message);
         return {
             success: false,
-            error: error.message
+            error: error.response?.data?.error?.message || error.message
         };
     }
 }
