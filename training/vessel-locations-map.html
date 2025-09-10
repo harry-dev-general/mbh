@@ -770,7 +770,7 @@
                 Object.values(locations).forEach(loc => {
                     if (loc.vessel && loc.vessel.toLowerCase().includes(vessel.name.toLowerCase())) {
                         homeLocation = loc;
-                        if (loc.name.includes('Marina')) {
+                        if (loc.title && loc.title.includes('Marina')) {
                             mooringType = 'Marina Berth';
                         } else {
                             mooringType = 'Swing Mooring';
@@ -786,7 +786,7 @@
                             <i class="fas fa-map-marker-alt"></i>
                             ${hasLocation && location.address ? 
                                 location.address.split(',')[0] : 
-                                (homeLocation ? homeLocation.name : 'Location Unknown')
+                                (homeLocation ? homeLocation.title : 'Location Unknown')
                             }
                         </div>
                         <div class="vessel-mooring">
