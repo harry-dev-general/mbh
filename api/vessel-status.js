@@ -166,6 +166,7 @@ async function getVesselMaintenanceStatus() {
                     fields: ['Vessel', 'Fuel Level After Use', 'Gas Bottle Level After Use', 
                             'Water Tank Level After Use', 'Overall Vessel Condition After Use', 
                             'Created time', 'Staff Member', 'Completed by', 'Checklist ID',
+                            'Damage Report', // Used for manual location updates
                             // Location tracking fields
                             'GPS Latitude', 'GPS Longitude', 'Location Address', 
                             'Location Accuracy', 'Location Captured'],
@@ -224,12 +225,25 @@ async function getVesselMaintenanceStatus() {
                     console.log(`${boatName}: Using pre-departure checklist from ${preDepTime.toLocaleDateString()}`);
                 } else {
                     // Post-departure is more recent
+                    // Check if this is a manual location update
+                    const damageReport = latestPostDep.fields['Damage Report'] || '';
+                    const isManualUpdate = damageReport.includes('Manual location update');
+                    let staffMember = latestPostDep.fields['Completed by'] || latestPostDep.fields['Staff Member'];
+                    
+                    // Extract staff name from damage report if it's a manual update
+                    if (isManualUpdate && damageReport.includes('by ')) {
+                        const match = damageReport.match(/by (.+)$/);
+                        if (match) {
+                            staffMember = match[1];
+                        }
+                    }
+                    
                     currentStatus = {
                         fuel: latestPostDep.fields['Fuel Level After Use'],
                         gas: latestPostDep.fields['Gas Bottle Level After Use'],
                         water: latestPostDep.fields['Water Tank Level After Use'],
                         condition: latestPostDep.fields['Overall Vessel Condition After Use'],
-                        staffMember: latestPostDep.fields['Completed by'] || latestPostDep.fields['Staff Member'],
+                        staffMember: staffMember,
                         // Location data
                         location: {
                             latitude: latestPostDep.fields['GPS Latitude'],
@@ -261,12 +275,25 @@ async function getVesselMaintenanceStatus() {
                 console.log(`${boatName}: Only pre-departure checklist available`);
             } else if (latestPostDep) {
                 // Only post-departure exists
+                // Check if this is a manual location update
+                const damageReport = latestPostDep.fields['Damage Report'] || '';
+                const isManualUpdate = damageReport.includes('Manual location update');
+                let staffMember = latestPostDep.fields['Completed by'] || latestPostDep.fields['Staff Member'];
+                
+                // Extract staff name from damage report if it's a manual update
+                if (isManualUpdate && damageReport.includes('by ')) {
+                    const match = damageReport.match(/by (.+)$/);
+                    if (match) {
+                        staffMember = match[1];
+                    }
+                }
+                
                 currentStatus = {
                     fuel: latestPostDep.fields['Fuel Level After Use'],
                     gas: latestPostDep.fields['Gas Bottle Level After Use'],
                     water: latestPostDep.fields['Water Tank Level After Use'],
                     condition: latestPostDep.fields['Overall Vessel Condition After Use'],
-                    staffMember: latestPostDep.fields['Completed by'] || latestPostDep.fields['Staff Member'],
+                    staffMember: staffMember,
                     // Location data
                     location: {
                         latitude: latestPostDep.fields['GPS Latitude'],
