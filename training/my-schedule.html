@@ -1306,6 +1306,9 @@
                     if (onboardingEmployee && Array.isArray(onboardingEmployee) && 
                         onboardingEmployee.includes(employeeRecordId)) {
                         
+                        // Debug boat field
+                        console.log('Boat field for booking:', fields['Boat']);
+                        
                         // For onboarding: Start 30 minutes before booking start time, end 1 hour after allocation start
                         const bookingStartTime = fields['Start Time'] || '09:00 am';
                         const startTime24 = subtractTime(convertTo24Hour(bookingStartTime), 0, 30);
@@ -1801,7 +1804,10 @@
             
             // Fetch boat name if available
             if (shift.boat && shift.source === 'booking') {
+                console.log('Fetching boat name for shift:', shiftId, 'Boat ID:', shift.boat);
                 fetchBoatName(shiftId, shift.boat);
+            } else {
+                console.log('No boat data for shift:', shiftId, 'Boat:', shift.boat, 'Source:', shift.source);
             }
             
             // Add vessel checklist link for booking allocations
@@ -2137,7 +2143,7 @@
                 }
                 
                 // Find the vessel by boat ID
-                const vessel = data.vessels.find(v => v.boatId === boatId);
+                const vessel = data.vessels.find(v => v.id === boatId);
                 
                 if (!vessel || !vessel.currentStatus?.location?.captured) {
                     locationDiv.innerHTML = `
