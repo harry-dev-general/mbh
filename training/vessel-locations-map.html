@@ -914,9 +914,6 @@
                                 <div class="vessel-name">${vessel.type}</div>
                                 <div class="detail"><strong>📍 Address:</strong> ${location.address || 'Unknown'}</div>
                                 <div class="detail"><strong>📊 Last Updated:</strong> ${timeSince}</div>
-                                <div class="detail"><strong>✅ Checklist:</strong> ${vessel.lastCheck.type}</div>
-                                <div class="detail"><strong>📏 GPS Accuracy:</strong> ±${Math.round(location.accuracy || 0)}m</div>
-                                <div class="detail"><strong>🌐 Coordinates:</strong> ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}</div>
                                 <hr style="margin: 10px 0;">
                                 <div class="detail"><strong>⛽ Fuel:</strong> ${vessel.currentStatus.fuel?.level || 'Unknown'}</div>
                                 <div class="detail"><strong>🔥 Gas:</strong> ${vessel.currentStatus.gas?.level || 'Unknown'}</div>
