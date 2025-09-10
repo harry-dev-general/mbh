@@ -485,6 +485,16 @@
                     </div>
                     <span>Temporary Mooring</span>
                 </div>
+                <hr style="margin: 10px 0;">
+                <div class="legend-item">
+                    <div class="legend-icon" style="background: #FF0000;">
+                        <i class="fas fa-circle" style="font-size: 0.8em;"></i>
+                    </div>
+                    <span>Current Location</span>
+                </div>
+                <p style="font-size: 0.8em; color: #666; margin-top: 5px;">
+                    Updated from checklists
+                </p>
             </div>
             
             <div class="legend anchorage-legend">
@@ -526,6 +536,10 @@
         let infoWindows = {};
         let anchorageCircles = [];
         let currentView = 'vessels'; // 'vessels' or 'anchorages'
+        let currentLocationMarkers = {}; // Store current location markers
+        let currentLocationInfoWindows = {}; // Store current location info windows
+        let vesselData = {}; // Store vessel data from API
+        let vesselPaths = []; // Store path lines between home and current locations
         
         // Location data
         const locations = {
@@ -646,6 +660,125 @@
             }
         ];
         
+        // Fetch vessel data from API including current locations
+        async function fetchVesselData() {
+            try {
+                const response = await fetch('/api/vessel-maintenance-status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    vesselData = data.vessels;
+                    console.log('Loaded vessel data:', vesselData);
+                    
+                    // Update current location markers
+                    updateCurrentLocationMarkers();
+                }
+            } catch (error) {
+                console.error('Error fetching vessel data:', error);
+            }
+        }
+        
+        // Update markers showing current vessel locations
+        function updateCurrentLocationMarkers() {
+            // Clear existing current location markers
+            Object.values(currentLocationMarkers).forEach(marker => marker.setMap(null));
+            Object.values(currentLocationInfoWindows).forEach(iw => iw.close());
+            currentLocationMarkers = {};
+            currentLocationInfoWindows = {};
+            
+            // Clear existing path lines
+            vesselPaths.forEach(path => path.setMap(null));
+            vesselPaths = [];
+            
+            // Add markers for vessels with location data
+            vesselData.forEach(vessel => {
+                if (vessel.currentStatus && vessel.currentStatus.location && 
+                    vessel.currentStatus.location.captured && 
+                    vessel.currentStatus.location.latitude && 
+                    vessel.currentStatus.location.longitude) {
+                    
+                    const location = vessel.currentStatus.location;
+                    
+                    // Create a custom marker for current location
+                    const marker = new google.maps.Marker({
+                        position: {
+                            lat: location.latitude,
+                            lng: location.longitude
+                        },
+                        map: currentView === 'vessels' ? map : null,
+                        title: `${vessel.name} - Current Location`,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            fillColor: '#FF0000',
+                            fillOpacity: 0.9,
+                            strokeColor: '#FFFFFF',
+                            strokeWeight: 2,
+                            scale: 10
+                        },
+                        animation: google.maps.Animation.DROP
+                    });
+                    
+                    // Create info window with location details
+                    const timeSince = vessel.lastCheck.time ? 
+                        new Date(vessel.lastCheck.time).toLocaleString('en-AU', {
+                            dateStyle: 'short',
+                            timeStyle: 'short'
+                        }) : 'Unknown';
+                    
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div class="info-window">
+                                <h3>${vessel.name} - Current Location</h3>
+                                <div class="vessel-name">${vessel.type}</div>
+                                <div class="detail"><strong>📍 Address:</strong> ${location.address || 'Unknown'}</div>
+                                <div class="detail"><strong>📊 Last Updated:</strong> ${timeSince}</div>
+                                <div class="detail"><strong>✅ Checklist:</strong> ${vessel.lastCheck.type}</div>
+                                <div class="detail"><strong>📏 GPS Accuracy:</strong> ±${Math.round(location.accuracy || 0)}m</div>
+                                <div class="detail"><strong>🌐 Coordinates:</strong> ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}</div>
+                                <hr style="margin: 10px 0;">
+                                <div class="detail"><strong>⛽ Fuel:</strong> ${vessel.currentStatus.fuel?.level || 'Unknown'}</div>
+                                <div class="detail"><strong>🔥 Gas:</strong> ${vessel.currentStatus.gas?.level || 'Unknown'}</div>
+                                <div class="detail"><strong>💧 Water:</strong> ${vessel.currentStatus.water?.level || 'Unknown'}</div>
+                                <div class="detail"><strong>🚤 Condition:</strong> ${vessel.currentStatus.condition || 'Unknown'}</div>
+                            </div>
+                        `
+                    });
+                    
+                    marker.addListener('click', () => {
+                        // Close all other info windows
+                        Object.values(infoWindows).forEach(iw => iw.close());
+                        Object.values(currentLocationInfoWindows).forEach(iw => iw.close());
+                        infoWindow.open(map, marker);
+                    });
+                    
+                    currentLocationMarkers[vessel.id] = marker;
+                    currentLocationInfoWindows[vessel.id] = infoWindow;
+                    
+                    // Try to find home location for this vessel
+                    let homeLocation = null;
+                    Object.values(locations).forEach(loc => {
+                        if (loc.vessel && loc.vessel.toLowerCase().includes(vessel.name.toLowerCase())) {
+                            homeLocation = loc.position;
+                        }
+                    });
+                    
+                    // Draw path line from home to current location
+                    if (homeLocation) {
+                        const path = new google.maps.Polyline({
+                            path: [homeLocation, { lat: location.latitude, lng: location.longitude }],
+                            geodesic: true,
+                            strokeColor: '#FF0000',
+                            strokeOpacity: 0.5,
+                            strokeWeight: 2,
+                            map: currentView === 'vessels' ? map : null
+                        });
+                        
+                        vesselPaths.push(path);
+                    }
+                }
+            });
+        }
+        
         function initMap() {
             // Create map centered on Sydney Harbour
             map = new google.maps.Map(document.getElementById('map'), {
@@ -733,6 +866,12 @@
             
             // Create anchorage circles (hidden by default)
             createAnchorageCircles();
+            
+            // Fetch vessel data after map loads
+            fetchVesselData();
+            
+            // Auto-refresh vessel data every 60 seconds
+            setInterval(fetchVesselData, 60000);
         }
         
         function focusLocation(locationKey) {
@@ -821,8 +960,14 @@
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
             event.target.closest('.toggle-btn').classList.add('active');
             
-            // Show vessel markers
+            // Show vessel markers (home locations)
             Object.values(markers).forEach(marker => marker.setMap(map));
+            
+            // Show current location markers
+            Object.values(currentLocationMarkers).forEach(marker => marker.setMap(map));
+            
+            // Show vessel paths
+            vesselPaths.forEach(path => path.setMap(map));
             
             // Hide anchorage circles
             anchorageCircles.forEach(item => {
@@ -853,6 +998,13 @@
             Object.values(markers).forEach(marker => marker.setMap(null));
             Object.values(infoWindows).forEach(iw => iw.close());
             
+            // Hide current location markers
+            Object.values(currentLocationMarkers).forEach(marker => marker.setMap(null));
+            Object.values(currentLocationInfoWindows).forEach(iw => iw.close());
+            
+            // Hide vessel paths
+            vesselPaths.forEach(path => path.setMap(null));
+            
             // Show anchorage circles
             anchorageCircles.forEach(item => item.circle.setMap(map));
             
@@ -876,13 +1028,25 @@
             if (currentView === 'vessels') {
                 // Create bounds to include all markers
                 const bounds = new google.maps.LatLngBounds();
+                
+                // Include home location markers
                 Object.values(markers).forEach(marker => {
                     bounds.extend(marker.getPosition());
                 });
-                map.fitBounds(bounds);
+                
+                // Include current location markers
+                Object.values(currentLocationMarkers).forEach(marker => {
+                    bounds.extend(marker.getPosition());
+                });
+                
+                // Only fit bounds if we have markers
+                if (bounds.getNorthEast() && bounds.getSouthWest()) {
+                    map.fitBounds(bounds);
+                }
                 
                 // Close all info windows
                 Object.values(infoWindows).forEach(iw => iw.close());
+                Object.values(currentLocationInfoWindows).forEach(iw => iw.close());
                 
                 // Remove active class from all cards
                 document.querySelectorAll('.location-card').forEach(card => {
