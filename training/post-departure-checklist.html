@@ -383,6 +383,84 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* Location tracking styles */
+        .location-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .location-status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .location-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .location-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .location-details {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        
+        #locationMapPreview {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+        
+        #captureLocationBtn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        #captureLocationBtn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        #captureLocationBtn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        @media (max-width: 768px) {
+            #captureLocationBtn {
+                padding: 1rem 1.5rem;
+                font-size: 1.1rem;
+            }
+            
+            #locationMapPreview {
+                height: 200px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -586,6 +664,23 @@
                             <div class="select-option" data-value="Major Issues - Do Not Use">Do Not Use</div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Vessel Location Tracking -->
+                <div class="form-section location-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Vessel Location</h3>
+                    <p style="color: #666; margin-bottom: 1rem;">Record where you've moored the vessel</p>
+                    
+                    <button type="button" 
+                            id="captureLocationBtn" 
+                            onclick="captureVesselLocation()">
+                        <i class="fas fa-map-marker-alt"></i> Capture Current Location
+                    </button>
+                    
+                    <div id="locationStatus" class="location-status" style="display: none;"></div>
+                    
+                    <!-- Mini map preview (hidden by default) -->
+                    <div id="locationMapPreview" style="display: none; height: 250px;"></div>
                 </div>
 
                 <div class="form-actions">
@@ -1035,7 +1130,13 @@
                     "Completion Time": new Date().toISOString(),
                     "Fuel Refilled": document.getElementById('fuelRefilled').checked,
                     "Gas Bottle Replaced": document.getElementById('gasReplaced').checked,
-                    "Water Tank Refilled": document.getElementById('waterRefilled').checked
+                    "Water Tank Refilled": document.getElementById('waterRefilled').checked,
+                    // Location tracking fields
+                    "GPS Latitude": window.vesselLocation?.coordinates.latitude || null,
+                    "GPS Longitude": window.vesselLocation?.coordinates.longitude || null,
+                    "Location Address": window.vesselLocation?.address || null,
+                    "Location Accuracy": window.vesselLocation?.coordinates.accuracy || null,
+                    "Location Captured": window.vesselLocation ? true : false
                 }
             };
 
@@ -1081,10 +1182,179 @@
             }
         }
 
+        // Location tracking functions
+        window.vesselLocation = null; // Store location data globally
+        
+        async function captureVesselLocation() {
+            const locationBtn = document.getElementById('captureLocationBtn');
+            const locationStatus = document.getElementById('locationStatus');
+            
+            try {
+                // Get vessel name from the selected booking
+                const vesselName = document.querySelector('.vessel-info')?.textContent || 'Unknown Vessel';
+                
+                // Show loading state
+                locationBtn.disabled = true;
+                locationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting Location...';
+                locationStatus.style.display = 'block';
+                locationStatus.className = 'location-status';
+                locationStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Requesting location access...';
+                
+                // Get high-accuracy GPS position
+                const position = await new Promise((resolve, reject) => {
+                    if (!navigator.geolocation) {
+                        reject(new Error('Geolocation not supported'));
+                        return;
+                    }
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        resolve,
+                        reject,
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 30000,
+                            maximumAge: 0
+                        }
+                    );
+                });
+                
+                const coords = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy
+                };
+                
+                console.log('Location captured:', coords);
+                
+                // Try to use Google Maps Geocoding if available
+                let address = 'Location captured';
+                if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
+                    try {
+                        const geocoder = new google.maps.Geocoder();
+                        const latLng = new google.maps.LatLng(coords.latitude, coords.longitude);
+                        
+                        const geocodeResult = await new Promise((resolve, reject) => {
+                            geocoder.geocode({ location: latLng }, (results, status) => {
+                                if (status === 'OK' && results[0]) {
+                                    resolve(results[0]);
+                                } else {
+                                    reject(new Error('Geocoding failed'));
+                                }
+                            });
+                        });
+                        
+                        address = geocodeResult.formatted_address;
+                    } catch (geocodeError) {
+                        console.log('Geocoding failed, using coordinates only');
+                    }
+                }
+                
+                // Store location data
+                window.vesselLocation = {
+                    coordinates: coords,
+                    address: address,
+                    timestamp: new Date().toISOString(),
+                    capturedBy: localStorage.getItem('employeeName') || 'Unknown'
+                };
+                
+                // Update UI with success
+                locationStatus.className = 'location-status location-success';
+                locationStatus.innerHTML = `
+                    <div>
+                        <i class="fas fa-check-circle"></i> Location Captured Successfully
+                        <div class="location-details">
+                            <strong>Address:</strong> ${address}<br>
+                            <strong>Coordinates:</strong> ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}<br>
+                            <strong>Accuracy:</strong> ±${Math.round(coords.accuracy)}m
+                        </div>
+                    </div>
+                `;
+                
+                // Show map preview if Google Maps is available
+                if (typeof google !== 'undefined' && google.maps) {
+                    showLocationPreview(coords.latitude, coords.longitude);
+                }
+                
+                // Update button to show captured state
+                locationBtn.innerHTML = '<i class="fas fa-check"></i> Location Captured';
+                locationBtn.style.background = '#28a745';
+                
+            } catch (error) {
+                console.error('Location error:', error);
+                
+                let errorMessage = 'Failed to get location';
+                if (error.code === 1) {
+                    errorMessage = 'Location access denied. Please enable location services.';
+                } else if (error.code === 2) {
+                    errorMessage = 'Location unavailable. Please check your GPS settings.';
+                } else if (error.code === 3) {
+                    errorMessage = 'Location request timed out. Please try again.';
+                }
+                
+                locationStatus.className = 'location-status location-error';
+                locationStatus.innerHTML = `
+                    <div>
+                        <i class="fas fa-exclamation-circle"></i> ${errorMessage}
+                    </div>
+                `;
+                
+                locationBtn.disabled = false;
+                locationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i> Capture Current Location';
+            }
+        }
+        
+        // Show a small map preview of the captured location
+        function showLocationPreview(lat, lng) {
+            const mapDiv = document.getElementById('locationMapPreview');
+            mapDiv.style.display = 'block';
+            
+            const map = new google.maps.Map(mapDiv, {
+                center: { lat, lng },
+                zoom: 17,
+                mapTypeId: 'hybrid',
+                disableDefaultUI: true,
+                zoomControl: true,
+                mapTypeControl: true
+            });
+            
+            const marker = new google.maps.Marker({
+                position: { lat, lng },
+                map: map,
+                title: 'Vessel Location',
+                animation: google.maps.Animation.DROP
+            });
+            
+            // Add accuracy circle
+            const accuracyCircle = new google.maps.Circle({
+                strokeColor: '#428bca',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: '#428bca',
+                fillOpacity: 0.35,
+                map: map,
+                center: { lat, lng },
+                radius: window.vesselLocation.coordinates.accuracy || 10
+            });
+        }
+
         // Refresh bookings
         function refreshBookings() {
             loadAssignedBookings();
         }
+    </script>
+    
+    <!-- Google Maps API for geocoding and map preview -->
+    <script>
+        // Load Google Maps API
+        const GOOGLE_MAPS_API_KEY = 'AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw';
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onerror = function() {
+            console.log('Google Maps failed to load. Location capture will still work without address lookup.');
+        };
+        document.head.appendChild(script);
     </script>
 </body>
 </html> 

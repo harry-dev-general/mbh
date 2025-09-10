@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Vessel Location Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .vessel-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .location-info {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .no-location {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vessel Location Data Test</h1>
+    <div id="content" class="loading">Loading vessel data...</div>
+
+    <script>
+        async function loadVesselData() {
+            const contentDiv = document.getElementById('content');
+            
+            try {
+                // Fetch vessel maintenance status
+                const response = await fetch('/api/vessel-maintenance-status');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load data');
+                }
+                
+                // Display vessel data
+                let html = '<h2>Vessel Status with Location Data</h2>';
+                
+                data.vessels.forEach(vessel => {
+                    html += `<div class="vessel-card">`;
+                    html += `<h3>${vessel.name} (${vessel.type})</h3>`;
+                    html += `<p><strong>Last Check:</strong> ${vessel.lastCheck.type} - ${vessel.lastCheck.daysSince || 0} days ago</p>`;
+                    
+                    if (vessel.currentStatus && vessel.currentStatus.location) {
+                        const loc = vessel.currentStatus.location;
+                        if (loc.captured && loc.latitude && loc.longitude) {
+                            html += `<div class="location-info">`;
+                            html += `<h4>📍 Location Captured</h4>`;
+                            html += `<p><strong>Coordinates:</strong> ${loc.latitude}, ${loc.longitude}</p>`;
+                            html += `<p><strong>Address:</strong> ${loc.address || 'Not available'}</p>`;
+                            html += `<p><strong>Accuracy:</strong> ±${Math.round(loc.accuracy || 0)}m</p>`;
+                            html += `<p><a href="https://www.google.com/maps?q=${loc.latitude},${loc.longitude}" target="_blank">View on Google Maps</a></p>`;
+                            html += `</div>`;
+                        } else {
+                            html += `<div class="no-location">`;
+                            html += `<p>📍 Location data incomplete</p>`;
+                            html += `</div>`;
+                        }
+                    } else {
+                        html += `<div class="no-location">`;
+                        html += `<p>📍 No location data available</p>`;
+                        html += `</div>`;
+                    }
+                    
+                    // Show raw data for debugging
+                    html += `<details style="margin-top: 10px;">`;
+                    html += `<summary>View Raw Data</summary>`;
+                    html += `<pre>${JSON.stringify(vessel.currentStatus, null, 2)}</pre>`;
+                    html += `</details>`;
+                    
+                    html += `</div>`;
+                });
+                
+                contentDiv.innerHTML = html;
+                
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                console.error('Error loading vessel data:', error);
+            }
+        }
+        
+        // Load data on page load
+        loadVesselData();
+        
+        // Refresh every 30 seconds
+        setInterval(loadVesselData, 30000);
+    </script>
+</body>
+</html>
