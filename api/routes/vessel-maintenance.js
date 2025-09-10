@@ -179,13 +179,12 @@ router.post('/update-location', async (req, res) => {
         const { vesselId, latitude, longitude, address, manualUpdate } = req.body;
         const userEmail = req.user?.email || 'Unknown';
         
-        console.log('Manual location update request:', {
-            vesselId,
-            latitude,
-            longitude,
-            address,
-            userEmail
-        });
+        console.log('=== MANUAL LOCATION UPDATE REQUEST ===');
+        console.log('Vessel ID:', vesselId);
+        console.log('Coordinates:', { latitude, longitude });
+        console.log('Address:', address);
+        console.log('User:', userEmail);
+        console.log('Request timestamp:', new Date().toISOString());
         
         if (!vesselId || latitude === undefined || longitude === undefined) {
             return res.status(400).json({
@@ -201,9 +200,10 @@ router.post('/update-location', async (req, res) => {
         const PRE_DEP_TABLE_ID = 'tbl9igu5g1bPG4Ahu';
         
         // Get recent Post-Departure checklists and find the one for this vessel
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const dateFilter = thirtyDaysAgo.toISOString().split('T')[0];
+        const ninetyDaysAgo = new Date();
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+        const dateFilter = ninetyDaysAgo.toISOString().split('T')[0];
+        console.log(`Searching for checklists after: ${dateFilter}`);
         
         const postDepResponse = await axios.get(
             `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
@@ -220,15 +220,25 @@ router.post('/update-location', async (req, res) => {
         
         // Find the most recent checklist for this specific vessel
         let latestPostDep = null;
-        if (postDepResponse.data.records) {
-            console.log(`Searching through ${postDepResponse.data.records.length} Post-Departure records for vessel ${vesselId}`);
+        if (postDepResponse.data.records && postDepResponse.data.records.length > 0) {
+            console.log(`Found ${postDepResponse.data.records.length} Post-Departure records from last 30 days`);
+            console.log('First 3 records for debugging:');
+            postDepResponse.data.records.slice(0, 3).forEach(record => {
+                console.log(`- Record ${record.id}:`, {
+                    vessel: record.fields['Vessel'],
+                    createdTime: record.fields['Created time']
+                });
+            });
+            
             for (const record of postDepResponse.data.records) {
-                console.log(`Record ${record.id} has vessels:`, record.fields['Vessel']);
-                if (record.fields['Vessel'] && record.fields['Vessel'].includes(vesselId)) {
+                if (record.fields['Vessel'] && Array.isArray(record.fields['Vessel']) && record.fields['Vessel'].includes(vesselId)) {
                     latestPostDep = record;
+                    console.log(`✓ Found matching Post-Departure checklist: ${record.id}`);
                     break;
                 }
             }
+        } else {
+            console.log('No Post-Departure records found in the last 30 days');
         }
         
         console.log(`Post-Departure search for vessel ${vesselId} found:`, latestPostDep ? 'checklist' : 'no checklist');
