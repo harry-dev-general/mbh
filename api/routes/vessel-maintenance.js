@@ -249,8 +249,7 @@ router.post('/update-location', async (req, res) => {
                         'Location Address': address || 'Manual location update',
                         'Location Captured': true,
                         'Location Accuracy': 10,
-                        'Checklist ID': `LOC-UPDATE-${Date.now()}`,
-                        'Completion Status': 'Location Update Only'
+                        'Checklist ID': `LOC-UPDATE-${Date.now()}`
                     }
                 };
                 
