@@ -814,8 +814,8 @@
                     if (bookingIdParam) {
                         const targetBooking = assignedBookings.find(booking => booking.id === bookingIdParam);
                         if (targetBooking) {
-                            const boatName = targetBooking.fields['Boat'] && targetBooking.fields['Boat'][0] ? 
-                                           await getBoatName(targetBooking.fields['Boat'][0]) : 'Unknown Vessel';
+                            const boatName = targetBooking.fields['Boat'] ? 
+                                           await getBoatName(targetBooking.fields['Boat']) : 'Unknown Vessel';
                             
                             // Hide booking selection, show checklist form
                             document.getElementById('bookingsSection').style.display = 'none';
@@ -843,7 +843,7 @@
             cardsDiv.innerHTML = '';
 
             for (const booking of bookings) {
-                const boatName = await getBoatName(booking.fields['Boat']);
+                const boatName = await getBoatName(booking.fields['Boat'] || []);
                 const card = createBookingCard(booking, boatName);
                 cardsDiv.appendChild(card);
             }
