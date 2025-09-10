@@ -84,8 +84,9 @@ async function createAnnouncement(data) {
         const announcement = response.data;
 
         // Send SMS if requested
+        let smsResult = null;
         if (sendSMS) {
-            await sendAnnouncementSMS(title, message, priority);
+            smsResult = await sendAnnouncementSMS(title, message, priority);
             
             // Update record to mark SMS as sent
             await updateAnnouncement(announcement.id, { 'SMS Sent': true });
@@ -93,7 +94,8 @@ async function createAnnouncement(data) {
 
         return {
             success: true,
-            announcement
+            announcement,
+            ...(smsResult ? { sent: smsResult.sent, failed: smsResult.failed, total: smsResult.total } : {})
         };
     } catch (error) {
         console.error('Error creating announcement:', error.response?.data || error.message);
