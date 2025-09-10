@@ -310,6 +310,95 @@
             display: none;
         }
         
+        /* New vessel-centric sidebar styles */
+        .vessel-card {
+            padding: 1.5rem;
+            border-bottom: 1px solid #E5E7E9;
+            cursor: pointer;
+            transition: background 0.3s;
+            position: relative;
+        }
+        
+        .vessel-card:hover {
+            background: #F8F9F9;
+        }
+        
+        .vessel-card h3 {
+            color: #2E86AB;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .vessel-status {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+        
+        .vessel-status.has-location {
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+        
+        .vessel-location {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .vessel-mooring {
+            font-size: 0.85rem;
+            color: #888;
+            background: #EBF5FB;
+            padding: 0.3rem 0.6rem;
+            border-radius: 15px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        
+        .sidebar-header {
+            background: #2E86AB;
+            color: white;
+            padding: 1rem;
+            margin: -1rem -1rem 1rem -1rem;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .no-vessels {
+            text-align: center;
+            color: #666;
+            padding: 2rem;
+            font-style: italic;
+        }
+        
+        .loading-vessels {
+            text-align: center;
+            color: #666;
+            padding: 2rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 768px) {
             .view-toggle {
                 top: 60px;
@@ -334,111 +423,13 @@
     
     <div class="container">
         <div class="sidebar">
-            <!-- Little Manly -->
-            <div class="location-card" onclick="focusLocation('littleManly')">
-                <h3><i class="fas fa-anchor"></i> Little Manly Point Reserve</h3>
-                <div class="vessel-info">
-                    <strong>Vessel:</strong> JUNIOR (12 seater)<br>
-                    <strong>Mooring:</strong> CL8335 (Red Buoy)<br>
-                    <strong>Type:</strong> Swing Mooring
-                </div>
-                <div class="access-details">
-                    <strong>Access Details:</strong>
-                    <ul>
-                        <li>🚗 Parking: Stuart Street</li>
-                        <li>🛶 Tender: Paddle board in racks facing water</li>
-                        <li>📍 Near boat ramp</li>
-                    </ul>
-                </div>
-                <button class="directions-btn" onclick="getDirections(-33.807998, 151.286544)">
-                    <i class="fas fa-route"></i> Get Directions
-                </button>
+            <div class="sidebar-header">
+                <i class="fas fa-ship"></i> Fleet Status
             </div>
-            
-            <!-- Balmoral -->
-            <div class="location-card" onclick="focusLocation('balmoral')">
-                <h3><i class="fas fa-anchor"></i> Balmoral Beach</h3>
-                <div class="vessel-info">
-                    <strong>Vessel:</strong> SANDSTONE (8 seater)<br>
-                    <strong>Type:</strong> Swing Mooring (Temporary)
+            <div id="vesselList" class="vessel-list">
+                <div class="loading-vessels">
+                    <i class="fas fa-spinner fa-spin"></i> Loading vessel data...
                 </div>
-                <div class="access-details">
-                    <strong>Access Details:</strong>
-                    <ul>
-                        <li>🚗 Parking: The Esplanade</li>
-                        <li>⚠️ Temporary location</li>
-                        <li>📍 Check current status</li>
-                    </ul>
-                </div>
-                <button class="directions-btn" onclick="getDirections(-33.826154, 151.254493)">
-                    <i class="fas fa-route"></i> Get Directions
-                </button>
-            </div>
-            
-            <!-- Seaforth -->
-            <div class="location-card" onclick="focusLocation('seaforth')">
-                <h3><i class="fas fa-anchor"></i> Seaforth</h3>
-                <div class="vessel-info">
-                    <strong>Vessel:</strong> PUMICESTONE (12 seater)<br>
-                    <strong>Mooring:</strong> CA017/CA023<br>
-                    <strong>Type:</strong> Swing Mooring
-                </div>
-                <div class="access-details">
-                    <strong>Access Details:</strong>
-                    <ul>
-                        <li>🚗 Parking: The Spit West Reserve</li>
-                        <li>🚤 Tender: Work Boat near Plonk Cafe</li>
-                        <li>📍 Navigate through Spit Bridge underpass</li>
-                        <li>⚠️ Follow channel alongside Seaforth Crescent</li>
-                    </ul>
-                </div>
-                <button class="directions-btn" onclick="getDirections(-33.804468, 151.239951)">
-                    <i class="fas fa-route"></i> Get Directions to The Spit
-                </button>
-            </div>
-            
-            <!-- d'Albora Marina -->
-            <div class="location-card" onclick="focusLocation('dalbora')">
-                <h3><i class="fas fa-building"></i> d'Albora Marina - The Spit</h3>
-                <div class="vessel-info">
-                    <strong>Vessel:</strong> Ice Cream Boat<br>
-                    <strong>Berth:</strong> AE25 (Eastern side of A arm)<br>
-                    <strong>Type:</strong> Marina Berth
-                </div>
-                <div class="access-details">
-                    <strong>Access Details:</strong>
-                    <ul>
-                        <li>🚗 Parking: Marina visitor parking (next to Boat Yard)</li>
-                        <li>🔑 FOB key access (5PM - 7:30AM)</li>
-                        <li>⚡ Check shore power for ice cream freezer</li>
-                        <li>📍 Near Dry Dock</li>
-                    </ul>
-                </div>
-                <button class="directions-btn" onclick="getDirections(-33.804802, 151.245358)">
-                    <i class="fas fa-route"></i> Get Directions
-                </button>
-            </div>
-            
-            <!-- Fergusons Marina -->
-            <div class="location-card" onclick="focusLocation('fergusons')">
-                <h3><i class="fas fa-building"></i> Fergusons Marina</h3>
-                <div class="vessel-info">
-                    <strong>Vessel:</strong> Work Boat<br>
-                    <strong>Address:</strong> 83 Parriwi Rd, Mosman<br>
-                    <strong>Type:</strong> Marina Berth
-                </div>
-                <div class="access-details">
-                    <strong>Access Details:</strong>
-                    <ul>
-                        <li>🚗 Parking: Marina visitor parking</li>
-                        <li>🔑 PIN code access at gate</li>
-                        <li>📍 83 Parriwi Rd, Mosman NSW 2088</li>
-                        <li>⚠️ Remember to lock gate after entry</li>
-                    </ul>
-                </div>
-                <button class="directions-btn" onclick="getDirections(-33.804169, 151.246879)">
-                    <i class="fas fa-route"></i> Get Directions
-                </button>
             </div>
         </div>
         
@@ -558,8 +549,15 @@
                         <h3>Little Manly Point Reserve</h3>
                         <div class="vessel-name">JUNIOR - 12 seater</div>
                         <div class="detail"><strong>Mooring:</strong> CL8335 (Red Buoy)</div>
-                        <div class="detail"><strong>Parking:</strong> Stuart Street</div>
-                        <div class="detail"><strong>Tender:</strong> Paddle board in racks</div>
+                        <div class="detail"><strong>Type:</strong> Swing Mooring</div>
+                        <hr style="margin: 10px 0;">
+                        <h4 style="margin: 0.5rem 0;">Access Details:</h4>
+                        <div class="detail">🚗 <strong>Parking:</strong> Stuart Street</div>
+                        <div class="detail">🛶 <strong>Tender:</strong> Paddle board in racks facing water</div>
+                        <div class="detail">📍 <strong>Location:</strong> Near boat ramp</div>
+                        <button class="directions-btn" onclick="getDirections(-33.807998, 151.286544, event)" style="margin-top: 10px;">
+                            <i class="fas fa-route"></i> Get Directions
+                        </button>
                     </div>
                 `
             },
@@ -574,9 +572,15 @@
                     <div class="info-window">
                         <h3>Balmoral Beach</h3>
                         <div class="vessel-name">SANDSTONE - 8 seater</div>
-                        <div class="detail"><strong>Type:</strong> Temporary Swing Mooring</div>
-                        <div class="detail"><strong>Parking:</strong> The Esplanade</div>
-                        <div class="detail"><strong>Note:</strong> Check current status</div>
+                        <div class="detail"><strong>Type:</strong> Swing Mooring (Temporary)</div>
+                        <hr style="margin: 10px 0;">
+                        <h4 style="margin: 0.5rem 0;">Access Details:</h4>
+                        <div class="detail">🚗 <strong>Parking:</strong> The Esplanade</div>
+                        <div class="detail">⚠️ <strong>Status:</strong> Temporary location</div>
+                        <div class="detail">📍 <strong>Note:</strong> Check current status</div>
+                        <button class="directions-btn" onclick="getDirections(-33.826154, 151.254493, event)" style="margin-top: 10px;">
+                            <i class="fas fa-route"></i> Get Directions
+                        </button>
                     </div>
                 `
             },
@@ -592,9 +596,16 @@
                         <h3>Seaforth Mooring Field</h3>
                         <div class="vessel-name">PUMICESTONE - 12 seater</div>
                         <div class="detail"><strong>Mooring:</strong> CA017/CA023</div>
-                        <div class="detail"><strong>Access:</strong> Via The Spit</div>
-                        <div class="detail"><strong>Tender:</strong> Work Boat near Plonk Cafe</div>
-                        <div class="detail"><strong>Note:</strong> Navigate through Spit Bridge</div>
+                        <div class="detail"><strong>Type:</strong> Swing Mooring</div>
+                        <hr style="margin: 10px 0;">
+                        <h4 style="margin: 0.5rem 0;">Access Details:</h4>
+                        <div class="detail">🚗 <strong>Parking:</strong> The Spit West Reserve</div>
+                        <div class="detail">🚤 <strong>Tender:</strong> Work Boat near Plonk Cafe</div>
+                        <div class="detail">📍 <strong>Navigate:</strong> Through Spit Bridge underpass</div>
+                        <div class="detail">⚠️ <strong>Route:</strong> Follow channel alongside Seaforth Crescent</div>
+                        <button class="directions-btn" onclick="getDirections(-33.804468, 151.239951, event)" style="margin-top: 10px;">
+                            <i class="fas fa-route"></i> Get Directions to The Spit
+                        </button>
                     </div>
                 `
             },
@@ -607,12 +618,19 @@
                 icon: "building",
                 content: `
                     <div class="info-window">
-                        <h3>d'Albora Marina</h3>
+                        <h3>d'Albora Marina - The Spit</h3>
                         <div class="vessel-name">Ice Cream Boat</div>
-                        <div class="detail"><strong>Berth:</strong> AE25 (Eastern side)</div>
-                        <div class="detail"><strong>Access:</strong> FOB key after 5PM</div>
-                        <div class="detail"><strong>Parking:</strong> Marina visitor parking</div>
-                        <div class="detail"><strong>Important:</strong> Check shore power</div>
+                        <div class="detail"><strong>Berth:</strong> AE25 (Eastern side of A arm)</div>
+                        <div class="detail"><strong>Type:</strong> Marina Berth</div>
+                        <hr style="margin: 10px 0;">
+                        <h4 style="margin: 0.5rem 0;">Access Details:</h4>
+                        <div class="detail">🚗 <strong>Parking:</strong> Marina visitor parking (next to Boat Yard)</div>
+                        <div class="detail">🔑 <strong>Access:</strong> FOB key access (5PM - 7:30AM)</div>
+                        <div class="detail">⚡ <strong>Important:</strong> Check shore power for ice cream freezer</div>
+                        <div class="detail">📍 <strong>Location:</strong> Near Dry Dock</div>
+                        <button class="directions-btn" onclick="getDirections(-33.804802, 151.245358, event)" style="margin-top: 10px;">
+                            <i class="fas fa-route"></i> Get Directions
+                        </button>
                     </div>
                 `
             },
@@ -626,10 +644,17 @@
                     <div class="info-window">
                         <h3>Fergusons Marina</h3>
                         <div class="vessel-name">Work Boat</div>
-                        <div class="detail"><strong>Address:</strong> 83 Parriwi Rd, Mosman</div>
-                        <div class="detail"><strong>Access:</strong> PIN code at gate</div>
-                        <div class="detail"><strong>Parking:</strong> Marina visitor parking</div>
-                        <div class="detail"><strong>Important:</strong> Lock gate after entry</div>
+                        <div class="detail"><strong>Address:</strong> 83 Parriwi Rd, Mosman NSW 2088</div>
+                        <div class="detail"><strong>Type:</strong> Marina Berth</div>
+                        <hr style="margin: 10px 0;">
+                        <h4 style="margin: 0.5rem 0;">Access Details:</h4>
+                        <div class="detail">🚗 <strong>Parking:</strong> Marina visitor parking</div>
+                        <div class="detail">🔑 <strong>Access:</strong> PIN code access at gate</div>
+                        <div class="detail">📍 <strong>Location:</strong> 83 Parriwi Rd, Mosman NSW 2088</div>
+                        <div class="detail">⚠️ <strong>Important:</strong> Remember to lock gate after entry</div>
+                        <button class="directions-btn" onclick="getDirections(-33.804169, 151.246879, event)" style="margin-top: 10px;">
+                            <i class="fas fa-route"></i> Get Directions
+                        </button>
                     </div>
                 `
             }
@@ -686,6 +711,9 @@
                     );
                     console.log(`Found ${vesselsWithLocation.length} vessels with location data:`, vesselsWithLocation);
                     
+                    // Update sidebar vessel list
+                    updateVesselSidebar();
+                    
                     // Update current location markers
                     updateCurrentLocationMarkers();
                 } else {
@@ -711,6 +739,113 @@
                     `;
                     errorDiv.textContent = 'Error loading vessel data. Check console for details.';
                     mapDiv.appendChild(errorDiv);
+                }
+            }
+        }
+        
+        // Update sidebar with vessel list
+        function updateVesselSidebar() {
+            const vesselList = document.getElementById('vesselList');
+            if (!vesselList) return;
+            
+            if (!vesselData || vesselData.length === 0) {
+                vesselList.innerHTML = '<div class="no-vessels">No vessel data available</div>';
+                return;
+            }
+            
+            // Sort vessels by name
+            const sortedVessels = [...vesselData].sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Build vessel cards
+            let html = '';
+            sortedVessels.forEach(vessel => {
+                const hasLocation = vessel.currentStatus?.location?.captured;
+                const location = vessel.currentStatus?.location;
+                
+                // Determine mooring type from home location or current status
+                let mooringType = 'Unknown';
+                let homeLocation = null;
+                
+                // Find home location info
+                Object.values(locations).forEach(loc => {
+                    if (loc.vessel && loc.vessel.toLowerCase().includes(vessel.name.toLowerCase())) {
+                        homeLocation = loc;
+                        if (loc.name.includes('Marina')) {
+                            mooringType = 'Marina Berth';
+                        } else {
+                            mooringType = 'Swing Mooring';
+                        }
+                    }
+                });
+                
+                html += `
+                    <div class="vessel-card" onclick="focusVessel('${vessel.id}')">
+                        <div class="vessel-status ${hasLocation ? 'has-location' : ''}"></div>
+                        <h3><i class="fas fa-ship"></i> ${vessel.name}</h3>
+                        <div class="vessel-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            ${hasLocation && location.address ? 
+                                location.address.split(',')[0] : 
+                                (homeLocation ? homeLocation.name : 'Location Unknown')
+                            }
+                        </div>
+                        <div class="vessel-mooring">
+                            <i class="fas fa-anchor"></i> ${mooringType}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            vesselList.innerHTML = html;
+        }
+        
+        // Focus on a specific vessel
+        window.focusVessel = function(vesselId) {
+            const vessel = vesselData.find(v => v.id === vesselId);
+            if (!vessel) return;
+            
+            const location = vessel.currentStatus?.location;
+            
+            if (location?.captured && location.latitude && location.longitude) {
+                // Show vessel view if not already shown
+                if (currentView !== 'vessels') {
+                    showVesselView();
+                }
+                
+                // Center map on vessel location
+                const position = {
+                    lat: location.latitude,
+                    lng: location.longitude
+                };
+                
+                map.setCenter(position);
+                map.setZoom(17);
+                
+                // Open the info window for this vessel
+                const marker = currentLocationMarkers[vesselId];
+                const infoWindow = currentLocationInfoWindows[vesselId];
+                
+                if (marker && infoWindow) {
+                    // Close all other info windows
+                    Object.values(infoWindows).forEach(iw => iw.close());
+                    Object.values(currentLocationInfoWindows).forEach(iw => iw.close());
+                    
+                    // Open this vessel's info window
+                    infoWindow.open(map, marker);
+                }
+            } else {
+                // No current location, try to find home location
+                let homeLocation = null;
+                Object.entries(locations).forEach(([key, loc]) => {
+                    if (loc.vessel && loc.vessel.toLowerCase().includes(vessel.name.toLowerCase())) {
+                        homeLocation = { key, loc };
+                    }
+                });
+                
+                if (homeLocation) {
+                    focusLocation(homeLocation.key);
+                } else {
+                    alert(`No location data available for ${vessel.name}`);
                 }
             }
         }
@@ -957,11 +1092,13 @@
         
 
         
-        function getDirections(lat, lng) {
+        window.getDirections = function(lat, lng, event) {
             // Open Google Maps with directions
             const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
             window.open(url, '_blank');
-            event.stopPropagation();
+            if (event) {
+                event.stopPropagation();
+            }
         }
         
         // Create anchorage circles
