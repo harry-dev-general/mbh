@@ -463,6 +463,9 @@
                 <button class="toggle-btn" onclick="showAnchorageView()">
                     <i class="fas fa-anchor"></i> Safe Anchorages
                 </button>
+                <button class="toggle-btn" onclick="fetchVesselData()" style="background: #28a745;">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
             </div>
             
             <div class="legend vessel-legend">
@@ -538,7 +541,7 @@
         let currentView = 'vessels'; // 'vessels' or 'anchorages'
         let currentLocationMarkers = {}; // Store current location markers
         let currentLocationInfoWindows = {}; // Store current location info windows
-        let vesselData = {}; // Store vessel data from API
+        let vesselData = []; // Store vessel data from API (array of vessels)
         let vesselPaths = []; // Store path lines between home and current locations
         
         // Location data
@@ -663,23 +666,59 @@
         // Fetch vessel data from API including current locations
         async function fetchVesselData() {
             try {
+                console.log('Fetching vessel data...');
                 const response = await fetch('/api/vessel-maintenance-status');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('API Response:', data);
                 
                 if (data.success) {
                     vesselData = data.vessels;
                     console.log('Loaded vessel data:', vesselData);
                     
+                    // Log vessels with location data
+                    const vesselsWithLocation = vesselData.filter(v => 
+                        v.currentStatus?.location?.captured
+                    );
+                    console.log(`Found ${vesselsWithLocation.length} vessels with location data:`, vesselsWithLocation);
+                    
                     // Update current location markers
                     updateCurrentLocationMarkers();
+                } else {
+                    console.error('API returned error:', data.error);
                 }
             } catch (error) {
                 console.error('Error fetching vessel data:', error);
+                // Show error message to user
+                const mapDiv = document.getElementById('map');
+                if (mapDiv && !document.getElementById('fetch-error')) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.id = 'fetch-error';
+                    errorDiv.style.cssText = `
+                        position: absolute;
+                        top: 80px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: #ff6b6b;
+                        color: white;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        z-index: 1000;
+                    `;
+                    errorDiv.textContent = 'Error loading vessel data. Check console for details.';
+                    mapDiv.appendChild(errorDiv);
+                }
             }
         }
         
         // Update markers showing current vessel locations
         function updateCurrentLocationMarkers() {
+            console.log('Updating current location markers...');
+            
             // Clear existing current location markers
             Object.values(currentLocationMarkers).forEach(marker => marker.setMap(null));
             Object.values(currentLocationInfoWindows).forEach(iw => iw.close());
@@ -691,13 +730,21 @@
             vesselPaths = [];
             
             // Add markers for vessels with location data
+            if (!Array.isArray(vesselData)) {
+                console.error('vesselData is not an array:', vesselData);
+                return;
+            }
+            
             vesselData.forEach(vessel => {
+                console.log(`Checking vessel ${vessel.name}:`, vessel.currentStatus);
+                
                 if (vessel.currentStatus && vessel.currentStatus.location && 
                     vessel.currentStatus.location.captured && 
                     vessel.currentStatus.location.latitude && 
                     vessel.currentStatus.location.longitude) {
                     
                     const location = vessel.currentStatus.location;
+                    console.log(`Adding marker for ${vessel.name} at:`, location);
                     
                     // Create a custom marker for current location
                     const marker = new google.maps.Marker({
