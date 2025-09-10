@@ -62,7 +62,7 @@
             
             try {
                 // Fetch vessel maintenance status
-                const response = await fetch('/api/vessel-maintenance-status');
+                const response = await fetch('/api/vessels/maintenance-status');
                 const data = await response.json();
                 
                 if (!data.success) {

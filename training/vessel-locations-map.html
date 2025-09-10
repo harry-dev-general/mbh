@@ -667,7 +667,7 @@
         async function fetchVesselData() {
             try {
                 console.log('Fetching vessel data...');
-                const response = await fetch('/api/vessel-maintenance-status');
+                const response = await fetch('/api/vessels/maintenance-status');
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
