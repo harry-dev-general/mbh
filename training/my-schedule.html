@@ -727,6 +727,59 @@
             to { opacity: 1; }
         }
         
+        /* Vessel location styles */
+        .vessel-location-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .vessel-location-section h4 {
+            color: #2E86AB;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .vessel-location-content {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .vessel-location-map {
+            height: 200px;
+            margin-top: 0.5rem;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+        
+        .vessel-location-loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .vessel-location-error {
+            color: #dc3545;
+            padding: 1rem;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
+        
+        .vessel-location-details {
+            margin-top: 0.5rem;
+            line-height: 1.8;
+        }
+        
+        .vessel-location-details strong {
+            color: #333;
+        }
+        
         @keyframes slideUp {
             from {
                 transform: translateY(20px);
@@ -1271,6 +1324,7 @@
                             responseFieldExists: true, // Fields are confirmed to exist in Airtable
                             booking: record.id,
                             bookingCode: fields['Booking Code'] || '',
+                            boat: fields['Boat'] ? fields['Boat'][0] : null, // Add boat ID
                             source: 'booking'
                         });
                     }
@@ -1298,6 +1352,7 @@
                             responseFieldExists: true, // Fields are confirmed to exist in Airtable
                             booking: record.id,
                             bookingCode: fields['Booking Code'] || '',
+                            boat: fields['Boat'] ? fields['Boat'][0] : null, // Add boat ID
                             source: 'booking'
                         });
                     }
@@ -1676,6 +1731,12 @@
                         <span class="shift-detail-value">${shift.bookingCode}</span>
                     </div>
                 ` : ''}
+                ${shift.boat && shift.source === 'booking' ? `
+                    <div class="shift-detail-row">
+                        <span class="shift-detail-label"><i class="fas fa-ship"></i> Vessel</span>
+                        <span class="shift-detail-value" id="vesselName-${shiftId}">Loading...</span>
+                    </div>
+                ` : ''}
                 ${shift.notes ? `
                     <div class="shift-detail-row">
                         <span class="shift-detail-label"><i class="fas fa-sticky-note"></i> Notes</span>
@@ -1722,6 +1783,26 @@
                         'Tip: Click on the status badge above to change your response at any time.'}
                 </div>
             `;
+            
+            // Add vessel location section for booking allocations
+            if (shift.source === 'booking' && shift.boat) {
+                modalHTML += `
+                    <div id="vesselLocation-${shiftId}" class="vessel-location-section">
+                        <h4><i class="fas fa-map-marker-alt"></i> Current Vessel Location</h4>
+                        <div class="vessel-location-loading">
+                            <i class="fas fa-spinner fa-spin"></i> Loading vessel location...
+                        </div>
+                    </div>
+                `;
+                
+                // Fetch vessel location after modal is shown
+                setTimeout(() => fetchVesselLocation(shiftId, shift.boat), 100);
+            }
+            
+            // Fetch boat name if available
+            if (shift.boat && shift.source === 'booking') {
+                fetchBoatName(shiftId, shift.boat);
+            }
             
             // Add vessel checklist link for booking allocations
             if (shift.source === 'booking') {
@@ -2009,9 +2090,128 @@
             await supabase.auth.signOut();
             window.location.href = 'auth.html';
         }
+        
+        // Fetch boat name from Airtable
+        async function fetchBoatName(shiftId, boatId) {
+            const vesselNameElement = document.getElementById(`vesselName-${shiftId}`);
+            if (!vesselNameElement || !boatId) return;
+            
+            try {
+                const AIRTABLE_API_KEY = 'patdAQBvfCCO7m3sC.bee8c16dcffe8c9e7797a25ce5e76bfece37ac9b1e89e44f889e7c3dbcd27b14';
+                const AIRTABLE_BASE_ID = 'applkAFOn2qxtu7tx';
+                const BOATS_TABLE_ID = 'tblNLoBNb4daWzjob';
+                
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BOATS_TABLE_ID}/${boatId}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+                
+                const data = await response.json();
+                if (data.fields && data.fields['Boat Name']) {
+                    vesselNameElement.textContent = data.fields['Boat Name'];
+                } else {
+                    vesselNameElement.textContent = 'Unknown Vessel';
+                }
+            } catch (error) {
+                console.error('Error fetching boat name:', error);
+                vesselNameElement.textContent = 'Unknown Vessel';
+            }
+        }
+        
+        // Fetch and display vessel location
+        async function fetchVesselLocation(shiftId, boatId) {
+            const locationDiv = document.getElementById(`vesselLocation-${shiftId}`);
+            if (!locationDiv) return;
+            
+            try {
+                // Fetch vessel maintenance status
+                const response = await fetch('/api/vessels/maintenance-status');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to fetch vessel data');
+                }
+                
+                // Find the vessel by boat ID
+                const vessel = data.vessels.find(v => v.boatId === boatId);
+                
+                if (!vessel || !vessel.currentStatus?.location?.captured) {
+                    locationDiv.innerHTML = `
+                        <h4><i class="fas fa-map-marker-alt"></i> Current Vessel Location</h4>
+                        <div class="vessel-location-content">
+                            <p style="color: #666; margin: 0;">
+                                <i class="fas fa-info-circle"></i> No location data available for this vessel.
+                            </p>
+                            <p style="font-size: 0.85rem; color: #888; margin-top: 0.5rem;">
+                                Location will be recorded when staff complete the Post-Departure Checklist.
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const location = vessel.currentStatus.location;
+                const lastUpdate = vessel.lastCheck?.time ? 
+                    new Date(vessel.lastCheck.time).toLocaleString('en-AU', {
+                        dateStyle: 'short',
+                        timeStyle: 'short'
+                    }) : 'Unknown';
+                
+                // Update the content with location details
+                locationDiv.innerHTML = `
+                    <h4><i class="fas fa-map-marker-alt"></i> Current Vessel Location</h4>
+                    <div class="vessel-location-content">
+                        <div class="vessel-location-details">
+                            <div><strong>Address:</strong> ${location.address || 'Unknown'}</div>
+                            <div><strong>Last Updated:</strong> ${lastUpdate}</div>
+                        </div>
+                        <div id="vesselMap-${shiftId}" class="vessel-location-map"></div>
+                    </div>
+                `;
+                
+                // Initialize mini map
+                if (location.latitude && location.longitude) {
+                    setTimeout(() => {
+                        const mapDiv = document.getElementById(`vesselMap-${shiftId}`);
+                        if (mapDiv && window.google && window.google.maps) {
+                            const map = new google.maps.Map(mapDiv, {
+                                center: { lat: location.latitude, lng: location.longitude },
+                                zoom: 16,
+                                disableDefaultUI: true,
+                                zoomControl: true,
+                                mapTypeId: 'hybrid'
+                            });
+                            
+                            // Add marker
+                            new google.maps.Marker({
+                                position: { lat: location.latitude, lng: location.longitude },
+                                map: map,
+                                title: vessel.name
+                            });
+                        }
+                    }, 100);
+                }
+                
+            } catch (error) {
+                console.error('Error fetching vessel location:', error);
+                locationDiv.innerHTML = `
+                    <h4><i class="fas fa-map-marker-alt"></i> Current Vessel Location</h4>
+                    <div class="vessel-location-error">
+                        <i class="fas fa-exclamation-triangle"></i> Error loading vessel location
+                    </div>
+                `;
+            }
+        }
 
         // Initialize on page load
         checkAuth();
     </script>
+    
+    <!-- Google Maps API for vessel location display -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw"></script>
 </body>
 </html>
