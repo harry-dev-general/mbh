@@ -2129,8 +2129,8 @@
                     }
                     
                     const location = vessel.currentStatus.location;
-                    const lastUpdate = vessel.lastCheck?.time ? 
-                        new Date(vessel.lastCheck.time).toLocaleString('en-AU', {
+                    const lastUpdate = location.lastModified ? 
+                        new Date(location.lastModified).toLocaleString('en-AU', {
                             dateStyle: 'short',
                             timeStyle: 'short'
                         }) : 'Unknown';

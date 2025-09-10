@@ -1616,7 +1616,7 @@
                                 <i class="fas fa-map-marker-alt"></i> ${vessel.currentStatus.location.address || 'Location captured'}
                             </div>
                             <div class="vessel-location-time">
-                                <i class="fas fa-clock"></i> Updated: ${vessel.lastCheck.time ? new Date(vessel.lastCheck.time).toLocaleString('en-AU', {
+                                <i class="fas fa-clock"></i> Updated: ${vessel.currentStatus.location.lastModified ? new Date(vessel.currentStatus.location.lastModified).toLocaleString('en-AU', {
                                     dateStyle: 'short',
                                     timeStyle: 'short'
                                 }) : 'Unknown'}

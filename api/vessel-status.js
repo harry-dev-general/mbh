@@ -165,7 +165,7 @@ async function getVesselMaintenanceStatus() {
                     filterByFormula: `IS_AFTER({Created time}, '${dateFilter}')`,
                     fields: ['Vessel', 'Fuel Level After Use', 'Gas Bottle Level After Use', 
                             'Water Tank Level After Use', 'Overall Vessel Condition After Use', 
-                            'Created time', 'Staff Member', 'Completed by', 'Checklist ID',
+                            'Created time', 'Last modified time', 'Staff Member', 'Completed by', 'Checklist ID',
                             // Location tracking fields
                             'GPS Latitude', 'GPS Longitude', 'Location Address', 
                             'Location Accuracy', 'Location Captured'],
@@ -236,7 +236,8 @@ async function getVesselMaintenanceStatus() {
                             longitude: latestPostDep.fields['GPS Longitude'],
                             address: latestPostDep.fields['Location Address'],
                             accuracy: latestPostDep.fields['Location Accuracy'],
-                            captured: latestPostDep.fields['Location Captured']
+                            captured: latestPostDep.fields['Location Captured'],
+                            lastModified: latestPostDep.fields['Last modified time'] || latestPostDep.fields['Created time']
                         }
                     };
                     lastCheckType = 'Post-Departure';

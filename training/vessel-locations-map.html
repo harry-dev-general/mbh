@@ -901,8 +901,8 @@
                     });
                     
                     // Create info window with location details
-                    const timeSince = vessel.lastCheck.time ? 
-                        new Date(vessel.lastCheck.time).toLocaleString('en-AU', {
+                    const timeSince = location.lastModified ? 
+                        new Date(location.lastModified).toLocaleString('en-AU', {
                             dateStyle: 'short',
                             timeStyle: 'short'
                         }) : 'Unknown';
