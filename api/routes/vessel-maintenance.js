@@ -200,26 +200,43 @@ router.post('/update-location', async (req, res) => {
         const POST_DEP_TABLE_ID = 'tblYkbSQGP6zveYNi';
         const PRE_DEP_TABLE_ID = 'tbl9igu5g1bPG4Ahu';
         
-        // First, find the most recent Post-Departure checklist for this vessel
+        // Get recent Post-Departure checklists and find the one for this vessel
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const dateFilter = thirtyDaysAgo.toISOString().split('T')[0];
+        
         const postDepResponse = await axios.get(
             `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
             {
                 headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` },
                 params: {
-                    filterByFormula: `{Vessel} = '${vesselId}'`,
+                    filterByFormula: `IS_AFTER({Created time}, '${dateFilter}')`,
                     sort: [{ field: 'Created time', direction: 'desc' }],
-                    maxRecords: 1,
+                    maxRecords: 100,
                     fields: ['Vessel', 'Created time']
                 }
             }
         );
         
+        // Find the most recent checklist for this specific vessel
+        let latestPostDep = null;
+        if (postDepResponse.data.records) {
+            for (const record of postDepResponse.data.records) {
+                if (record.fields['Vessel'] && record.fields['Vessel'].includes(vesselId)) {
+                    latestPostDep = record;
+                    break;
+                }
+            }
+        }
+        
+        console.log(`Post-Departure search for vessel ${vesselId} found:`, latestPostDep ? 'checklist' : 'no checklist');
+        
         let checklistId = null;
         let tableId = POST_DEP_TABLE_ID;
         
-        if (postDepResponse.data.records && postDepResponse.data.records.length > 0) {
+        if (latestPostDep) {
             // Use Post-Departure checklist
-            checklistId = postDepResponse.data.records[0].id;
+            checklistId = latestPostDep.id;
             console.log(`Found Post-Departure checklist ${checklistId} for location update`);
         } else {
             // No Post-Departure checklist, try Pre-Departure
@@ -228,15 +245,28 @@ router.post('/update-location', async (req, res) => {
                 {
                     headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` },
                     params: {
-                        filterByFormula: `{Vessel} = '${vesselId}'`,
+                        filterByFormula: `IS_AFTER({Created time}, '${dateFilter}')`,
                         sort: [{ field: 'Created time', direction: 'desc' }],
-                        maxRecords: 1,
+                        maxRecords: 100,
                         fields: ['Vessel', 'Created time']
                     }
                 }
             );
             
-            if (preDepResponse.data.records && preDepResponse.data.records.length > 0) {
+            // Find the most recent Pre-Departure checklist for this vessel
+            let latestPreDep = null;
+            if (preDepResponse.data.records) {
+                for (const record of preDepResponse.data.records) {
+                    if (record.fields['Vessel'] && record.fields['Vessel'].includes(vesselId)) {
+                        latestPreDep = record;
+                        break;
+                    }
+                }
+            }
+            
+            console.log(`Pre-Departure search for vessel ${vesselId} found:`, latestPreDep ? 'checklist' : 'no checklist');
+            
+            if (latestPreDep) {
                 // Create a new Post-Departure checklist with location data
                 // since Pre-Departure doesn't have location fields
                 console.log('No Post-Departure checklist found, creating one for location update');
