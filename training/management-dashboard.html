@@ -530,6 +530,168 @@
             border: 1px solid #ddd;
         }
         
+        /* Update location styles */
+        .update-location-btn {
+            background: #2E86AB;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+            margin-left: 0.5rem;
+        }
+        
+        .update-location-btn:hover {
+            background: #1F5F7B;
+        }
+        
+        /* Location update modal styles */
+        .location-update-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 2000;
+            flex-direction: column;
+        }
+        
+        .location-update-modal.active {
+            display: flex;
+        }
+        
+        .location-update-header {
+            background: #2E86AB;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .location-update-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .location-update-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .location-update-map {
+            flex: 1;
+            position: relative;
+        }
+        
+        .location-update-instructions {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            text-align: center;
+            font-size: 0.9rem;
+            z-index: 1;
+            max-width: 90%;
+        }
+        
+        .location-update-footer {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .location-confirm-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+        }
+        
+        .location-confirm-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+        }
+        
+        .location-cancel-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .location-cancel-btn:hover {
+            background: #5a6268;
+        }
+        
+        .location-coordinates {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-size: 0.8rem;
+            font-family: monospace;
+            z-index: 1;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .location-update-instructions {
+                font-size: 0.85rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .location-update-footer {
+                padding: 0.75rem;
+            }
+            
+            .location-confirm-btn,
+            .location-cancel-btn {
+                padding: 0.6rem 1.5rem;
+                font-size: 0.9rem;
+            }
+        }
+        
         .status-operational {
             background: #d4edda;
             color: #155724;
@@ -1463,8 +1625,22 @@
                         <button class="vessel-location-map-btn" onclick="showVesselLocationMap('${vessel.id}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude}, '${vessel.name.replace(/'/g, "\\'")}')">
                             <i class="fas fa-map"></i> Map
                         </button>
+                        <button class="update-location-btn" onclick="updateVesselLocation('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude})">
+                            <i class="fas fa-map-pin"></i> Update
+                        </button>
                     </div>
-                ` : ''}
+                ` : `
+                    <div class="vessel-location">
+                        <div class="vessel-location-info">
+                            <div class="vessel-location-address">
+                                <i class="fas fa-map-marker-alt"></i> No location data available
+                            </div>
+                        </div>
+                        <button class="update-location-btn" onclick="updateVesselLocation('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', null, null)">
+                            <i class="fas fa-map-pin"></i> Set Location
+                        </button>
+                    </div>
+                `}
                 
                 ${vessel.currentStatus ? `
                     <div style="margin: 1rem 0;">
@@ -1831,6 +2007,159 @@
                 closeLocationMapModal();
             }
         }
+        
+        // Update vessel location
+        let updateMap = null;
+        let updateMarker = null;
+        let currentVesselId = null;
+        let currentVesselName = null;
+        
+        function updateVesselLocation(vesselId, vesselName, currentLat, currentLng) {
+            currentVesselId = vesselId;
+            currentVesselName = vesselName;
+            
+            // Update modal title
+            document.getElementById('updateLocationTitle').textContent = `Update Location - ${vesselName}`;
+            
+            // Show modal
+            document.getElementById('locationUpdateModal').classList.add('active');
+            
+            // Initialize map after modal is visible
+            setTimeout(() => {
+                initUpdateLocationMap(currentLat, currentLng);
+            }, 100);
+        }
+        
+        function initUpdateLocationMap(currentLat, currentLng) {
+            const mapDiv = document.getElementById('updateLocationMap');
+            
+            // Default to Sydney if no current location
+            const lat = currentLat || -33.8688;
+            const lng = currentLng || 151.2093;
+            
+            if (window.google && window.google.maps) {
+                // Initialize map
+                updateMap = new google.maps.Map(mapDiv, {
+                    center: { lat: lat, lng: lng },
+                    zoom: currentLat ? 16 : 12,
+                    mapTypeId: 'hybrid',
+                    fullscreenControl: false,
+                    streetViewControl: false
+                });
+                
+                // Add draggable marker
+                updateMarker = new google.maps.Marker({
+                    position: { lat: lat, lng: lng },
+                    map: updateMap,
+                    draggable: true,
+                    animation: google.maps.Animation.DROP,
+                    title: 'Drag to update location'
+                });
+                
+                // Update coordinates display
+                updateCoordinatesDisplay(lat, lng);
+                
+                // Listen for marker drag
+                updateMarker.addListener('dragend', function() {
+                    const position = updateMarker.getPosition();
+                    updateCoordinatesDisplay(position.lat(), position.lng());
+                });
+                
+                // Listen for map clicks
+                updateMap.addListener('click', function(e) {
+                    updateMarker.setPosition(e.latLng);
+                    updateCoordinatesDisplay(e.latLng.lat(), e.latLng.lng());
+                });
+            }
+        }
+        
+        function updateCoordinatesDisplay(lat, lng) {
+            const coordsDiv = document.getElementById('locationCoordinates');
+            coordsDiv.innerHTML = `Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`;
+        }
+        
+        function closeLocationUpdateModal() {
+            document.getElementById('locationUpdateModal').classList.remove('active');
+            updateMap = null;
+            updateMarker = null;
+            currentVesselId = null;
+            currentVesselName = null;
+        }
+        
+        async function confirmLocationUpdate() {
+            if (!updateMarker || !currentVesselId) return;
+            
+            const position = updateMarker.getPosition();
+            const lat = position.lat();
+            const lng = position.lng();
+            
+            // Show loading state
+            const confirmBtn = document.querySelector('.location-confirm-btn');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            confirmBtn.disabled = true;
+            
+            try {
+                // Get address from coordinates
+                const geocoder = new google.maps.Geocoder();
+                let address = 'Location updated';
+                
+                try {
+                    const result = await new Promise((resolve, reject) => {
+                        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                            if (status === 'OK' && results[0]) {
+                                resolve(results[0].formatted_address);
+                            } else {
+                                resolve('Location updated');
+                            }
+                        });
+                    });
+                    address = result;
+                } catch (e) {
+                    console.error('Geocoding error:', e);
+                }
+                
+                // Save to backend
+                const response = await fetch('/api/vessels/update-location', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${(await supabase.auth.getSession())?.data.session?.access_token}`
+                    },
+                    body: JSON.stringify({
+                        vesselId: currentVesselId,
+                        latitude: lat,
+                        longitude: lng,
+                        address: address,
+                        manualUpdate: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Close modal
+                    closeLocationUpdateModal();
+                    
+                    // Reload vessel data
+                    if (activeTab === 'vessels') {
+                        loadVessels();
+                    }
+                    
+                    // Show success message
+                    alert(`Location updated successfully for ${currentVesselName}`);
+                } else {
+                    throw new Error(result.error || 'Failed to update location');
+                }
+            } catch (error) {
+                console.error('Error updating location:', error);
+                alert('Failed to update location. Please try again.');
+            } finally {
+                // Restore button state
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+            }
+        }
 
         // Initialize on page load
         checkAuth();
@@ -1846,6 +2175,32 @@
                 </button>
             </div>
             <div id="locationMap" class="map-container"></div>
+        </div>
+    </div>
+    
+    <!-- Location Update Modal -->
+    <div id="locationUpdateModal" class="location-update-modal">
+        <div class="location-update-header">
+            <h3 class="location-update-title" id="updateLocationTitle">Update Location</h3>
+            <button class="location-update-close" onclick="closeLocationUpdateModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="location-update-map" id="updateLocationMap">
+            <div class="location-update-instructions">
+                <i class="fas fa-hand-pointer"></i> Drag the marker or tap on the map to set location
+            </div>
+            <div class="location-coordinates" id="locationCoordinates">
+                Lat: 0.000000<br>Lng: 0.000000
+            </div>
+        </div>
+        <div class="location-update-footer">
+            <button class="location-cancel-btn" onclick="closeLocationUpdateModal()">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button class="location-confirm-btn" onclick="confirmLocationUpdate()">
+                <i class="fas fa-check"></i> Confirm Location
+            </button>
         </div>
     </div>
     
