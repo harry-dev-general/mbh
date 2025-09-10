@@ -1306,8 +1306,6 @@
                     if (onboardingEmployee && Array.isArray(onboardingEmployee) && 
                         onboardingEmployee.includes(employeeRecordId)) {
                         
-                        // Debug boat field
-                        console.log('Boat field for booking:', fields['Boat']);
                         
                         // For onboarding: Start 30 minutes before booking start time, end 1 hour after allocation start
                         const bookingStartTime = fields['Start Time'] || '09:00 am';
