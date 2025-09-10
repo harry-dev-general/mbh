@@ -150,7 +150,7 @@ async function getVesselMaintenanceStatus() {
                 params: {
                     filterByFormula: `IS_AFTER({Created time}, '${dateFilter}')`,
                     fields: ['Vessel', 'Fuel Level Check', 'Gas Bottle Check', 'Water Tank Level', 
-                            'Overall Vessel Condition', 'Created time', 'Staff Member', 'Checklist ID'],
+                            'Overall Vessel Condition', 'Created time', 'Staff Member', 'Completed by', 'Checklist ID'],
                     sort: [{ field: 'Created time', direction: 'desc' }]
                 }
             }
@@ -165,7 +165,7 @@ async function getVesselMaintenanceStatus() {
                     filterByFormula: `IS_AFTER({Created time}, '${dateFilter}')`,
                     fields: ['Vessel', 'Fuel Level After Use', 'Gas Bottle Level After Use', 
                             'Water Tank Level After Use', 'Overall Vessel Condition After Use', 
-                            'Created time', 'Staff Member', 'Checklist ID',
+                            'Created time', 'Staff Member', 'Completed by', 'Checklist ID',
                             // Location tracking fields
                             'GPS Latitude', 'GPS Longitude', 'Location Address', 
                             'Location Accuracy', 'Location Captured'],
@@ -215,7 +215,7 @@ async function getVesselMaintenanceStatus() {
                         gas: latestPreDep.fields['Gas Bottle Check'],
                         water: latestPreDep.fields['Water Tank Level'],
                         condition: latestPreDep.fields['Overall Vessel Condition'],
-                        staffMember: latestPreDep.fields['Staff Member']
+                        staffMember: latestPreDep.fields['Completed by'] || latestPreDep.fields['Staff Member']
                     };
                     lastCheckType = 'Pre-Departure';
                     lastCheckTime = preDepTime;
@@ -229,7 +229,7 @@ async function getVesselMaintenanceStatus() {
                         gas: latestPostDep.fields['Gas Bottle Level After Use'],
                         water: latestPostDep.fields['Water Tank Level After Use'],
                         condition: latestPostDep.fields['Overall Vessel Condition After Use'],
-                        staffMember: latestPostDep.fields['Staff Member'],
+                        staffMember: latestPostDep.fields['Completed by'] || latestPostDep.fields['Staff Member'],
                         // Location data
                         location: {
                             latitude: latestPostDep.fields['GPS Latitude'],
@@ -252,7 +252,7 @@ async function getVesselMaintenanceStatus() {
                     gas: latestPreDep.fields['Gas Bottle Check'],
                     water: latestPreDep.fields['Water Tank Level'],
                     condition: latestPreDep.fields['Overall Vessel Condition'],
-                    staffMember: latestPreDep.fields['Staff Member']
+                    staffMember: latestPreDep.fields['Completed by'] || latestPreDep.fields['Staff Member']
                 };
                 lastCheckType = 'Pre-Departure';
                 lastCheckTime = new Date(latestPreDep.fields['Created time']);
@@ -266,7 +266,7 @@ async function getVesselMaintenanceStatus() {
                     gas: latestPostDep.fields['Gas Bottle Level After Use'],
                     water: latestPostDep.fields['Water Tank Level After Use'],
                     condition: latestPostDep.fields['Overall Vessel Condition After Use'],
-                    staffMember: latestPostDep.fields['Staff Member'],
+                    staffMember: latestPostDep.fields['Completed by'] || latestPostDep.fields['Staff Member'],
                     // Location data
                     location: {
                         latitude: latestPostDep.fields['GPS Latitude'],
