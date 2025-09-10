@@ -220,14 +220,14 @@ router.post('/update-location', async (req, res) => {
                 'Location Address': address || 'Manual location update',
                 'Location Captured': true,
                 'Location Accuracy': 10, // Set a default accuracy for manual updates
-                'Completed by': `${staffMemberName} (Manual Update)`,
                 'Checklist ID': `MANUAL-LOC-${Date.now()}`,
                 // Set default values for required fields
                 'Fuel Level After Use': 'Half Full',
                 'Gas Bottle Level After Use': 'Half Full',
                 'Water Tank Level After Use': 'Half Full',
                 'Overall Vessel Condition After Use': 'Good - Ready for Next Booking',
-                'Notes': 'Manual location update'
+                'Damage Report': `Manual location update by ${staffMemberName}`,
+                'Completion Status': 'Completed'
             }
         };
         

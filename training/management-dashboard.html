@@ -2075,7 +2075,9 @@
         
         function updateCoordinatesDisplay(lat, lng) {
             const coordsDiv = document.getElementById('locationCoordinates');
-            coordsDiv.innerHTML = `Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`;
+            if (coordsDiv) {
+                coordsDiv.innerHTML = `Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`;
+            }
         }
         
         function closeLocationUpdateModal() {
