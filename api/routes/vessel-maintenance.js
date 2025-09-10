@@ -194,47 +194,113 @@ router.post('/update-location', async (req, res) => {
             });
         }
         
-        // Get staff member name from email
-        let staffMemberName = userEmail;
-        if (userEmail && userEmail !== 'Unknown') {
-            // Extract name from email if in format firstname.lastname@domain.com
-            const emailParts = userEmail.split('@')[0].split('.');
-            if (emailParts.length > 1) {
-                staffMemberName = emailParts.map(part => 
-                    part.charAt(0).toUpperCase() + part.slice(1)
-                ).join(' ');
-            }
-        }
-        
         const axios = require('axios');
         const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
         const BASE_ID = 'applkAFOn2qxtu7tx';
         const POST_DEP_TABLE_ID = 'tblYkbSQGP6zveYNi';
+        const PRE_DEP_TABLE_ID = 'tbl9igu5g1bPG4Ahu';
         
-        // Create a new Post-Departure Checklist record with manual location update
-        const checklistData = {
+        // First, find the most recent Post-Departure checklist for this vessel
+        const postDepResponse = await axios.get(
+            `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
+            {
+                headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` },
+                params: {
+                    filterByFormula: `{Vessel} = '${vesselId}'`,
+                    sort: [{ field: 'Created time', direction: 'desc' }],
+                    maxRecords: 1,
+                    fields: ['Vessel', 'Created time']
+                }
+            }
+        );
+        
+        let checklistId = null;
+        let tableId = POST_DEP_TABLE_ID;
+        
+        if (postDepResponse.data.records && postDepResponse.data.records.length > 0) {
+            // Use Post-Departure checklist
+            checklistId = postDepResponse.data.records[0].id;
+            console.log(`Found Post-Departure checklist ${checklistId} for location update`);
+        } else {
+            // No Post-Departure checklist, try Pre-Departure
+            const preDepResponse = await axios.get(
+                `https://api.airtable.com/v0/${BASE_ID}/${PRE_DEP_TABLE_ID}`,
+                {
+                    headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` },
+                    params: {
+                        filterByFormula: `{Vessel} = '${vesselId}'`,
+                        sort: [{ field: 'Created time', direction: 'desc' }],
+                        maxRecords: 1,
+                        fields: ['Vessel', 'Created time']
+                    }
+                }
+            );
+            
+            if (preDepResponse.data.records && preDepResponse.data.records.length > 0) {
+                // Create a new Post-Departure checklist with location data
+                // since Pre-Departure doesn't have location fields
+                console.log('No Post-Departure checklist found, creating one for location update');
+                
+                const createData = {
+                    fields: {
+                        'Vessel': [vesselId],
+                        'GPS Latitude': latitude,
+                        'GPS Longitude': longitude,
+                        'Location Address': address || 'Manual location update',
+                        'Location Captured': true,
+                        'Location Accuracy': 10,
+                        'Checklist ID': `LOC-UPDATE-${Date.now()}`,
+                        'Completion Status': 'Location Update Only'
+                    }
+                };
+                
+                const createResponse = await axios.post(
+                    `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
+                    createData,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                
+                console.log('Created location-only checklist:', createResponse.data.id);
+                
+                // Clear cache to force refresh
+                statusCache = null;
+                cacheTimestamp = null;
+                
+                return res.json({
+                    success: true,
+                    checklistId: createResponse.data.id,
+                    message: 'Location saved successfully'
+                });
+            } else {
+                return res.status(404).json({
+                    success: false,
+                    error: 'No checklist found for this vessel'
+                });
+            }
+        }
+        
+        console.log(`Updating checklist ${checklistId} with new location data`);
+        
+        // Update ONLY the location fields on the existing checklist
+        const updateData = {
             fields: {
-                'Vessel': [vesselId],
                 'GPS Latitude': latitude,
                 'GPS Longitude': longitude,
                 'Location Address': address || 'Manual location update',
                 'Location Captured': true,
-                'Location Accuracy': 10, // Set a default accuracy for manual updates
-                'Checklist ID': `MANUAL-LOC-${Date.now()}`,
-                // Set default values for required fields
-                'Fuel Level After Use': 'Half Full',
-                'Gas Bottle Level After Use': 'Half Full',
-                'Water Tank Level After Use': 'Half Full',
-                'Overall Vessel Condition After Use': 'Good - Ready for Next Booking',
-                'Damage Report': `Manual location update by ${staffMemberName}`,
-                'Completion Status': 'Completed'
+                'Location Accuracy': 10 // Default accuracy for manual updates
             }
         };
         
-        // Create the checklist record
-        const response = await axios.post(
-            `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
-            checklistData,
+        // Update the existing checklist record
+        const response = await axios.patch(
+            `https://api.airtable.com/v0/${BASE_ID}/${tableId}/${checklistId}`,
+            updateData,
             {
                 headers: {
                     'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
@@ -243,7 +309,7 @@ router.post('/update-location', async (req, res) => {
             }
         );
         
-        console.log('Location update saved:', response.data.id);
+        console.log('Location updated on existing checklist:', response.data.id);
         
         // Clear cache to force refresh
         statusCache = null;
