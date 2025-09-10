@@ -2122,6 +2122,13 @@
                 }
                 
                 // Save to backend
+                console.log('Sending location update:', {
+                    vesselId: currentVesselId,
+                    latitude: lat,
+                    longitude: lng,
+                    address: address
+                });
+                
                 const response = await fetch('/api/vessels/update-location', {
                     method: 'POST',
                     headers: {
@@ -2138,29 +2145,23 @@
                 });
                 
                 const result = await response.json();
+                console.log('Location update response:', result);
+                console.log('Response status:', response.status);
                 
                 if (result.success) {
-                    // Close modal
-                    closeLocationUpdateModal();
-                    
-                    // Reload vessel data if on vessels tab
-                    const activeTabElement = document.querySelector('.tab-content.active');
-                    if (activeTabElement && activeTabElement.id === 'vessels-tab') {
-                        loadVesselData();
-                    }
-                    
                     // Show success message in modal before closing
-                    const modalContent = document.querySelector('#locationUpdateModal .modal-content');
+                    const modal = document.getElementById('locationUpdateModal');
                     const successDiv = document.createElement('div');
-                    successDiv.style.cssText = 'background: #4CAF50; color: white; padding: 15px; margin: 10px 0; border-radius: 4px; text-align: center;';
+                    successDiv.style.cssText = 'background: #4CAF50; color: white; padding: 15px; margin: 10px 0; border-radius: 4px; text-align: center; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 90%; max-width: 400px;';
                     successDiv.textContent = `✓ Location updated successfully for ${currentVesselName}`;
-                    modalContent.insertBefore(successDiv, modalContent.firstChild);
+                    modal.appendChild(successDiv);
                     
-                    // Close modal after delay
+                    // Close modal after delay and reload data
                     setTimeout(() => {
                         closeLocationUpdateModal();
+                        const activeTabElement = document.querySelector('.tab-content.active');
                         if (activeTabElement && activeTabElement.id === 'vessels-tab') {
-                            loadVessels();
+                            loadVesselData();
                         }
                     }, 1500);
                 } else {
@@ -2168,7 +2169,16 @@
                 }
             } catch (error) {
                 console.error('Error updating location:', error);
-                alert('Failed to update location. Please try again.');
+                
+                // Show error in modal instead of alert
+                const modal = document.getElementById('locationUpdateModal');
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = 'background: #dc3545; color: white; padding: 15px; margin: 10px 0; border-radius: 4px; text-align: center; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 90%; max-width: 400px;';
+                errorDiv.textContent = `✗ Error: ${error.message || 'Failed to update location'}`;
+                modal.appendChild(errorDiv);
+                
+                // Remove error message after 3 seconds
+                setTimeout(() => errorDiv.remove(), 3000);
             } finally {
                 // Restore button state
                 confirmBtn.innerHTML = originalText;
