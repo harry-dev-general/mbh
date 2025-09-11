@@ -28,6 +28,7 @@ Core functionality documentation:
 - **[Bookings](./02-features/bookings/)** - Booking management and deduplication
 - **[Checklists](./02-features/checklists/)** - Vessel safety checklists
 - **[SMS](./02-features/sms/)** - Notification system via Twilio
+- **[Vessel Tracking](./02-features/vessel-tracking/)** - GPS location tracking for vessels
 
 ### [03. Integrations](./03-integrations/)
 External service integrations:
@@ -87,6 +88,7 @@ External service integrations:
 - ✅ Implemented staff deselection feature
 - ✅ Updated allocation color coding
 - ✅ Launched announcements system with SMS
+- ✅ **NEW: Vessel Location Tracking** - GPS tracking in Post-Departure Checklists
 
 ### August 2025
 - Major system overhaul and stabilization
@@ -133,6 +135,7 @@ External service integrations:
 - [Booking Allocation Guide](./02-features/allocations/allocation-guide.md)
 - [Airtable API Reference](./03-integrations/airtable/api-reference.md)
 - [Deployment Guide](./01-setup/deployment-guide.md)
+- [Vessel Location Tracking](./00-overview/VESSEL_TRACKING_INDEX.md) - Complete tracking system docs
 
 ### Recent Additions
 - [Announcements System](./02-features/announcements/implementation-guide.md)
