@@ -957,6 +957,18 @@
             resetSelectGroups();
             document.getElementById('damageAlert').style.display = 'none';
             document.getElementById('itemsDescriptionGroup').style.display = 'none';
+            
+            // Check if this is a fixed location vessel
+            const fixedLocationVessels = ['Work Boat', 'Ice Cream Boat'];
+            if (fixedLocationVessels.includes(boatName)) {
+                handleFixedLocationVessel(boatName);
+            } else {
+                // Reset location capture for regular vessels
+                document.getElementById('captureLocationBtn').style.display = 'inline-block';
+                document.getElementById('locationStatus').style.display = 'none';
+                document.getElementById('locationMapPreview').style.display = 'none';
+                window.vesselLocation = null;
+            }
         }
 
         // Cancel checklist and go back
@@ -1182,6 +1194,71 @@
             }
         }
 
+        // Fixed locations for specific vessels
+        const fixedLocations = {
+            'Work Boat': {
+                latitude: -33.7972,
+                longitude: 151.2873,
+                address: 'Manly Wharf East Side, NSW 2095',
+                accuracy: 10,
+                isFixed: true
+            },
+            'Ice Cream Boat': {
+                latitude: -33.7983,
+                longitude: 151.2847,
+                address: 'Manly Cove Marina, NSW 2095',
+                accuracy: 10,
+                isFixed: true
+            }
+        };
+        
+        // Handle fixed location vessels
+        function handleFixedLocationVessel(vesselName) {
+            const fixedLocation = fixedLocations[vesselName];
+            if (!fixedLocation) return;
+            
+            // Set the fixed location
+            window.vesselLocation = {
+                ...fixedLocation,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Hide capture button
+            document.getElementById('captureLocationBtn').style.display = 'none';
+            
+            // Show fixed location status
+            const statusDiv = document.getElementById('locationStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'location-status location-success';
+            statusDiv.innerHTML = `
+                <i class="fas fa-lock"></i> Fixed Location
+                <br><small>${fixedLocation.address}</small>
+                <br><small>This vessel has a permanent mooring location</small>
+            `;
+            
+            // Show map preview
+            const mapDiv = document.getElementById('locationMapPreview');
+            mapDiv.style.display = 'block';
+            mapDiv.style.height = '300px';
+            
+            // Initialize map with fixed location
+            if (typeof google !== 'undefined' && google.maps) {
+                const map = new google.maps.Map(mapDiv, {
+                    center: { lat: fixedLocation.latitude, lng: fixedLocation.longitude },
+                    zoom: 15,
+                    disableDefaultUI: true,
+                    draggable: false,
+                    scrollwheel: false
+                });
+                
+                new google.maps.Marker({
+                    position: { lat: fixedLocation.latitude, lng: fixedLocation.longitude },
+                    map: map,
+                    title: vesselName
+                });
+            }
+        }
+        
         // Location tracking functions
         window.vesselLocation = null; // Store location data globally
         

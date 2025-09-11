@@ -705,6 +705,34 @@
                     vesselData = data.vessels;
                     console.log('Loaded vessel data:', vesselData);
                     
+                    // Fixed locations for specific vessels
+                    const fixedLocations = {
+                        'Work Boat': {
+                            latitude: -33.7972,
+                            longitude: 151.2873,
+                            address: 'Manly Wharf East Side, NSW 2095',
+                            captured: true,
+                            isFixed: true
+                        },
+                        'Ice Cream Boat': {
+                            latitude: -33.7983,
+                            longitude: 151.2847,
+                            address: 'Manly Cove Marina, NSW 2095',
+                            captured: true,
+                            isFixed: true
+                        }
+                    };
+                    
+                    // Override locations for fixed vessels
+                    vesselData.forEach(vessel => {
+                        if (fixedLocations[vessel.name]) {
+                            if (!vessel.currentStatus) {
+                                vessel.currentStatus = {};
+                            }
+                            vessel.currentStatus.location = fixedLocations[vessel.name];
+                        }
+                    });
+                    
                     // Log vessels with location data
                     const vesselsWithLocation = vesselData.filter(v => 
                         v.currentStatus?.location?.captured
@@ -901,11 +929,15 @@
                     });
                     
                     // Create info window with location details
-                    const timeSince = (location.lastModified || vessel.lastCheck?.time) ? 
-                        new Date(location.lastModified || vessel.lastCheck.time).toLocaleString('en-AU', {
-                            dateStyle: 'short',
-                            timeStyle: 'short'
-                        }) : 'Unknown';
+                    const timeSince = location.isFixed ? 
+                        'Fixed Location' :
+                        ((location.lastModified || vessel.lastCheck?.time) ? 
+                            new Date(location.lastModified || vessel.lastCheck.time).toLocaleString('en-AU', {
+                                dateStyle: 'short',
+                                timeStyle: 'short'
+                            }) : 'Unknown');
+                    
+                    const updateIcon = location.isFixed ? '🔒' : '📊';
                     
                     const infoWindow = new google.maps.InfoWindow({
                         content: `
@@ -913,7 +945,7 @@
                                 <h3>${vessel.name} - Current Location</h3>
                                 <div class="vessel-name">${vessel.type}</div>
                                 <div class="detail"><strong>📍 Address:</strong> ${location.address || 'Unknown'}</div>
-                                <div class="detail"><strong>📊 Last Updated:</strong> ${timeSince}</div>
+                                <div class="detail"><strong>${updateIcon} Last Updated:</strong> ${timeSince}</div>
                                 <hr style="margin: 10px 0;">
                                 <div class="detail"><strong>⛽ Fuel:</strong> ${vessel.currentStatus.fuel?.level || 'Unknown'}</div>
                                 <div class="detail"><strong>🔥 Gas:</strong> ${vessel.currentStatus.gas?.level || 'Unknown'}</div>

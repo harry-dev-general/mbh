@@ -1582,6 +1582,32 @@
             const card = document.createElement('div');
             card.className = 'vessel-card';
             
+            // Fixed locations for specific vessels
+            const fixedLocations = {
+                'Work Boat': {
+                    latitude: -33.7972,
+                    longitude: 151.2873,
+                    address: 'Manly Wharf East Side, NSW 2095',
+                    captured: true,
+                    isFixed: true
+                },
+                'Ice Cream Boat': {
+                    latitude: -33.7983,
+                    longitude: 151.2847,
+                    address: 'Manly Cove Marina, NSW 2095',
+                    captured: true,
+                    isFixed: true
+                }
+            };
+            
+            // Override location for fixed vessels
+            if (fixedLocations[vessel.name]) {
+                if (!vessel.currentStatus) {
+                    vessel.currentStatus = {};
+                }
+                vessel.currentStatus.location = fixedLocations[vessel.name];
+            }
+            
             // Determine status class and text
             let statusClass = 'status-unknown';
             let statusText = 'Unknown';
@@ -1621,18 +1647,23 @@
                                 <i class="fas fa-map-marker-alt"></i> ${vessel.currentStatus.location.address || 'Location captured'}
                             </div>
                             <div class="vessel-location-time">
-                                <i class="fas fa-clock"></i> Updated: ${(vessel.currentStatus.location.lastModified || vessel.lastCheck?.time) ? new Date(vessel.currentStatus.location.lastModified || vessel.lastCheck.time).toLocaleString('en-AU', {
-                                    dateStyle: 'short',
-                                    timeStyle: 'short'
-                                }) : 'Unknown'}
+                                ${vessel.currentStatus.location.isFixed ? 
+                                    '<i class="fas fa-lock"></i> Fixed Location' :
+                                    `<i class="fas fa-clock"></i> Updated: ${(vessel.currentStatus.location.lastModified || vessel.lastCheck?.time) ? new Date(vessel.currentStatus.location.lastModified || vessel.lastCheck.time).toLocaleString('en-AU', {
+                                        dateStyle: 'short',
+                                        timeStyle: 'short'
+                                    }) : 'Unknown'}`
+                                }
                             </div>
                         </div>
                         <button class="vessel-location-map-btn" onclick="showVesselLocationMap('${vessel.id}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude}, '${vessel.name.replace(/'/g, "\\'")}')">
                             <i class="fas fa-map"></i> Map
                         </button>
-                        <button class="update-location-btn" onclick="updateVesselLocation('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude})">
-                            <i class="fas fa-map-pin"></i> Update
-                        </button>
+                        ${!vessel.currentStatus.location.isFixed ? `
+                            <button class="update-location-btn" onclick="updateVesselLocation('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude})">
+                                <i class="fas fa-map-pin"></i> Update
+                            </button>
+                        ` : ''}
                     </div>
                 ` : `
                     <div class="vessel-location">

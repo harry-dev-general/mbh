@@ -2102,7 +2102,33 @@
                 }
                 
                 // Find the vessel by boat ID
-                const vessel = data.vessels.find(v => v.id === boatId);
+                let vessel = data.vessels.find(v => v.id === boatId);
+                
+                // Fixed locations for specific vessels
+                const fixedLocations = {
+                    'Work Boat': {
+                        latitude: -33.7972,
+                        longitude: 151.2873,
+                        address: 'Manly Wharf East Side, NSW 2095',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Ice Cream Boat': {
+                        latitude: -33.7983,
+                        longitude: 151.2847,
+                        address: 'Manly Cove Marina, NSW 2095',
+                        captured: true,
+                        isFixed: true
+                    }
+                };
+                
+                // Override location for fixed vessels
+                if (vessel && fixedLocations[vessel.name]) {
+                    if (!vessel.currentStatus) {
+                        vessel.currentStatus = {};
+                    }
+                    vessel.currentStatus.location = fixedLocations[vessel.name];
+                }
                 
                 // Update vessel name
                 const vesselNameElement = document.getElementById(`vesselName-${shiftId}`);
@@ -2129,11 +2155,15 @@
                     }
                     
                     const location = vessel.currentStatus.location;
-                    const lastUpdate = (location.lastModified || vessel.lastCheck?.time) ? 
-                        new Date(location.lastModified || vessel.lastCheck.time).toLocaleString('en-AU', {
-                            dateStyle: 'short',
-                            timeStyle: 'short'
-                        }) : 'Unknown';
+                    const lastUpdate = location.isFixed ? 
+                        'Fixed Location' :
+                        ((location.lastModified || vessel.lastCheck?.time) ? 
+                            new Date(location.lastModified || vessel.lastCheck.time).toLocaleString('en-AU', {
+                                dateStyle: 'short',
+                                timeStyle: 'short'
+                            }) : 'Unknown');
+                    
+                    const updateIcon = location.isFixed ? '🔒' : '📊';
                     
                     // Update the content with location details
                     locationDiv.innerHTML = `
@@ -2141,7 +2171,7 @@
                         <div class="vessel-location-content">
                             <div class="vessel-location-details">
                                 <div><strong>Address:</strong> ${location.address || 'Unknown'}</div>
-                                <div><strong>Last Updated:</strong> ${lastUpdate}</div>
+                                <div><strong>${updateIcon} Last Updated:</strong> ${lastUpdate}</div>
                             </div>
                             <div id="vesselMap-${shiftId}" class="vessel-location-map"></div>
                         </div>
