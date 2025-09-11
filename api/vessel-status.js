@@ -262,6 +262,7 @@ async function getVesselMaintenanceStatus() {
                 console.log(`${boatName}: Only pre-departure checklist available`);
             } else if (latestPostDep) {
                 // Only post-departure exists
+                console.log(`${boatName} Last modified time:`, latestPostDep.fields['Last modified time']);
                 currentStatus = {
                     fuel: latestPostDep.fields['Fuel Level After Use'],
                     gas: latestPostDep.fields['Gas Bottle Level After Use'],
@@ -269,13 +270,14 @@ async function getVesselMaintenanceStatus() {
                     condition: latestPostDep.fields['Overall Vessel Condition After Use'],
                     staffMember: latestPostDep.fields['Completed by'] || latestPostDep.fields['Staff Member'],
                     // Location data
-                    location: {
+                    location: latestPostDep.fields['Location Captured'] ? {
                         latitude: latestPostDep.fields['GPS Latitude'],
                         longitude: latestPostDep.fields['GPS Longitude'],
                         address: latestPostDep.fields['Location Address'],
                         accuracy: latestPostDep.fields['Location Accuracy'],
-                        captured: latestPostDep.fields['Location Captured']
-                    }
+                        captured: latestPostDep.fields['Location Captured'],
+                        lastModified: latestPostDep.fields['Last modified time'] || latestPostDep.fields['Created time']
+                    } : null
                 };
                 lastCheckType = 'Post-Departure';
                 lastCheckTime = new Date(latestPostDep.fields['Created time']);
