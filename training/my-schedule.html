@@ -2107,16 +2107,16 @@
                 // Fixed locations for specific vessels
                 const fixedLocations = {
                     'Work Boat': {
-                        latitude: -33.7972,
-                        longitude: 151.2873,
-                        address: 'Manly Wharf East Side, NSW 2095',
+                        latitude: -33.8126,
+                        longitude: 151.2738,
+                        address: 'Fergusons Marina',
                         captured: true,
                         isFixed: true
                     },
                     'Ice Cream Boat': {
-                        latitude: -33.7983,
-                        longitude: 151.2847,
-                        address: 'Manly Cove Marina, NSW 2095',
+                        latitude: -33.8058,
+                        longitude: 151.2485,
+                        address: 'Dalbora Marina The Spit, A Arm',
                         captured: true,
                         isFixed: true
                     }
@@ -2156,7 +2156,7 @@
                     
                     const location = vessel.currentStatus.location;
                     const lastUpdate = location.isFixed ? 
-                        'Fixed Location' :
+                        'Marina Berth' :
                         ((location.lastModified || vessel.lastCheck?.time) ? 
                             new Date(location.lastModified || vessel.lastCheck.time).toLocaleString('en-AU', {
                                 dateStyle: 'short',

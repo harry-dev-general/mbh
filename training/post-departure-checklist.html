@@ -1197,16 +1197,16 @@
         // Fixed locations for specific vessels
         const fixedLocations = {
             'Work Boat': {
-                latitude: -33.7972,
-                longitude: 151.2873,
-                address: 'Manly Wharf East Side, NSW 2095',
+                latitude: -33.8126,
+                longitude: 151.2738,
+                address: 'Fergusons Marina',
                 accuracy: 10,
                 isFixed: true
             },
             'Ice Cream Boat': {
-                latitude: -33.7983,
-                longitude: 151.2847,
-                address: 'Manly Cove Marina, NSW 2095',
+                latitude: -33.8058,
+                longitude: 151.2485,
+                address: 'Dalbora Marina The Spit, A Arm',
                 accuracy: 10,
                 isFixed: true
             }
@@ -1231,9 +1231,9 @@
             statusDiv.style.display = 'block';
             statusDiv.className = 'location-status location-success';
             statusDiv.innerHTML = `
-                <i class="fas fa-lock"></i> Fixed Location
+                <i class="fas fa-lock"></i> Marina Berth
                 <br><small>${fixedLocation.address}</small>
-                <br><small>This vessel has a permanent mooring location</small>
+                <br><small>This vessel has a permanent marina berth</small>
             `;
             
             // Show map preview

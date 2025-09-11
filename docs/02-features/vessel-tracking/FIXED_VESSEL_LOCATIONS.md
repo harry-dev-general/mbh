@@ -1,46 +1,46 @@
-# Fixed Vessel Locations
+# Fixed Vessel Locations - Marina Berths
 
 **Implementation Date**: September 11, 2025  
-**Version**: 1.0
+**Version**: 1.1
 
 ## Overview
 
-Certain vessels in the MBH fleet have permanent mooring locations that should not be updated dynamically through Post-Departure Checklists. This document describes the implementation of fixed locations for these vessels.
+Certain vessels in the MBH fleet have permanent marina berths that should not be updated dynamically through Post-Departure Checklists. This document describes the implementation of fixed marina berth locations for these vessels.
 
-## Fixed Location Vessels
+## Marina Berth Vessels
 
 ### Work Boat
-- **Location**: Manly Wharf East Side
-- **Coordinates**: -33.7972, 151.2873
-- **Address**: Manly Wharf East Side, NSW 2095
+- **Location**: Fergusons Marina
+- **Coordinates**: -33.8126, 151.2738
+- **Address**: Fergusons Marina
 
 ### Ice Cream Boat
-- **Location**: Manly Cove Marina
-- **Coordinates**: -33.7983, 151.2847
-- **Address**: Manly Cove Marina, NSW 2095
+- **Location**: Dalbora Marina The Spit, A Arm
+- **Coordinates**: -33.8058, 151.2485
+- **Address**: Dalbora Marina The Spit, A Arm
 
 ## Implementation Details
 
 ### 1. Management Dashboard
-- Displays "Fixed Location" with lock icon (🔒) instead of timestamp
-- "Update" button is hidden for fixed location vessels
+- Displays "Marina Berth" with lock icon (🔒) instead of timestamp
+- "Update" button is hidden for marina berth vessels
 - Map button still available to view location
 
 ### 2. Vessel Locations Map
-- Fixed locations are automatically applied when data loads
-- Info windows show "🔒 Fixed Location" instead of last update time
-- Vessels appear on map at their permanent positions
+- Marina berth locations are automatically applied when data loads
+- Info windows show "🔒 Marina Berth" instead of last update time
+- Vessels appear on map at their permanent marina positions
 
 ### 3. My Schedule Page
-- Booking allocation popups show fixed locations
-- Display "🔒 Fixed Location" instead of timestamp
-- Mini-maps show the permanent mooring position
+- Booking allocation popups show marina berth locations
+- Display "🔒 Marina Berth" instead of timestamp
+- Mini-maps show the permanent marina berth position
 
 ### 4. Post-Departure Checklist
-- Location capture button is hidden for fixed vessels
-- Displays fixed location automatically with lock icon
-- Shows message: "This vessel has a permanent mooring location"
-- Fixed location is still saved to Airtable for consistency
+- Location capture button is hidden for marina berth vessels
+- Displays marina berth location automatically with lock icon
+- Shows message: "This vessel has a permanent marina berth"
+- Marina berth location is still saved to Airtable for consistency
 
 ## Technical Implementation
 
@@ -48,16 +48,16 @@ Certain vessels in the MBH fleet have permanent mooring locations that should no
 ```javascript
 const fixedLocations = {
     'Work Boat': {
-        latitude: -33.7972,
-        longitude: 151.2873,
-        address: 'Manly Wharf East Side, NSW 2095',
+        latitude: -33.8126,
+        longitude: 151.2738,
+        address: 'Fergusons Marina',
         captured: true,
         isFixed: true
     },
     'Ice Cream Boat': {
-        latitude: -33.7983,
-        longitude: 151.2847,
-        address: 'Manly Cove Marina, NSW 2095',
+        latitude: -33.8058,
+        longitude: 151.2485,
+        address: 'Dalbora Marina The Spit, A Arm',
         captured: true,
         isFixed: true
     }
@@ -80,29 +80,29 @@ if (fixedLocations[vessel.name]) {
 ### Staff Perspective
 1. When completing Post-Departure Checklist for Work Boat or Ice Cream Boat:
    - No location capture button appears
-   - Fixed location is displayed automatically
+   - Marina berth location is displayed automatically
    - Location is saved with checklist submission
 
 2. When viewing vessel locations:
-   - Fixed vessels show lock icon
+   - Marina berth vessels show lock icon
    - No "last updated" timestamp
-   - Clear indication of permanent location
+   - Clear indication of permanent marina berth
 
 ### Management Perspective
-1. Cannot manually update location for fixed vessels
-2. Always see current fixed location on dashboard
-3. Historical checklists still record the fixed location
+1. Cannot manually update location for marina berth vessels
+2. Always see current marina berth location on dashboard
+3. Historical checklists still record the marina berth location
 
 ## Benefits
 
-1. **Consistency**: These vessels always show at correct locations
-2. **Clarity**: Clear visual distinction between fixed and dynamic locations
-3. **Simplicity**: Staff don't need to capture location for stationary vessels
+1. **Consistency**: These vessels always show at correct marina locations
+2. **Clarity**: Clear visual distinction between marina berths and dynamic locations
+3. **Simplicity**: Staff don't need to capture location for marina-berthed vessels
 4. **Accuracy**: Prevents accidental location updates
 
-## Adding New Fixed Vessels
+## Adding New Marina Berth Vessels
 
-To add a new vessel with fixed location:
+To add a new vessel with marina berth:
 
 1. Add to `fixedLocations` object in each file:
    - `management-dashboard.html`
@@ -123,10 +123,10 @@ To add a new vessel with fixed location:
 
 ## Maintenance Notes
 
-- Fixed locations are hardcoded in frontend files
+- Marina berth locations are hardcoded in frontend files
 - No database changes required
 - API continues to work normally
-- Fixed locations override any dynamic data
+- Marina berth locations override any dynamic data
 
 ## Related Documentation
 
