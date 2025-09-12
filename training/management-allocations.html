@@ -2378,6 +2378,15 @@
             if (deleteBtn) {
                 deleteBtn.style.display = 'none';
             }
+            
+            // Show all field groups (they might be hidden from edit mode)
+            const bookingGroup = document.getElementById('bookingGroup');
+            const roleGroup = document.getElementById('roleGroup');
+            const notesGroup = document.getElementById('notes')?.parentElement;
+            
+            if (bookingGroup) bookingGroup.style.display = 'block';
+            if (roleGroup) roleGroup.style.display = 'block';
+            if (notesGroup) notesGroup.style.display = 'block';
         }
         
         // Delete shift allocation
@@ -2440,7 +2449,8 @@
             document.getElementById('allocationDate').value = allocation['Shift Date'];
             document.getElementById('startTime').value = allocation['Start Time'] || '09:00';
             document.getElementById('endTime').value = allocation['End Time'] || '17:00';
-            document.getElementById('notes').value = allocation['Notes'] || '';
+            // Notes field is not available in the Staff Allocations table
+            document.getElementById('notes').value = '';
             
             // Populate staff dropdown for the shift date
             populateStaffForDate(allocation['Shift Date']);
@@ -2466,6 +2476,12 @@
             // Hide booking-specific fields
             document.getElementById('bookingGroup').style.display = 'none';
             document.getElementById('roleGroup').style.display = 'none';
+            
+            // Hide notes field (not available in Staff Allocations table)
+            const notesGroup = document.getElementById('notes')?.parentElement;
+            if (notesGroup) {
+                notesGroup.style.display = 'none';
+            }
             
             // Update submit button text
             const submitBtn = document.querySelector('#allocationForm button[type="submit"]');
@@ -2632,7 +2648,6 @@
                     const shiftDate = document.getElementById('allocationDate').value;
                     const startTime = document.getElementById('startTime').value;
                     const endTime = document.getElementById('endTime').value;
-                    const notes = document.getElementById('notes').value;
                     const shiftType = document.getElementById('allocationType').value;
                     
                     // Update the existing allocation record
@@ -2651,7 +2666,6 @@
                                     'Start Time': startTime,
                                     'End Time': endTime,
                                     'Shift Type': shiftType,
-                                    'Notes': notes,
                                     'Response Date': new Date().toISOString(),
                                     'Response Method': 'Portal Edit'
                                 }
