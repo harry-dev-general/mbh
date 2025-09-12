@@ -1771,8 +1771,13 @@
                         statusIcon = '⏳';
                     }
                     
-                    // Style the block to work with flex layout
+                    // Style the block to span multiple hours
                     allocationBlock.style.cssText = `
+                        position: absolute;
+                        top: 2px;
+                        left: 2px;
+                        right: 2px;
+                        height: ${blockHeight}px;
                         background: ${backgroundColor};
                         color: white;
                         padding: 4px 6px;
@@ -1785,9 +1790,7 @@
                         white-space: normal;
                         border: 2px solid ${borderColor};
                         opacity: ${responseStatus === 'Pending' || !responseStatus ? '0.9' : '1'};
-                        margin: 2px;
-                        flex: 1 1 auto;
-                        min-width: 0;
+                        z-index: 10;
                     `;
                     
                     allocationBlock.innerHTML = `
@@ -1807,12 +1810,85 @@
                         openAllocationEditModal(record, employee);
                     };
                     
+                    // Make the parent cell position relative for absolute positioning
+                    startCell.style.position = 'relative';
+                    
+                    // Store allocation data for overlap detection
+                    allocationBlock.dataset.startHour = startHour;
+                    allocationBlock.dataset.endHour = endHour + (endMin > 0 ? 1 : 0); // Round up if there are minutes
+                    allocationBlock.dataset.date = dateStr;
+                    
                     // Add allocation block to the cell
                     startCell.appendChild(allocationBlock);
                 }
             });
             
             console.log('Rendered', allocationsData.length, 'allocations on grid');
+            
+            // Handle overlapping allocations
+            handleOverlappingAllocations();
+        }
+        
+        // Handle overlapping allocations by adjusting their positions
+        function handleOverlappingAllocations() {
+            // Group allocations and bookings by date
+            const allocationsByDate = {};
+            document.querySelectorAll('.allocation-block, .booking-block').forEach(block => {
+                const date = block.dataset.date;
+                if (!allocationsByDate[date]) {
+                    allocationsByDate[date] = [];
+                }
+                allocationsByDate[date].push(block);
+            });
+            
+            // For each date, check for overlaps
+            Object.keys(allocationsByDate).forEach(date => {
+                const blocks = allocationsByDate[date];
+                
+                // Sort blocks by start hour
+                blocks.sort((a, b) => parseInt(a.dataset.startHour) - parseInt(b.dataset.startHour));
+                
+                // Find overlapping groups
+                const groups = [];
+                blocks.forEach(block => {
+                    const blockStart = parseInt(block.dataset.startHour);
+                    const blockEnd = parseInt(block.dataset.endHour);
+                    
+                    // Find a group this block overlaps with
+                    let foundGroup = false;
+                    for (let group of groups) {
+                        // Check if this block overlaps with any block in the group
+                        const overlaps = group.some(groupBlock => {
+                            const groupStart = parseInt(groupBlock.dataset.startHour);
+                            const groupEnd = parseInt(groupBlock.dataset.endHour);
+                            return (blockStart < groupEnd && blockEnd > groupStart);
+                        });
+                        
+                        if (overlaps) {
+                            group.push(block);
+                            foundGroup = true;
+                            break;
+                        }
+                    }
+                    
+                    // If no overlapping group found, create a new group
+                    if (!foundGroup) {
+                        groups.push([block]);
+                    }
+                });
+                
+                // Adjust positions for each overlapping group
+                groups.forEach(group => {
+                    if (group.length > 1) {
+                        const width = Math.floor(100 / group.length);
+                        group.forEach((block, index) => {
+                            block.style.left = `${index * width}%`;
+                            block.style.width = `${width - 1}%`; // -1% for gap
+                            block.style.right = 'auto';
+                        });
+                    }
+                });
+            });
         }
 
         // Render bookings on the grid
@@ -1865,6 +1941,9 @@
             });
             
             console.log('Rendered', bookingsData.length, 'bookings on grid');
+            
+            // Handle overlapping allocations and bookings
+            handleOverlappingAllocations();
         }
         
         // Create a booking block on the grid
@@ -1930,9 +2009,6 @@
                 opacity: ${opacity};
                 border: 2px solid ${borderColor};
                 box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-                margin: 2px;
-                flex: 1 1 auto;
-                min-width: 0;
             `;
             
             const typeLabel = type === 'onboarding' ? '🚢 ON' : '🏁 OFF';
@@ -1972,6 +2048,14 @@
                 e.stopPropagation();
                 openBookingAllocationModal(bookingRecord, type);
             };
+            
+            // Store booking data for overlap detection
+            bookingBlock.dataset.startHour = hour;
+            bookingBlock.dataset.endHour = hour + 1; // Bookings are typically 1 hour
+            bookingBlock.dataset.date = dateStr;
+            
+            // Make the cell position relative for absolute positioning
+            cell.style.position = 'relative';
             
             cell.appendChild(bookingBlock);
         }
