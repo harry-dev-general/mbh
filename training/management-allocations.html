@@ -1769,6 +1769,11 @@
                     
                     // Style the block to span the correct duration
                     allocationBlock.style.cssText = `
+                        position: absolute;
+                        top: 2px;
+                        left: 2px;
+                        right: 2px;
+                        height: ${blockHeight}px;
                         background: ${backgroundColor};
                         color: white;
                         padding: 4px 6px;
@@ -1778,9 +1783,10 @@
                         box-shadow: 0 1px 3px rgba(0,0,0,0.2);
                         overflow: hidden;
                         text-overflow: ellipsis;
-                        white-space: nowrap;
+                        white-space: normal;
                         border: 2px solid ${borderColor};
                         opacity: ${responseStatus === 'Pending' || !responseStatus ? '0.9' : '1'};
+                        z-index: 10;
                     `;
                     
                     allocationBlock.innerHTML = `
@@ -2389,7 +2395,7 @@
             
             try {
                 // Delete the allocation from Airtable
-                const deleteResponse = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`, {
+                const deleteResponse = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${AIRTABLE_API_KEY}`
