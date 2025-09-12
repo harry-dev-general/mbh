@@ -356,6 +356,8 @@
             z-index: 20;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             position: relative;
+            transform: scale(1.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         
         .allocation-block:hover .allocation-info,
@@ -1798,12 +1800,12 @@
                         ${allocation['Role'] ? `<br><small style="opacity: 0.8;">${allocation['Role']}</small>` : ''}
                     `;
                     
-                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours\nStatus: ${responseStatus}`;
+                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours\nStatus: ${responseStatus}\n\nClick to edit allocation times`;
                     
-                    // Add click handler to reassign shift
+                    // Add click handler to edit allocation
                     allocationBlock.onclick = (e) => {
                         e.stopPropagation();
-                        openShiftReassignmentModal(record, employee);
+                        openAllocationEditModal(record, employee);
                     };
                     
                     // Make the parent cell position relative for absolute positioning
@@ -2350,6 +2352,7 @@
             // Reset form flags
             const form = document.getElementById('allocationForm');
             delete form.dataset.isReassignment;
+            delete form.dataset.isEdit;
             delete form.dataset.allocationId;
             
             // Re-enable all fields
@@ -2421,6 +2424,63 @@
                 console.error('Error deleting shift allocation:', error);
                 alert('Error deleting shift allocation: ' + error.message);
             }
+        }
+        
+        // Open allocation edit modal
+        function openAllocationEditModal(allocationRecord, currentEmployee) {
+            const allocation = allocationRecord.fields;
+            const allocationId = allocationRecord.id;
+            
+            // Set modal title to indicate editing
+            const modalTitle = document.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Allocation: ${allocation['Name'] || 'Shift'}`;
+            
+            // Pre-fill form with existing allocation data
+            document.getElementById('allocationType').value = allocation['Shift Type'] || 'General Operations';
+            document.getElementById('allocationDate').value = allocation['Shift Date'];
+            document.getElementById('startTime').value = allocation['Start Time'] || '09:00';
+            document.getElementById('endTime').value = allocation['End Time'] || '17:00';
+            document.getElementById('notes').value = allocation['Notes'] || '';
+            
+            // Populate staff dropdown for the shift date
+            populateStaffForDate(allocation['Shift Date']);
+            
+            // Pre-select current employee if exists
+            setTimeout(() => {
+                const employeeSelect = document.getElementById('employeeSelect');
+                if (allocation['Employee'] && allocation['Employee'][0]) {
+                    employeeSelect.value = allocation['Employee'][0];
+                }
+            }, 100);
+            
+            // Store the allocation ID for update
+            document.getElementById('allocationForm').dataset.allocationId = allocationId;
+            document.getElementById('allocationForm').dataset.isEdit = 'true';
+            
+            // Enable all fields for editing
+            document.getElementById('allocationType').disabled = false;
+            document.getElementById('allocationDate').disabled = false;
+            document.getElementById('startTime').disabled = false;
+            document.getElementById('endTime').disabled = false;
+            
+            // Hide booking-specific fields
+            document.getElementById('bookingGroup').style.display = 'none';
+            document.getElementById('roleGroup').style.display = 'none';
+            
+            // Update submit button text
+            const submitBtn = document.querySelector('#allocationForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'Update Allocation';
+            }
+            
+            // Show delete button for editing
+            const deleteBtn = document.getElementById('deleteAllocationBtn');
+            if (deleteBtn) {
+                deleteBtn.style.display = 'block';
+            }
+            
+            // Open the modal
+            document.getElementById('allocationModal').style.display = 'block';
         }
         
         // Open shift reassignment modal for general allocations
@@ -2546,15 +2606,16 @@
             }
             isSubmitting = true;
             
-            // Check if this is a reassignment
+            // Check if this is a reassignment or edit
             const isReassignment = e.target.dataset.isReassignment === 'true';
+            const isEdit = e.target.dataset.isEdit === 'true';
             const allocationId = e.target.dataset.allocationId;
             
             // Show loading state on button
             const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn ? submitBtn.textContent : (isReassignment ? 'Reassign Shift' : 'Create Allocation');
+            const originalText = submitBtn ? submitBtn.textContent : (isReassignment ? 'Reassign Shift' : (isEdit ? 'Update Allocation' : 'Create Allocation'));
             if (submitBtn) {
-                submitBtn.textContent = isReassignment ? 'Reassigning...' : 'Creating...';
+                submitBtn.textContent = isReassignment ? 'Reassigning...' : (isEdit ? 'Updating...' : 'Creating...');
                 submitBtn.disabled = true;
             }
             
@@ -2564,6 +2625,61 @@
             const employeeId = document.getElementById('employeeSelect').value;
             
             try {
+                // Handle editing of existing shift
+                if (isEdit && allocationId) {
+                    console.log('Editing shift allocation:', allocationId);
+                    
+                    const shiftDate = document.getElementById('allocationDate').value;
+                    const startTime = document.getElementById('startTime').value;
+                    const endTime = document.getElementById('endTime').value;
+                    const notes = document.getElementById('notes').value;
+                    const shiftType = document.getElementById('allocationType').value;
+                    
+                    // Update the existing allocation record
+                    const updateResponse = await fetchWithRetry(
+                        `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`,
+                        {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                fields: {
+                                    'Employee': [employeeId],
+                                    'Shift Date': shiftDate,
+                                    'Start Time': startTime,
+                                    'End Time': endTime,
+                                    'Shift Type': shiftType,
+                                    'Notes': notes,
+                                    'Response Date': new Date().toISOString(),
+                                    'Response Method': 'Portal Edit'
+                                }
+                            })
+                        }
+                    );
+                    
+                    if (!updateResponse.ok) {
+                        const errorText = await updateResponse.text();
+                        throw new Error(`Failed to update allocation: ${errorText}`);
+                    }
+                    
+                    alert('Allocation updated successfully!');
+                    
+                    // Close modal and refresh
+                    closeAllocationModal();
+                    
+                    // Clear edit flags
+                    delete e.target.dataset.isEdit;
+                    delete e.target.dataset.allocationId;
+                    
+                    // Reload allocations to show updated data
+                    await loadWeekData();
+                    
+                    isSubmitting = false;
+                    return;
+                }
+                
                 // Handle reassignment of existing shift
                 if (isReassignment && allocationId) {
                     console.log('Reassigning shift allocation:', allocationId, 'to employee:', employeeId);
