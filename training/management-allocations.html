@@ -2336,11 +2336,15 @@
 
         // Modal functions
         function openAllocationModal() {
-            document.getElementById('allocationModal').classList.add('show');
+            const modal = document.getElementById('allocationModal');
+            modal.classList.add('show');
+            modal.style.display = 'block';
         }
 
         function closeAllocationModal() {
-            document.getElementById('allocationModal').classList.remove('show');
+            const modal = document.getElementById('allocationModal');
+            modal.classList.remove('show');
+            modal.style.display = 'none';
             document.getElementById('allocationForm').reset();
             
             // Reset modal title
@@ -2496,7 +2500,7 @@
             }
             
             // Open the modal
-            document.getElementById('allocationModal').style.display = 'block';
+            openAllocationModal();
         }
         
         // Open shift reassignment modal for general allocations
