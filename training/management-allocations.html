@@ -340,6 +340,8 @@
             overflow: hidden;
             z-index: 10;
             transition: all 0.2s ease;
+            margin: 2px;
+            position: relative;
         }
         
         .allocation-block.booking {
@@ -355,7 +357,6 @@
         .allocation-block:hover {
             z-index: 20;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            position: relative;
             transform: scale(1.02);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -390,12 +391,13 @@
             text-overflow: ellipsis;
             cursor: pointer;
             transition: all 0.2s ease;
+            margin: 2px;
+            position: relative;
         }
         
         .booking-block:hover {
             z-index: 15;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            position: relative;
         }
         
         .booking-block:hover > div {
@@ -1769,13 +1771,8 @@
                         statusIcon = '⏳';
                     }
                     
-                    // Style the block to span the correct duration
+                    // Style the block to work with flex layout
                     allocationBlock.style.cssText = `
-                        position: absolute;
-                        top: 2px;
-                        left: 2px;
-                        right: 2px;
-                        height: ${blockHeight}px;
                         background: ${backgroundColor};
                         color: white;
                         padding: 4px 6px;
@@ -1788,7 +1785,9 @@
                         white-space: normal;
                         border: 2px solid ${borderColor};
                         opacity: ${responseStatus === 'Pending' || !responseStatus ? '0.9' : '1'};
-                        z-index: 10;
+                        margin: 2px;
+                        flex: 1 1 auto;
+                        min-width: 0;
                     `;
                     
                     allocationBlock.innerHTML = `
@@ -1796,8 +1795,8 @@
                             ${statusIcon} ${employee.fields['First Name'] || employee.fields['Name'] || 'Unknown'}
                         </strong>
                         <div style="font-size: 10px;">${startTime} - ${endTime}</div>
-                        <small style="opacity: 0.9;">${shiftType}</small>
-                        ${allocation['Role'] ? `<br><small style="opacity: 0.8;">${allocation['Role']}</small>` : ''}
+                        <div style="font-size: 9px; opacity: 0.9;">${durationHours}h ${shiftType}</div>
+                        ${allocation['Role'] ? `<small style="opacity: 0.8;">${allocation['Role']}</small>` : ''}
                     `;
                     
                     allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours\nStatus: ${responseStatus}\n\nClick to edit allocation times`;
@@ -1808,8 +1807,7 @@
                         openAllocationEditModal(record, employee);
                     };
                     
-                    // Make the parent cell position relative for absolute positioning
-                    startCell.style.position = 'relative';
+                    // Add allocation block to the cell
                     startCell.appendChild(allocationBlock);
                 }
             });
@@ -1932,6 +1930,9 @@
                 opacity: ${opacity};
                 border: 2px solid ${borderColor};
                 box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                margin: 2px;
+                flex: 1 1 auto;
+                min-width: 0;
             `;
             
             const typeLabel = type === 'onboarding' ? '🚢 ON' : '🏁 OFF';
