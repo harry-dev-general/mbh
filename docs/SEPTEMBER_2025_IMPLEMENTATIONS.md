@@ -1,7 +1,7 @@
 # September 2025 Implementations - MBH Staff Portal
 
 ## Overview
-This document details all implementations and fixes completed during the September 8-9, 2025 development session for the MBH Staff Portal.
+This document details all implementations and fixes completed during September 2025 for the MBH Staff Portal, including sessions on September 8-9, 11, 15, and ongoing updates.
 
 ## Table of Contents
 1. [Availability Form Prefill Logic Fix](#1-availability-form-prefill-logic-fix)
@@ -9,7 +9,11 @@ This document details all implementations and fixes completed during the Septemb
 3. [Staff Deselection Feature](#3-staff-deselection-feature)
 4. [Allocation Color Coding Update](#4-allocation-color-coding-update)
 5. [Announcements System Implementation](#5-announcements-system-implementation)
-6. [Technical Considerations](#technical-considerations)
+6. [Vessel Location Tracking Implementation](#6-vessel-location-tracking-implementation)
+7. [Fixed Weekly Availability System](#7-fixed-weekly-availability-system)
+8. [Allocation Editing and Overlap Display](#8-allocation-editing-and-overlap-display)
+9. [Pending Shift Responses Date Filtering](#9-pending-shift-responses-date-filtering)
+10. [Technical Considerations](#technical-considerations)
 
 ---
 
@@ -280,6 +284,155 @@ app.delete('/api/announcements/:id', async (req, res) => { /* ... */ });
 
 ---
 
+## 6. Vessel Location Tracking Implementation
+
+### Overview
+Complete implementation of GPS-based vessel location tracking, allowing staff to capture boat locations during checklists and management to view/update locations.
+
+### Features Implemented
+1. **Location Capture**: Browser geolocation API integration in Post-Departure Checklist
+2. **Map Displays**: Dynamic vessel locations map with sidebar navigation
+3. **Booking Integration**: Mini-maps in allocation popups showing vessel locations
+4. **Manual Updates**: Management can update vessel locations via draggable map
+
+### Technical Details
+- Used Google Maps API for geocoding and map displays
+- Stored GPS coordinates in Airtable Post-Departure Checklist table
+- Implemented fallback logic for timestamp display
+- Created comprehensive troubleshooting documentation
+
+---
+
+## 7. Fixed Weekly Availability System
+
+### Overview
+Implemented a system for full-time staff to have fixed weekly schedules instead of submitting availability each week.
+
+### Implementation
+1. **Airtable Schema Changes**:
+   - Added "Staff Type" field (Full Time/Casual) to Employee Details
+   - Added 21 fields for fixed availability (7 days × 3 fields each)
+
+2. **Automation Script**:
+   - Created roster generation script for full-time staff
+   - Handles various time formats (6am, 10pm, 9:00 AM)
+   - Converts to DateTime format for Roster table
+
+3. **Frontend Updates**:
+   - Modified availability form to show fixed schedule for full-time staff
+   - Updated management allocations to show staff type indicators
+   - Added fixed hours editing in employee directory
+
+### Key Technical Discovery
+Airtable DateTime fields require full ISO strings, not just time values.
+
+---
+
+## 8. Allocation Editing and Overlap Display
+
+### 8.1 Vertical Spanning Fix
+
+#### Issue
+Multi-hour allocations only displayed as 1-hour blocks on the calendar.
+
+#### Solution
+```javascript
+const blockHeight = (durationHours * 60) - 4; // -4 for margins
+allocationBlock.style.cssText = `
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    height: ${blockHeight}px;
+    z-index: 10;
+`;
+```
+
+### 8.2 Shift Deletion Fix
+
+#### Issues
+1. `ReferenceError: AIRTABLE_BASE_ID is not defined`
+2. `ReferenceError: loadAllData is not defined`
+
+#### Solutions
+1. Changed to correct variable name: `BASE_ID`
+2. Changed to correct function: `loadWeekData()`
+
+### 8.3 Allocation Editing Feature
+
+#### Implementation
+- Click existing allocations to open edit modal
+- Pre-fills current times and staff
+- Updates via PATCH request to Airtable
+
+#### Field Compatibility Issues
+1. **Notes Field**: Doesn't exist in Shift Allocations table
+2. **Response Method**: Must be "Portal" not "Portal Edit"
+
+### 8.4 Overlap Display System
+
+#### Algorithm
+```javascript
+function handleOverlappingAllocations() {
+    // 1. Group blocks by date
+    // 2. Sort by start time
+    // 3. Find overlapping groups
+    // 4. Calculate side-by-side positioning
+    // 5. Apply dynamic width and left position
+}
+```
+
+#### Result
+Overlapping allocations now display side-by-side with automatic width adjustment.
+
+---
+
+## 9. Pending Shift Responses Date Filtering
+
+### Issue
+The Pending Shift Responses component on the staff dashboard was showing shifts/bookings that had already passed, even though staff could no longer meaningfully respond to them.
+
+### Solution
+Added date filtering to both allocation loading functions:
+
+#### Updated `loadGeneralAllocations()`
+```javascript
+// Get today's date at midnight for comparison
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+// Filter for this employee's allocations and exclude past dates
+return data.records
+    .filter(record => {
+        const shiftDate = record.fields['Shift Date'];
+        const shiftDateObj = shiftDate ? new Date(shiftDate) : null;
+        const isFutureShift = shiftDateObj && shiftDateObj >= today;
+        
+        return isAssignedToEmployee && isFutureShift;
+    })
+```
+
+#### Updated `loadBookingAllocations()`
+```javascript
+data.records.forEach(record => {
+    const bookingDate = fields['Booking Date'];
+    
+    // Skip if booking date is in the past
+    const bookingDateObj = bookingDate ? new Date(bookingDate) : null;
+    if (!bookingDateObj || bookingDateObj < today) {
+        return; // Skip past bookings
+    }
+    // ... rest of allocation logic
+});
+```
+
+### Result
+- Staff only see pending responses for shifts/bookings scheduled for today or in the future
+- Past shifts are automatically hidden from the Pending Shift Responses component
+- Cleaner, more relevant UI for staff members
+
+---
+
 ## Technical Considerations
 
 ### 1. Airtable API
@@ -339,10 +492,11 @@ This session delivered:
 3. ✅ Enabled staff/boat deselection
 4. ✅ Improved allocation visual feedback
 5. ✅ Implemented complete announcements system
+6. ✅ Added date filtering to Pending Shift Responses
 
 All features are live in production at: https://mbh-production-f0d1.up.railway.app
 
 ---
 
 *Documentation created: September 9, 2025*
-*Last updated: September 9, 2025*
+*Last updated: September 15, 2025 (Date filtering added)*
