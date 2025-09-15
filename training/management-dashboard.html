@@ -2469,11 +2469,14 @@
                 if (result.success) {
                     console.log('Status updated successfully:', result);
                     
+                    // Store vessel name before closing modal (which resets it)
+                    const vesselName = currentStatusVesselName;
+                    
                     // Close modal
                     closeStatusUpdateModal();
                     
                     // Show success message
-                    alert(`${currentStatusVesselName} status updated successfully!`);
+                    alert(`${vesselName} status updated successfully!`);
                     
                     // Reload vessel data to show updated status
                     await loadVesselData();
