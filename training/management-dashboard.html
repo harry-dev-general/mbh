@@ -874,6 +874,112 @@
                 margin-top: 1rem;
             }
         }
+        
+        /* Status Update Modal Styles */
+        .status-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .status-modal.active {
+            display: flex;
+        }
+        
+        .status-modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-modal-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .status-modal-header h3 {
+            margin: 0;
+            color: #8B0000;
+            font-size: 1.5rem;
+        }
+        
+        .status-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        
+        .status-form .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .status-form label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        .status-form select,
+        .status-form textarea {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+        
+        .status-form select:focus,
+        .status-form textarea:focus {
+            outline: none;
+            border-color: #2E86AB;
+        }
+        
+        .status-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+        
+        .modal-actions .btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        
+        .update-status-btn {
+            background: #2E86AB;
+            color: white;
+            border: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+            margin-left: 0.5rem;
+        }
+        
+        .update-status-btn:hover {
+            background: #1B4F72;
+        }
     </style>
 </head>
 <body>
@@ -1105,6 +1211,7 @@
         const ANNOUNCEMENTS_TABLE_ID = 'tblAnnouncements'; // You'll need to create this table
 
         let currentUser = null;
+        let employeeRecordId = null;
         let currentWeekStart = null;
         let bookingsData = [];
 
@@ -1135,6 +1242,9 @@
             currentUser = user;
             document.getElementById('userEmail').textContent = user.email;
             
+            // Try to fetch employee record for management user
+            await fetchEmployeeRecord(user.email);
+            
             // Check for tab parameter in URL
             const urlParams = new URLSearchParams(window.location.search);
             const tabParam = urlParams.get('tab');
@@ -1144,6 +1254,29 @@
             } else {
                 // Load initial data for overview
                 loadOverviewData();
+            }
+        }
+        
+        // Fetch employee record for current user
+        async function fetchEmployeeRecord(email) {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEES_TABLE_ID}?filterByFormula={Email}='${email}'`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+                if (data.records && data.records.length > 0) {
+                    employeeRecordId = data.records[0].id;
+                    console.log('Employee record found:', employeeRecordId);
+                }
+            } catch (error) {
+                console.error('Error fetching employee record:', error);
+                // Not critical for management users
             }
         }
 
@@ -1700,6 +1833,16 @@
                             <i class="fas fa-user"></i> Last updated by: ${vessel.currentStatus.staffMember}
                         </div>
                     ` : ''}
+                    <div style="margin-top: 0.75rem;">
+                        <button class="update-status-btn" onclick="openStatusUpdateModal('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', ${vessel.currentStatus ? `{
+                            fuel: '${vessel.currentStatus.fuel?.level || ''}',
+                            gas: '${vessel.currentStatus.gas?.level || ''}',
+                            water: '${vessel.currentStatus.water?.level || ''}',
+                            condition: '${vessel.currentStatus.condition || ''}'
+                        }` : 'null'})">
+                            <i class="fas fa-clipboard-check"></i> Update Status
+                        </button>
+                    </div>
                 </div>
                 
                 ${vessel.alerts.length > 0 ? `
@@ -2222,6 +2365,118 @@
             }
         }
 
+        // Status Update Modal Functions
+        let currentStatusVesselId = null;
+        let currentStatusVesselName = null;
+        
+        function openStatusUpdateModal(vesselId, vesselName, currentStatus) {
+            currentStatusVesselId = vesselId;
+            currentStatusVesselName = vesselName;
+            
+            // Update modal title
+            document.getElementById('updateVesselName').textContent = vesselName;
+            
+            // Reset form
+            document.getElementById('statusUpdateForm').reset();
+            
+            // Pre-populate current values if available
+            if (currentStatus) {
+                if (currentStatus.fuel) document.getElementById('updateFuelLevel').value = currentStatus.fuel;
+                if (currentStatus.gas) document.getElementById('updateGasLevel').value = currentStatus.gas;
+                if (currentStatus.water) document.getElementById('updateWaterLevel').value = currentStatus.water;
+                if (currentStatus.condition) document.getElementById('updateCondition').value = currentStatus.condition;
+            }
+            
+            // Show modal
+            document.getElementById('statusUpdateModal').classList.add('active');
+        }
+        
+        function closeStatusUpdateModal() {
+            document.getElementById('statusUpdateModal').classList.remove('active');
+            currentStatusVesselId = null;
+            currentStatusVesselName = null;
+        }
+        
+        function closeStatusModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeStatusUpdateModal();
+            }
+        }
+        
+        async function submitStatusUpdate() {
+            if (!currentStatusVesselId) return;
+            
+            // Get form values
+            const fuel = document.getElementById('updateFuelLevel').value;
+            const gas = document.getElementById('updateGasLevel').value;
+            const water = document.getElementById('updateWaterLevel').value;
+            const condition = document.getElementById('updateCondition').value;
+            const notes = document.getElementById('updateNotes').value;
+            
+            // Check if at least one field is being updated
+            if (!fuel && !gas && !water && !condition) {
+                alert('Please select at least one field to update');
+                return;
+            }
+            
+            // Get current employee record ID from local storage or session
+            let staffId = null;
+            if (employeeRecordId) {
+                staffId = employeeRecordId;
+            }
+            
+            // Show loading state
+            const submitBtn = document.querySelector('#statusUpdateModal .btn-primary');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
+            try {
+                const updateData = {
+                    staffId: staffId
+                };
+                
+                // Only include fields that have values
+                if (fuel) updateData.fuel = fuel;
+                if (gas) updateData.gas = gas;
+                if (water) updateData.water = water;
+                if (condition) updateData.condition = condition;
+                if (notes) updateData.notes = notes;
+                
+                const response = await fetch(`/api/vessels/${currentStatusVesselId}/status-update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('Status updated successfully:', result);
+                    
+                    // Close modal
+                    closeStatusUpdateModal();
+                    
+                    // Show success message
+                    alert(`${currentStatusVesselName} status updated successfully!`);
+                    
+                    // Reload vessel data to show updated status
+                    await loadVesselData();
+                } else {
+                    throw new Error(result.error || 'Failed to update status');
+                }
+            } catch (error) {
+                console.error('Error updating vessel status:', error);
+                alert(`Failed to update status: ${error.message}`);
+            } finally {
+                // Restore button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+        
         // Initialize on page load
         checkAuth();
     </script>
@@ -2236,6 +2491,85 @@
                 </button>
             </div>
             <div id="locationMap" class="map-container"></div>
+        </div>
+    </div>
+    
+    <!-- Status Update Modal -->
+    <div id="statusUpdateModal" class="status-modal" onclick="closeStatusModalOnOverlay(event)">
+        <div class="status-modal-content" onclick="event.stopPropagation()">
+            <div class="status-modal-header">
+                <h3>Update Vessel Status - <span id="updateVesselName"></span></h3>
+            </div>
+            
+            <form class="status-form" id="statusUpdateForm">
+                <!-- Fuel Level -->
+                <div class="form-group">
+                    <label for="updateFuelLevel">Fuel Level</label>
+                    <select id="updateFuelLevel" name="fuel">
+                        <option value="">-- No Change --</option>
+                        <option value="Empty">Empty (0%)</option>
+                        <option value="Quarter">Quarter (25%)</option>
+                        <option value="Half">Half (50%)</option>
+                        <option value="Three-Quarter">Three-Quarter (75%)</option>
+                        <option value="Full">Full (100%)</option>
+                    </select>
+                </div>
+                
+                <!-- Gas Level -->
+                <div class="form-group">
+                    <label for="updateGasLevel">Gas Bottle Level</label>
+                    <select id="updateGasLevel" name="gas">
+                        <option value="">-- No Change --</option>
+                        <option value="Empty">Empty (0%)</option>
+                        <option value="Quarter">Quarter (25%)</option>
+                        <option value="Half">Half (50%)</option>
+                        <option value="Three-Quarter">Three-Quarter (75%)</option>
+                        <option value="Full">Full (100%)</option>
+                    </select>
+                </div>
+                
+                <!-- Water Level -->
+                <div class="form-group">
+                    <label for="updateWaterLevel">Water Tank Level</label>
+                    <select id="updateWaterLevel" name="water">
+                        <option value="">-- No Change --</option>
+                        <option value="Empty">Empty (0%)</option>
+                        <option value="Quarter">Quarter (25%)</option>
+                        <option value="Half">Half (50%)</option>
+                        <option value="Three-Quarter">Three-Quarter (75%)</option>
+                        <option value="Full">Full (100%)</option>
+                    </select>
+                </div>
+                
+                <!-- Overall Condition -->
+                <div class="form-group">
+                    <label for="updateCondition">Overall Condition</label>
+                    <select id="updateCondition" name="condition">
+                        <option value="">-- No Change --</option>
+                        <option value="Ready for Use">Ready for Use</option>
+                        <option value="Minor Issues">Minor Issues</option>
+                        <option value="Needs Attention">Needs Attention</option>
+                        <option value="Issues Found">Issues Found</option>
+                        <option value="Major Issues - Do Not Use">Major Issues - Do Not Use</option>
+                    </select>
+                </div>
+                
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="updateNotes">Notes</label>
+                    <textarea id="updateNotes" name="notes" 
+                        placeholder="Any additional information about the vessel status..."></textarea>
+                </div>
+            </form>
+            
+            <div class="modal-actions">
+                <button onclick="submitStatusUpdate()" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Update
+                </button>
+                <button onclick="closeStatusUpdateModal()" class="btn btn-secondary">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
     

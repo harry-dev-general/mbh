@@ -232,4 +232,4 @@ The system prioritizes simplicity and reliability over complex features. When in
 
 *Remember: The documentation in `/mbh-staff-portal/docs/` is comprehensive. When this prompt doesn't have enough detail, the answer is likely in the documentation. Use the new organized structure to quickly find what you need.*
 
-*Last Updated: September 10, 2025*
+*Last Updated: September 15, 2025*

@@ -172,6 +172,152 @@ router.post('/refresh-cache', async (req, res) => {
     });
 });
 
+// POST /api/vessels/:id/status-update
+// Comprehensive vessel status update for management
+router.post('/:id/status-update', async (req, res) => {
+    try {
+        const vesselId = req.params.id;
+        const { fuel, gas, water, condition, notes, staffId } = req.body;
+        
+        console.log('=== MANAGEMENT STATUS UPDATE ===');
+        console.log('Vessel ID:', vesselId);
+        console.log('Update data:', { fuel, gas, water, condition });
+        console.log('Staff ID:', staffId);
+        console.log('Timestamp:', new Date().toISOString());
+        
+        // Validate that at least one field is being updated
+        if (!fuel && !gas && !water && !condition) {
+            return res.status(400).json({
+                success: false,
+                error: 'At least one status field must be provided'
+            });
+        }
+        
+        // Validate field values if provided
+        const validLevels = ['Empty', 'Quarter', 'Half', 'Three-Quarter', 'Full'];
+        const validConditions = [
+            'Ready for Use',
+            'Minor Issues', 
+            'Needs Attention',
+            'Issues Found',
+            'Major Issues - Do Not Use'
+        ];
+        
+        if (fuel && !validLevels.includes(fuel)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid fuel level'
+            });
+        }
+        
+        if (gas && !validLevels.includes(gas)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid gas level'
+            });
+        }
+        
+        if (water && !validLevels.includes(water)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid water level'
+            });
+        }
+        
+        if (condition && !validConditions.includes(condition)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid condition value'
+            });
+        }
+        
+        const axios = require('axios');
+        const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+        const BASE_ID = 'applkAFOn2qxtu7tx';
+        const POST_DEP_TABLE_ID = 'tblYkbSQGP6zveYNi';
+        
+        // Create a management update checklist record
+        const checklistData = {
+            fields: {
+                'Vessel': [vesselId],
+                'Staff Member': staffId ? [staffId] : undefined,
+                'Checklist Date/Time': new Date().toISOString(),
+                'Completion Status': 'Completed',
+                'Completion Time': new Date().toISOString(),
+                'Notes': notes || 'Management status update',
+                'Checklist ID': `MGMT-UPDATE-${new Date().toISOString().split('T')[0]}-${Date.now()}`
+            }
+        };
+        
+        // Add the status fields that were provided
+        if (fuel) {
+            checklistData.fields['Fuel Level After Use'] = fuel;
+            checklistData.fields['Fuel Refilled'] = fuel === 'Full';
+        }
+        
+        if (gas) {
+            checklistData.fields['Gas Bottle Level After Use'] = gas;
+            checklistData.fields['Gas Bottle Replaced'] = gas === 'Full';
+        }
+        
+        if (water) {
+            checklistData.fields['Water Tank Level After Use'] = water;
+            checklistData.fields['Water Tank Refilled'] = water === 'Full';
+        }
+        
+        if (condition) {
+            checklistData.fields['Overall Vessel Condition After Use'] = condition;
+        }
+        
+        console.log('Creating checklist with data:', JSON.stringify(checklistData, null, 2));
+        
+        const response = await axios.post(
+            `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
+            checklistData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        console.log('Checklist created successfully:', response.data.id);
+        
+        // Clear cache to force refresh
+        statusCache = null;
+        cacheTimestamp = null;
+        
+        res.json({
+            success: true,
+            checklistId: response.data.id,
+            message: 'Vessel status updated successfully',
+            updatedFields: {
+                fuel: fuel || 'Not updated',
+                gas: gas || 'Not updated',
+                water: water || 'Not updated',
+                condition: condition || 'Not updated'
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error in status update:', error);
+        
+        if (error.response) {
+            console.error('Airtable error:', error.response.data);
+            res.status(500).json({
+                success: false,
+                error: error.response.data.error?.message || 'Failed to update status'
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                error: 'Failed to update vessel status'
+            });
+        }
+    }
+});
+
 // POST /api/vessels/update-location
 // Updates vessel location manually
 router.post('/update-location', async (req, res) => {
