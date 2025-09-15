@@ -1685,7 +1685,8 @@
                     vesselGrid.insertAdjacentHTML('beforeend', alertHtml);
                 }
                 
-                // Render each vessel
+                // Store vessel data globally and render each vessel
+                vesselsData = data.vessels;
                 console.log('Vessel data received:', data.vessels);
                 data.vessels.forEach(vessel => {
                     console.log(`Vessel ${vessel.name}:`, {
@@ -1834,12 +1835,7 @@
                         </div>
                     ` : ''}
                     <div style="margin-top: 0.75rem;">
-                        <button class="update-status-btn" onclick="openStatusUpdateModal('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', ${vessel.currentStatus ? `{
-                            fuel: '${vessel.currentStatus.fuel?.level || ''}',
-                            gas: '${vessel.currentStatus.gas?.level || ''}',
-                            water: '${vessel.currentStatus.water?.level || ''}',
-                            condition: '${vessel.currentStatus.condition || ''}'
-                        }` : 'null'})">
+                        <button class="update-status-btn" data-vessel-id="${vessel.id}" data-vessel-name="${vessel.name.replace(/"/g, '&quot;')}" onclick="handleStatusUpdateClick(this)">
                             <i class="fas fa-clipboard-check"></i> Update Status
                         </button>
                     </div>
@@ -2368,6 +2364,23 @@
         // Status Update Modal Functions
         let currentStatusVesselId = null;
         let currentStatusVesselName = null;
+        let vesselsData = []; // Store vessel data globally
+        
+        function handleStatusUpdateClick(button) {
+            const vesselId = button.getAttribute('data-vessel-id');
+            const vesselName = button.getAttribute('data-vessel-name');
+            
+            // Find the vessel data from the stored vessels
+            const vessel = vesselsData.find(v => v.id === vesselId);
+            const currentStatus = vessel?.currentStatus ? {
+                fuel: vessel.currentStatus.fuel?.level || '',
+                gas: vessel.currentStatus.gas?.level || '',
+                water: vessel.currentStatus.water?.level || '',
+                condition: vessel.currentStatus.condition || ''
+            } : null;
+            
+            openStatusUpdateModal(vesselId, vesselName, currentStatus);
+        }
         
         function openStatusUpdateModal(vesselId, vesselName, currentStatus) {
             currentStatusVesselId = vesselId;
