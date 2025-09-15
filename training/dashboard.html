@@ -787,11 +787,24 @@
             const data = await response.json();
             if (!data.records) return [];
             
-            // Filter for this employee's allocations
+            // Get today's date at midnight for comparison
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Filter for this employee's allocations and exclude past dates
             return data.records
                 .filter(record => {
                     const employeeField = record.fields['Employee'];
-                    return employeeField && Array.isArray(employeeField) && employeeField.includes(employeeRecordId);
+                    const shiftDate = record.fields['Shift Date'];
+                    
+                    // Check if assigned to this employee
+                    const isAssignedToEmployee = employeeField && Array.isArray(employeeField) && employeeField.includes(employeeRecordId);
+                    
+                    // Check if shift date is in the future (or today)
+                    const shiftDateObj = shiftDate ? new Date(shiftDate) : null;
+                    const isFutureShift = shiftDateObj && shiftDateObj >= today;
+                    
+                    return isAssignedToEmployee && isFutureShift;
                 })
                 .map(record => ({
                     id: record.id,
@@ -819,10 +832,22 @@
             const data = await response.json();
             if (!data.records) return [];
             
+            // Get today's date at midnight for comparison
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
             const bookingAllocations = [];
             
             data.records.forEach(record => {
                 const fields = record.fields;
+                const bookingDate = fields['Booking Date'];
+                
+                // Skip if booking date is in the past
+                const bookingDateObj = bookingDate ? new Date(bookingDate) : null;
+                if (!bookingDateObj || bookingDateObj < today) {
+                    return; // Skip past bookings
+                }
+                
                 const onboardingEmployee = fields['Onboarding Employee'];
                 const deloadingEmployee = fields['Deloading Employee'];
                 
