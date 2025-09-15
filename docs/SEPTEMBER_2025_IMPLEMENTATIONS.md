@@ -13,7 +13,8 @@ This document details all implementations and fixes completed during September 2
 7. [Fixed Weekly Availability System](#7-fixed-weekly-availability-system)
 8. [Allocation Editing and Overlap Display](#8-allocation-editing-and-overlap-display)
 9. [Pending Shift Responses Date Filtering](#9-pending-shift-responses-date-filtering)
-10. [Technical Considerations](#technical-considerations)
+10. [Vessel Status Management Update Feature](#10-vessel-status-management-update-feature)
+11. [Technical Considerations](#technical-considerations)
 
 ---
 
@@ -484,6 +485,41 @@ Railway auto-deploys from main branch.
 
 ---
 
+## 10. Vessel Status Management Update Feature
+
+### Overview
+Implemented a comprehensive vessel status update system that allows management to update vessel fuel, gas, water levels, and overall condition without requiring a booking association.
+
+### Backend Implementation
+Created new endpoint `/api/vessels/:id/status-update` that:
+- Accepts fuel, gas, water, condition, and notes fields
+- Validates all inputs for correct values
+- Creates Post-Departure checklist records with 'MGMT-UPDATE-' prefix
+- Clears vessel status cache after updates
+
+### Frontend Implementation
+1. **Update Status Button**: Added to each vessel card in the maintenance dashboard
+2. **Status Update Modal**: 
+   - Pre-populates with current vessel status values
+   - Dropdown selects for fuel/gas/water levels (Empty to Full)
+   - Dropdown for overall condition (Ready for Use to Major Issues)
+   - Notes textarea for additional information
+   - Validates at least one field is being updated
+
+### Technical Details
+- Uses existing Post-Departure checklist table structure
+- Maintains audit trail with timestamps and staff member
+- Distinguishes management updates with special Checklist ID prefix
+- Leverages existing vessel status display logic
+
+### Benefits
+- Management can update vessel status anytime
+- No need for dummy bookings
+- Clear distinction between regular and management updates
+- Maintains complete audit history
+
+---
+
 ## Summary
 
 This session delivered:
@@ -493,6 +529,7 @@ This session delivered:
 4. ✅ Improved allocation visual feedback
 5. ✅ Implemented complete announcements system
 6. ✅ Added date filtering to Pending Shift Responses
+7. ✅ Created vessel status management update feature
 
 All features are live in production at: https://mbh-production-f0d1.up.railway.app
 

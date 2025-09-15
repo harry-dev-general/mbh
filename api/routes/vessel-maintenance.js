@@ -113,8 +113,7 @@ router.post('/:id/quick-update', async (req, res) => {
                 'Checklist Date/Time': new Date().toISOString(),
                 'Completion Status': 'Completed',
                 'Completion Time': new Date().toISOString(),
-                'Notes': notes || `Quick ${type} level update`,
-                'Checklist ID': `Quick Update - ${new Date().toLocaleDateString()}`
+                'Checklist ID': `Quick Update - ${new Date().toLocaleDateString()}${notes ? ` - ${notes}` : ''}`
             }
         };
         
@@ -244,8 +243,7 @@ router.post('/:id/status-update', async (req, res) => {
                 'Checklist Date/Time': new Date().toISOString(),
                 'Completion Status': 'Completed',
                 'Completion Time': new Date().toISOString(),
-                'Notes': notes || 'Management status update',
-                'Checklist ID': `MGMT-UPDATE-${new Date().toISOString().split('T')[0]}-${Date.now()}`
+                'Checklist ID': `MGMT-UPDATE-${new Date().toISOString().split('T')[0]}-${Date.now()}${notes ? ` - ${notes}` : ''}`
             }
         };
         
