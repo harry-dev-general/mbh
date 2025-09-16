@@ -1,5 +1,5 @@
 // Checkfront Webhook Handler for MBH Staff Portal
-// Processes Checkfront webhooks and creates/updates Airtable records
+// Processes Checkfront webhooks, creates/updates Airtable records, and sends SMS notifications
 
 const express = require('express');
 const router = express.Router();
@@ -9,6 +9,12 @@ const axios = require('axios');
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Bookings Dashboard table
+
+// Twilio configuration
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
+const SMS_RECIPIENT = process.env.SMS_RECIPIENT || '+61414960734'; // Default recipient
 
 // Category mapping
 const categoryMapping = {
@@ -31,6 +37,7 @@ const addOnMappings = {
     'esky': 'Esky/Cooler',
     'baitpack': 'Bait Pack',
     'icepack': 'Ice Pack',
+    'icebag': 'Icebag',
     'bbqpack': 'BBQ Pack',
     'foodpack': 'Food Package'
 };
@@ -66,6 +73,149 @@ function formatDateAEST(date) {
         day: '2-digit',
         timeZone: 'Australia/Sydney'
     }).split('/').reverse().join('-'); // Convert to YYYY-MM-DD format
+}
+
+// Helper function to format date nicely for SMS
+function formatDateNice(date) {
+    return date.toLocaleDateString('en-AU', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'Australia/Sydney'
+    });
+}
+
+// Helper function to determine significant status changes
+function isSignificantStatusChange(oldStatus, newStatus) {
+    // Always notify for cancellations
+    if (newStatus === "VOID" || newStatus === "STOP") return true;
+    
+    // Notify when payment is confirmed
+    if ((oldStatus === "PEND" || oldStatus === "HOLD" || oldStatus === "WAIT" || oldStatus === "PART") 
+        && newStatus === "PAID") {
+        return true;
+    }
+    
+    // Don't notify for same status
+    if (oldStatus === newStatus) return false;
+    
+    // Don't notify for minor progressions
+    if (oldStatus === "PEND" && (newStatus === "HOLD" || newStatus === "WAIT")) return false;
+    if (oldStatus === "HOLD" && newStatus === "WAIT") return false;
+    if (oldStatus === "WAIT" && newStatus === "HOLD") return false;
+    
+    // Notify for partial payment
+    if ((oldStatus === "PEND" || oldStatus === "HOLD" || oldStatus === "WAIT") && newStatus === "PART") {
+        return true;
+    }
+    
+    // Default to not sending for other cases
+    return false;
+}
+
+// Send SMS using Twilio
+async function sendSMS(message) {
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+        console.log('⚠️ SMS not sent - Twilio credentials not configured');
+        return false;
+    }
+    
+    try {
+        const authString = `${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`;
+        const authHeader = `Basic ${Buffer.from(authString).toString('base64')}`;
+        
+        const response = await axios.post(
+            `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
+            new URLSearchParams({
+                'From': TWILIO_PHONE_NUMBER,
+                'To': SMS_RECIPIENT,
+                'Body': message
+            }),
+            {
+                headers: {
+                    'Authorization': authHeader,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }
+        );
+        
+        console.log('✅ SMS sent successfully!');
+        return true;
+    } catch (error) {
+        console.error('❌ SMS send error:', error.response?.data || error.message);
+        return false;
+    }
+}
+
+// Build SMS message based on booking data and action
+function buildSMSMessage(recordData, action, oldStatus = null) {
+    const { 
+        'Customer Name': customerName,
+        'Booking Code': bookingCode,
+        'Booking Items': boatSKU,
+        'Add-ons': addOns,
+        'Booking Date': bookingDate,
+        'Start Time': startTime,
+        'Finish Time': endTime,
+        'Duration': duration,
+        'Status': status
+    } = recordData;
+    
+    const formattedDate = formatDateNice(new Date(bookingDate));
+    
+    if (action === 'created') {
+        // New booking message
+        let message = `🚤 Boat Hire Manly - Booking Confirmed\n\n`;
+        message += `Booking: ${bookingCode || 'N/A'}\n`;
+        message += `Customer: ${customerName}\n\n`;
+        message += `📅 Date: ${formattedDate}\n`;
+        message += `⏰ Time: ${startTime} - ${endTime}\n`;
+        message += `⏱️ Duration: ${duration}\n\n`;
+        message += `Boat: ${boatSKU || 'Not specified'}\n`;
+        
+        if (addOns) {
+            message += `Add-ons: ${addOns}\n`;
+        }
+        
+        message += `Status: ${status}\n\n`;
+        message += `See you at the marina! 🌊`;
+        
+        return message;
+        
+    } else if (action === 'updated') {
+        // Status update messages
+        if (status === "VOID" || status === "STOP") {
+            return `⚠️ Boat Hire Manly - Booking Cancelled\n\n` +
+                   `Booking: ${bookingCode}\n` +
+                   `Customer: ${customerName}\n` +
+                   `Date: ${formattedDate}\n\n` +
+                   `Your booking has been cancelled.\n` +
+                   `If you have questions, please call us.`;
+            
+        } else if (status === "PAID") {
+            return `✅ Boat Hire Manly - Payment Confirmed\n\n` +
+                   `Booking: ${bookingCode}\n` +
+                   `Customer: ${customerName}\n\n` +
+                   `Your payment has been received!\n` +
+                   `See you on ${formattedDate} at ${startTime}. 🚤`;
+            
+        } else if (status === "PART") {
+            return `💳 Boat Hire Manly - Partial Payment Received\n\n` +
+                   `Booking: ${bookingCode}\n` +
+                   `Customer: ${customerName}\n\n` +
+                   `We've received your partial payment.\n` +
+                   `Please complete payment before ${formattedDate}.`;
+            
+        } else {
+            return `📝 Boat Hire Manly - Booking Updated\n\n` +
+                   `Booking: ${bookingCode}\n` +
+                   `Status: ${status}\n\n` +
+                   `Your booking for ${formattedDate} has been updated.`;
+        }
+    }
+    
+    return null;
 }
 
 // Process webhook data
@@ -132,7 +282,7 @@ async function processCheckfrontWebhook(webhookData) {
                 let addOnStr = formatAddOnName(sku);
                 
                 if (quantity > 1) {
-                    addOnStr += ` (x${quantity})`;
+                    addOnStr = `${quantity} x ${addOnStr}`;
                 }
                 if (price > 0) {
                     addOnStr += ` - $${price.toFixed(2)}`;
@@ -192,14 +342,48 @@ async function findExistingBooking(bookingCode) {
                 },
                 params: {
                     filterByFormula: `{Booking Code} = "${bookingCode}"`,
-                    maxRecords: 10
+                    maxRecords: 10,
+                    fields: ['Booking Code', 'Status', 'Total Amount', 'Onboarding Employee', 'Deloading Employee']
                 }
             }
         );
         
         if (response.data.records && response.data.records.length > 0) {
-            // Return the first matching record
-            return response.data.records[0];
+            // Find the best record (prefer PAID, then highest status)
+            const records = response.data.records;
+            
+            if (records.length === 1) {
+                return records[0];
+            }
+            
+            // Sort by status priority
+            const statusPriority = {
+                'PAID': 4, 'PART': 3, 'WAIT': 2, 'HOLD': 2, 'PEND': 1
+            };
+            
+            const bestRecord = records.reduce((best, current) => {
+                const bestStatus = best.fields['Status'] || 'PEND';
+                const currentStatus = current.fields['Status'] || 'PEND';
+                const bestAmount = best.fields['Total Amount'] || 0;
+                const currentAmount = current.fields['Total Amount'] || 0;
+                
+                // Always prefer PAID with highest amount
+                if (currentStatus === 'PAID' && currentAmount >= bestAmount) {
+                    return current;
+                }
+                if (bestStatus === 'PAID') {
+                    return best;
+                }
+                
+                // Otherwise, prefer higher status priority
+                if ((statusPriority[currentStatus] || 0) > (statusPriority[bestStatus] || 0)) {
+                    return current;
+                }
+                
+                return best;
+            }, records[0]);
+            
+            return bestRecord;
         }
         
         return null;
@@ -215,9 +399,30 @@ async function createOrUpdateAirtableRecord(recordData) {
         // Check for existing booking
         const existingRecord = await findExistingBooking(recordData['Booking Code']);
         
+        let oldStatus = null;
+        let action = 'created';
+        let shouldSendSMS = true;
+        
         if (existingRecord) {
+            action = 'updated';
+            oldStatus = existingRecord.fields['Status'] || 'PEND';
+            
+            // Check if this is a significant status change
+            if (!isSignificantStatusChange(oldStatus, recordData['Status'])) {
+                shouldSendSMS = false;
+                console.log(`📵 Not sending SMS - minor change from ${oldStatus} to ${recordData['Status']}`);
+            }
+            
             // Update existing record
-            console.log(`📝 Updating existing booking: ${recordData['Booking Code']}`);
+            console.log(`📝 Updating existing booking: ${recordData['Booking Code']} (${oldStatus} → ${recordData['Status']})`);
+            
+            // Preserve existing staff assignments if any
+            if (existingRecord.fields['Onboarding Employee']) {
+                recordData['Onboarding Employee'] = existingRecord.fields['Onboarding Employee'];
+            }
+            if (existingRecord.fields['Deloading Employee']) {
+                recordData['Deloading Employee'] = existingRecord.fields['Deloading Employee'];
+            }
             
             const response = await axios.patch(
                 `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BOOKINGS_TABLE_ID}/${existingRecord.id}`,
@@ -232,7 +437,51 @@ async function createOrUpdateAirtableRecord(recordData) {
                 }
             );
             
-            return { success: true, action: 'updated', recordId: response.data.id };
+            // Delete duplicates if updating to PAID
+            if (recordData['Status'] === 'PAID') {
+                // Find and delete other records with same booking code
+                const allRecords = await axios.get(
+                    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BOOKINGS_TABLE_ID}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        params: {
+                            filterByFormula: `{Booking Code} = "${recordData['Booking Code']}"`,
+                            maxRecords: 100
+                        }
+                    }
+                );
+                
+                const duplicates = allRecords.data.records.filter(r => r.id !== existingRecord.id);
+                
+                if (duplicates.length > 0) {
+                    console.log(`🗑️ Deleting ${duplicates.length} duplicate records`);
+                    
+                    for (const duplicate of duplicates) {
+                        await axios.delete(
+                            `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BOOKINGS_TABLE_ID}/${duplicate.id}`,
+                            {
+                                headers: {
+                                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                                }
+                            }
+                        );
+                    }
+                }
+            }
+            
+            // Send SMS if significant change
+            if (shouldSendSMS) {
+                const message = buildSMSMessage(recordData, action, oldStatus);
+                if (message) {
+                    await sendSMS(message);
+                }
+            }
+            
+            return { success: true, action, recordId: response.data.id, smsSent: shouldSendSMS };
+            
         } else {
             // Create new record
             console.log(`✨ Creating new booking: ${recordData['Booking Code']}`);
@@ -250,7 +499,13 @@ async function createOrUpdateAirtableRecord(recordData) {
                 }
             );
             
-            return { success: true, action: 'created', recordId: response.data.id };
+            // Send SMS for new booking
+            const message = buildSMSMessage(recordData, action);
+            if (message) {
+                await sendSMS(message);
+            }
+            
+            return { success: true, action, recordId: response.data.id, smsSent: true };
         }
     } catch (error) {
         console.error('Error creating/updating Airtable record:', error.response?.data || error.message);
@@ -267,16 +522,17 @@ router.post('/webhook', async (req, res) => {
         // Process the webhook data
         const recordData = await processCheckfrontWebhook(req.body);
         
-        // Create or update Airtable record
+        // Create or update Airtable record (and send SMS)
         const result = await createOrUpdateAirtableRecord(recordData);
         
-        console.log(`✅ Successfully ${result.action} booking ${recordData['Booking Code']}`);
+        console.log(`✅ Successfully ${result.action} booking ${recordData['Booking Code']}${result.smsSent ? ' (SMS sent)' : ''}`);
         
         res.json({
             success: true,
             message: `Booking ${result.action} successfully`,
             bookingCode: recordData['Booking Code'],
-            recordId: result.recordId
+            recordId: result.recordId,
+            smsSent: result.smsSent
         });
         
     } catch (error) {
@@ -294,7 +550,8 @@ router.get('/test', (req, res) => {
     res.json({
         success: true,
         message: 'Checkfront webhook handler is running',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        twilioConfigured: !!(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_PHONE_NUMBER)
     });
 });
 
