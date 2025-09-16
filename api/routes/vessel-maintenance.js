@@ -406,7 +406,8 @@ router.post('/update-location', async (req, res) => {
                     'Location Accuracy': 10,
                     'Checklist ID': `LOC-UPDATE-${Date.now()}`,
                     'Checklist Date/Time': new Date().toISOString(),
-                    'Completion Status': 'Location Update Only'
+                    'Completion Status': 'Completed',
+                    'Completion Time': new Date().toISOString()
                 }
             };
             
