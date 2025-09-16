@@ -1734,12 +1734,18 @@
                 }
             };
             
-            // Override location for fixed vessels
+            // Set default location for fixed vessels if no location exists
             if (fixedLocations[vessel.name]) {
                 if (!vessel.currentStatus) {
                     vessel.currentStatus = {};
                 }
-                vessel.currentStatus.location = fixedLocations[vessel.name];
+                // Only use fixed location if there's no existing location data
+                if (!vessel.currentStatus.location || !vessel.currentStatus.location.latitude) {
+                    vessel.currentStatus.location = fixedLocations[vessel.name];
+                } else {
+                    // Mark that this vessel has a storage location
+                    vessel.currentStatus.location.storageLocation = fixedLocations[vessel.name];
+                }
             }
             
             // Determine status class and text
@@ -1779,10 +1785,14 @@
                         <div class="vessel-location-info">
                             <div class="vessel-location-address">
                                 <i class="fas fa-map-marker-alt"></i> ${vessel.currentStatus.location.address || 'Location captured'}
+                                ${vessel.currentStatus.location.storageLocation && !vessel.currentStatus.location.isFixed ? 
+                                    `<br><small style="color: #666; font-size: 0.85em;"><i class="fas fa-warehouse"></i> Storage: ${vessel.currentStatus.location.storageLocation.address}</small>` : 
+                                    ''
+                                }
                             </div>
                             <div class="vessel-location-time">
                                 ${vessel.currentStatus.location.isFixed ? 
-                                    '<i class="fas fa-lock"></i> Marina Berth' :
+                                    '<i class="fas fa-warehouse"></i> Storage Location' :
                                     `<i class="fas fa-clock"></i> Updated: ${(vessel.currentStatus.location.lastModified || vessel.lastCheck?.time) ? new Date(vessel.currentStatus.location.lastModified || vessel.lastCheck.time).toLocaleString('en-AU', {
                                         dateStyle: 'short',
                                         timeStyle: 'short'
@@ -1793,11 +1803,9 @@
                         <button class="vessel-location-map-btn" onclick="showVesselLocationMap('${vessel.id}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude}, '${vessel.name.replace(/'/g, "\\'")}')">
                             <i class="fas fa-map"></i> Map
                         </button>
-                        ${!vessel.currentStatus.location.isFixed ? `
-                            <button class="update-location-btn" onclick="updateVesselLocation('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude})">
-                                <i class="fas fa-map-pin"></i> Update
-                            </button>
-                        ` : ''}
+                        <button class="update-location-btn" onclick="updateVesselLocation('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude})">
+                            <i class="fas fa-map-pin"></i> Update
+                        </button>
                     </div>
                 ` : `
                     <div class="vessel-location">
