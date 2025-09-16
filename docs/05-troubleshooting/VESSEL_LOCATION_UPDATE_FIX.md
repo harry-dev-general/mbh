@@ -32,8 +32,12 @@ Simplified the logic to immediately create a location-only Post-Departure checkl
 2. If found, update it with location data
 3. If not found, create a new location-only checklist with:
    - `Checklist ID`: `LOC-UPDATE-{timestamp}`
-   - `Completion Status`: `Location Update Only`
+   - `Completion Status`: `Completed` (using valid Airtable single select option)
+   - `Completion Time`: Current timestamp
    - All location fields populated
+
+### Additional Fix (Sept 16, 2025)
+The initial fix used "Location Update Only" for Completion Status, but this wasn't a valid option in the single select field. Updated to use "Completed" which is one of the three valid options: "Not Started", "In Progress", "Completed".
 
 ### Files Modified
 - `/api/routes/vessel-maintenance.js` - Simplified the location update endpoint
