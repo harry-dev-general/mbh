@@ -13,7 +13,7 @@ const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Bookings Dashboard table
 // Twilio configuration
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
-const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER;
+const TWILIO_FROM_NUMBER = process.env.TWILIO_FROM_NUMBER; // Existing Railway variable
 const SMS_RECIPIENT = process.env.SMS_RECIPIENT || '+61414960734'; // Default recipient
 
 // Category mapping
@@ -116,7 +116,7 @@ function isSignificantStatusChange(oldStatus, newStatus) {
 
 // Send SMS using Twilio
 async function sendSMS(message) {
-    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER) {
         console.log('⚠️ SMS not sent - Twilio credentials not configured');
         return false;
     }
@@ -128,7 +128,7 @@ async function sendSMS(message) {
         const response = await axios.post(
             `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
             new URLSearchParams({
-                'From': TWILIO_PHONE_NUMBER,
+                'From': TWILIO_FROM_NUMBER,
                 'To': SMS_RECIPIENT,
                 'Body': message
             }),
@@ -551,7 +551,7 @@ router.get('/test', (req, res) => {
         success: true,
         message: 'Checkfront webhook handler is running',
         timestamp: new Date().toISOString(),
-        twilioConfigured: !!(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_PHONE_NUMBER)
+        twilioConfigured: !!(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM_NUMBER)
     });
 });
 

@@ -75,7 +75,7 @@ AIRTABLE_BASE_ID=applkAFOn2qxtu7tx
 # New Twilio variables
 TWILIO_ACCOUNT_SID=your_twilio_account_sid
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
-TWILIO_PHONE_NUMBER=+61483919629  # Your Twilio phone number
+TWILIO_FROM_NUMBER=+61483919629   # Already exists in Railway
 SMS_RECIPIENT=+61414960734         # Default recipient (optional)
 ```
 
