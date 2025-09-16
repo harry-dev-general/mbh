@@ -25,8 +25,8 @@ The modal interface includes:
 - **Water Level**: Dropdown (Empty, Half, Full)
 - **Overall Condition**: Dropdown with options:
   - Good - Ready for Next Booking
-  - Needs Attention - Minor Issues
-  - Out of Service - Major Issues
+  - Needs Attention
+  - Major Issues - Do Not Use
 - **Notes**: Text area for additional comments
 
 ## Technical Implementation
