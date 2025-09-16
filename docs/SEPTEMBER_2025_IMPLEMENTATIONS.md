@@ -523,39 +523,51 @@ Created new endpoint `/api/vessels/:id/status-update` that:
 ## 11. Checkfront Webhook Order Items Fix
 
 ### Problem
-The Airtable webhook automation was only capturing the booking code in the "Booking Items" field instead of the actual items ordered (boats, lilly pads, fishing rods, etc.).
+The Airtable webhook automation was only capturing the boat SKU in the "Booking Items" field, missing all additional items like lilly pads, ice bags, fishing rods, etc.
 
 ### Root Cause
-Checkfront sends webhooks in XML format converted to JSON with a nested structure. The items are in `booking.order.items.item` as an array, but the script wasn't parsing this correctly.
+1. Checkfront sends webhooks in XML format converted to JSON with a nested structure
+2. The items are in `booking.order.items.item` as an array
+3. Airtable's native webhook automation couldn't properly parse nested arrays
 
 ### Solution
-Created an enhanced webhook script that:
-1. **Properly parses the Checkfront structure**: Handles the XML-to-JSON format with @attributes
-2. **Separates boats from add-ons**: Uses category IDs and SKU patterns to identify item types
-3. **Preserves existing functionality**: Boat SKUs continue to populate "Booking Items" field
-4. **Captures all add-ons**: New "Add-ons" field stores additional items with prices
+Created a custom API endpoint on Railway that:
+1. **Receives the full webhook**: Bypasses Airtable's input mapping limitations
+2. **Properly parses all items**: Handles the XML-to-JSON format with nested arrays
+3. **Intelligently categorizes items**: Uses category mappings to separate boats from add-ons
+4. **Updates Airtable via API**: Creates/updates records with proper data structure
 
 ### Implementation
-1. **New Airtable Field**: Added "Add-ons" field to Bookings Dashboard table
-2. **Updated Webhook Script**: 
-   - Correctly extracts items from `booking.order.items.item` array
-   - Identifies boats by category ID (2, 3) or SKU patterns
-   - Formats add-ons with names and prices
-3. **Enhanced SMS Script**: Updated to include add-ons in booking confirmations
+1. **Custom API Endpoint**: `/api/checkfront/webhook` on Railway server
+2. **Category Mapping**:
+   ```javascript
+   const categoryMapping = {
+     '2': { name: 'Pontoon BBQ Boat', type: 'boat' },
+     '3': { name: '4.1m Polycraft 4 Person', type: 'boat' },
+     '4': { name: 'Add ons', type: 'addon' },
+     '5': { name: 'Child Life Jacket', type: 'addon' },
+     '6': { name: 'Add ons', type: 'addon' },
+     '7': { name: 'Add ons', type: 'addon' }
+   };
+   ```
+3. **New Airtable Field**: Added "Add-ons" field to store non-boat items
+4. **Intelligent SKU Formatting**: Converts "lillypad" → "Lilly Pad - $55.00"
+5. **Enhanced SMS Script**: Updated to include add-ons in messages
 
 ### Technical Details
-- **Webhook Structure**: Items come as array in `booking.order.items.item`
-- **Category IDs**: 
-  - Category 2: Boats
-  - Category 4: Add-ons (Lilly Pad)
-  - Category 7: Add-ons (Fishing Rods)
-- **SKU Formatting**: Converts "lillypad" → "Lilly Pad - $55.00"
+- **Webhook URL**: Updated Checkfront to point to Railway endpoint
+- **Processing Flow**: Checkfront → Railway API → Airtable API → Airtable Record
+- **Data Preservation**: Boat SKU continues to populate linked "Booking Items" field
+- **Add-ons Format**: Comma-separated list with pricing (e.g., "Lilly Pad - $55.00, Icebag - $12.50")
 
-### Result
-**Before**: Booking Items = "2437" (just the code)
-**After**: 
-- Booking Items = "12personbbqboat-halfday"
-- Add-ons = "Lilly Pad - $55.00, Fishing Rods - $20.00"
+### Result ✅ VERIFIED
+**Test Booking (KSDA-160925)**:
+- **Customer**: Test Booking v2
+- **Boat**: 12personbbqboat-halfday (correctly linked to "12 Person BBQ Boat")
+- **Add-ons**: "Lilly Pad - $55.00, Icebag - $12.50, Fishing Rods - $20.00"
+- **Total**: $637.50 (all items accounted for)
+
+The implementation has been deployed, tested, and verified working in production.
 
 ---
 
@@ -576,4 +588,4 @@ All features are live in production at: https://mbh-production-f0d1.up.railway.a
 ---
 
 *Documentation created: September 9, 2025*
-*Last updated: September 16, 2025 (Checkfront webhook fix added)*
+*Last updated: September 16, 2025 (Checkfront webhook fix completed and verified)*
