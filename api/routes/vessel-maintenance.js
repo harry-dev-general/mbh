@@ -393,78 +393,45 @@ router.post('/update-location', async (req, res) => {
             checklistId = latestPostDep.id;
             console.log(`Found Post-Departure checklist ${checklistId} for location update`);
         } else {
-            // No Post-Departure checklist, try Pre-Departure
-            const preDepResponse = await axios.get(
-                `https://api.airtable.com/v0/${BASE_ID}/${PRE_DEP_TABLE_ID}`,
+            // No existing checklist found - create a new location-only checklist
+            console.log('No existing checklist found, creating location-only checklist');
+            
+            const createData = {
+                fields: {
+                    'Vessel': [vesselId],
+                    'GPS Latitude': latitude,
+                    'GPS Longitude': longitude,
+                    'Location Address': address || 'Manual location update',
+                    'Location Captured': true,
+                    'Location Accuracy': 10,
+                    'Checklist ID': `LOC-UPDATE-${Date.now()}`,
+                    'Checklist Date/Time': new Date().toISOString(),
+                    'Completion Status': 'Location Update Only'
+                }
+            };
+            
+            const createResponse = await axios.post(
+                `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
+                createData,
                 {
-                    headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` },
-                    params: {
-                        filterByFormula: `IS_AFTER({Created time}, '${dateFilter}')`,
-                        sort: [{ field: 'Created time', direction: 'desc' }],
-                        maxRecords: 100,
-                        fields: ['Vessel', 'Created time']
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                        'Content-Type': 'application/json'
                     }
                 }
             );
             
-            // Find the most recent Pre-Departure checklist for this vessel
-            let latestPreDep = null;
-            if (preDepResponse.data.records) {
-                for (const record of preDepResponse.data.records) {
-                    if (record.fields['Vessel'] && record.fields['Vessel'].includes(vesselId)) {
-                        latestPreDep = record;
-                        break;
-                    }
-                }
-            }
+            console.log('Created location-only checklist:', createResponse.data.id);
             
-            console.log(`Pre-Departure search for vessel ${vesselId} found:`, latestPreDep ? 'checklist' : 'no checklist');
+            // Clear cache to force refresh
+            statusCache = null;
+            cacheTimestamp = null;
             
-            if (latestPreDep) {
-                // Create a new Post-Departure checklist with location data
-                // since Pre-Departure doesn't have location fields
-                console.log('No Post-Departure checklist found, creating one for location update');
-                
-                const createData = {
-                    fields: {
-                        'Vessel': [vesselId],
-                        'GPS Latitude': latitude,
-                        'GPS Longitude': longitude,
-                        'Location Address': address || 'Manual location update',
-                        'Location Captured': true,
-                        'Location Accuracy': 10,
-                        'Checklist ID': `LOC-UPDATE-${Date.now()}`
-                    }
-                };
-                
-                const createResponse = await axios.post(
-                    `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
-                    createData,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-                
-                console.log('Created location-only checklist:', createResponse.data.id);
-                
-                // Clear cache to force refresh
-                statusCache = null;
-                cacheTimestamp = null;
-                
-                return res.json({
-                    success: true,
-                    checklistId: createResponse.data.id,
-                    message: 'Location saved successfully'
-                });
-            } else {
-                return res.status(404).json({
-                    success: false,
-                    error: 'No checklist found for this vessel'
-                });
-            }
+            return res.json({
+                success: true,
+                checklistId: createResponse.data.id,
+                message: 'Location saved successfully'
+            });
         }
         
         console.log(`Updating checklist ${checklistId} with new location data`);
