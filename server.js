@@ -16,6 +16,12 @@ const announcements = require('./api/announcements');
 // Import vessel maintenance routes
 const vesselRoutes = require('./api/routes/vessel-maintenance');
 
+// Import webhook logger for debugging
+const webhookLogger = require('./api/webhook-logger');
+
+// Import Checkfront webhook handler
+const checkfrontWebhook = require('./api/checkfront-webhook');
+
 // Security middleware with exceptions for shift confirmation
 app.use((req, res, next) => {
   // Skip helmet CSP for shift confirmation page to avoid loading issues
@@ -76,6 +82,12 @@ app.use(express.static(path.join(__dirname, 'training')));
 
 // Add vessel maintenance routes
 app.use('/api/vessels', vesselRoutes);
+
+// Add webhook logger routes (for debugging)
+app.use('/api', webhookLogger);
+
+// Add Checkfront webhook handler
+app.use('/api/checkfront', checkfrontWebhook);
 
 // Announcements API endpoints
 app.get('/api/announcements', async (req, res) => {

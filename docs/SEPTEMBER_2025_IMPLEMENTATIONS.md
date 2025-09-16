@@ -520,6 +520,45 @@ Created new endpoint `/api/vessels/:id/status-update` that:
 
 ---
 
+## 11. Checkfront Webhook Order Items Fix
+
+### Problem
+The Airtable webhook automation was only capturing the booking code in the "Booking Items" field instead of the actual items ordered (boats, lilly pads, fishing rods, etc.).
+
+### Root Cause
+Checkfront sends webhooks in XML format converted to JSON with a nested structure. The items are in `booking.order.items.item` as an array, but the script wasn't parsing this correctly.
+
+### Solution
+Created an enhanced webhook script that:
+1. **Properly parses the Checkfront structure**: Handles the XML-to-JSON format with @attributes
+2. **Separates boats from add-ons**: Uses category IDs and SKU patterns to identify item types
+3. **Preserves existing functionality**: Boat SKUs continue to populate "Booking Items" field
+4. **Captures all add-ons**: New "Add-ons" field stores additional items with prices
+
+### Implementation
+1. **New Airtable Field**: Added "Add-ons" field to Bookings Dashboard table
+2. **Updated Webhook Script**: 
+   - Correctly extracts items from `booking.order.items.item` array
+   - Identifies boats by category ID (2, 3) or SKU patterns
+   - Formats add-ons with names and prices
+3. **Enhanced SMS Script**: Updated to include add-ons in booking confirmations
+
+### Technical Details
+- **Webhook Structure**: Items come as array in `booking.order.items.item`
+- **Category IDs**: 
+  - Category 2: Boats
+  - Category 4: Add-ons (Lilly Pad)
+  - Category 7: Add-ons (Fishing Rods)
+- **SKU Formatting**: Converts "lillypad" → "Lilly Pad - $55.00"
+
+### Result
+**Before**: Booking Items = "2437" (just the code)
+**After**: 
+- Booking Items = "12personbbqboat-halfday"
+- Add-ons = "Lilly Pad - $55.00, Fishing Rods - $20.00"
+
+---
+
 ## Summary
 
 This session delivered:
@@ -530,10 +569,11 @@ This session delivered:
 5. ✅ Implemented complete announcements system
 6. ✅ Added date filtering to Pending Shift Responses
 7. ✅ Created vessel status management update feature
+8. ✅ Fixed Checkfront webhook to capture all order items
 
 All features are live in production at: https://mbh-production-f0d1.up.railway.app
 
 ---
 
 *Documentation created: September 9, 2025*
-*Last updated: September 15, 2025 (Date filtering added)*
+*Last updated: September 16, 2025 (Checkfront webhook fix added)*
