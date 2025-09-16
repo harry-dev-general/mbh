@@ -195,10 +195,8 @@ router.post('/:id/status-update', async (req, res) => {
         // Validate field values if provided
         const validLevels = ['Empty', 'Quarter', 'Half', 'Three-Quarter', 'Full'];
         const validConditions = [
-            'Ready for Use',
-            'Minor Issues', 
+            'Good - Ready for Next Booking',
             'Needs Attention',
-            'Issues Found',
             'Major Issues - Do Not Use'
         ];
         
