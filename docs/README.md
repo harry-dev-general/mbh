@@ -89,11 +89,23 @@ External service integrations:
 - ✅ Updated allocation color coding
 - ✅ Launched announcements system with SMS
 - ✅ **NEW: Vessel Location Tracking** - GPS tracking in Post-Departure Checklists
+- ✅ **NEW: Date Filtering** - Pending shifts now show only current/future dates
+- ✅ **NEW: Vessel Status Updates** - Management can update vessel status without bookings
+- ✅ **NEW: Checkfront Webhook Integration** - Custom API captures all order items
+- ✅ **NEW: Integrated SMS** - SMS notifications now part of webhook processing
 
 ### August 2025
 - Major system overhaul and stabilization
 - Fixed booking allocation issues
 - Improved vessel maintenance dashboard
+
+## 📌 Quick Links to Latest Features
+
+- [Checkfront Webhook Integration Guide](./03-integrations/checkfront/WEBHOOK_INTEGRATION.md)
+- [Vessel Status Update Feature](./02-features/vessel-maintenance/STATUS_UPDATE_FEATURE.md)
+- [Integrated SMS System](./02-features/sms/INTEGRATED_WEBHOOK_SMS.md)
+- [Platform Requirements](./04-technical/PLATFORM_REQUIREMENTS_2025.md)
+- [Latest Session Summary](./07-handover/session-summaries/SEPTEMBER_16_2025_COMPREHENSIVE_UPDATE.md)
 
 ## 📖 How to Use This Documentation
 

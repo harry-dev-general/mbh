@@ -944,6 +944,16 @@
                 </div>
             </div>
             
+            <!-- Add-ons Section -->
+            <div id="bookingAddons" style="background: #fff3cd; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #ffeaa7;">
+                <h4 style="margin-top: 0; color: #856404; margin-bottom: 1rem;">
+                    <i class="fas fa-plus-circle"></i> Add-ons
+                </h4>
+                <div id="addonsContent" style="color: #856404;">
+                    <span id="summaryAddons" style="font-size: 0.95rem;">No add-ons</span>
+                </div>
+            </div>
+            
             <form id="bookingAllocationForm">
                 <!-- Hidden fields for booking data -->
                 <input type="hidden" id="bookingId" />
@@ -1413,6 +1423,7 @@
                     `filterByFormula=${filter}&pageSize=100&` +
                     `fields[]=Booking Code&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time&` +
                     `fields[]=Status&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Duration&` +
+                    `fields[]=Add-ons&` +
                     `fields[]=Onboarding Time&fields[]=Deloading Time&fields[]=Boat&fields[]=Booked Boat Type&` +
                     `fields[]=Booking Items&fields[]=Total Amount&_t=${Date.now()}`,
                     {
@@ -2069,6 +2080,7 @@
             const finishTime = booking['Finish Time'] || '';
             const onboardingTime = booking['Onboarding Time'] || '';
             const bookedBoatType = booking['Booked Boat Type'] || 'Not specified';
+            const addons = booking['Add-ons'] || '';
             
             // Populate summary section
             document.getElementById('summaryCustomerName').textContent = customerName;
@@ -2076,6 +2088,16 @@
             document.getElementById('summaryBookingTime').textContent = `${startTime} - ${finishTime}`;
             document.getElementById('summaryBoatType').textContent = bookedBoatType;
             document.getElementById('summaryOnboardingTime').textContent = onboardingTime;
+            
+            // Populate add-ons
+            const addonsElement = document.getElementById('summaryAddons');
+            if (addons && addons.trim() !== '') {
+                addonsElement.innerHTML = addons.split(',').map(addon => 
+                    `<div style="margin-bottom: 0.25rem;">• ${addon.trim()}</div>`
+                ).join('');
+            } else {
+                addonsElement.textContent = 'No add-ons';
+            }
             
             // Store booking data in hidden fields
             document.getElementById('bookingId').value = bookingRecord.id;
@@ -3363,7 +3385,7 @@
                     `filterByFormula=OR({Status}='PAID',{Status}='PART')&` +
                     `fields[]=Booking Code&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time&` +
                     `fields[]=Status&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Duration&` +
-                    `&_t=${Date.now()}`,
+                    `fields[]=Add-ons&_t=${Date.now()}`,
                     {
                         method: 'GET',
                         headers: {

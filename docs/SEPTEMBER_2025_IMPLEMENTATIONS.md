@@ -552,7 +552,11 @@ Created a custom API endpoint on Railway that:
    ```
 3. **New Airtable Field**: Added "Add-ons" field to store non-boat items
 4. **Intelligent SKU Formatting**: Converts "lillypad" → "Lilly Pad - $55.00"
-5. **Enhanced SMS Script**: Updated to include add-ons in messages
+5. **Integrated SMS Notifications**: SMS functionality built directly into webhook handler
+   - Uses existing `TWILIO_FROM_NUMBER` environment variable
+   - Sends notifications only for significant status changes
+   - Includes add-ons in booking confirmation messages
+   - Handles deduplication to prevent multiple notifications
 
 ### Technical Details
 - **Webhook URL**: Updated Checkfront to point to Railway endpoint
@@ -560,14 +564,21 @@ Created a custom API endpoint on Railway that:
 - **Data Preservation**: Boat SKU continues to populate linked "Booking Items" field
 - **Add-ons Format**: Comma-separated list with pricing (e.g., "Lilly Pad - $55.00, Icebag - $12.50")
 
-### Result ✅ VERIFIED
-**Test Booking (KSDA-160925)**:
+### Result ✅ VERIFIED WITH SMS
+**Test Booking 1 (KSDA-160925)**:
 - **Customer**: Test Booking v2
 - **Boat**: 12personbbqboat-halfday (correctly linked to "12 Person BBQ Boat")
 - **Add-ons**: "Lilly Pad - $55.00, Icebag - $12.50, Fishing Rods - $20.00"
 - **Total**: $637.50 (all items accounted for)
 
-The implementation has been deployed, tested, and verified working in production.
+**Test Booking 2 (JGMX-160925)** - WITH SMS INTEGRATION:
+- **Customer**: Test Booking v3
+- **Boat**: 12personbbqboat-halfday (correctly linked to "12 Person BBQ Boat")
+- **Add-ons**: "Lilly Pad - $55.00, Icebag - $12.50, Fishing Rods - $20.00"
+- **Total**: $637.50 (all items accounted for)
+- **SMS**: ✅ Confirmation SMS sent successfully
+
+The implementation has been deployed, tested, and verified working in production with full SMS integration.
 
 ---
 
@@ -582,10 +593,11 @@ This session delivered:
 6. ✅ Added date filtering to Pending Shift Responses
 7. ✅ Created vessel status management update feature
 8. ✅ Fixed Checkfront webhook to capture all order items
+9. ✅ Integrated SMS notifications directly into webhook handler
 
 All features are live in production at: https://mbh-production-f0d1.up.railway.app
 
 ---
 
 *Documentation created: September 9, 2025*
-*Last updated: September 16, 2025 (Checkfront webhook fix completed and verified)*
+*Last updated: September 16, 2025 (Checkfront webhook fix with SMS integration completed and verified)*
