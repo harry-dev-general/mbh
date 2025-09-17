@@ -2,7 +2,7 @@ const axios = require('axios');
 
 // Airtable configuration
 const BASE_ID = process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx';
-const BOOKINGS_TABLE = 'tblcBoyuVsbB1dt1I';  // Bookings Dashboard
+const BOOKINGS_TABLE = 'tblRe0cDmK3bG2kPf';  // Bookings Dashboard
 const PRE_DEPARTURE_TABLE = 'tbl9igu5g1bPG4Ahu';  // Pre-Departure Checklist
 const POST_DEPARTURE_TABLE = 'tblYkbSQGP6zveYNi';  // Post-Departure Checklist
 const BOATS_TABLE = 'tblA2b3OFfqPFbOM';  // Boats
