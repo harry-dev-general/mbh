@@ -36,34 +36,18 @@ async function getDailyBookings(date) {
             OR({Status} = 'PAID', {Status} = 'PEND', {Status} = 'PART')
         )`;
         
-        const response = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE}`,
-            {
-                headers,
-                params: {
-                    filterByFormula: filterFormula,
-                    sort: [{ field: 'Start Time', direction: 'asc' }],
-                    pageSize: 100,
-                    fields: [
-                        'Booking Code',
-                        'Customer Name',
-                        'Booking Date',
-                        'Start Time',
-                        'Finish Time',
-                        'Duration',
-                        'Status',
-                        'Add-ons',
-                        'Booking Items',
-                        'Boat',
-                        'Onboarding Employee',
-                        'Deloading Employee',
-                        'Onboarding Status',
-                        'Deloading Status',
-                        'Notes'
-                    ]
-                }
-            }
-        );
+        // Build URL with proper encoding for Airtable
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE}?` +
+            `filterByFormula=${encodeURIComponent(filterFormula)}&` +
+            `sort[0][field]=Start Time&sort[0][direction]=asc&` +
+            `pageSize=100&` +
+            `fields[]=Booking Code&fields[]=Customer Name&fields[]=Booking Date&` +
+            `fields[]=Start Time&fields[]=Finish Time&fields[]=Duration&` +
+            `fields[]=Status&fields[]=Add-ons&fields[]=Booking Items&` +
+            `fields[]=Boat&fields[]=Onboarding Employee&fields[]=Deloading Employee&` +
+            `fields[]=Onboarding Status&fields[]=Deloading Status&fields[]=Notes`;
+        
+        const response = await axios.get(url, { headers });
         
         return response.data.records;
     } catch (error) {
@@ -82,54 +66,28 @@ async function getVesselStatus(vesselId) {
         const dateFilter = thirtyDaysAgo.toISOString();
         
         // Get latest pre-departure checklist
-        const preDepResponse = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${PRE_DEPARTURE_TABLE}`,
-            {
-                headers,
-                params: {
-                    filterByFormula: `AND({Created} > '${dateFilter}')`,
-                    sort: [{ field: 'Created', direction: 'desc' }],
-                    pageSize: 100,
-                    fields: [
-                        'Vessel',
-                        'Fuel Level Check',
-                        'Gas Bottle Status',
-                        'Water Level',
-                        'Engine Check',
-                        'Completed',
-                        'Created',
-                        'Completed by'
-                    ]
-                }
-            }
-        );
+        const preDepUrl = `https://api.airtable.com/v0/${BASE_ID}/${PRE_DEPARTURE_TABLE}?` +
+            `filterByFormula=${encodeURIComponent(`AND({Created} > '${dateFilter}')`)}&` +
+            `sort[0][field]=Created&sort[0][direction]=desc&` +
+            `pageSize=100&` +
+            `fields[]=Vessel&fields[]=Fuel Level Check&fields[]=Gas Bottle Status&` +
+            `fields[]=Water Level&fields[]=Engine Check&fields[]=Completed&` +
+            `fields[]=Created&fields[]=Completed by`;
+        
+        const preDepResponse = await axios.get(preDepUrl, { headers });
         
         // Get latest post-departure checklist
-        const postDepResponse = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${POST_DEPARTURE_TABLE}`,
-            {
-                headers,
-                params: {
-                    filterByFormula: `AND({Created time} > '${dateFilter}')`,
-                    sort: [{ field: 'Created time', direction: 'desc' }],
-                    pageSize: 100,
-                    fields: [
-                        'Vessel',
-                        'Fuel Level After Use',
-                        'Gas Level After Use',
-                        'Water Level After Use',
-                        'Overall Vessel Condition After Use',
-                        'GPS Latitude',
-                        'GPS Longitude',
-                        'Location Address',
-                        'Location Captured',
-                        'Created time',
-                        'Last modified time',
-                        'Completed by'
-                    ]
-                }
-            }
-        );
+        const postDepUrl = `https://api.airtable.com/v0/${BASE_ID}/${POST_DEPARTURE_TABLE}?` +
+            `filterByFormula=${encodeURIComponent(`AND({Created time} > '${dateFilter}')`)}&` +
+            `sort[0][field]=Created time&sort[0][direction]=desc&` +
+            `pageSize=100&` +
+            `fields[]=Vessel&fields[]=Fuel Level After Use&fields[]=Gas Level After Use&` +
+            `fields[]=Water Level After Use&fields[]=Overall Vessel Condition After Use&` +
+            `fields[]=GPS Latitude&fields[]=GPS Longitude&fields[]=Location Address&` +
+            `fields[]=Location Captured&fields[]=Created time&fields[]=Last modified time&` +
+            `fields[]=Completed by`;
+        
+        const postDepResponse = await axios.get(postDepUrl, { headers });
         
         // Filter for this specific vessel
         const vesselPreDeps = preDepResponse.data.records.filter(record => 
@@ -226,17 +184,12 @@ async function getAllVesselStatuses() {
         }
         
         // Get all boats
-        const boatsResponse = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE}`,
-            {
-                headers,
-                params: {
-                    filterByFormula: `{Status} = 'Active'`,
-                    pageSize: 100,
-                    fields: ['Name', 'Boat Type', 'Capacity', 'Home Location']
-                }
-            }
-        );
+        const boatsUrl = `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE}?` +
+            `filterByFormula=${encodeURIComponent("{Status} = 'Active'")}&` +
+            `pageSize=100&` +
+            `fields[]=Name&fields[]=Boat Type&fields[]=Capacity&fields[]=Home Location`;
+        
+        const boatsResponse = await axios.get(boatsUrl, { headers });
         
         const vessels = boatsResponse.data.records;
         
