@@ -203,12 +203,12 @@
         
         .booking-block {
             position: absolute;
-            height: 50px;
+            height: 65px;
             background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             border-radius: 8px;
             display: flex;
             align-items: center;
-            padding: 0 1rem;
+            padding: 0.5rem 1rem;
             color: white;
             font-size: 0.85rem;
             font-weight: 500;
@@ -806,9 +806,14 @@
                 <div class="booking-block ${statusClass}" 
                      style="left: ${left}px; width: ${width}px;"
                      title="${booking.bookingCode} - ${booking.customerName}">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span>${booking.bookingCode}</span>
-                        ${addOnIcons}
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${booking.customerName}
+                        </div>
+                        <div style="font-size: 0.75rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem;">
+                            <span>${booking.bookingCode}</span>
+                            ${addOnIcons}
+                        </div>
                     </div>
                 </div>
             `;
