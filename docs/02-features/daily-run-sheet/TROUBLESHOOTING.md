@@ -1,0 +1,155 @@
+# Daily Run Sheet Troubleshooting Guide
+
+## Common Issues and Solutions
+
+### 1. Authentication Error (401) - Page Stuck Loading
+
+**Symptoms:**
+- Page shows loading animation indefinitely
+- Console shows: `Failed to load resource: the server responded with a status of 401`
+- Authentication check fails
+
+**Cause:**
+- Incorrect Supabase client initialization
+- Wrong API key or authentication pattern
+
+**Solution:**
+The Daily Run Sheet must use the same authentication pattern as other management pages:
+
+```javascript
+// Correct pattern:
+const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Check authentication
+async function checkAuth() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        window.location.href = 'auth.html';  // Redirect to auth.html, not login.html
+        return;
+    }
+    // Continue with initialization...
+}
+```
+
+**Fixed in:** Commit `bc4feca` (September 17, 2025)
+
+### 2. API 500 Error - Failed to Load Data
+
+**Symptoms:**
+- Page loads but data fails to fetch
+- Console shows: `Failed to load resource: the server responded with a status of 500`
+- Error message: "Failed to load data"
+
+**Cause:**
+- Incorrect Airtable table IDs in the API module
+
+**Solution:**
+Verify all table IDs match the actual Airtable base:
+```javascript
+// Correct table IDs:
+const BOOKINGS_TABLE = 'tblRe0cDmK3bG2kPf';  // Bookings Dashboard
+const PRE_DEPARTURE_TABLE = 'tbl9igu5g1bPG4Ahu';  // Pre-Departure Checklist
+const POST_DEPARTURE_TABLE = 'tblYkbSQGP6zveYNi';  // Post-Departure Checklist
+const BOATS_TABLE = 'tblA2b3OFfqPFbOM';  // Boats
+const EMPLOYEE_TABLE = 'tbltAE4NlNePvnkpY';  // Employee Details
+```
+
+**Fixed in:** Commit `566c750` (September 17, 2025)
+
+### 3. No Data Displaying
+
+**Symptoms:**
+- Page loads but shows "No bookings scheduled"
+- API returns empty results
+
+**Possible Causes:**
+1. **Date Format Issues:** Ensure date is in Sydney timezone
+2. **Airtable Permissions:** Check API key has access to required tables
+3. **Filter Formula:** Verify booking status filter includes PAID, PEND, PART
+
+**Debugging Steps:**
+1. Check browser console for API errors
+2. Verify date being sent to API (should be YYYY-MM-DD format)
+3. Check Network tab for API response
+
+### 4. Missing Vessel Information
+
+**Symptoms:**
+- Bookings show "Unassigned" for vessel
+- Vessel status cards don't appear
+
+**Causes:**
+- Vessel not linked in Airtable booking record
+- Vessel record missing from Boats table
+- API not fetching linked records properly
+
+**Solution:**
+Ensure bookings have vessels assigned in Airtable and the API includes vessel fields:
+```javascript
+fields: [
+    'Booking Code',
+    'Customer Name',
+    'Boat',  // This must be included
+    // ... other fields
+]
+```
+
+### 5. Add-ons Not Displaying
+
+**Symptoms:**
+- Add-ons section is empty or shows incorrect counts
+
+**Causes:**
+- Add-ons field format changed in Airtable
+- Parsing logic not handling all formats
+
+**Solution:**
+Check that add-ons are stored in expected format in Airtable:
+- Should be in 'Addons' field
+- Format: "Item 1 x2, Item 2 x1" or similar
+
+## Performance Issues
+
+### Slow Loading Times
+
+**Optimization Tips:**
+1. **Caching:** The API implements 5-minute cache for vessel status
+2. **Pagination:** Limit bookings query to specific date range
+3. **Parallel Requests:** Frontend could fetch vessel status while loading bookings
+
+### API Rate Limiting
+
+**Symptoms:**
+- 429 errors from Airtable
+- Intermittent failures
+
+**Solution:**
+- Implement request queuing
+- Increase cache TTL
+- Batch requests where possible
+
+## Development and Testing
+
+### Local Testing
+The Daily Run Sheet requires:
+1. Valid Airtable API key in environment
+2. Supabase authentication
+3. Access to production Airtable base
+
+### Test Data
+Create test bookings with:
+- Various add-ons
+- Different vessels
+- Multiple time slots
+- Pre/post departure checklists
+
+## Contact and Support
+
+For issues not covered here:
+1. Check server logs in Railway dashboard
+2. Review Airtable API documentation
+3. Verify Supabase authentication status
+
+Last Updated: September 17, 2025
