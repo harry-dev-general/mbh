@@ -123,7 +123,9 @@ app.get('/api/daily-run-sheet', async (req, res) => {
             onboardingStaff: b.fields['Onboarding Employee'],
             deloadingStaff: b.fields['Deloading Employee'],
             status: b.fields['Status'],
-            totalAmount: b.fields['Total Amount']
+            totalAmount: b.fields['Total Amount'],
+            preDepartureChecklist: b.fields['Pre Departure Checklist'],
+            postDepartureChecklist: b.fields['Post Departure Checklist']
         }));
         
         // Calculate stats
