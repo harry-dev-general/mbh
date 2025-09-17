@@ -49,6 +49,12 @@ async function getDailyBookings(date) {
         
         const response = await axios.get(url, { headers });
         
+        console.log(`Daily bookings query for ${dateString}:`, {
+            filterFormula,
+            recordsFound: response.data.records.length,
+            firstRecord: response.data.records[0]?.fields?.['Booking Date']
+        });
+        
         return response.data.records;
     } catch (error) {
         console.error('Error fetching daily bookings:', error.response?.data || error.message);

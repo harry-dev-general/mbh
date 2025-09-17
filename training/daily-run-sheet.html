@@ -547,8 +547,8 @@
             <button id="todayBtn" style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 4px;">
                 Today
             </button>
-            <button id="jumpToBookingsBtn" style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 4px; margin-left: 10px;" title="Jump to last booking date">
-                <i class="fas fa-calendar-check"></i> Latest Bookings
+            <button id="jumpToBookingsBtn" style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 4px; margin-left: 10px;" title="Jump to next booking date">
+                <i class="fas fa-calendar-check"></i> Next Bookings
             </button>
         </div>
     </div>
@@ -583,7 +583,9 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // State management
-        let currentDate = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        today.setFullYear(2025); // Ensure we're in 2025 context
+        let currentDate = today.toISOString().split('T')[0];
         let runSheetData = null;
         let currentUser = null;
         
@@ -633,7 +635,9 @@
             
             // Today button
             document.getElementById('todayBtn').addEventListener('click', () => {
-                currentDate = new Date().toISOString().split('T')[0];
+                const today = new Date();
+                today.setFullYear(2025); // Ensure we're in 2025 context
+                currentDate = today.toISOString().split('T')[0];
                 dateInput.value = currentDate;
                 loadDailyRunSheet();
             });
@@ -646,8 +650,8 @@
             
             // Jump to latest bookings button
             document.getElementById('jumpToBookingsBtn').addEventListener('click', () => {
-                // Navigate to September 7, 2025 - the last date with bookings in the system
-                navigateToDate('2025-09-07');
+                // Navigate to this Saturday (September 20, 2025) - has multiple bookings
+                navigateToDate('2025-09-20');
             });
         }
         
@@ -716,10 +720,10 @@
                             Try navigating to a different date using the date controls above.
                         </p>
                         <p style="font-size: 0.85em; color: #999; margin-top: 5px;">
-                            Note: Most recent bookings were in early September 2025.
+                            Note: Upcoming bookings are scheduled for this weekend.
                         </p>
-                        <button onclick="navigateToDate('2025-09-07')" style="margin-top: 15px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            <i class="fas fa-calendar-day"></i> Jump to Sept 7, 2025
+                        <button onclick="navigateToDate('2025-09-20')" style="margin-top: 15px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-calendar-day"></i> Jump to Saturday, Sept 20
                         </button>
                     </div>
                 `;
