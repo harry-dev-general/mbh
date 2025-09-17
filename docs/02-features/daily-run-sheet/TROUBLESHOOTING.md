@@ -143,6 +143,28 @@ const BOATS_TABLE = 'tblNLoBNb4daWzjob';  // Correct ID
 
 **Fixed in:** Commit `b418413` (September 17, 2025)
 
+### 2.4 API 500 Error - Non-existent Status Field
+
+**Symptoms:**
+- Error persists even after all previous fixes
+- Vessel status queries fail
+
+**Cause:**
+- Trying to filter boats by `{Status} = 'Active'`
+- The Status field doesn't exist in the Boats table
+
+**Solution:**
+Remove the filter and fetch all boats:
+```javascript
+// Wrong - Status field doesn't exist
+filterByFormula: "{Status} = 'Active'"
+
+// Correct - fetch all boats
+const boatsUrl = `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE}?pageSize=100`;
+```
+
+**Fixed in:** Commit `a949045` (September 17, 2025)
+
 ### 3. No Data Displaying
 
 **Symptoms:**
@@ -230,11 +252,42 @@ Create test bookings with:
 - Multiple time slots
 - Pre/post departure checklists
 
+## Debugging Steps for Persistent 500 Errors
+
+If you're still getting 500 errors after applying all fixes:
+
+1. **Check Server Logs**
+   - Add detailed logging to server.js:
+   ```javascript
+   console.error('Error details:', error.response?.data || error.stack);
+   ```
+
+2. **Verify All Table IDs**
+   ```javascript
+   // Correct IDs for MBH Bookings Operation base
+   const BOOKINGS_TABLE = 'tblRe0cDmK3bG2kPf';
+   const PRE_DEPARTURE_TABLE = 'tbl9igu5g1bPG4Ahu';
+   const POST_DEPARTURE_TABLE = 'tblYkbSQGP6zveYNi';
+   const BOATS_TABLE = 'tblNLoBNb4daWzjob';
+   const EMPLOYEE_TABLE = 'tbltAE4NlNePvnkpY';
+   ```
+
+3. **Test API Endpoints Individually**
+   - Test bookings: `/api/daily-run-sheet?date=2025-09-17`
+   - Check response in Network tab
+   - Look for specific error messages
+
+4. **Common Field Name Issues**
+   - Don't assume fields exist - check Airtable directly
+   - Use optional chaining: `vessel.fields?.['Name']`
+   - Match exact field names (case-sensitive)
+
 ## Contact and Support
 
 For issues not covered here:
 1. Check server logs in Railway dashboard
 2. Review Airtable API documentation
 3. Verify Supabase authentication status
+4. Use Airtable MCP to verify field names
 
 Last Updated: September 17, 2025

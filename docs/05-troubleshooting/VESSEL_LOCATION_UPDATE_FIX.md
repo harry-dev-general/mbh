@@ -1,6 +1,6 @@
 # Vessel Location Update - No Checklist Found Fix
 
-**Date**: September 16, 2025
+**Date**: September 17, 2025
 **Issue**: Location updates failing for vessels without recent bookings
 
 ## Problem Description
@@ -36,17 +36,52 @@ Simplified the logic to immediately create a location-only Post-Departure checkl
    - `Completion Time`: Current timestamp
    - All location fields populated
 
-### Additional Fix (Sept 16, 2025)
+### Additional Fix (Sept 17, 2025)
 The initial fix used "Location Update Only" for Completion Status, but this wasn't a valid option in the single select field. Updated to use "Completed" which is one of the three valid options: "Not Started", "In Progress", "Completed".
 
 ### Files Modified
 - `/api/routes/vessel-maintenance.js` - Simplified the location update endpoint
 
+### Code Changes
+```javascript
+if (latestPostDep) {
+    // Use existing Post-Departure checklist
+    checklistId = latestPostDep.id;
+} else {
+    // Create new location-only checklist
+    const createData = {
+        fields: {
+            'Vessel': [vesselId],
+            'GPS Latitude': latitude,
+            'GPS Longitude': longitude,
+            'Location Address': address || 'Manual location update',
+            'Location Captured': true,
+            'Location Accuracy': 10,
+            'Checklist ID': `LOC-UPDATE-${Date.now()}`,
+            'Checklist Date/Time': new Date().toISOString(),
+            'Completion Status': 'Completed',
+            'Completion Time': new Date().toISOString()
+        }
+    };
+    
+    const createResponse = await axios.post(
+        `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
+        createData,
+        {
+            headers: {
+                'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+}
+```
+
 ## Benefits
 
 1. **No more 404 errors** - Vessels without recent bookings can now have their locations updated
 2. **Cleaner logic** - Removed unnecessary Pre-Departure checklist lookup
-3. **Clear identification** - Location-only checklists are marked with special status
+3. **Clear identification** - Location-only checklists are marked with special ID format
 
 ## Testing
 
@@ -63,3 +98,4 @@ When implementing features that depend on existing records:
 1. Always consider the case where no records exist
 2. Provide fallback logic to create necessary records
 3. Test with both frequently-used and rarely-used entities
+4. Verify that any values used match Airtable's single/multi-select options

@@ -1,6 +1,6 @@
 # Ice Cream Boat and Work Boat Location Tracking
 
-**Date**: September 16, 2025
+**Date**: September 17, 2025
 **Feature**: Enable location tracking for Ice Cream Boat and Work Boat vessels
 
 ## Overview
@@ -40,7 +40,7 @@ Previously, the Ice Cream Boat and Work Boat vessels had fixed locations that co
 ### At Different Location
 ```
 📍 Manly Wharf
-⏰ Updated: 16/09/25, 3:45 PM
+⏰ Updated: 17/09/25, 3:45 PM
 🏭 Storage: Dalbora Marina The Spit, A Arm
 [Map] [Update]
 ```
@@ -52,6 +52,23 @@ Previously, the Ice Cream Boat and Work Boat vessels had fixed locations that co
 2. Modified fixed location logic to only apply when no location exists
 3. Added storage location tracking when vessel is moved
 4. Updated UI labels and icons for clarity
+
+### Modified Logic
+```javascript
+// Set default location for fixed vessels if no location exists
+if (fixedLocations[vessel.name]) {
+    if (!vessel.currentStatus) {
+        vessel.currentStatus = {};
+    }
+    // Only use fixed location if there's no existing location data
+    if (!vessel.currentStatus.location || !vessel.currentStatus.location.latitude) {
+        vessel.currentStatus.location = fixedLocations[vessel.name];
+    } else {
+        // Mark that this vessel has a storage location
+        vessel.currentStatus.location.storageLocation = fixedLocations[vessel.name];
+    }
+}
+```
 
 ### Benefits
 - Full tracking capability for all vessels

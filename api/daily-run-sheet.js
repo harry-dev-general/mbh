@@ -67,12 +67,12 @@ async function getVesselStatus(vesselId) {
         
         // Get latest pre-departure checklist
         const preDepUrl = `https://api.airtable.com/v0/${BASE_ID}/${PRE_DEPARTURE_TABLE}?` +
-            `filterByFormula=${encodeURIComponent(`AND({Created} > '${dateFilter}')`)}&` +
-            `sort[0][field]=Created&sort[0][direction]=desc&` +
+            `filterByFormula=${encodeURIComponent(`AND({Created time} > '${dateFilter}')`)}&` +
+            `sort[0][field]=Created time&sort[0][direction]=desc&` +
             `pageSize=100&` +
-            `fields[]=Vessel&fields[]=Fuel Level Check&fields[]=Gas Bottle Status&` +
-            `fields[]=Water Level&fields[]=Engine Check&fields[]=Completed&` +
-            `fields[]=Created&fields[]=Completed by`;
+            `fields[]=Vessel&fields[]=Fuel Level Check&fields[]=Gas Bottle Check&` +
+            `fields[]=Water Tank Level&fields[]=Completion Status&` +
+            `fields[]=Created time&fields[]=Completed by`;
         
         const preDepResponse = await axios.get(preDepUrl, { headers });
         
@@ -81,8 +81,8 @@ async function getVesselStatus(vesselId) {
             `filterByFormula=${encodeURIComponent(`AND({Created time} > '${dateFilter}')`)}&` +
             `sort[0][field]=Created time&sort[0][direction]=desc&` +
             `pageSize=100&` +
-            `fields[]=Vessel&fields[]=Fuel Level After Use&fields[]=Gas Level After Use&` +
-            `fields[]=Water Level After Use&fields[]=Overall Vessel Condition After Use&` +
+            `fields[]=Vessel&fields[]=Fuel Level After Use&fields[]=Gas Bottle Level After Use&` +
+            `fields[]=Water Tank Level After Use&fields[]=Overall Vessel Condition After Use&` +
             `fields[]=GPS Latitude&fields[]=GPS Longitude&fields[]=Location Address&` +
             `fields[]=Location Captured&fields[]=Created time&fields[]=Last modified time&` +
             `fields[]=Completed by`;
@@ -107,7 +107,7 @@ async function getVesselStatus(vesselId) {
         let returnTime = null;
         
         if (latestPreDep && latestPostDep) {
-            const preDepTime = new Date(latestPreDep.fields['Created']);
+            const preDepTime = new Date(latestPreDep.fields['Created time']);
             const postDepTime = new Date(latestPostDep.fields['Created time']);
             
             if (preDepTime > postDepTime) {
@@ -121,18 +121,18 @@ async function getVesselStatus(vesselId) {
             }
         } else if (latestPreDep && !latestPostDep) {
             status = 'on_water';
-            departureTime = new Date(latestPreDep.fields['Created']).toISOString();
+            departureTime = new Date(latestPreDep.fields['Created time']).toISOString();
         }
         
         // Get resource levels from latest post-departure or pre-departure
         const fuelLevel = latestPostDep?.fields['Fuel Level After Use'] || 
                          latestPreDep?.fields['Fuel Level Check'] || 
                          'Unknown';
-        const gasLevel = latestPostDep?.fields['Gas Level After Use'] || 
-                        latestPreDep?.fields['Gas Bottle Status'] || 
+        const gasLevel = latestPostDep?.fields['Gas Bottle Level After Use'] || 
+                        latestPreDep?.fields['Gas Bottle Check'] || 
                         'Unknown';
-        const waterLevel = latestPostDep?.fields['Water Level After Use'] || 
-                          latestPreDep?.fields['Water Level'] || 
+        const waterLevel = latestPostDep?.fields['Water Tank Level After Use'] || 
+                          latestPreDep?.fields['Water Tank Level'] || 
                           'Unknown';
         const condition = latestPostDep?.fields['Overall Vessel Condition After Use'] || 
                          'Unknown';
@@ -158,7 +158,7 @@ async function getVesselStatus(vesselId) {
             waterLevel,
             condition,
             location,
-            lastUpdate: latestPostDep?.fields['Created time'] || latestPreDep?.fields['Created']
+            lastUpdate: latestPostDep?.fields['Created time'] || latestPreDep?.fields['Created time']
         };
     } catch (error) {
         console.error('Error fetching vessel status:', error.response?.data || error.message);
@@ -198,7 +198,6 @@ async function getAllVesselStatuses() {
                     id: vessel.id,
                     name: vessel.fields?.['Name'] || 'Unknown',
                     type: vessel.fields?.['Boat Type'] || 'Unknown',
-                    capacity: vessel.fields?.['Capacity'] || 0,
                     ...status
                 };
             })

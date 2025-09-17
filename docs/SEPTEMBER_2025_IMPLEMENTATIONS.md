@@ -582,6 +582,21 @@ The implementation has been deployed, tested, and verified working in production
 
 ---
 
+### September 17, 2025 - Add-ons Display and Vessel Fixes
+
+**Features Added**:
+1. **Booking Add-ons Display** - Shows add-ons in allocation popup with formatted prices
+2. **Ice Cream/Work Boat Tracking** - Enabled full location tracking for fixed vessels
+
+**Fixes Applied**:
+1. **Overall Condition Field** - Fixed single select validation errors
+2. **Location Update for Idle Vessels** - Creates checklist when none exists
+3. **Storage Location Display** - Shows both current and storage locations
+
+**Technical Improvements**:
+- Comprehensive documentation for Airtable single select handling
+- Improved error handling for edge cases
+
 ## Summary
 
 This session delivered:
@@ -594,10 +609,13 @@ This session delivered:
 7. ✅ Created vessel status management update feature
 8. ✅ Fixed Checkfront webhook to capture all order items
 9. ✅ Integrated SMS notifications directly into webhook handler
+10. ✅ Added booking add-ons display to allocation popup
+11. ✅ Fixed vessel status and location update issues
+12. ✅ Enabled Ice Cream Boat and Work Boat location tracking
 
 All features are live in production at: https://mbh-production-f0d1.up.railway.app
 
 ---
 
 *Documentation created: September 9, 2025*
-*Last updated: September 16, 2025 (Checkfront webhook fix with SMS integration completed and verified)*
+*Last updated: September 17, 2025 (Add-ons display and vessel management fixes completed)*

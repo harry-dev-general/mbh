@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Run Sheet - MBH Staff Portal Mockup</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header .date {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Quick Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #DC143C;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        /* Timeline View */
+        .timeline-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline-header h2 {
+            color: #8B0000;
+        }
+        
+        .timeline-container {
+            position: relative;
+            min-width: 1200px;
+        }
+        
+        .time-grid {
+            display: grid;
+            grid-template-columns: 120px repeat(14, 1fr);
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .time-slot {
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .vessel-row {
+            display: grid;
+            grid-template-columns: 120px repeat(14, 1fr);
+            height: 60px;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+        }
+        
+        .vessel-name {
+            font-weight: 600;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .booking-block {
+            position: absolute;
+            height: 45px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .booking-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        
+        .booking-block.preparing {
+            background: linear-gradient(135deg, #FFC107 0%, #FFB300 100%);
+        }
+        
+        .booking-block.on-water {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+        
+        .booking-block.returning {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        }
+        
+        /* Vessel Status Cards */
+        .vessel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .vessel-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        
+        .vessel-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .vessel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .vessel-name-card {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-ready {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        .status-preparing {
+            background: #FFF8E1;
+            color: #F57C00;
+        }
+        
+        .status-on-water {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+        
+        .status-returning {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+        
+        .vessel-details {
+            display: grid;
+            gap: 0.75rem;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .detail-label {
+            color: #666;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+        }
+        
+        /* Resource Gauges */
+        .resource-gauges {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .gauge {
+            text-align: center;
+        }
+        
+        .gauge-label {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+        
+        .gauge-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .gauge-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
+        }
+        
+        .gauge-fill.low {
+            background: #f44336;
+        }
+        
+        .gauge-fill.medium {
+            background: #FF9800;
+        }
+        
+        .gauge-value {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            font-weight: 600;
+        }
+        
+        /* Add-ons Section */
+        .addons-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .addons-header {
+            color: #8B0000;
+            margin-bottom: 1.5rem;
+        }
+        
+        .addons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .addon-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .addon-item:hover {
+            border-color: #DC143C;
+            background: #fff;
+        }
+        
+        .addon-icon {
+            font-size: 2rem;
+        }
+        
+        .addon-details {
+            flex: 1;
+        }
+        
+        .addon-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .addon-count {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .addon-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .vessel-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .addons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1><i class="fas fa-clipboard-list"></i> Daily Run Sheet</h1>
+        <div class="date">Wednesday, September 17, 2025</div>
+    </div>
+    
+    <div class="container">
+        <!-- Quick Stats -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-number">15</div>
+                <div class="stat-label">Total Bookings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">On Water Now</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Preparing</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Returning Soon</div>
+            </div>
+        </div>
+        
+        <!-- Timeline View -->
+        <div class="timeline-section">
+            <div class="timeline-header">
+                <h2><i class="fas fa-calendar-alt"></i> Booking Timeline</h2>
+                <div>
+                    <button class="btn" style="padding: 0.5rem 1rem; border: 1px solid #DC143C; background: white; color: #DC143C; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+            </div>
+            
+            <div class="timeline-container">
+                <div class="time-grid">
+                    <div class="time-slot">Vessel</div>
+                    <div class="time-slot">6 AM</div>
+                    <div class="time-slot">7 AM</div>
+                    <div class="time-slot">8 AM</div>
+                    <div class="time-slot">9 AM</div>
+                    <div class="time-slot">10 AM</div>
+                    <div class="time-slot">11 AM</div>
+                    <div class="time-slot">12 PM</div>
+                    <div class="time-slot">1 PM</div>
+                    <div class="time-slot">2 PM</div>
+                    <div class="time-slot">3 PM</div>
+                    <div class="time-slot">4 PM</div>
+                    <div class="time-slot">5 PM</div>
+                    <div class="time-slot">6 PM</div>
+                    <div class="time-slot">7 PM</div>
+                </div>
+                
+                <!-- BBQ Boat 1 -->
+                <div class="vessel-row">
+                    <div class="vessel-name">
+                        <i class="fas fa-ship"></i> BBQ Boat 1
+                    </div>
+                    <div class="booking-block preparing" style="left: 240px; width: 340px;">
+                        JGMX-160925 • Test Customer <i class="fas fa-fish" style="margin-left: 8px;"></i>
+                    </div>
+                    <div class="booking-block" style="left: 650px; width: 255px;">
+                        ABCD-123456 • Smith Family
+                    </div>
+                </div>
+                
+                <!-- Ski Boat 14 -->
+                <div class="vessel-row">
+                    <div class="vessel-name">
+                        <i class="fas fa-ship"></i> Ski Boat 14
+                    </div>
+                    <div class="booking-block on-water" style="left: 310px; width: 170px;">
+                        EFGH-789012 • Johnson
+                    </div>
+                    <div class="booking-block" style="left: 550px; width: 255px;">
+                        IJKL-345678 • Williams <i class="fas fa-snowflake" style="margin-left: 8px;"></i>
+                    </div>
+                </div>
+                
+                <!-- BBQ Boat 2 -->
+                <div class="vessel-row">
+                    <div class="vessel-name">
+                        <i class="fas fa-ship"></i> BBQ Boat 2
+                    </div>
+                    <div class="booking-block returning" style="left: 480px; width: 340px;">
+                        MNOP-901234 • Davis Group <i class="fas fa-umbrella-beach" style="margin-left: 8px;"></i>
+                    </div>
+                </div>
+                
+                <!-- Ski Boat 16 -->
+                <div class="vessel-row">
+                    <div class="vessel-name">
+                        <i class="fas fa-ship"></i> Ski Boat 16
+                    </div>
+                    <div class="booking-block" style="left: 380px; width: 170px;">
+                        QRST-567890 • Miller
+                    </div>
+                    <div class="booking-block" style="left: 620px; width: 170px;">
+                        UVWX-123789 • Brown
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vessel Status Cards -->
+        <h2 style="color: #8B0000; margin-bottom: 1.5rem;">
+            <i class="fas fa-anchor"></i> Fleet Status
+        </h2>
+        <div class="vessel-grid">
+            <!-- BBQ Boat 1 -->
+            <div class="vessel-card">
+                <div class="vessel-header">
+                    <div class="vessel-name-card">
+                        <i class="fas fa-ship"></i> BBQ Boat 1
+                    </div>
+                    <div class="status-badge status-preparing">Preparing</div>
+                </div>
+                <div class="vessel-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Booking:</span>
+                        <span class="detail-value">JGMX-160925</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Customer:</span>
+                        <span class="detail-value">Test Customer</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Departure:</span>
+                        <span class="detail-value">8:30 AM</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Add-ons:</span>
+                        <span class="detail-value">🎣 Fishing Rods</span>
+                    </div>
+                </div>
+                <div class="resource-gauges">
+                    <div class="gauge">
+                        <div class="gauge-label">Fuel</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" style="width: 85%;"></div>
+                        </div>
+                        <div class="gauge-value">85%</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-label">Water</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" style="width: 95%;"></div>
+                        </div>
+                        <div class="gauge-value">95%</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-label">Gas</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill medium" style="width: 45%;"></div>
+                        </div>
+                        <div class="gauge-value">45%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ski Boat 14 -->
+            <div class="vessel-card">
+                <div class="vessel-header">
+                    <div class="vessel-name-card">
+                        <i class="fas fa-ship"></i> Ski Boat 14
+                    </div>
+                    <div class="status-badge status-on-water">On Water</div>
+                </div>
+                <div class="vessel-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Booking:</span>
+                        <span class="detail-value">EFGH-789012</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Customer:</span>
+                        <span class="detail-value">Johnson</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Return:</span>
+                        <span class="detail-value">11:00 AM</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Location:</span>
+                        <span class="detail-value">📍 Manly Cove</span>
+                    </div>
+                </div>
+                <div class="resource-gauges">
+                    <div class="gauge">
+                        <div class="gauge-label">Fuel</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" style="width: 70%;"></div>
+                        </div>
+                        <div class="gauge-value">70%</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-label">Water</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" style="width: 80%;"></div>
+                        </div>
+                        <div class="gauge-value">80%</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-label">Gas</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" style="width: 90%;"></div>
+                        </div>
+                        <div class="gauge-value">90%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BBQ Boat 2 -->
+            <div class="vessel-card">
+                <div class="vessel-header">
+                    <div class="vessel-name-card">
+                        <i class="fas fa-ship"></i> BBQ Boat 2
+                    </div>
+                    <div class="status-badge status-returning">Returning</div>
+                </div>
+                <div class="vessel-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Booking:</span>
+                        <span class="detail-value">MNOP-901234</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Customer:</span>
+                        <span class="detail-value">Davis Group</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">ETA:</span>
+                        <span class="detail-value">2:30 PM</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Add-ons:</span>
+                        <span class="detail-value">🏖️ Lilly Pad</span>
+                    </div>
+                </div>
+                <div class="resource-gauges">
+                    <div class="gauge">
+                        <div class="gauge-label">Fuel</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill low" style="width: 25%;"></div>
+                        </div>
+                        <div class="gauge-value">25%</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-label">Water</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill medium" style="width: 40%;"></div>
+                        </div>
+                        <div class="gauge-value">40%</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-label">Gas</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" style="width: 60%;"></div>
+                        </div>
+                        <div class="gauge-value">60%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ski Boat 16 -->
+            <div class="vessel-card">
+                <div class="vessel-header">
+                    <div class="vessel-name-card">
+                        <i class="fas fa-ship"></i> Ski Boat 16
+                    </div>
+                    <div class="status-badge status-ready">Ready</div>
+                </div>
+                <div class="vessel-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Next Booking:</span>
+                        <span class="detail-value">QRST-567890</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Customer:</span>
+                        <span class="detail-value">Miller</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Time:</span>
+                        <span class="detail-value">10:00 AM</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Staff:</span>
+                        <span class="detail-value">John (Onboard)</span>
+                    </div>
+                </div>
+                <div class="resource-gauges">
+                    <div class="gauge">
+                        <div class="gauge-label">Fuel</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" style="width: 100%;"></div>
+                        </div>
+                        <div class="gauge-value">100%</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-label">Water</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" style="width: 100%;"></div>
+                        </div>
+                        <div class="gauge-value">100%</div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-label">Gas</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" style="width: 100%;"></div>
+                        </div>
+                        <div class="gauge-value">100%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add-ons Section -->
+        <div class="addons-section">
+            <h2 class="addons-header">
+                <i class="fas fa-box"></i> Today's Add-ons Required
+            </h2>
+            <div class="addons-grid">
+                <div class="addon-item">
+                    <div class="addon-icon">🎣</div>
+                    <div class="addon-details">
+                        <div class="addon-name">Fishing Rods</div>
+                        <div class="addon-count">3 sets needed</div>
+                    </div>
+                    <div class="addon-status">2 Ready</div>
+                </div>
+                
+                <div class="addon-item">
+                    <div class="addon-icon">🧊</div>
+                    <div class="addon-details">
+                        <div class="addon-name">Ice Bags</div>
+                        <div class="addon-count">5 bags needed</div>
+                    </div>
+                    <div class="addon-status">All Ready</div>
+                </div>
+                
+                <div class="addon-item">
+                    <div class="addon-icon">🏖️</div>
+                    <div class="addon-details">
+                        <div class="addon-name">Lilly Pads</div>
+                        <div class="addon-count">2 needed</div>
+                    </div>
+                    <div class="addon-status">Preparing</div>
+                </div>
+                
+                <div class="addon-item">
+                    <div class="addon-icon">🍖</div>
+                    <div class="addon-details">
+                        <div class="addon-name">BBQ Packs</div>
+                        <div class="addon-count">4 packs needed</div>
+                    </div>
+                    <div class="addon-status">All Ready</div>
+                </div>
+                
+                <div class="addon-item">
+                    <div class="addon-icon">🦺</div>
+                    <div class="addon-details">
+                        <div class="addon-name">Extra Life Jackets</div>
+                        <div class="addon-count">Kids sizes x2</div>
+                    </div>
+                    <div class="addon-status">All Ready</div>
+                </div>
+                
+                <div class="addon-item">
+                    <div class="addon-icon">📻</div>
+                    <div class="addon-details">
+                        <div class="addon-name">Bluetooth Speakers</div>
+                        <div class="addon-count">1 requested</div>
+                    </div>
+                    <div class="addon-status">Charging</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simulate real-time updates
+        setInterval(() => {
+            // Update current time indicator
+            const now = new Date();
+            const hour = now.getHours();
+            const minutes = now.getMinutes();
+            
+            // Add any interactive elements here
+        }, 30000); // Update every 30 seconds
+    </script>
+</body>
+</html>
