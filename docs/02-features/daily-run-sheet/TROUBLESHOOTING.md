@@ -58,6 +58,42 @@ const EMPLOYEE_TABLE = 'tbltAE4NlNePvnkpY';  // Employee Details
 
 **Fixed in:** Commit `566c750` (September 17, 2025)
 
+### 2.1 API 500 Error - Axios Parameter Encoding
+
+**Symptoms:**
+- Same as above but caused by different issue
+- Console shows: `Failed to load resource: the server responded with a status of 500`
+
+**Cause:**
+- Incorrect parameter encoding when using axios with Airtable API
+- The `params` object in axios doesn't format arrays correctly for Airtable
+
+**Problem Code:**
+```javascript
+// Incorrect - causes 500 error
+const response = await axios.get(url, {
+    headers,
+    params: {
+        sort: [{ field: 'Start Time', direction: 'asc' }],
+        fields: ['Field1', 'Field2']
+    }
+});
+```
+
+**Solution:**
+Build URL with proper encoding:
+```javascript
+// Correct - works with Airtable API
+const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE}?` +
+    `filterByFormula=${encodeURIComponent(formula)}&` +
+    `sort[0][field]=Start Time&sort[0][direction]=asc&` +
+    `fields[]=Field1&fields[]=Field2`;
+
+const response = await axios.get(url, { headers });
+```
+
+**Fixed in:** Commit `62b0a5e` (September 17, 2025)
+
 ### 3. No Data Displaying
 
 **Symptoms:**
