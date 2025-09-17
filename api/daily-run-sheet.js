@@ -23,22 +23,22 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
  */
 async function getDailyBookings(date) {
     try {
-        // Parse the date and set to Sydney noon to avoid timezone issues
-        const targetDate = new Date(date);
-        targetDate.setHours(12, 0, 0, 0);
+        console.log('getDailyBookings called with date:', date);
         
-        // Format date for Airtable (YYYY-MM-DD)
-        const dateString = targetDate.toISOString().split('T')[0];
+        // Just use the date string directly - it should already be in YYYY-MM-DD format
+        const dateString = date;
         
-        // Filter formula to get bookings for the specified date
-        const filterFormula = `AND(
-            {Booking Date} = '${dateString}',
-            OR({Status} = 'PAID', {Status} = 'PEND', {Status} = 'PART')
-        )`;
+        console.log('Searching for bookings on date:', dateString);
+        
+        // Alternative approach: fetch all bookings and filter client-side
+        // This matches the pattern used in management-allocations
+        const statusFilter = `OR({Status}='PAID', {Status}='PEND', {Status}='PART')`;
+        
+        console.log('Filter formula:', statusFilter);
         
         // Build URL with proper encoding for Airtable
         const url = `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE}?` +
-            `filterByFormula=${encodeURIComponent(filterFormula)}&` +
+            `filterByFormula=${encodeURIComponent(statusFilter)}&` +
             `sort[0][field]=Start Time&sort[0][direction]=asc&` +
             `pageSize=100&` +
             `fields[]=Booking Code&fields[]=Customer Name&fields[]=Booking Date&` +
@@ -49,7 +49,28 @@ async function getDailyBookings(date) {
         
         const response = await axios.get(url, { headers });
         
-        return response.data.records;
+        const allBookings = response.data.records || [];
+        console.log('Total bookings fetched:', allBookings.length);
+        
+        // Filter for the specific date client-side
+        const filteredBookings = allBookings.filter(record => {
+            const bookingDate = record.fields['Booking Date'];
+            if (!bookingDate) {
+                console.log('Booking without date:', record.fields['Booking Code']);
+                return false;
+            }
+            
+            // Direct string comparison
+            const matches = bookingDate === dateString;
+            if (matches) {
+                console.log('Found booking for date:', bookingDate, record.fields['Booking Code']);
+            }
+            return matches;
+        });
+        
+        console.log('Bookings for', dateString, ':', filteredBookings.length);
+        
+        return filteredBookings;
     } catch (error) {
         console.error('Error fetching daily bookings:', error.response?.data || error.message);
         throw error;
