@@ -205,7 +205,41 @@ Ensure all field references match exact Airtable field names:
 
 **Fixed in:** Commit `5a36a38` (September 17, 2025)
 
-### 3. No Data Displaying
+### 3. Date Context Issue - Wrong Year
+
+**Symptoms:**
+- Page loads but shows "No bookings scheduled" 
+- Fleet Status loads correctly
+- Bookings exist but don't show even when navigating to dates with bookings
+
+**Cause:**
+- System operates in 2025 context but Daily Run Sheet was using actual current date (2024)
+- All bookings are in 2025, so queries for 2024 dates return empty
+
+**Solution:**
+Ensure the page sets the full date context to 2025:
+```javascript
+// Correct - matches other portal pages
+const today = new Date();
+today.setFullYear(2025); // Ensure we're in 2025 context
+today.setMonth(8); // September (0-indexed)
+today.setDate(17); // Current context: Sept 17, 2025
+let currentDate = today.toISOString().split('T')[0];
+
+// Also update the Today button
+document.getElementById('todayBtn').addEventListener('click', () => {
+    const today = new Date();
+    today.setFullYear(2025);
+    today.setMonth(8);
+    today.setDate(17);
+    currentDate = today.toISOString().split('T')[0];
+    // ... rest of code
+});
+```
+
+**Fixed in:** Commit `0313784` (September 17, 2025)
+
+### 4. No Data Displaying (Other Causes)
 
 **Symptoms:**
 - Page loads but shows "No bookings scheduled"
@@ -221,7 +255,7 @@ Ensure all field references match exact Airtable field names:
 2. Verify date being sent to API (should be YYYY-MM-DD format)
 3. Check Network tab for API response
 
-### 4. Missing Vessel Information
+### 5. Missing Vessel Information
 
 **Symptoms:**
 - Bookings show "Unassigned" for vessel
@@ -243,7 +277,7 @@ fields: [
 ]
 ```
 
-### 5. Add-ons Not Displaying
+### 6. Add-ons Not Displaying
 
 **Symptoms:**
 - Add-ons section is empty or shows incorrect counts
