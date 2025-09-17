@@ -184,10 +184,7 @@ async function getAllVesselStatuses() {
         }
         
         // Get all boats
-        const boatsUrl = `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE}?` +
-            `filterByFormula=${encodeURIComponent("{Status} = 'Active'")}&` +
-            `pageSize=100&` +
-            `fields[]=Name&fields[]=Boat Type&fields[]=Capacity&fields[]=Home Location`;
+        const boatsUrl = `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE}?pageSize=100`;
         
         const boatsResponse = await axios.get(boatsUrl, { headers });
         
@@ -199,9 +196,9 @@ async function getAllVesselStatuses() {
                 const status = await getVesselStatus(vessel.id);
                 return {
                     id: vessel.id,
-                    name: vessel.fields['Name'],
-                    type: vessel.fields['Boat Type'],
-                    capacity: vessel.fields['Capacity'],
+                    name: vessel.fields?.['Name'] || 'Unknown',
+                    type: vessel.fields?.['Boat Type'] || 'Unknown',
+                    capacity: vessel.fields?.['Capacity'] || 0,
                     ...status
                 };
             })
