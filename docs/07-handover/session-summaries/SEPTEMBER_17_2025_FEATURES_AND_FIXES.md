@@ -209,9 +209,16 @@ Resolved multiple Airtable field name errors preventing data display:
 ### User Experience Enhancements
 When no bookings exist for selected date:
 - Added informative messaging about navigating to other dates
-- Added "Latest Bookings" button in header
-- Added quick jump button to September 7, 2025 (last date with bookings)
+- Added "Next Bookings" button in header to jump to Saturday Sept 20
+- Added quick jump button to Saturday, Sept 20 (upcoming bookings)
 - Improved empty state messaging
+
+### Critical Date Context Fix
+Resolved issue where no bookings were displaying:
+- **Root Cause**: Page was using actual current date (2024) instead of simulated 2025
+- **Solution**: Set explicit date context to September 17, 2025
+- **Pattern**: `today.setFullYear(2025); today.setMonth(8); today.setDate(17);`
+- **Result**: Bookings now display correctly when navigating to dates with data
 
 ## Session Metrics
 
