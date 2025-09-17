@@ -575,30 +575,34 @@
     
     <script>
         // Supabase initialization
-        const { createClient } = supabase;
-        const supabaseClient = createClient(
-            'https://etkugeooigiwahikrmzr.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTgzNDQ0OTAsImV4cCI6MjAzMzkyMDQ5MH0.TvIdcAoEdeRkvHJQKPWnFhSUFgD72O0XJqKAs9RC5-U'
-        );
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // State management
         let currentDate = new Date().toISOString().split('T')[0];
         let runSheetData = null;
+        let currentUser = null;
         
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Check authentication
-            const { data: { user } } = await supabaseClient.auth.getUser();
+        // Check authentication
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                window.location.href = 'login.html';
+                window.location.href = 'auth.html';
                 return;
             }
+            currentUser = user;
             
             // Set up date controls
             setupDateControls();
             
             // Load initial data
             await loadDailyRunSheet();
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
         });
         
         // Set up date controls
