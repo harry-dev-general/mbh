@@ -356,6 +356,32 @@ If you're still getting 500 errors after applying all fixes:
    - Use optional chaining: `vessel.fields?.['Name']`
    - Match exact field names (case-sensitive)
 
+### 4. No Bookings Displaying Despite Known Data
+
+**Symptoms:**
+- Fleet Status loads correctly
+- No bookings show even for dates with known bookings
+- No API errors in console
+
+**Cause:**
+- Date filtering issues with Airtable filterByFormula
+- Different date format handling between client and Airtable
+
+**Solution:**
+Fetch all bookings first, then filter client-side (matching management-allocations pattern):
+```javascript
+// Instead of filtering by date in Airtable query:
+const statusFilter = `OR({Status}='PAID', {Status}='PEND', {Status}='PART')`;
+
+// Then filter client-side:
+const filteredBookings = allBookings.filter(record => {
+    const bookingDate = record.fields['Booking Date'];
+    return bookingDate === dateString; // Direct string comparison
+});
+```
+
+**Fixed in:** Commit `6033a4f` (September 17, 2025)
+
 ## Contact and Support
 
 For issues not covered here:
