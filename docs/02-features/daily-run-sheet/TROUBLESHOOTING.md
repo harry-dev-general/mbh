@@ -165,6 +165,46 @@ const boatsUrl = `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE}?pageSize
 
 **Fixed in:** Commit `a949045` (September 17, 2025)
 
+### 2.5 API 500 Error - Field Name Mismatches
+
+**Symptoms:**
+- No data displays on Daily Run Sheet page
+- Railway logs show "Unknown field name" errors:
+  - `Unknown field name: "Capacity"`
+  - `Unknown field name: "Created"`
+
+**Causes:**
+1. **Boats table fields:**
+   - No "Capacity" field exists (remove this reference)
+   - No "Status" field exists (already fixed)
+
+2. **Pre-Departure Checklist fields:**
+   - `Created` → `Created time`
+   - `Gas Bottle Status` → `Gas Bottle Check`
+   - `Water Level` → `Water Tank Level`
+   - `Engine Check` → Doesn't exist (remove)
+   - `Completed` → `Completion Status`
+
+3. **Post-Departure Checklist fields:**
+   - `Gas Level After Use` → `Gas Bottle Level After Use`
+   - `Water Level After Use` → `Water Tank Level After Use`
+
+**Solution:**
+Ensure all field references match exact Airtable field names:
+```javascript
+// Correct Pre-Departure field names:
+'Created time', 'Gas Bottle Check', 'Water Tank Level', 'Completion Status'
+
+// Correct Post-Departure field names:
+'Gas Bottle Level After Use', 'Water Tank Level After Use'
+
+// Remove non-existent fields:
+// - Remove 'Capacity' from Boats queries
+// - Remove 'Engine Check' from Pre-Departure queries
+```
+
+**Fixed in:** Commit `5a36a38` (September 17, 2025)
+
 ### 3. No Data Displaying
 
 **Symptoms:**

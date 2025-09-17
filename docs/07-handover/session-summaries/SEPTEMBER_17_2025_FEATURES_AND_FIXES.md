@@ -192,6 +192,27 @@ Initial deployment encountered authentication error:
 - **Fix**: Updated to match management dashboard pattern
 - **Result**: Successfully deployed and operational
 
+### Field Name Mismatch Fixes
+Resolved multiple Airtable field name errors preventing data display:
+- **Pre-Departure Checklist fields:**
+  - `Created` → `Created time`
+  - `Gas Bottle Status` → `Gas Bottle Check`
+  - `Water Level` → `Water Tank Level`
+  - Removed non-existent `Engine Check` field
+- **Post-Departure Checklist fields:**
+  - `Gas Level After Use` → `Gas Bottle Level After Use`
+  - `Water Level After Use` → `Water Tank Level After Use`
+- **Boats table:**
+  - Removed non-existent `Capacity` field
+  - Removed non-existent `Status` field filter
+
+### User Experience Enhancements
+When no bookings exist for selected date:
+- Added informative messaging about navigating to other dates
+- Added "Latest Bookings" button in header
+- Added quick jump button to September 7, 2025 (last date with bookings)
+- Improved empty state messaging
+
 ## Session Metrics
 
 - **Commits**: 6 feature implementations + documentation
