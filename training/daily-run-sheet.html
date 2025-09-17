@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Run Sheet - MBH Staff Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .date-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        
+        .date-controls button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            transition: background 0.2s;
+            border-radius: 4px;
+        }
+        
+        .date-controls button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .date-controls input[type="date"] {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #333;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #DC143C;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #DC143C;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        /* Timeline Section */
+        .timeline-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline-header h2 {
+            color: #8B0000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .timeline-container {
+            position: relative;
+            min-width: 1200px;
+        }
+        
+        .time-grid {
+            display: grid;
+            grid-template-columns: 150px repeat(14, 1fr);
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .time-slot {
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .vessel-row {
+            display: grid;
+            grid-template-columns: 150px repeat(14, 1fr);
+            height: 70px;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+        }
+        
+        .vessel-name {
+            font-weight: 600;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #333;
+        }
+        
+        .booking-block {
+            position: absolute;
+            height: 50px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .booking-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        
+        .booking-block.preparing {
+            background: linear-gradient(135deg, #FFC107 0%, #FFB300 100%);
+        }
+        
+        .booking-block.on-water {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+        
+        .booking-block.returning {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        }
+        
+        /* Vessel Status Section */
+        .vessel-section {
+            margin-bottom: 2rem;
+        }
+        
+        .vessel-section h2 {
+            color: #8B0000;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .vessel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .vessel-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        
+        .vessel-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .vessel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .vessel-name-card {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-ready {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        .status-preparing {
+            background: #FFF8E1;
+            color: #F57C00;
+        }
+        
+        .status-on_water {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+        
+        .status-returning {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+        
+        .status-maintenance {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+        
+        .vessel-details {
+            display: grid;
+            gap: 0.75rem;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .detail-label {
+            color: #666;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+        }
+        
+        /* Resource Gauges */
+        .resource-gauges {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .gauge {
+            text-align: center;
+        }
+        
+        .gauge-label {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+        
+        .gauge-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .gauge-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
+        }
+        
+        .gauge-fill.low {
+            background: #f44336;
+        }
+        
+        .gauge-fill.medium {
+            background: #FF9800;
+        }
+        
+        .gauge-value {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            font-weight: 600;
+        }
+        
+        /* Add-ons Section */
+        .addons-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .addons-header {
+            color: #8B0000;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .addons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .addon-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .addon-item:hover {
+            border-color: #DC143C;
+            background: #fff;
+        }
+        
+        .addon-icon {
+            font-size: 2rem;
+        }
+        
+        .addon-details {
+            flex: 1;
+        }
+        
+        .addon-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .addon-count {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .addon-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        /* Back Button */
+        .back-button {
+            background: white;
+            color: #8B0000;
+            border: 2px solid #8B0000;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .back-button:hover {
+            background: #8B0000;
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .vessel-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .addons-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-section {
+                padding: 1rem;
+            }
+        }
+        
+        /* Error Message */
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* No Data Message */
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .no-data i {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Header -->
+    <div class="header">
+        <h1><i class="fas fa-clipboard-list"></i> Daily Run Sheet</h1>
+        <div class="date-controls">
+            <button id="prevDay" title="Previous Day">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <input type="date" id="dateInput">
+            <button id="nextDay" title="Next Day">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <button id="todayBtn" style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 4px;">
+                Today
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Back Button -->
+        <a href="management-dashboard.html" class="back-button" style="margin-bottom: 2rem;">
+            <i class="fas fa-arrow-left"></i> Back to Management Dashboard
+        </a>
+        
+        <!-- Stats Bar -->
+        <div id="statsContainer" class="stats-bar"></div>
+        
+        <!-- Timeline Section -->
+        <div id="timelineSection" class="timeline-section"></div>
+        
+        <!-- Vessel Status Section -->
+        <div class="vessel-section">
+            <h2><i class="fas fa-anchor"></i> Fleet Status</h2>
+            <div id="vesselGrid" class="vessel-grid"></div>
+        </div>
+        
+        <!-- Add-ons Section -->
+        <div id="addonsSection" class="addons-section"></div>
+    </div>
+    
+    <script>
+        // Supabase initialization
+        const { createClient } = supabase;
+        const supabaseClient = createClient(
+            'https://etkugeooigiwahikrmzr.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTgzNDQ0OTAsImV4cCI6MjAzMzkyMDQ5MH0.TvIdcAoEdeRkvHJQKPWnFhSUFgD72O0XJqKAs9RC5-U'
+        );
+        
+        // State management
+        let currentDate = new Date().toISOString().split('T')[0];
+        let runSheetData = null;
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Set up date controls
+            setupDateControls();
+            
+            // Load initial data
+            await loadDailyRunSheet();
+        });
+        
+        // Set up date controls
+        function setupDateControls() {
+            const dateInput = document.getElementById('dateInput');
+            dateInput.value = currentDate;
+            
+            // Previous day
+            document.getElementById('prevDay').addEventListener('click', () => {
+                const date = new Date(currentDate);
+                date.setDate(date.getDate() - 1);
+                currentDate = date.toISOString().split('T')[0];
+                dateInput.value = currentDate;
+                loadDailyRunSheet();
+            });
+            
+            // Next day
+            document.getElementById('nextDay').addEventListener('click', () => {
+                const date = new Date(currentDate);
+                date.setDate(date.getDate() + 1);
+                currentDate = date.toISOString().split('T')[0];
+                dateInput.value = currentDate;
+                loadDailyRunSheet();
+            });
+            
+            // Today button
+            document.getElementById('todayBtn').addEventListener('click', () => {
+                currentDate = new Date().toISOString().split('T')[0];
+                dateInput.value = currentDate;
+                loadDailyRunSheet();
+            });
+            
+            // Date input change
+            dateInput.addEventListener('change', (e) => {
+                currentDate = e.target.value;
+                loadDailyRunSheet();
+            });
+        }
+        
+        // Load daily run sheet data
+        async function loadDailyRunSheet() {
+            document.getElementById('loading').style.display = 'flex';
+            
+            try {
+                const response = await fetch(`/api/daily-run-sheet?date=${currentDate}`);
+                if (!response.ok) throw new Error('Failed to load data');
+                
+                runSheetData = await response.json();
+                
+                if (runSheetData.success) {
+                    renderStats();
+                    renderTimeline();
+                    renderVesselStatus();
+                    renderAddOns();
+                } else {
+                    showError(runSheetData.error || 'Failed to load daily run sheet');
+                }
+            } catch (error) {
+                console.error('Error loading daily run sheet:', error);
+                showError('Failed to load daily run sheet. Please try again.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        // Render statistics
+        function renderStats() {
+            const container = document.getElementById('statsContainer');
+            const { stats } = runSheetData;
+            
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.totalBookings}</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.onWater}</div>
+                    <div class="stat-label">On Water Now</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.preparing}</div>
+                    <div class="stat-label">Preparing</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.returning}</div>
+                    <div class="stat-label">Returning Soon</div>
+                </div>
+            `;
+        }
+        
+        // Render timeline view
+        function renderTimeline() {
+            const section = document.getElementById('timelineSection');
+            const { bookings } = runSheetData;
+            
+            if (!bookings || bookings.length === 0) {
+                section.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>No bookings scheduled for ${formatDate(currentDate)}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group bookings by vessel
+            const vesselBookings = {};
+            bookings.forEach(booking => {
+                const vesselName = booking.vesselName || 'Unassigned';
+                if (!vesselBookings[vesselName]) {
+                    vesselBookings[vesselName] = [];
+                }
+                vesselBookings[vesselName].push(booking);
+            });
+            
+            // Create timeline HTML
+            let timelineHtml = `
+                <div class="timeline-header">
+                    <h2><i class="fas fa-calendar-alt"></i> Booking Timeline</h2>
+                </div>
+                <div class="timeline-container">
+                    <div class="time-grid">
+                        <div class="time-slot">Vessel</div>
+            `;
+            
+            // Add time headers (6 AM to 8 PM)
+            for (let hour = 6; hour <= 20; hour++) {
+                const displayHour = hour > 12 ? hour - 12 : hour;
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                timelineHtml += `<div class="time-slot">${displayHour} ${ampm}</div>`;
+            }
+            
+            timelineHtml += '</div>';
+            
+            // Add vessel rows
+            Object.entries(vesselBookings).forEach(([vesselName, bookings]) => {
+                timelineHtml += `
+                    <div class="vessel-row">
+                        <div class="vessel-name">
+                            <i class="fas fa-ship"></i> ${vesselName}
+                        </div>
+                `;
+                
+                // Add booking blocks
+                bookings.forEach(booking => {
+                    const blockHtml = createBookingBlock(booking);
+                    timelineHtml += blockHtml;
+                });
+                
+                timelineHtml += '</div>';
+            });
+            
+            timelineHtml += '</div>';
+            section.innerHTML = timelineHtml;
+        }
+        
+        // Create booking block for timeline
+        function createBookingBlock(booking) {
+            const startTime = parseTime(booking.startTime);
+            const duration = booking.duration || 4;
+            
+            // Calculate position (6 AM = 0, each hour = 85px + grid gap)
+            const startHour = startTime.getHours() + (startTime.getMinutes() / 60);
+            const left = 150 + ((startHour - 6) * 85);
+            const width = duration * 85 - 10; // -10 for padding
+            
+            // Determine status class
+            const vessel = runSheetData.vessels.find(v => v.id === booking.vesselId);
+            const statusClass = vessel ? vessel.status.replace('_', '-') : '';
+            
+            // Get add-on icons
+            const addOnIcons = getAddOnIcons(booking.addOns);
+            
+            return `
+                <div class="booking-block ${statusClass}" 
+                     style="left: ${left}px; width: ${width}px;"
+                     title="${booking.bookingCode} - ${booking.customerName}">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>${booking.bookingCode}</span>
+                        ${addOnIcons}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Render vessel status cards
+        function renderVesselStatus() {
+            const grid = document.getElementById('vesselGrid');
+            const { vessels } = runSheetData;
+            
+            if (!vessels || vessels.length === 0) {
+                grid.innerHTML = '<p class="no-data">No vessel data available</p>';
+                return;
+            }
+            
+            grid.innerHTML = vessels.map(vessel => {
+                const statusBadgeClass = `status-${vessel.status}`;
+                const statusText = formatStatus(vessel.status);
+                
+                // Get current booking for vessel
+                const currentBooking = runSheetData.bookings.find(b => 
+                    b.vesselId === vessel.id && vessel.status === 'on_water'
+                );
+                
+                return `
+                    <div class="vessel-card">
+                        <div class="vessel-header">
+                            <div class="vessel-name-card">
+                                <i class="fas fa-ship"></i> ${vessel.name}
+                            </div>
+                            <div class="status-badge ${statusBadgeClass}">
+                                ${statusText}
+                            </div>
+                        </div>
+                        <div class="vessel-details">
+                            ${currentBooking ? `
+                                <div class="detail-row">
+                                    <span class="detail-label">Booking:</span>
+                                    <span class="detail-value">${currentBooking.bookingCode}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Customer:</span>
+                                    <span class="detail-value">${currentBooking.customerName}</span>
+                                </div>
+                            ` : ''}
+                            ${vessel.departureTime ? `
+                                <div class="detail-row">
+                                    <span class="detail-label">Departed:</span>
+                                    <span class="detail-value">${formatTime(vessel.departureTime)}</span>
+                                </div>
+                            ` : ''}
+                            ${vessel.returnTime ? `
+                                <div class="detail-row">
+                                    <span class="detail-label">Returned:</span>
+                                    <span class="detail-value">${formatTime(vessel.returnTime)}</span>
+                                </div>
+                            ` : ''}
+                            ${vessel.location ? `
+                                <div class="detail-row">
+                                    <span class="detail-label">Location:</span>
+                                    <span class="detail-value">📍 ${vessel.location.address || 'GPS Captured'}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        ${renderResourceGauges(vessel)}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Render resource gauges
+        function renderResourceGauges(vessel) {
+            const fuelPercentage = levelToPercentage(vessel.fuelLevel);
+            const gasPercentage = levelToPercentage(vessel.gasLevel);
+            const waterPercentage = levelToPercentage(vessel.waterLevel);
+            
+            return `
+                <div class="resource-gauges">
+                    ${renderGauge('Fuel', fuelPercentage)}
+                    ${renderGauge('Gas', gasPercentage)}
+                    ${renderGauge('Water', waterPercentage)}
+                </div>
+            `;
+        }
+        
+        // Render individual gauge
+        function renderGauge(label, percentage) {
+            const fillClass = percentage < 25 ? 'low' : percentage < 50 ? 'medium' : '';
+            
+            return `
+                <div class="gauge">
+                    <div class="gauge-label">${label}</div>
+                    <div class="gauge-bar">
+                        <div class="gauge-fill ${fillClass}" style="width: ${percentage}%;"></div>
+                    </div>
+                    <div class="gauge-value">${percentage}%</div>
+                </div>
+            `;
+        }
+        
+        // Render add-ons section
+        function renderAddOns() {
+            const section = document.getElementById('addonsSection');
+            const { addOnsSummary } = runSheetData;
+            
+            if (!addOnsSummary || Object.keys(addOnsSummary).length === 0) {
+                section.innerHTML = `
+                    <h2 class="addons-header">
+                        <i class="fas fa-box"></i> Today's Add-ons Required
+                    </h2>
+                    <p class="no-data">No add-ons required for today</p>
+                `;
+                return;
+            }
+            
+            let addOnsHtml = `
+                <h2 class="addons-header">
+                    <i class="fas fa-box"></i> Today's Add-ons Required
+                </h2>
+                <div class="addons-grid">
+            `;
+            
+            Object.entries(addOnsSummary).forEach(([item, count]) => {
+                const icon = getAddOnIcon(item);
+                addOnsHtml += `
+                    <div class="addon-item">
+                        <div class="addon-icon">${icon}</div>
+                        <div class="addon-details">
+                            <div class="addon-name">${item}</div>
+                            <div class="addon-count">${count} needed</div>
+                        </div>
+                        <div class="addon-status">Preparing</div>
+                    </div>
+                `;
+            });
+            
+            addOnsHtml += '</div>';
+            section.innerHTML = addOnsHtml;
+        }
+        
+        // Helper functions
+        function parseTime(timeStr) {
+            if (!timeStr) return new Date();
+            
+            // Handle various time formats
+            const now = new Date();
+            const timeParts = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+            
+            if (timeParts) {
+                let hours = parseInt(timeParts[1]);
+                const minutes = parseInt(timeParts[2]);
+                const ampm = timeParts[3];
+                
+                if (ampm) {
+                    if (ampm.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+                    if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+                }
+                
+                now.setHours(hours, minutes, 0, 0);
+                return now;
+            }
+            
+            return new Date();
+        }
+        
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-AU', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+        
+        function formatTime(timeStr) {
+            const date = new Date(timeStr);
+            return date.toLocaleTimeString('en-AU', { 
+                hour: 'numeric', 
+                minute: '2-digit' 
+            });
+        }
+        
+        function formatStatus(status) {
+            const statusMap = {
+                'ready': 'Ready',
+                'preparing': 'Preparing',
+                'on_water': 'On Water',
+                'returning': 'Returning',
+                'maintenance': 'Maintenance',
+                'unknown': 'Unknown'
+            };
+            return statusMap[status] || status;
+        }
+        
+        function levelToPercentage(level) {
+            const levelMap = {
+                'Empty': 0,
+                'Quarter': 25,
+                'Half': 50,
+                'Three-Quarter': 75,
+                'Full': 100
+            };
+            return levelMap[level] || 0;
+        }
+        
+        function getAddOnIcon(item) {
+            const iconMap = {
+                'Fishing Rods': '🎣',
+                'Fishing Rod': '🎣',
+                'Ice Bags': '🧊',
+                'Icebag': '🧊',
+                'Icebags': '🧊',
+                'Lilly Pad': '🏖️',
+                'Lilly Pads': '🏖️',
+                'BBQ Pack': '🍖',
+                'BBQ Equipment': '🍖',
+                'Extra Life Jackets': '🦺',
+                'Child Life Jacket': '🦺',
+                'Bluetooth Speaker': '📻'
+            };
+            return iconMap[item] || '📦';
+        }
+        
+        function getAddOnIcons(addOnsStr) {
+            if (!addOnsStr) return '';
+            
+            const icons = [];
+            const addOnsList = addOnsStr.split(',').map(a => a.trim());
+            
+            addOnsList.forEach(addon => {
+                const itemName = addon.split(' - ')[0].trim();
+                const icon = getAddOnIcon(itemName);
+                if (icon && !icons.includes(icon)) {
+                    icons.push(icon);
+                }
+            });
+            
+            return icons.join(' ');
+        }
+        
+        function showError(message) {
+            const container = document.querySelector('.container');
+            container.innerHTML = `
+                <a href="management-dashboard.html" class="back-button" style="margin-bottom: 2rem;">
+                    <i class="fas fa-arrow-left"></i> Back to Management Dashboard
+                </a>
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    ${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

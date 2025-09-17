@@ -16,6 +16,9 @@ const announcements = require('./api/announcements');
 // Import vessel maintenance routes
 const vesselRoutes = require('./api/routes/vessel-maintenance');
 
+// Import daily run sheet module
+const dailyRunSheet = require('./api/daily-run-sheet');
+
 // Import webhook logger for debugging
 const webhookLogger = require('./api/webhook-logger');
 
@@ -82,6 +85,121 @@ app.use(express.static(path.join(__dirname, 'training')));
 
 // Add vessel maintenance routes
 app.use('/api/vessels', vesselRoutes);
+
+// Daily Run Sheet API endpoints
+app.get('/api/daily-run-sheet', async (req, res) => {
+    try {
+        const date = req.query.date || new Date().toISOString().split('T')[0];
+        const bookings = await dailyRunSheet.getDailyBookings(date);
+        
+        // Get unique vessels from bookings
+        const vesselIds = [...new Set(bookings
+            .map(b => b.fields['Boat']?.[0])
+            .filter(Boolean)
+        )];
+        
+        // Get status for all vessels
+        const vesselStatuses = await dailyRunSheet.getAllVesselStatuses();
+        
+        // Filter to only vessels that have bookings today
+        const activeVessels = vesselStatuses.filter(v => 
+            vesselIds.includes(v.id)
+        );
+        
+        // Extract and aggregate add-ons
+        const addOnsSummary = dailyRunSheet.extractAddOns(bookings);
+        
+        // Process bookings for timeline
+        const processedBookings = bookings.map(b => ({
+            id: b.id,
+            bookingCode: b.fields['Booking Code'],
+            customerName: b.fields['Customer Name'],
+            vesselId: b.fields['Boat']?.[0],
+            vesselName: activeVessels.find(v => v.id === b.fields['Boat']?.[0])?.name || 'Unassigned',
+            startTime: b.fields['Start Time'],
+            finishTime: b.fields['Finish Time'],
+            duration: b.fields['Duration'] || 4,
+            addOns: b.fields['Add-ons'],
+            onboardingStaff: b.fields['Onboarding Employee'],
+            deloadingStaff: b.fields['Deloading Employee'],
+            status: b.fields['Status'],
+            notes: b.fields['Notes']
+        }));
+        
+        // Calculate stats
+        const stats = {
+            totalBookings: bookings.length,
+            onWater: vesselStatuses.filter(v => v.status === 'on_water').length,
+            preparing: vesselStatuses.filter(v => v.status === 'preparing').length,
+            returning: vesselStatuses.filter(v => v.status === 'returning').length
+        };
+        
+        res.json({
+            success: true,
+            date,
+            bookings: processedBookings,
+            vessels: vesselStatuses,
+            addOnsSummary,
+            stats
+        });
+    } catch (error) {
+        console.error('Error in daily run sheet:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// Update vessel status (manual override for management)
+app.post('/api/vessel-status', async (req, res) => {
+    try {
+        const { vesselId, status, notes } = req.body;
+        
+        // For now, just return success
+        // In production, this would update Airtable
+        res.json({ 
+            success: true, 
+            vesselId, 
+            status,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            error: error.message 
+        });
+    }
+});
+
+// Get real-time vessel locations
+app.get('/api/vessel-locations', async (req, res) => {
+    try {
+        const vessels = await dailyRunSheet.getAllVesselStatuses();
+        
+        // Filter to only vessels with locations
+        const locationsData = vessels
+            .filter(v => v.location)
+            .map(v => ({
+                vesselId: v.id,
+                vesselName: v.name,
+                location: v.location,
+                status: v.status,
+                lastUpdate: v.lastUpdate
+            }));
+        
+        res.json({
+            success: true,
+            locations: locationsData,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            error: error.message 
+        });
+    }
+});
 
 // Add webhook logger routes (for debugging)
 app.use('/api', webhookLogger);
