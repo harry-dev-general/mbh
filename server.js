@@ -123,7 +123,7 @@ app.get('/api/daily-run-sheet', async (req, res) => {
             onboardingStaff: b.fields['Onboarding Employee'],
             deloadingStaff: b.fields['Deloading Employee'],
             status: b.fields['Status'],
-            notes: b.fields['Notes']
+            totalAmount: b.fields['Total Amount']
         }));
         
         // Calculate stats
@@ -144,6 +144,7 @@ app.get('/api/daily-run-sheet', async (req, res) => {
         });
     } catch (error) {
         console.error('Error in daily run sheet:', error);
+        console.error('Error details:', error.response?.data || error.stack);
         res.status(500).json({ 
             success: false, 
             error: error.message 

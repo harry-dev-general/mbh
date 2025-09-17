@@ -45,7 +45,7 @@ async function getDailyBookings(date) {
             `fields[]=Start Time&fields[]=Finish Time&fields[]=Duration&` +
             `fields[]=Status&fields[]=Add-ons&fields[]=Booking Items&` +
             `fields[]=Boat&fields[]=Onboarding Employee&fields[]=Deloading Employee&` +
-            `fields[]=Onboarding Status&fields[]=Deloading Status&fields[]=Notes`;
+            `fields[]=Total Amount&fields[]=End Date`;
         
         const response = await axios.get(url, { headers });
         
