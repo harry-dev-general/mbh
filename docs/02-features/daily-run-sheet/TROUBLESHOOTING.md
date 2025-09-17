@@ -1,5 +1,13 @@
 # Daily Run Sheet Troubleshooting Guide
 
+## Quick Diagnosis
+
+If you're getting a 500 error, check these in order:
+1. **Authentication**: Are you using the correct Supabase key?
+2. **Table IDs**: Are all Airtable table IDs correct?
+3. **Field Names**: Are you requesting fields that actually exist?
+4. **API Format**: Are you using proper URL encoding for Airtable?
+
 ## Common Issues and Solutions
 
 ### 1. Authentication Error (401) - Page Stuck Loading
@@ -52,7 +60,7 @@ Verify all table IDs match the actual Airtable base:
 const BOOKINGS_TABLE = 'tblRe0cDmK3bG2kPf';  // Bookings Dashboard
 const PRE_DEPARTURE_TABLE = 'tbl9igu5g1bPG4Ahu';  // Pre-Departure Checklist
 const POST_DEPARTURE_TABLE = 'tblYkbSQGP6zveYNi';  // Post-Departure Checklist
-const BOATS_TABLE = 'tblA2b3OFfqPFbOM';  // Boats
+const BOATS_TABLE = 'tblNLoBNb4daWzjob';  // Boats (CORRECT ID)
 const EMPLOYEE_TABLE = 'tbltAE4NlNePvnkpY';  // Employee Details
 ```
 
@@ -93,6 +101,47 @@ const response = await axios.get(url, { headers });
 ```
 
 **Fixed in:** Commit `62b0a5e` (September 17, 2025)
+
+### 2.2 API 500 Error - Non-existent Fields
+
+**Symptoms:**
+- Same 500 error after fixing table IDs and parameter encoding
+- Server logs show field access errors
+
+**Cause:**
+- Requesting fields that don't exist in the Bookings Dashboard table
+- Fields like `Onboarding Status`, `Deloading Status`, `Notes` were assumed but don't exist
+
+**Solution:**
+Only request fields that actually exist:
+```javascript
+// Fields that exist:
+'Booking Code', 'Customer Name', 'Booking Date', 
+'Start Time', 'Finish Time', 'Duration',
+'Status', 'Add-ons', 'Booking Items',
+'Boat', 'Onboarding Employee', 'Deloading Employee',
+'Total Amount', 'Pre Departure Checklist', 'Post Departure Checklist'
+```
+
+**Fixed in:** Commit `bbc8a8c` and `e18aa48` (September 17, 2025)
+
+### 2.3 API 500 Error - Incorrect Boats Table ID
+
+**Symptoms:**
+- Error persists even after fixing fields
+- Vessel status queries fail
+
+**Cause:**
+- Wrong Boats table ID: `tblA2b3OFfqPFbOM` (incorrect)
+- Should be: `tblNLoBNb4daWzjob` (correct)
+
+**Solution:**
+Update the table ID in daily-run-sheet.js:
+```javascript
+const BOATS_TABLE = 'tblNLoBNb4daWzjob';  // Correct ID
+```
+
+**Fixed in:** Commit `b418413` (September 17, 2025)
 
 ### 3. No Data Displaying
 
