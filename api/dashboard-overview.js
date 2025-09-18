@@ -59,22 +59,40 @@ async function getDashboardOverview(date) {
         // Calculate Staff on Duty (from both bookings and shift allocations)
         const staffFromBookings = new Set();
         todayBookings.forEach(booking => {
-            if (booking.fields['Onboarding Employee']?.[0]) {
+            // Check if onboarding employee has accepted (or no response status - legacy)
+            if (booking.fields['Onboarding Employee']?.[0] && 
+                (booking.fields['Onboarding Response'] === 'Accepted' || 
+                 !booking.fields['Onboarding Response'])) {
                 staffFromBookings.add(booking.fields['Onboarding Employee'][0]);
             }
-            if (booking.fields['Deloading Employee']?.[0]) {
+            // Check if deloading employee has accepted (or no response status - legacy)
+            if (booking.fields['Deloading Employee']?.[0] && 
+                (booking.fields['Deloading Response'] === 'Accepted' || 
+                 !booking.fields['Deloading Response'])) {
                 staffFromBookings.add(booking.fields['Deloading Employee'][0]);
             }
         });
         
+        // Only count staff who have accepted their shifts
+        const acceptedShifts = shiftAllocations.filter(shift => 
+            shift.fields['Response Status'] === 'Accepted' || 
+            !shift.fields['Response Status'] // Count shifts without response status (legacy data)
+        );
+        
+        console.log('Total shift allocations:', shiftAllocations.length);
+        console.log('Accepted shifts:', acceptedShifts.length);
+        if (shiftAllocations.length > 0) {
+            console.log('Sample allocation Response Status:', shiftAllocations[0].fields['Response Status']);
+        }
+        
         const staffFromShifts = new Set(
-            shiftAllocations
+            acceptedShifts
                 .map(shift => shift.fields['Employee']?.[0])
                 .filter(Boolean)
         );
         
         console.log('Staff from bookings:', staffFromBookings.size);
-        console.log('Staff from shifts:', staffFromShifts.size);
+        console.log('Staff from accepted shifts:', staffFromShifts.size);
         
         // Combine unique staff
         const allStaffOnDuty = new Set([...staffFromBookings, ...staffFromShifts]);
@@ -124,6 +142,7 @@ async function getTodayBookings(dateString) {
             `pageSize=100&` +
             `fields[]=Booking Code&fields[]=Customer Name&fields[]=Status&` +
             `fields[]=Onboarding Employee&fields[]=Deloading Employee&` +
+            `fields[]=Onboarding Response&fields[]=Deloading Response&` +
             `fields[]=Boat&fields[]=Start Time&fields[]=Finish Time`;
         
         const response = await axios.get(url, { headers });
@@ -143,7 +162,7 @@ async function getShiftAllocations(dateString) {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE}?` +
             `filterByFormula=${encodeURIComponent(`{Shift Date}='${dateString}'`)}&` +
             `pageSize=100&` +
-            `fields[]=Employee&fields[]=Shift Type&fields[]=Start Time&fields[]=End Time&fields[]=Status`;
+            `fields[]=Employee&fields[]=Shift Type&fields[]=Start Time&fields[]=End Time&fields[]=Status&fields[]=Response Status`;
         
         console.log('Fetching shift allocations from:', ALLOCATIONS_TABLE);
         console.log('With filter:', `{Shift Date}='${dateString}'`);
