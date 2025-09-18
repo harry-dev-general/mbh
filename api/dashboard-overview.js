@@ -74,10 +74,19 @@ async function getDashboardOverview(date) {
         });
         
         // Only count staff who have accepted their shifts
-        const acceptedShifts = shiftAllocations.filter(shift => 
-            shift.fields['Response Status'] === 'Accepted' || 
-            !shift.fields['Response Status'] // Count shifts without response status (legacy data)
-        );
+        const acceptedShifts = shiftAllocations.filter(shift => {
+            // If Response Status exists, it must be "Accepted"
+            if (shift.fields['Response Status']) {
+                return shift.fields['Response Status'] === 'Accepted';
+            }
+            // If no Response Status but has Response Date/Method, assume accepted (Portal bug)
+            if (shift.fields['Response Date'] || shift.fields['Response Method']) {
+                console.log(`Shift ${shift.id} has response fields but no status - counting as accepted`);
+                return true;
+            }
+            // Legacy data with no response fields at all - count as accepted
+            return true;
+        });
         
         console.log('Total shift allocations:', shiftAllocations.length);
         console.log('Accepted shifts:', acceptedShifts.length);
@@ -162,7 +171,7 @@ async function getShiftAllocations(dateString) {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE}?` +
             `filterByFormula=${encodeURIComponent(`{Shift Date}='${dateString}'`)}&` +
             `pageSize=100&` +
-            `fields[]=Employee&fields[]=Shift Type&fields[]=Start Time&fields[]=End Time&fields[]=Status&fields[]=Response Status`;
+            `fields[]=Employee&fields[]=Shift Type&fields[]=Start Time&fields[]=End Time&fields[]=Status&fields[]=Response Status&fields[]=Response Date&fields[]=Response Method`;
         
         console.log('Fetching shift allocations from:', ALLOCATIONS_TABLE);
         console.log('With filter:', `{Shift Date}='${dateString}'`);
