@@ -240,6 +240,54 @@
             background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
         }
         
+        /* Allocation blocks for separate onboarding/deloading */
+        .allocation-block {
+            position: absolute;
+            height: 60px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0.4rem 0.6rem;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            white-space: nowrap;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+        
+        .allocation-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        
+        /* Onboarding blocks */
+        .allocation-block.onboarding-block {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+        
+        .allocation-block.onboarding-block.unstaffed {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            opacity: 0.6;
+            border-color: #f44336;
+        }
+        
+        /* Deloading blocks */
+        .allocation-block.deloading-block {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+        
+        .allocation-block.deloading-block.unstaffed {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            opacity: 0.6;
+            border-color: #f44336;
+        }
+        
         /* Time indicators for onboarding/deloading */
         .time-indicator {
             position: absolute;
@@ -818,10 +866,19 @@
                         </div>
                 `;
                 
-                // Add booking blocks
+                // Add booking blocks - create separate blocks for onboarding and deloading
                 bookings.forEach(booking => {
-                    const blockHtml = createBookingBlock(booking);
-                    timelineHtml += blockHtml;
+                    // Create onboarding block
+                    if (booking.onboardingTime) {
+                        const onboardingBlock = createAllocationBlock(booking, 'onboarding');
+                        timelineHtml += onboardingBlock;
+                    }
+                    
+                    // Create deloading block (only if different from onboarding time)
+                    if (booking.deloadingTime && booking.deloadingTime !== booking.onboardingTime) {
+                        const deloadingBlock = createAllocationBlock(booking, 'deloading');
+                        timelineHtml += deloadingBlock;
+                    }
                 });
                 
                 timelineHtml += '</div>';
@@ -831,7 +888,52 @@
             section.innerHTML = timelineHtml;
         }
         
-        // Create booking block for timeline
+        // Create allocation block for timeline (separate for onboarding/deloading)
+        function createAllocationBlock(booking, type) {
+            // Determine which time to use based on type
+            const time = type === 'onboarding' ? booking.onboardingTime : booking.deloadingTime;
+            const staffName = type === 'onboarding' ? booking.onboardingStaffName : booking.deloadingStaffName;
+            
+            if (!time) return '';
+            
+            const parsedTime = parseTime(time);
+            const hour = parsedTime.getHours() + (parsedTime.getMinutes() / 60);
+            const left = 150 + ((hour - 6) * 85);
+            const width = 75; // Fixed width for allocation blocks
+            
+            // Determine status
+            const hasStaff = staffName && staffName !== 'Unassigned';
+            const statusClass = hasStaff ? 'staffed' : 'unstaffed';
+            
+            // Type indicator
+            const typeLabel = type === 'onboarding' ? '🚢 ON' : '🏁 OFF';
+            const typeColorClass = type === 'onboarding' ? 'onboarding-block' : 'deloading-block';
+            
+            // Get add-on icons only for onboarding
+            const addOnIcons = type === 'onboarding' ? getAddOnIcons(booking.addOns) : '';
+            
+            return `
+                <div class="allocation-block ${typeColorClass} ${statusClass}" 
+                     style="left: ${left}px; width: ${width}px;"
+                     title="${booking.customerName} - ${type === 'onboarding' ? 'Onboarding' : 'Deloading'} at ${time}">
+                    <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                        <div style="font-weight: 600; font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem;">
+                            <span>${typeLabel}</span>
+                        </div>
+                        <div style="font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${booking.customerName}
+                        </div>
+                        <div style="font-size: 0.65rem; opacity: 0.9; display: flex; align-items: center; gap: 0.2rem;">
+                            <i class="fas ${hasStaff ? 'fa-user-check' : 'fa-user-times'}" style="font-size: 0.6rem;"></i>
+                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${staffName}</span>
+                            ${addOnIcons}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Create booking block for timeline (keeping for compatibility)
         function createBookingBlock(booking) {
             const startTime = parseTime(booking.startTime);
             const duration = booking.duration || 4;
