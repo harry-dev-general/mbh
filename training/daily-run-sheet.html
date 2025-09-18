@@ -264,6 +264,8 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             z-index: 2;
+            cursor: pointer;
+            filter: brightness(1.05);
         }
         
         /* Onboarding blocks */
@@ -605,6 +607,135 @@
             color: white;
         }
         
+        /* Booking Details Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 1rem;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .booking-detail-row {
+            display: flex;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        
+        .booking-detail-label {
+            font-weight: 600;
+            color: #666;
+            min-width: 120px;
+            margin-right: 1rem;
+        }
+        
+        .booking-detail-value {
+            color: #333;
+            flex: 1;
+        }
+        
+        .add-ons-list {
+            margin-top: 0.5rem;
+        }
+        
+        .add-on-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .add-on-icon {
+            font-size: 1.2rem;
+            margin-right: 0.75rem;
+        }
+        
+        .add-on-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .add-on-price {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .no-addons {
+            color: #999;
+            font-style: italic;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .header {
@@ -709,6 +840,19 @@
         <div id="addonsSection" class="addons-section"></div>
     </div>
     
+    <!-- Booking Details Modal -->
+    <div id="bookingModal" class="modal-overlay" onclick="closeBookingModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Booking Details</h3>
+                <button class="modal-close" onclick="closeBookingModal()">×</button>
+            </div>
+            <div id="modalBody">
+                <!-- Content will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+    
     <script>
         // Supabase initialization
         const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
@@ -749,6 +893,13 @@
         window.addEventListener('beforeunload', () => {
             if (window.timeIndicatorInterval) {
                 clearInterval(window.timeIndicatorInterval);
+            }
+        });
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeBookingModal();
             }
         });
         
@@ -966,7 +1117,8 @@
             return `
                 <div class="allocation-block ${typeColorClass} ${statusClass}" 
                      style="left: ${left}px; width: ${width}px;"
-                     title="${booking.customerName} - ${type === 'onboarding' ? 'Onboarding' : 'Deloading'} at ${time}">
+                     title="${booking.customerName} - ${type === 'onboarding' ? 'Onboarding' : 'Deloading'} at ${time}"
+                     onclick='showBookingDetails(${JSON.stringify(booking).replace(/'/g, "&apos;")}, "${type}")'>
                     <div style="display: flex; flex-direction: column; gap: 0.2rem;">
                         <div style="font-weight: 600; font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem;">
                             <span>${typeLabel}</span>
@@ -1378,6 +1530,94 @@
                     ${message}
                 </div>
             `;
+        }
+        
+        // Show booking details modal
+        function showBookingDetails(booking, allocationType) {
+            const modal = document.getElementById('bookingModal');
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            // Set title
+            modalTitle.textContent = `${booking.customerName} - ${booking.bookingCode}`;
+            
+            // Parse add-ons
+            let addOnsHtml = '<div class="no-addons">No add-ons for this booking</div>';
+            if (booking.addOns) {
+                const addOnsList = booking.addOns.split(',').map(item => item.trim());
+                if (addOnsList.length > 0 && addOnsList[0] !== '') {
+                    addOnsHtml = '<div class="add-ons-list">';
+                    addOnsList.forEach(addon => {
+                        const [name, price] = addon.split(' - ');
+                        const icon = getAddOnIcon(name);
+                        addOnsHtml += `
+                            <div class="add-on-item">
+                                <span class="add-on-icon">${icon}</span>
+                                <span class="add-on-name">${name}</span>
+                                <span class="add-on-price">${price || ''}</span>
+                            </div>
+                        `;
+                    });
+                    addOnsHtml += '</div>';
+                }
+            }
+            
+            // Build modal content
+            const content = `
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Booking Code:</div>
+                    <div class="booking-detail-value">${booking.bookingCode}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Customer:</div>
+                    <div class="booking-detail-value">${booking.customerName}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Vessel:</div>
+                    <div class="booking-detail-value">${booking.vesselName}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Duration:</div>
+                    <div class="booking-detail-value">${booking.duration} hours (${booking.startTime} - ${booking.finishTime})</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Onboarding:</div>
+                    <div class="booking-detail-value">
+                        ${booking.onboardingTime || 'Not scheduled'} 
+                        ${booking.onboardingTime ? `- ${booking.onboardingStaffName}` : ''}
+                    </div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Deloading:</div>
+                    <div class="booking-detail-value">
+                        ${booking.deloadingTime || 'Not scheduled'} 
+                        ${booking.deloadingTime ? `- ${booking.deloadingStaffName}` : ''}
+                    </div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Total Amount:</div>
+                    <div class="booking-detail-value">$${booking.totalAmount ? booking.totalAmount.toFixed(2) : '0.00'}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Status:</div>
+                    <div class="booking-detail-value">${booking.status || 'Unknown'}</div>
+                </div>
+                <div class="booking-detail-row">
+                    <div class="booking-detail-label">Add-ons:</div>
+                    <div class="booking-detail-value">${addOnsHtml}</div>
+                </div>
+            `;
+            
+            modalBody.innerHTML = content;
+            modal.classList.add('active');
+        }
+        
+        // Close booking modal
+        function closeBookingModal(event) {
+            if (!event || event.target.id === 'bookingModal') {
+                const modal = document.getElementById('bookingModal');
+                modal.classList.remove('active');
+            }
         }
     </script>
 </body>
