@@ -18,6 +18,8 @@ const vesselRoutes = require('./api/routes/vessel-maintenance');
 
 // Import daily run sheet module
 const dailyRunSheet = require('./api/daily-run-sheet');
+// Import dashboard overview module
+const dashboardOverview = require('./api/dashboard-overview');
 
 // Import webhook logger for debugging
 const webhookLogger = require('./api/webhook-logger');
@@ -157,6 +159,27 @@ app.get('/api/daily-run-sheet', async (req, res) => {
         });
     } catch (error) {
         console.error('Error in daily run sheet:', error);
+        console.error('Error details:', error.response?.data || error.stack);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// Dashboard Overview API endpoint
+app.get('/api/dashboard-overview', async (req, res) => {
+    try {
+        const date = req.query.date || new Date().toISOString().split('T')[0];
+        const overview = await dashboardOverview.getDashboardOverview(date);
+        
+        res.json({
+            success: true,
+            date,
+            ...overview
+        });
+    } catch (error) {
+        console.error('Error in dashboard overview:', error);
         console.error('Error details:', error.response?.data || error.stack);
         res.status(500).json({ 
             success: false, 

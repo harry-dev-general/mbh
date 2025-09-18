@@ -1627,57 +1627,38 @@
                 // Get today's date for metrics
                 const todayStr = formatDate(today);
                 
-                // Fetch today's bookings
-                const bookingsResponse = await fetch(
-                    `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`{Booking Date}='${todayStr}'`)}&` +
-                    `pageSize=100`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                        }
-                    }
-                );
+                // Fetch dashboard overview from our API
+                const response = await fetch(`/api/dashboard-overview?date=${todayStr}`);
+                const data = await response.json();
                 
-                if (bookingsResponse.ok) {
-                    const bookingsData = await bookingsResponse.json();
-                    const todayBookings = bookingsData.records.filter(r => 
-                        r.fields['Status'] === 'PAID' || r.fields['Status'] === 'Confirmed'
-                    );
-                    document.getElementById('todayBookings').textContent = todayBookings.length;
+                if (data.success) {
+                    // Update the stat cards
+                    document.getElementById('todayBookings').textContent = data.todayBookings || '0';
+                    document.getElementById('staffOnDuty').textContent = data.staffOnDuty || '0';
+                    document.getElementById('vesselsActive').textContent = data.vesselsActive || '0';
+                    document.getElementById('pendingIssues').textContent = data.pendingIssues || '0';
                     
-                    // Count unallocated shifts (no longer displayed but could be useful for stats)
-                    const unallocated = todayBookings.filter(r => 
-                        !r.fields['Onboarding Employee'] || !r.fields['Deloading Employee']
-                    );
-                }
-                
-                // Fetch allocations
-                const allocationsResponse = await fetch(
-                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`{Shift Date}='${todayStr}'`)}&` +
-                    `pageSize=100`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                        }
+                    // Show pending issues alert if any
+                    if (data.pendingIssues > 0 && data.details?.nonOperationalVessels) {
+                        console.log('Non-operational vessels:', data.details.nonOperationalVessels);
+                        // Could add a visual alert here if needed
                     }
-                );
-                
-                if (allocationsResponse.ok) {
-                    const allocationsData = await allocationsResponse.json();
-                    
-                    // Count unique staff on duty
-                    const uniqueStaff = new Set(allocationsData.records.map(r => r.fields['Employee']?.[0]).filter(Boolean));
-                    document.getElementById('staffOnDuty').textContent = uniqueStaff.size;
+                } else {
+                    console.error('Failed to load dashboard overview:', data.error);
+                    // Set default values on error
+                    document.getElementById('todayBookings').textContent = '0';
+                    document.getElementById('staffOnDuty').textContent = '0';
+                    document.getElementById('vesselsActive').textContent = '0';
+                    document.getElementById('pendingIssues').textContent = '0';
                 }
-                
-                // Set some sample values for demonstration (for cards that still exist)
-                document.getElementById('vesselsActive').textContent = '4';
-                document.getElementById('pendingIssues').textContent = '2';
                 
             } catch (error) {
                 console.error('Error loading overview data:', error);
+                // Set default values on error
+                document.getElementById('todayBookings').textContent = '0';
+                document.getElementById('staffOnDuty').textContent = '0';
+                document.getElementById('vesselsActive').textContent = '0';
+                document.getElementById('pendingIssues').textContent = '0';
             }
         }
 
