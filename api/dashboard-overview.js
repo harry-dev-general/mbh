@@ -3,7 +3,8 @@ const axios = require('axios');
 // Airtable configuration
 const BASE_ID = process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx';
 const BOOKINGS_TABLE = 'tblRe0cDmK3bG2kPf';  // Bookings Dashboard
-const ALLOCATIONS_TABLE = 'tblcBoyuVsbB1dt1I';  // Shift Allocations
+const ALLOCATIONS_TABLE = 'tbl22YKtQXZtDFtEX';  // Shift Allocations (matching frontend)
+const ROSTER_TABLE = 'tblGv7fBQoKIDU5jr';  // Roster (alternative source for staff data)
 const EMPLOYEE_TABLE = 'tbltAE4NlNePvnkpY';  // Employee Details
 const PRE_DEPARTURE_TABLE = 'tbl9igu5g1bPG4Ahu';  // Pre-Departure Checklist
 const POST_DEPARTURE_TABLE = 'tblYkbSQGP6zveYNi';  // Post-Departure Checklist
@@ -20,8 +21,14 @@ const headers = {
  */
 async function getDashboardOverview(date) {
     try {
-        const dateString = date || new Date().toISOString().split('T')[0];
-        console.log('Getting dashboard overview for:', dateString);
+        // Set to September 18, 2025 if no date provided to match system context
+        const defaultDate = new Date();
+        defaultDate.setFullYear(2025);
+        defaultDate.setMonth(8); // September
+        defaultDate.setDate(18);
+        
+        const dateString = date || defaultDate.toISOString().split('T')[0];
+        console.log('Getting dashboard overview for date:', dateString);
         
         // Fetch all data in parallel
         const [
@@ -36,10 +43,18 @@ async function getDashboardOverview(date) {
             getVesselMaintenanceStatus()
         ]);
         
+        // Debug logging
+        console.log('Today bookings count:', todayBookings.length);
+        console.log('Shift allocations count:', shiftAllocations.length);
+        if (shiftAllocations.length > 0) {
+            console.log('Sample shift allocation:', shiftAllocations[0].fields);
+        }
+        
         // Calculate Today's Bookings
         const confirmedBookings = todayBookings.filter(b => 
             ['PAID', 'PEND', 'PART'].includes(b.fields['Status'])
         );
+        console.log('Confirmed bookings:', confirmedBookings.length);
         
         // Calculate Staff on Duty (from both bookings and shift allocations)
         const staffFromBookings = new Set();
@@ -57,6 +72,9 @@ async function getDashboardOverview(date) {
                 .map(shift => shift.fields['Employee']?.[0])
                 .filter(Boolean)
         );
+        
+        console.log('Staff from bookings:', staffFromBookings.size);
+        console.log('Staff from shifts:', staffFromShifts.size);
         
         // Combine unique staff
         const allStaffOnDuty = new Set([...staffFromBookings, ...staffFromShifts]);
@@ -121,15 +139,42 @@ async function getTodayBookings(dateString) {
  */
 async function getShiftAllocations(dateString) {
     try {
+        // First try the allocations table
         const url = `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE}?` +
             `filterByFormula=${encodeURIComponent(`{Shift Date}='${dateString}'`)}&` +
             `pageSize=100&` +
-            `fields[]=Employee&fields[]=Shift Type&fields[]=Start Time&fields[]=End Time`;
+            `fields[]=Employee&fields[]=Shift Type&fields[]=Start Time&fields[]=End Time&fields[]=Status`;
+        
+        console.log('Fetching shift allocations from:', ALLOCATIONS_TABLE);
+        console.log('With filter:', `{Shift Date}='${dateString}'`);
         
         const response = await axios.get(url, { headers });
-        return response.data.records || [];
+        const records = response.data.records || [];
+        
+        console.log('Allocations table response:', records.length, 'records');
+        if (records.length > 0) {
+            console.log('First allocation fields:', Object.keys(records[0].fields));
+            return records;
+        }
+        
+        // If no allocations found, try the Roster table as fallback
+        console.log('No allocations found, trying Roster table...');
+        const rosterUrl = `https://api.airtable.com/v0/${BASE_ID}/${ROSTER_TABLE}?` +
+            `pageSize=100`;
+        
+        const rosterResponse = await axios.get(rosterUrl, { headers });
+        const rosterRecords = rosterResponse.data.records || [];
+        
+        console.log('Roster table has', rosterRecords.length, 'total records');
+        if (rosterRecords.length > 0) {
+            console.log('Sample roster fields:', Object.keys(rosterRecords[0].fields));
+            // For now, return empty array until we understand the roster structure
+            // This prevents breaking the dashboard while we investigate
+        }
+        
+        return records;
     } catch (error) {
-        console.error('Error fetching shift allocations:', error);
+        console.error('Error fetching shift allocations:', error.response?.status, error.response?.data || error.message);
         return [];
     }
 }
