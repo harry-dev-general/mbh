@@ -288,6 +288,45 @@
             border-color: #f44336;
         }
         
+        /* Current time indicator */
+        .current-time-indicator {
+            position: absolute;
+            top: 40px;
+            bottom: 0;
+            width: 2px;
+            background-color: #f44336;
+            z-index: 10;
+            pointer-events: none;
+            transition: left 0.5s ease;
+        }
+        
+        .current-time-indicator::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -4px;
+            width: 10px;
+            height: 10px;
+            background-color: #f44336;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .current-time-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f44336;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
         /* Time indicators for onboarding/deloading */
         .time-indicator {
             position: absolute;
@@ -706,6 +745,13 @@
             checkAuth();
         });
         
+        // Clean up interval on page unload
+        window.addEventListener('beforeunload', () => {
+            if (window.timeIndicatorInterval) {
+                clearInterval(window.timeIndicatorInterval);
+            }
+        });
+        
         // Set up date controls
         function setupDateControls() {
             const dateInput = document.getElementById('dateInput');
@@ -886,6 +932,9 @@
             
             timelineHtml += '</div>';
             section.innerHTML = timelineHtml;
+            
+            // Add current time indicator
+            addCurrentTimeIndicator();
         }
         
         // Create allocation block for timeline (separate for onboarding/deloading)
@@ -1250,6 +1299,70 @@
             currentDate = dateString;
             document.getElementById('dateInput').value = dateString;
             loadDailyRunSheet();
+        }
+        
+        // Add current time indicator to timeline
+        function addCurrentTimeIndicator() {
+            const timelineContainer = document.querySelector('.timeline-container');
+            if (!timelineContainer) return;
+            
+            // Create indicator element
+            const indicator = document.createElement('div');
+            indicator.className = 'current-time-indicator';
+            indicator.innerHTML = '<div class="current-time-label"></div>';
+            
+            // Add to timeline
+            timelineContainer.appendChild(indicator);
+            
+            // Update position immediately
+            updateCurrentTimeIndicator();
+            
+            // Update every minute
+            if (window.timeIndicatorInterval) {
+                clearInterval(window.timeIndicatorInterval);
+            }
+            window.timeIndicatorInterval = setInterval(updateCurrentTimeIndicator, 60000);
+        }
+        
+        // Update current time indicator position
+        function updateCurrentTimeIndicator() {
+            const indicator = document.querySelector('.current-time-indicator');
+            if (!indicator) return;
+            
+            // Get current time in Sydney timezone
+            const now = new Date();
+            // For the 2025 context, we'll use the actual current time but in the context date
+            const contextDate = new Date(currentDate);
+            now.setFullYear(contextDate.getFullYear());
+            now.setMonth(contextDate.getMonth());
+            now.setDate(contextDate.getDate());
+            
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const totalHours = hours + (minutes / 60);
+            
+            // Check if current time is within timeline bounds (6 AM to 8 PM)
+            if (totalHours < 6 || totalHours > 20) {
+                indicator.style.display = 'none';
+                return;
+            }
+            
+            indicator.style.display = 'block';
+            
+            // Calculate position (6 AM = 0, each hour = 85px)
+            const hoursFromStart = totalHours - 6;
+            const left = 150 + (hoursFromStart * 85); // 150px for vessel name column
+            
+            indicator.style.left = `${left}px`;
+            
+            // Update time label
+            const label = indicator.querySelector('.current-time-label');
+            const timeString = now.toLocaleTimeString('en-AU', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            label.textContent = timeString;
         }
         
         function showError(message) {
