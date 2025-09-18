@@ -106,6 +106,9 @@ app.get('/api/daily-run-sheet', async (req, res) => {
             vesselIds.includes(v.id)
         );
         
+        // Get employee details for name mapping
+        const employeeMap = await dailyRunSheet.getEmployeeDetails();
+        
         // Extract and aggregate add-ons
         const addOnsSummary = dailyRunSheet.extractAddOns(bookings);
         
@@ -122,6 +125,14 @@ app.get('/api/daily-run-sheet', async (req, res) => {
             addOns: b.fields['Add-ons'],
             onboardingStaff: b.fields['Onboarding Employee'],
             deloadingStaff: b.fields['Deloading Employee'],
+            onboardingStaffName: b.fields['Onboarding Employee']?.[0] 
+                ? employeeMap[b.fields['Onboarding Employee'][0]] || 'Unassigned'
+                : 'Unassigned',
+            deloadingStaffName: b.fields['Deloading Employee']?.[0]
+                ? employeeMap[b.fields['Deloading Employee'][0]] || 'Unassigned'
+                : 'Unassigned',
+            onboardingTime: b.fields['Onboarding Time'],
+            deloadingTime: b.fields['Deloading Time'],
             status: b.fields['Status'],
             totalAmount: b.fields['Total Amount'],
             preDepartureChecklist: b.fields['Pre Departure Checklist'],

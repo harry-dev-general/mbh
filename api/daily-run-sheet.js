@@ -45,6 +45,7 @@ async function getDailyBookings(date) {
             `fields[]=Start Time&fields[]=Finish Time&fields[]=Duration&` +
             `fields[]=Status&fields[]=Add-ons&fields[]=Booking Items&` +
             `fields[]=Boat&fields[]=Onboarding Employee&fields[]=Deloading Employee&` +
+            `fields[]=Onboarding Time&fields[]=Deloading Time&` +
             `fields[]=Total Amount&fields[]=Pre Departure Checklist&fields[]=Post Departure Checklist`;
         
         const response = await axios.get(url, { headers });
@@ -260,6 +261,30 @@ function getResourceStatus(percentage) {
 }
 
 /**
+ * Get employee details to map IDs to names
+ */
+async function getEmployeeDetails() {
+    try {
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE}?` +
+            `pageSize=100&` +
+            `fields[]=Name&fields[]=Email&fields[]=Staff Type`;
+        
+        const response = await axios.get(url, { headers });
+        
+        // Create a map of employee ID to name
+        const employeeMap = {};
+        response.data.records.forEach(record => {
+            employeeMap[record.id] = record.fields['Name'] || 'Unknown Staff';
+        });
+        
+        return employeeMap;
+    } catch (error) {
+        console.error('Error fetching employee details:', error.response?.data || error.message);
+        return {};
+    }
+}
+
+/**
  * Extract and aggregate add-ons from bookings
  */
 function extractAddOns(bookings) {
@@ -288,6 +313,7 @@ module.exports = {
     getDailyBookings,
     getVesselStatus,
     getAllVesselStatuses,
+    getEmployeeDetails,
     extractAddOns,
     levelToPercentage,
     getResourceStatus

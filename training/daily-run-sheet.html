@@ -186,10 +186,11 @@
         .vessel-row {
             display: grid;
             grid-template-columns: 150px repeat(14, 1fr);
-            height: 70px;
+            height: 100px;
             align-items: center;
             border-bottom: 1px solid #f0f0f0;
             position: relative;
+            padding-bottom: 20px;
         }
         
         .vessel-name {
@@ -203,7 +204,7 @@
         
         .booking-block {
             position: absolute;
-            height: 65px;
+            height: 75px;
             background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             border-radius: 8px;
             display: flex;
@@ -237,6 +238,51 @@
         
         .booking-block.returning {
             background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        }
+        
+        /* Time indicators for onboarding/deloading */
+        .time-indicator {
+            position: absolute;
+            bottom: -20px;
+            height: 20px;
+            z-index: 3;
+            cursor: pointer;
+        }
+        
+        .time-indicator.onboarding .indicator-line {
+            width: 2px;
+            height: 20px;
+            background-color: #4CAF50;
+            margin: 0 auto;
+        }
+        
+        .time-indicator.deloading .indicator-line {
+            width: 2px;
+            height: 20px;
+            background-color: #f44336;
+            margin: 0 auto;
+        }
+        
+        .indicator-label {
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 1px 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        
+        .time-indicator.onboarding .indicator-label {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .time-indicator.deloading .indicator-label {
+            background-color: #f44336;
+            color: white;
         }
         
         /* Vessel Status Section */
@@ -802,19 +848,61 @@
             // Get add-on icons
             const addOnIcons = getAddOnIcons(booking.addOns);
             
+            // Format onboarding and deloading times
+            const onboardingTimeStr = booking.onboardingTime || 'TBA';
+            const deloadingTimeStr = booking.deloadingTime || 'TBA';
+            
+            // Create onboarding and deloading indicators
+            let timeIndicators = '';
+            if (booking.onboardingTime) {
+                const onboardTime = parseTime(booking.onboardingTime);
+                const onboardHour = onboardTime.getHours() + (onboardTime.getMinutes() / 60);
+                const onboardLeft = ((onboardHour - 6) * 85) - left;
+                timeIndicators += `
+                    <div class="time-indicator onboarding" style="left: ${onboardLeft}px;" 
+                         title="Onboarding: ${onboardingTimeStr} - ${booking.onboardingStaffName}">
+                        <div class="indicator-line"></div>
+                        <div class="indicator-label">ON</div>
+                    </div>
+                `;
+            }
+            
+            if (booking.deloadingTime) {
+                const deloadTime = parseTime(booking.deloadingTime);
+                const deloadHour = deloadTime.getHours() + (deloadTime.getMinutes() / 60);
+                const deloadLeft = ((deloadHour - 6) * 85) - left;
+                timeIndicators += `
+                    <div class="time-indicator deloading" style="left: ${deloadLeft}px;"
+                         title="Deloading: ${deloadingTimeStr} - ${booking.deloadingStaffName}">
+                        <div class="indicator-line"></div>
+                        <div class="indicator-label">OFF</div>
+                    </div>
+                `;
+            }
+            
             return `
                 <div class="booking-block ${statusClass}" 
                      style="left: ${left}px; width: ${width}px;"
-                     title="${booking.bookingCode} - ${booking.customerName}">
-                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                     title="${booking.customerName} - ${booking.startTime} to ${booking.finishTime}">
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem; position: relative;">
                         <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                             ${booking.customerName}
                         </div>
-                        <div style="font-size: 0.75rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem;">
-                            <span>${booking.bookingCode}</span>
-                            ${addOnIcons}
+                        <div style="font-size: 0.7rem; opacity: 0.9; display: flex; flex-direction: column; gap: 0.2rem;">
+                            <div style="display: flex; align-items: center; gap: 0.3rem;">
+                                <i class="fas fa-user-check" style="font-size: 0.65rem;"></i>
+                                <span>${booking.onboardingStaffName}</span>
+                                ${addOnIcons}
+                            </div>
+                            ${booking.deloadingStaffName !== booking.onboardingStaffName ? `
+                                <div style="display: flex; align-items: center; gap: 0.3rem;">
+                                    <i class="fas fa-user-times" style="font-size: 0.65rem;"></i>
+                                    <span>${booking.deloadingStaffName}</span>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
+                    ${timeIndicators}
                 </div>
             `;
         }
