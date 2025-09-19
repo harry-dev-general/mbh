@@ -617,5 +617,50 @@ All features are live in production at: https://mbh-production-f0d1.up.railway.a
 
 ---
 
+## 12. Add-ons Management Feature
+
+### Overview
+Implemented comprehensive add-ons management functionality allowing managers to add, remove, and customize add-on items directly from booking allocations.
+
+### Features Implemented
+1. **API Layer** (`/api/addons-management.js`)
+   - Catalog endpoint with predefined items
+   - CRUD operations for booking add-ons
+   - Format validation and parsing utilities
+   - Maintains webhook compatibility
+
+2. **Frontend Enhancement** (`management-allocations.html`)
+   - Integrated add-ons manager in booking modal
+   - Categorized catalog display
+   - Custom item addition capability
+   - Real-time total calculation
+   - Inline item removal
+
+3. **Data Format Preservation**
+   - Maintains exact webhook format: "Item - $Price, Item - $Price"
+   - Seamless integration with existing systems
+   - No breaking changes
+
+### Technical Implementation
+```javascript
+// API endpoints
+GET  /api/addons/catalog              // Get available add-ons
+GET  /api/addons/booking/:bookingId   // Get current add-ons
+PATCH /api/addons/booking/:bookingId  // Update add-ons
+POST /api/addons/validate             // Validate format
+
+// Format maintained
+"Lilly Pad - $55.00, Fishing Rods - $20.00, Icebag - $12.50"
+```
+
+### User Experience
+- One-click access from booking modal
+- Intuitive add/remove interface
+- Prevents duplicate items
+- Automatic save on changes
+- Visual feedback for all actions
+
+---
+
 *Documentation created: September 9, 2025*
-*Last updated: September 17, 2025 (Add-ons display and vessel management fixes completed)*
+*Last updated: September 19, 2025 (Add-ons management feature completed)*

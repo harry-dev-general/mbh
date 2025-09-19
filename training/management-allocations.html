@@ -946,11 +946,42 @@
             
             <!-- Add-ons Section -->
             <div id="bookingAddons" style="background: #fff3cd; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #ffeaa7;">
-                <h4 style="margin-top: 0; color: #856404; margin-bottom: 1rem;">
-                    <i class="fas fa-plus-circle"></i> Add-ons
-                </h4>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4 style="margin: 0; color: #856404;">
+                        <i class="fas fa-plus-circle"></i> Add-ons
+                    </h4>
+                    <button type="button" class="btn btn-sm" style="background: #f0ad4e; color: white; border: none; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer;" onclick="toggleAddOnsManager()">
+                        <i class="fas fa-edit"></i> Manage
+                    </button>
+                </div>
                 <div id="addonsContent" style="color: #856404;">
-                    <span id="summaryAddons" style="font-size: 0.95rem;">No add-ons</span>
+                    <div id="summaryAddons" style="font-size: 0.95rem;">No add-ons</div>
+                    <div id="addOnsTotalSection" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #ffeaa7; display: none;">
+                        <strong>Total: $<span id="addOnsTotal">0.00</span></strong>
+                    </div>
+                </div>
+                
+                <!-- Add-ons Manager (Initially Hidden) -->
+                <div id="addOnsManager" style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #ffeaa7;">
+                    <div id="currentAddOnsList" style="margin-bottom: 1rem;">
+                        <!-- Current add-ons with remove buttons will be populated here -->
+                    </div>
+                    
+                    <h5 style="color: #856404; margin-bottom: 0.75rem;">Add New Items</h5>
+                    <div id="addOnsCatalog" style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem;">
+                        <!-- Catalog items will be populated here -->
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+                        <h6 style="color: #495057; margin-bottom: 0.5rem;">Custom Item</h6>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" id="customItemName" placeholder="Item name" style="flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <input type="number" id="customItemPrice" placeholder="Price" step="0.01" min="0" style="width: 100px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                            <button type="button" class="btn btn-sm" style="background: #28a745; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px;" onclick="addCustomAddOn()">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -2089,15 +2120,10 @@
             document.getElementById('summaryBoatType').textContent = bookedBoatType;
             document.getElementById('summaryOnboardingTime').textContent = onboardingTime;
             
-            // Populate add-ons
-            const addonsElement = document.getElementById('summaryAddons');
-            if (addons && addons.trim() !== '') {
-                addonsElement.innerHTML = addons.split(',').map(addon => 
-                    `<div style="margin-bottom: 0.25rem;">• ${addon.trim()}</div>`
-                ).join('');
-            } else {
-                addonsElement.textContent = 'No add-ons';
-            }
+            // Populate add-ons and store for management
+            window.currentBookingAddOns = addons || '';
+            window.currentBookingId = bookingRecord.id;
+            displayCurrentAddOns();
             
             // Store booking data in hidden fields
             document.getElementById('bookingId').value = bookingRecord.id;
@@ -2239,6 +2265,270 @@
         function closeBookingAllocationModal() {
             document.getElementById('bookingAllocationModal').classList.remove('show');
             document.getElementById('bookingAllocationForm').reset();
+            // Hide add-ons manager when closing
+            document.getElementById('addOnsManager').style.display = 'none';
+        }
+        
+        // Add-ons Management Functions
+        let currentAddOnsArray = [];
+        let addOnsCatalog = [];
+        
+        // Parse add-ons string to array
+        function parseAddOns(addOnsString) {
+            if (!addOnsString || addOnsString.trim() === '') return [];
+            
+            return addOnsString.split(',').map(item => {
+                const trimmedItem = item.trim();
+                const match = trimmedItem.match(/^(.+?)\s*-\s*\$(\d+(?:\.\d{2})?)$/);
+                
+                if (match) {
+                    return {
+                        name: match[1].trim(),
+                        price: parseFloat(match[2])
+                    };
+                }
+                
+                return {
+                    name: trimmedItem,
+                    price: 0
+                };
+            }).filter(item => item.name);
+        }
+        
+        // Format add-ons array to string
+        function formatAddOns(addOnsArray) {
+            if (!Array.isArray(addOnsArray) || addOnsArray.length === 0) return '';
+            
+            return addOnsArray
+                .filter(item => item && item.name)
+                .map(item => {
+                    const price = typeof item.price === 'number' ? item.price : 0;
+                    return `${item.name} - $${price.toFixed(2)}`;
+                })
+                .join(', ');
+        }
+        
+        // Display current add-ons
+        function displayCurrentAddOns() {
+            currentAddOnsArray = parseAddOns(window.currentBookingAddOns);
+            const addonsElement = document.getElementById('summaryAddons');
+            const totalSection = document.getElementById('addOnsTotalSection');
+            const totalElement = document.getElementById('addOnsTotal');
+            
+            if (currentAddOnsArray.length > 0) {
+                addonsElement.innerHTML = currentAddOnsArray.map(addon => 
+                    `<div style="margin-bottom: 0.25rem;">• ${addon.name} - $${addon.price.toFixed(2)}</div>`
+                ).join('');
+                
+                const total = currentAddOnsArray.reduce((sum, item) => sum + item.price, 0);
+                totalElement.textContent = total.toFixed(2);
+                totalSection.style.display = 'block';
+            } else {
+                addonsElement.textContent = 'No add-ons';
+                totalSection.style.display = 'none';
+            }
+            
+            // Update the editable list if manager is open
+            if (document.getElementById('addOnsManager').style.display !== 'none') {
+                updateCurrentAddOnsList();
+            }
+        }
+        
+        // Toggle add-ons manager
+        async function toggleAddOnsManager() {
+            const manager = document.getElementById('addOnsManager');
+            const isHidden = manager.style.display === 'none';
+            
+            if (isHidden) {
+                manager.style.display = 'block';
+                await loadAddOnsCatalog();
+                updateCurrentAddOnsList();
+            } else {
+                manager.style.display = 'none';
+            }
+        }
+        
+        // Load add-ons catalog
+        async function loadAddOnsCatalog() {
+            try {
+                const response = await fetch('/api/addons/catalog');
+                const data = await response.json();
+                
+                if (data.success) {
+                    addOnsCatalog = data.catalog;
+                    displayAddOnsCatalog(data.categorized);
+                }
+            } catch (error) {
+                console.error('Error loading add-ons catalog:', error);
+            }
+        }
+        
+        // Display add-ons catalog
+        function displayAddOnsCatalog(categorized) {
+            const catalogElement = document.getElementById('addOnsCatalog');
+            let html = '';
+            
+            Object.entries(categorized).forEach(([category, items]) => {
+                html += `<div style="margin-bottom: 1rem;">
+                    <h6 style="color: #856404; margin-bottom: 0.5rem;">${category}</h6>`;
+                
+                items.forEach(item => {
+                    // Check if already added
+                    const isAdded = currentAddOnsArray.some(addon => 
+                        addon.name.toLowerCase() === item.name.toLowerCase()
+                    );
+                    
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: white; margin-bottom: 0.25rem; border-radius: 4px; ${isAdded ? 'opacity: 0.5;' : ''}">
+                            <span>${item.name}</span>
+                            <div>
+                                <span style="color: #28a745; font-weight: bold; margin-right: 0.5rem;">$${item.price.toFixed(2)}</span>
+                                <button type="button" class="btn btn-sm" style="background: ${isAdded ? '#6c757d' : '#28a745'}; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px;" 
+                                        onclick="addCatalogItem('${item.name}', ${item.price})" 
+                                        ${isAdded ? 'disabled' : ''}>
+                                    ${isAdded ? 'Added' : 'Add'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+            
+            catalogElement.innerHTML = html;
+        }
+        
+        // Update current add-ons list with remove buttons
+        function updateCurrentAddOnsList() {
+            const listElement = document.getElementById('currentAddOnsList');
+            
+            if (currentAddOnsArray.length === 0) {
+                listElement.innerHTML = '<p style="color: #856404; margin: 0;">No add-ons selected</p>';
+                return;
+            }
+            
+            let html = '<h5 style="color: #856404; margin-bottom: 0.75rem;">Current Add-ons</h5>';
+            
+            currentAddOnsArray.forEach((addon, index) => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: white; margin-bottom: 0.25rem; border-radius: 4px;">
+                        <span>${addon.name} - $${addon.price.toFixed(2)}</span>
+                        <button type="button" class="btn btn-sm" style="background: #dc3545; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px;" 
+                                onclick="removeAddOn(${index})">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </div>
+                `;
+            });
+            
+            listElement.innerHTML = html;
+        }
+        
+        // Add catalog item
+        async function addCatalogItem(name, price) {
+            // Check if already exists
+            const exists = currentAddOnsArray.some(addon => 
+                addon.name.toLowerCase() === name.toLowerCase()
+            );
+            
+            if (exists) {
+                alert('This item is already added');
+                return;
+            }
+            
+            // Update local array
+            currentAddOnsArray.push({ name, price });
+            
+            // Update backend
+            await updateBookingAddOns();
+        }
+        
+        // Add custom add-on
+        async function addCustomAddOn() {
+            const nameInput = document.getElementById('customItemName');
+            const priceInput = document.getElementById('customItemPrice');
+            
+            const name = nameInput.value.trim();
+            const price = parseFloat(priceInput.value) || 0;
+            
+            if (!name) {
+                alert('Please enter an item name');
+                return;
+            }
+            
+            // Check if already exists
+            const exists = currentAddOnsArray.some(addon => 
+                addon.name.toLowerCase() === name.toLowerCase()
+            );
+            
+            if (exists) {
+                alert('This item is already added');
+                return;
+            }
+            
+            // Update local array
+            currentAddOnsArray.push({ name, price });
+            
+            // Clear inputs
+            nameInput.value = '';
+            priceInput.value = '';
+            
+            // Update backend
+            await updateBookingAddOns();
+        }
+        
+        // Remove add-on
+        async function removeAddOn(index) {
+            currentAddOnsArray.splice(index, 1);
+            await updateBookingAddOns();
+        }
+        
+        // Update booking add-ons in backend
+        async function updateBookingAddOns() {
+            try {
+                const response = await fetch(`/api/addons/booking/${window.currentBookingId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'set',
+                        items: currentAddOnsArray
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update the stored string
+                    window.currentBookingAddOns = result.updatedAddOns;
+                    
+                    // Update displays
+                    displayCurrentAddOns();
+                    
+                    // Refresh catalog to update button states
+                    if (addOnsCatalog.length > 0) {
+                        const categorized = addOnsCatalog.reduce((acc, item) => {
+                            if (!acc[item.category]) acc[item.category] = [];
+                            acc[item.category].push(item);
+                            return acc;
+                        }, {});
+                        displayAddOnsCatalog(categorized);
+                    }
+                    
+                    // Update the booking in our local data
+                    const booking = bookingsData.find(b => b.id === window.currentBookingId);
+                    if (booking) {
+                        booking.fields['Add-ons'] = result.updatedAddOns;
+                    }
+                } else {
+                    alert('Failed to update add-ons: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error updating add-ons:', error);
+                alert('Failed to update add-ons. Please try again.');
+            }
         }
         
         // Handle new booking allocation form submission

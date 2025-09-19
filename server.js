@@ -27,6 +27,9 @@ const webhookLogger = require('./api/webhook-logger');
 // Import Checkfront webhook handler
 const checkfrontWebhook = require('./api/checkfront-webhook');
 
+// Import add-ons management
+const addonsManagement = require('./api/addons-management');
+
 // Security middleware with exceptions for shift confirmation
 app.use((req, res, next) => {
   // Skip helmet CSP for shift confirmation page to avoid loading issues
@@ -243,6 +246,9 @@ app.use('/api', webhookLogger);
 
 // Add Checkfront webhook handler
 app.use('/api/checkfront', checkfrontWebhook);
+
+// Add add-ons management routes
+app.use('/api/addons', addonsManagement);
 
 // Announcements API endpoints
 app.get('/api/announcements', async (req, res) => {
