@@ -2605,14 +2605,20 @@
                     throw new Error(error.error?.message || 'Failed to update allocation');
                 }
                 
-                // Success message
-                let message = 'Allocation updated successfully!';
-                if (selectedStaffId && selectedBoatId) {
-                    message = 'Staff and boat assigned successfully!';
-                } else if (selectedStaffId) {
-                    message = 'Staff member assigned successfully!';
-                } else if (selectedBoatId) {
-                    message = 'Boat assigned successfully!';
+                // Success message - be specific about what was updated
+                let message = 'Booking updated successfully!';
+                const staffChanged = selectedStaffId !== currentStaffId;
+                const currentBoatId = booking?.fields['Boat']?.[0];
+                const boatChanged = selectedBoatId !== currentBoatId;
+                
+                if (staffChanged && boatChanged) {
+                    message = 'Staff and boat updated successfully!';
+                } else if (staffChanged) {
+                    message = 'Staff member updated successfully!';
+                } else if (boatChanged) {
+                    message = 'Boat updated successfully!';
+                } else {
+                    message = 'Booking details updated successfully!';
                 }
                 
                 alert(message);
@@ -2621,11 +2627,26 @@
                 // Reload data to show updates
                 await loadWeekData();
                 
-                // Send SMS notification if staff was assigned
-                if (selectedStaffId) {
+                // Get current staff assignment to check if it's actually changing
+                const booking = bookingsData.find(b => b.id === bookingId);
+                const currentStaffId = allocationType === 'onboarding' ? 
+                    booking?.fields['Onboarding Employee']?.[0] : 
+                    booking?.fields['Deloading Employee']?.[0];
+                
+                // Only send SMS if staff is being newly assigned or changed
+                const isStaffChanging = selectedStaffId && selectedStaffId !== currentStaffId;
+                
+                if (selectedStaffId && !isStaffChanging) {
+                    console.log('Staff assignment unchanged - SMS notification skipped:', {
+                        currentStaff: currentStaffId,
+                        selectedStaff: selectedStaffId,
+                        allocationType: allocationType
+                    });
+                }
+                
+                if (isStaffChanging) {
                     try {
                         // Get booking details for the SMS
-                        const booking = bookingsData.find(b => b.id === bookingId);
                         if (booking && booking.fields) {
                             const roleValue = allocationType === 'onboarding' ? 'Onboarding' : 'Deloading';
                             const bookingDate = booking.fields['Booking Date'];
@@ -2652,7 +2673,11 @@
                                 isBookingAllocation: true
                             };
                             
-                            console.log('Sending SMS notification for booking allocation:', notificationData);
+                            console.log('Staff assignment changed - sending SMS notification:', {
+                                previousStaff: currentStaffId || 'None',
+                                newStaff: selectedStaffId,
+                                ...notificationData
+                            });
                             
                             const notifyResponse = await fetch('/api/send-shift-notification', {
                                 method: 'POST',

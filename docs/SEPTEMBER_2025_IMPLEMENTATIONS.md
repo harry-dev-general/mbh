@@ -662,5 +662,31 @@ POST /api/addons/validate             // Validate format
 
 ---
 
+## 13. SMS Notification Logic Fix
+
+### Issue
+Staff were receiving duplicate SMS notifications when managers updated booking details (add-ons, boats, etc.) even though they had already accepted the shift.
+
+### Solution
+Modified the booking allocation form to check if staff assignment is actually changing before sending SMS notifications.
+
+### Implementation
+```javascript
+// Only send SMS if staff is being newly assigned or changed
+const isStaffChanging = selectedStaffId && selectedStaffId !== currentStaffId;
+
+if (isStaffChanging) {
+    // Send SMS notification
+}
+```
+
+### Result
+- SMS only sent when staff assignment changes
+- No duplicate notifications for other updates
+- Console logging for debugging
+- Improved user experience and reduced SMS costs
+
+---
+
 *Documentation created: September 9, 2025*
-*Last updated: September 19, 2025 (Add-ons management feature completed)*
+*Last updated: September 19, 2025 (Add-ons management feature completed, SMS notification logic fixed)*
