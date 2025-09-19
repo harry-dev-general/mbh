@@ -2605,10 +2605,16 @@
                     throw new Error(error.error?.message || 'Failed to update allocation');
                 }
                 
+                // Get current booking data to check what changed
+                const booking = bookingsData.find(b => b.id === bookingId);
+                const currentStaffId = allocationType === 'onboarding' ? 
+                    booking?.fields['Onboarding Employee']?.[0] : 
+                    booking?.fields['Deloading Employee']?.[0];
+                const currentBoatId = booking?.fields['Boat']?.[0];
+                
                 // Success message - be specific about what was updated
                 let message = 'Booking updated successfully!';
                 const staffChanged = selectedStaffId !== currentStaffId;
-                const currentBoatId = booking?.fields['Boat']?.[0];
                 const boatChanged = selectedBoatId !== currentBoatId;
                 
                 if (staffChanged && boatChanged) {
@@ -2626,12 +2632,6 @@
                 
                 // Reload data to show updates
                 await loadWeekData();
-                
-                // Get current staff assignment to check if it's actually changing
-                const booking = bookingsData.find(b => b.id === bookingId);
-                const currentStaffId = allocationType === 'onboarding' ? 
-                    booking?.fields['Onboarding Employee']?.[0] : 
-                    booking?.fields['Deloading Employee']?.[0];
                 
                 // Only send SMS if staff is being newly assigned or changed
                 const isStaffChanging = selectedStaffId && selectedStaffId !== currentStaffId;
