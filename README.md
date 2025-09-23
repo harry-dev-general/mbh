@@ -38,6 +38,20 @@ After deploying, you MUST update the Supabase email templates to use the default
 
 **See [docs/SUPABASE_EMAIL_QUICK_REFERENCE.md](docs/SUPABASE_EMAIL_QUICK_REFERENCE.md) for all required templates.**
 
+## 📅 Recent Updates (September 18, 2025)
+
+### Daily Run Sheet Enhancements
+- **Dynamic Current Time Indicator**: Red line showing current time on timeline, updates every minute
+- **Clickable Booking Allocations**: Click any allocation to view full booking details and add-ons
+- **UI Improvements**: Fixed button styling to match red/white theme
+
+### Management Dashboard Improvements  
+- **Dynamic Today's Overview**: Real-time stats replacing hardcoded values
+- **Staff on Duty Fix**: Now properly counts only accepted shifts
+- **Portal Response Bug Fix**: Handles missing Response Status field
+
+See [docs/SESSION_SUMMARY_2025_09_18.md](docs/SESSION_SUMMARY_2025_09_18.md) for detailed changelog.
+
 ## 🔧 Current Status
 
 ### ✅ Completed
