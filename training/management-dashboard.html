@@ -26,6 +26,13 @@
         .dashboard-container {
             display: flex;
             min-height: 100vh;
+            position: relative;
+        }
+        
+        .dashboard-layout {
+            display: flex;
+            flex: 1;
+            position: relative;
         }
         
         /* Left Sidebar Navigation */
@@ -33,8 +40,12 @@
             width: 240px;
             background: white;
             box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-            padding: 2rem 0;
+            padding: 2rem 0 6rem 0; /* Added bottom padding for logout button */
             flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+            overflow-y: auto;
+            height: 100vh;
         }
         
         .logo-section {
@@ -97,6 +108,7 @@
         
         .nav-items {
             list-style: none;
+            padding: 0 0 5rem 0; /* Add bottom padding to avoid overlap with logout button */
         }
         
         .nav-item {
@@ -130,6 +142,9 @@
             flex: 1;
             padding: 2rem;
             max-width: 1200px;
+            margin-left: 0;
+            position: relative;
+            z-index: 1;
         }
         
         /* Header */
@@ -738,7 +753,7 @@
         
         /* Responsive */
         @media (max-width: 1440px) {
-            .dashboard-container {
+            .dashboard-layout {
                 flex-direction: column;
             }
             
@@ -757,6 +772,10 @@
         
         @media (max-width: 1024px) {
             .sidebar-nav {
+                display: none;
+            }
+            
+            .logout-container {
                 display: none;
             }
             
@@ -950,6 +969,17 @@
             background: #e2e8f0 !important;
             color: #475569 !important;
         }
+        
+        /* Logout button container */
+        .logout-container {
+            position: fixed !important;
+            bottom: 2rem;
+            left: 0;
+            width: 240px;
+            padding: 0 1.5rem;
+            background: white;
+            z-index: 11;
+        }
     </style>
 </head>
 <body>
@@ -991,15 +1021,17 @@
                 </li>
             </ul>
             
-            <div style="position: absolute; bottom: 2rem; left: 0; right: 0; padding: 0 1.5rem;">
+            <div class="logout-container">
                 <button onclick="logout()" style="width: 100%; padding: 0.75rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease;">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
         </nav>
         
-        <!-- Main Content -->
-        <main class="main-content">
+        <!-- Dashboard Layout (Main + Right Sidebar) -->
+        <div class="dashboard-layout">
+            <!-- Main Content -->
+            <main class="main-content">
             <!-- Header -->
             <header class="header">
                 <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
@@ -1289,6 +1321,7 @@
                 </div>
             </section>
         </aside>
+        </div> <!-- End of dashboard-layout -->
     </div>
     
     <script>
