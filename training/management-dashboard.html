@@ -1539,7 +1539,7 @@
         let currentWeekStart = new Date();
         currentWeekStart.setFullYear(2025); // Ensure 2025 context
         currentWeekStart.setMonth(8); // September (0-indexed)
-        currentWeekStart.setDate(23); // Current date in system context
+        currentWeekStart.setDate(24); // Current date is September 24, 2025
         currentWeekStart.setHours(0, 0, 0, 0);
         const dayOfWeek = currentWeekStart.getDay();
         const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Adjust for Monday start
@@ -1753,7 +1753,7 @@
             const today = new Date();
             today.setFullYear(2025); // Ensure 2025 context
             today.setMonth(8); // September
-            today.setDate(23); // Current date in system context
+            today.setDate(24); // Current date is September 24, 2025
             return date.getDate() === today.getDate() &&
                    date.getMonth() === today.getMonth() &&
                    date.getFullYear() === today.getFullYear();
@@ -1772,7 +1772,7 @@
             currentWeekStart = new Date();
             currentWeekStart.setFullYear(2025); // Ensure 2025 context
             currentWeekStart.setMonth(8); // September (0-indexed)
-            currentWeekStart.setDate(23); // Current date in system context
+            currentWeekStart.setDate(24); // Current date is September 24, 2025
             currentWeekStart.setHours(0, 0, 0, 0);
             const dayOfWeek = currentWeekStart.getDay();
             const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Adjust for Monday start
@@ -1998,7 +1998,7 @@
                 const today = new Date();
                 today.setFullYear(2025); // Ensure 2025 context
                 today.setMonth(8); // September
-                today.setDate(23); // Current date in system context
+                today.setDate(24); // Current date is September 24, 2025
                 const sevenDaysAgo = new Date(today);
                 sevenDaysAgo.setDate(today.getDate() - 7);
                 
@@ -2122,7 +2122,7 @@
                 const today = new Date();
                 today.setFullYear(2025); // Ensure 2025 context
                 today.setMonth(8); // September
-                today.setDate(23); // Current date in system context
+                today.setDate(24); // Current date is September 24, 2025
                 const todayStr = today.toISOString().split('T')[0];
                 const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
                 
