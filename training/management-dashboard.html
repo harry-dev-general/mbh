@@ -479,8 +479,8 @@
         
         /* Right Sidebar */
         .right-sidebar {
-            width: 320px;
-            padding-left: 2rem;
+            width: 360px;
+            padding: 0 2rem;
             flex-shrink: 0;
         }
         
@@ -737,8 +737,20 @@
         
         /* Responsive */
         @media (max-width: 1440px) {
+            .dashboard-layout {
+                flex-direction: column;
+            }
+            
+            .main-content {
+                margin-right: 0;
+                margin-bottom: 2rem;
+            }
+            
             .right-sidebar {
-                display: none;
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 0 2rem 2rem;
             }
         }
         
@@ -749,6 +761,11 @@
             
             .main-content {
                 padding: 1rem;
+                margin-left: 0;
+            }
+            
+            .right-sidebar {
+                padding: 0 1rem 2rem;
             }
             
             .fleet-container {
@@ -758,13 +775,144 @@
             .vessels-list {
                 height: 200px;
             }
+            
+            .calendar-section {
+                overflow-x: auto;
+            }
+            
+            .calendar-grid {
+                min-width: 600px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .user-menu {
+                gap: 0.75rem;
+            }
+            
+            .main-content {
+                padding: 0.75rem;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .sidebar-section {
+                margin-bottom: 1rem;
+                padding: 1rem;
+            }
+            
+            .booking-item {
+                padding: 1rem;
+            }
+            
+            .time-slot {
+                font-size: 0.75rem;
+                padding: 0.5rem;
+            }
+            
+            .vessel-header h4 {
+                font-size: 0.875rem;
+            }
+            
+            .vessel-status {
+                font-size: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .toggle-switch {
+                transform: scale(0.9);
+            }
+            
+            .calendar-grid {
+                min-width: 480px;
+            }
+            
+            .time-labels {
+                display: none;
+            }
+            
+            .booking-slot {
+                font-size: 0.7rem;
+                padding: 0.25rem;
+            }
+            
+            .availability-chart {
+                display: none;
+            }
+            
+            .time-toggle {
+                font-size: 0.75rem;
+            }
+            
+            .new-indicator {
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #475569;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            margin-right: 1rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .sidebar-nav.mobile-open {
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 1000;
+                box-shadow: 0 0 30px rgba(0,0,0,0.2);
+            }
+        }
+        
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .mobile-overlay.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+        
         <!-- Left Sidebar Navigation -->
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav" id="sidebarNav">
             <div class="logo-section">
                 <img src="images/mbh-logo.png" alt="MBH Logo" class="logo">
                 <div class="logo-text">MBH Portal</div>
@@ -808,6 +956,9 @@
         <main class="main-content">
             <!-- Header -->
             <header class="header">
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="greeting">
                     <h1>Hello <span id="userName">Manager</span>, welcome back!</h1>
                     <p>Here's what's happening with your marina today</p>
@@ -1240,6 +1391,22 @@
         async function logout() {
             await supabase.auth.signOut();
             window.location.href = 'auth.html';
+        }
+        
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebarNav');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (sidebar.classList.contains('mobile-open')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
         }
         
         // Load overview data
