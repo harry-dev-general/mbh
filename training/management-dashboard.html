@@ -1108,12 +1108,15 @@
                     <div class="section-header">
                         <h2 class="section-title">Weekly Schedule</h2>
                         <div class="calendar-controls">
-                            <button class="calendar-nav-btn" onclick="changeWeek(-1)">
+                            <button class="calendar-nav-btn" onclick="changeWeek(-1)" title="Previous week">
                                 <i class="fas fa-chevron-left"></i>
                             </button>
                             <span class="current-week-display" id="currentWeekDisplay">Loading...</span>
-                            <button class="calendar-nav-btn" onclick="changeWeek(1)">
+                            <button class="calendar-nav-btn" onclick="changeWeek(1)" title="Next week">
                                 <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <button class="calendar-nav-btn today-btn" onclick="goToToday()" title="Go to current week" style="margin-left: 10px;">
+                                Today
                             </button>
                         </div>
                     </div>
@@ -1585,14 +1588,15 @@
                 const startStr = startDate.toISOString().split('T')[0];
                 const endStr = endDate.toISOString().split('T')[0];
                 
-                // Fetch bookings for the week via API proxy
+                // Fetch bookings via API proxy - get all non-cancelled bookings and filter client-side
                 const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
                 const response = await fetch(
                     `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`AND({Booking Date}>='${startStr}',{Booking Date}<='${endStr}',{Status}!='CANC')`)}` +
+                    `filterByFormula=${encodeURIComponent(`OR({Status}='PAID',{Status}='PART',{Status}='Confirmed',{Status}='Pending')`)}` +
                     `&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time` +
                     `&fields[]=Boat&fields[]=Booked Boat Type&fields[]=Status&fields[]=Total Amount` +
-                    `&fields[]=Onboarding Employee&fields[]=Deloading Employee`,
+                    `&fields[]=Onboarding Employee&fields[]=Deloading Employee` +
+                    `&pageSize=100`,
                     {
                         method: 'GET'
                     }
@@ -1603,12 +1607,18 @@
                 }
                 
                 const data = await response.json();
-                const bookings = data.records || [];
+                const allBookings = data.records || [];
+                
+                // Filter bookings by date on client side
+                const bookings = allBookings.filter(record => {
+                    const bookingDate = record.fields['Booking Date'];
+                    return bookingDate >= startStr && bookingDate <= endStr;
+                });
                 
                 // Debug: Log fetched bookings
-                console.log(`Fetched ${bookings.length} bookings for week ${startStr} to ${endStr}`);
+                console.log(`Fetched ${allBookings.length} total bookings, ${bookings.length} for week ${startStr} to ${endStr}`);
                 bookings.forEach(record => {
-                    console.log(`Booking: ${record.fields['Customer Name']} on ${record.fields['Booking Date']} at ${record.fields['Start Time']}`);
+                    console.log(`Booking: ${record.fields['Customer Name']} on ${record.fields['Booking Date']} at ${record.fields['Start Time']} - Status: ${record.fields['Status']}`);
                 });
                 
                 // Group bookings by date and time
@@ -1752,6 +1762,22 @@
         // Change week
         async function changeWeek(direction) {
             currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+            updateWeekDisplay();
+            await buildCalendarGrid();
+        }
+        
+        // Go to current week
+        async function goToToday() {
+            // Reset to current week
+            currentWeekStart = new Date();
+            currentWeekStart.setFullYear(2025); // Ensure 2025 context
+            currentWeekStart.setMonth(8); // September (0-indexed)
+            currentWeekStart.setDate(23); // Current date in system context
+            currentWeekStart.setHours(0, 0, 0, 0);
+            const dayOfWeek = currentWeekStart.getDay();
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Adjust for Monday start
+            currentWeekStart.setDate(currentWeekStart.getDate() + diff);
+            
             updateWeekDisplay();
             await buildCalendarGrid();
         }
