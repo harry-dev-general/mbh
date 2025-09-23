@@ -1586,7 +1586,7 @@
                 const endStr = endDate.toISOString().split('T')[0];
                 
                 // Fetch bookings for the week via API proxy
-                const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I';
+                const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
                 const response = await fetch(
                     `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
                     `filterByFormula=${encodeURIComponent(`AND({Booking Date}>='${startStr}',{Booking Date}<='${endStr}',{Status}!='CANC')`)}` +
@@ -1962,7 +1962,7 @@
                 const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
                 
                 // Fetch recent bookings via API proxy
-                const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I';
+                const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
                 const response = await fetch(
                     `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
                     `filterByFormula=${encodeURIComponent(`AND({Created Date}>='${sevenDaysAgoStr}',{Status}!='CANC')`)}` +
@@ -2109,7 +2109,7 @@
                 });
                 
                 // Also check bookings for today via API proxy
-                const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I';
+                const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
                 const bookingsResponse = await fetch(
                     `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
                     `filterByFormula=${encodeURIComponent(`{Booking Date}='${todayStr}'`)}` +
