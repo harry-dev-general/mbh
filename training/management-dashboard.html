@@ -40,19 +40,26 @@
             width: 240px;
             background: white;
             box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-            padding: 2rem 0 6rem 0; /* Added bottom padding for logout button */
+            padding: 0;
             flex-shrink: 0;
             position: relative;
             z-index: 10;
-            overflow-y: auto;
             height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         
         .logo-section {
             text-align: center;
-            padding: 0 1.5rem 2rem;
+            padding: 2rem 1.5rem;
             border-bottom: 1px solid #e0e6ed;
             margin-bottom: 2rem;
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 1rem;
         }
         
         .logo {
@@ -108,7 +115,8 @@
         
         .nav-items {
             list-style: none;
-            padding: 0 0 5rem 0; /* Add bottom padding to avoid overlap with logout button */
+            padding: 0;
+            margin: 0;
         }
         
         .nav-item {
@@ -900,7 +908,7 @@
             }
             
             .sidebar-nav.mobile-open {
-                display: block;
+                display: flex;
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -972,13 +980,9 @@
         
         /* Logout button container */
         .logout-container {
-            position: fixed !important;
-            bottom: 2rem;
-            left: 0;
-            width: 240px;
-            padding: 0 1.5rem;
+            padding: 1.5rem;
+            margin-top: auto;
             background: white;
-            z-index: 11;
         }
     </style>
 </head>
@@ -994,32 +998,34 @@
                 <div class="logo-text">MBH Portal</div>
             </div>
             
-            <div class="view-toggle">
-                <span>Employee</span>
-                <div class="toggle-switch management" id="toggleSwitch" onclick="toggleView()">
-                    <div class="toggle-slider"></div>
+            <div class="sidebar-content">
+                <div class="view-toggle">
+                    <span>Employee</span>
+                    <div class="toggle-switch management" id="toggleSwitch" onclick="toggleView()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <span>Manager</span>
                 </div>
-                <span>Manager</span>
+                
+                <ul class="nav-items">
+                    <li class="nav-item active" onclick="switchTab('overview', event)">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Overview</span>
+                    </li>
+                    <li class="nav-item" onclick="switchTab('staff', event)">
+                        <i class="fas fa-users"></i>
+                        <span>Staff Management</span>
+                    </li>
+                    <li class="nav-item" onclick="switchTab('vessels', event)">
+                        <i class="fas fa-ship"></i>
+                        <span>Vessel Maintenance</span>
+                    </li>
+                    <li class="nav-item" onclick="switchTab('announcements', event)">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>Announcements</span>
+                    </li>
+                </ul>
             </div>
-            
-            <ul class="nav-items">
-                <li class="nav-item active" onclick="switchTab('overview', event)">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Overview</span>
-                </li>
-                <li class="nav-item" onclick="switchTab('staff', event)">
-                    <i class="fas fa-users"></i>
-                    <span>Staff Management</span>
-                </li>
-                <li class="nav-item" onclick="switchTab('vessels', event)">
-                    <i class="fas fa-ship"></i>
-                    <span>Vessel Maintenance</span>
-                </li>
-                <li class="nav-item" onclick="switchTab('announcements', event)">
-                    <i class="fas fa-bullhorn"></i>
-                    <span>Announcements</span>
-                </li>
-            </ul>
             
             <div class="logout-container">
                 <button onclick="logout()" style="width: 100%; padding: 0.75rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease;">
