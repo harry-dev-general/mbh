@@ -1605,6 +1605,12 @@
                 const data = await response.json();
                 const bookings = data.records || [];
                 
+                // Debug: Log fetched bookings
+                console.log(`Fetched ${bookings.length} bookings for week ${startStr} to ${endStr}`);
+                bookings.forEach(record => {
+                    console.log(`Booking: ${record.fields['Customer Name']} on ${record.fields['Booking Date']} at ${record.fields['Start Time']}`);
+                });
+                
                 // Group bookings by date and time
                 const bookingsByDateAndTime = {};
                 bookings.forEach(record => {
@@ -1626,6 +1632,8 @@
                             amount: fields['Total Amount'],
                             hasStaff: !!(fields['Onboarding Employee']?.[0] || fields['Deloading Employee']?.[0])
                         });
+                    } else {
+                        console.warn(`Could not parse time for booking: ${fields['Customer Name']} with time: ${fields['Start Time']}`);
                     }
                 });
                 
@@ -1698,16 +1706,27 @@
         function parseTimeToSlot(timeStr) {
             if (!timeStr) return null;
             
-            // Parse time like "08:45 am" or "1:30 PM"
-            const timeParts = timeStr.toLowerCase().match(/(\d{1,2}):(\d{2})\s*(am|pm)/);
-            if (!timeParts) return null;
+            // Try parsing 12-hour format like "08:45 am" or "1:30 PM"
+            let timeParts = timeStr.toLowerCase().match(/(\d{1,2}):(\d{2})\s*(am|pm)/);
+            let hour;
             
-            let hour = parseInt(timeParts[1]);
-            const isPM = timeParts[3] === 'pm';
-            
-            // Convert to 24-hour format
-            if (isPM && hour !== 12) hour += 12;
-            if (!isPM && hour === 12) hour = 0;
+            if (timeParts) {
+                hour = parseInt(timeParts[1]);
+                const isPM = timeParts[3] === 'pm';
+                
+                // Convert to 24-hour format
+                if (isPM && hour !== 12) hour += 12;
+                if (!isPM && hour === 12) hour = 0;
+            } else {
+                // Try parsing 24-hour format like "09:00" or "13:30"
+                timeParts = timeStr.match(/(\d{1,2}):(\d{2})/);
+                if (timeParts) {
+                    hour = parseInt(timeParts[1]);
+                } else {
+                    console.warn(`Unable to parse time format: ${timeStr}`);
+                    return null;
+                }
+            }
             
             // Map to nearest 2-hour slot
             if (hour < 9) return '8 AM';
