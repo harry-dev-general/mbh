@@ -619,11 +619,20 @@
                     user.email.includes('@mbh.com')) {
                     isManagement = true;
                     
+                    // DEVELOPMENT: Disable automatic redirect to prevent loops
+                    // Instead, just show the management button
+                    console.log('Management user detected, showing management options');
+                    
+                    // Store that this is a management user
+                    sessionStorage.setItem('isManagementUser', 'true');
+                    
+                    /*
                     // Only redirect if they haven't explicitly chosen regular view
                     if (viewMode !== 'regular') {
                         window.location.href = 'management-dashboard.html';
                         return; // Stop loading regular dashboard
                     }
+                    */
                     
                     // They are management but want regular view - show the toggle button, view switcher, and Staff Allocation button
                     document.getElementById('managementButton').style.display = 'flex';

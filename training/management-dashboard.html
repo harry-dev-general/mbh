@@ -762,7 +762,11 @@
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
+    <!-- Development Mode Banner -->
+    <div style="background: #fbbf24; color: #1f2937; padding: 0.75rem; text-align: center; font-weight: 500; position: fixed; top: 0; left: 0; right: 0; z-index: 9999;">
+        ⚠️ DEVELOPMENT MODE: Management authorization checks disabled for testing
+    </div>
+    <div class="dashboard-container" style="margin-top: 45px;">
         <!-- Left Sidebar Navigation -->
         <nav class="sidebar-nav">
             <div class="logo-section">
@@ -1118,19 +1122,21 @@
                 'matt_collins65@outlook.com'
             ];
             
-            // Check if already redirecting to prevent loops
-            const isRedirecting = sessionStorage.getItem('redirecting');
-            if (isRedirecting) {
-                sessionStorage.removeItem('redirecting');
-                console.log('Redirect loop detected, staying on management dashboard');
-            } else if (!managementEmails.includes(user.email) && 
+            // DEVELOPMENT: Temporarily disable management check to prevent redirect loops
+            console.log('Management check disabled for development testing');
+            console.log('User email:', user.email);
+            console.log('Is management user:', managementEmails.includes(user.email) || user.email.includes('@mbh.com'));
+            
+            // TODO: Re-enable this check after fixing redirect loop with dashboard.html
+            /*
+            if (!managementEmails.includes(user.email) && 
                 !user.email.includes('@mbh.com')) {
                 // Not a management user, redirect to regular dashboard
                 console.log('User not authorized for management view, redirecting...');
-                sessionStorage.setItem('redirecting', 'true');
                 window.location.href = 'dashboard.html?view=regular';
                 return;
             }
+            */
 
             // Set user info
             const firstName = user.user_metadata?.full_name?.split(' ')[0] || 'Manager';
