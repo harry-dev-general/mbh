@@ -286,6 +286,17 @@
             100% { transform: rotate(360deg); }
         }
         
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
         /* Pending Allocations Styles */
         .pending-allocations {
             max-height: 400px;
@@ -619,20 +630,25 @@
                     user.email.includes('@mbh.com')) {
                     isManagement = true;
                     
-                    // DEVELOPMENT: Disable automatic redirect to prevent loops
-                    // Instead, just show the management button
                     console.log('Management user detected, showing management options');
                     
                     // Store that this is a management user
                     sessionStorage.setItem('isManagementUser', 'true');
                     
-                    /*
-                    // Only redirect if they haven't explicitly chosen regular view
-                    if (viewMode !== 'regular') {
+                    // Check if user has a view preference stored
+                    const viewPreference = localStorage.getItem('preferredView');
+                    
+                    // If they prefer management view and haven't explicitly chosen regular view
+                    if (viewPreference === 'management' && viewMode !== 'regular') {
+                        console.log('User prefers management view, redirecting...');
                         window.location.href = 'management-dashboard.html';
                         return; // Stop loading regular dashboard
                     }
-                    */
+                    
+                    // Otherwise show a prominent button to switch to management view
+                    setTimeout(() => {
+                        showManagementViewPrompt();
+                    }, 1000);
                     
                     // They are management but want regular view - show the toggle button, view switcher, and Staff Allocation button
                     document.getElementById('managementButton').style.display = 'flex';
@@ -707,8 +723,46 @@
         
         // Toggle between employee and manager view
         function toggleView() {
-            // Since we're on the regular dashboard, toggle to management view
+            // Set preference and redirect to management view
+            localStorage.setItem('preferredView', 'management');
             window.location.href = 'management-dashboard.html';
+        }
+        
+        // Show management view prompt for first-time management users
+        function showManagementViewPrompt() {
+            // Only show if they haven't set a preference yet
+            if (localStorage.getItem('preferredView')) return;
+            
+            // Create a prominent prompt
+            const promptDiv = document.createElement('div');
+            promptDiv.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: #dc3545;
+                color: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 1000;
+                max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            promptDiv.innerHTML = `
+                <h4 style="margin: 0 0 10px 0;">Welcome, Manager!</h4>
+                <p style="margin: 0 0 15px 0; font-size: 14px;">You have access to the Management Dashboard with additional features.</p>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="localStorage.setItem('preferredView', 'management'); window.location.href='management-dashboard.html';" 
+                            style="background: white; color: #dc3545; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 500;">
+                        Go to Management View
+                    </button>
+                    <button onclick="localStorage.setItem('preferredView', 'employee'); this.parentElement.parentElement.remove();" 
+                            style="background: transparent; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                        Stay Here
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(promptDiv);
         }
 
         // Listen for auth state changes

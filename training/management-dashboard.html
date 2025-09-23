@@ -762,11 +762,7 @@
     </style>
 </head>
 <body>
-    <!-- Development Mode Banner -->
-    <div style="background: #fbbf24; color: #1f2937; padding: 0.75rem; text-align: center; font-weight: 500; position: fixed; top: 0; left: 0; right: 0; z-index: 9999;">
-        ⚠️ DEVELOPMENT MODE: Management authorization checks disabled for testing
-    </div>
-    <div class="dashboard-container" style="margin-top: 45px;">
+    <div class="dashboard-container">
         <!-- Left Sidebar Navigation -->
         <nav class="sidebar-nav">
             <div class="logo-section">
@@ -1122,21 +1118,27 @@
                 'matt_collins65@outlook.com'
             ];
             
-            // DEVELOPMENT: Temporarily disable management check to prevent redirect loops
-            console.log('Management check disabled for development testing');
             console.log('User email:', user.email);
             console.log('Is management user:', managementEmails.includes(user.email) || user.email.includes('@mbh.com'));
             
-            // TODO: Re-enable this check after fixing redirect loop with dashboard.html
-            /*
+            // Check if user is authorized for management view
             if (!managementEmails.includes(user.email) && 
                 !user.email.includes('@mbh.com')) {
-                // Not a management user, redirect to regular dashboard
-                console.log('User not authorized for management view, redirecting...');
+                // Not a management user
+                console.log('User not authorized for management view');
+                
+                // Clear any management preference since they're not authorized
+                localStorage.removeItem('preferredView');
+                
+                // Redirect to regular dashboard with explicit view parameter
                 window.location.href = 'dashboard.html?view=regular';
                 return;
             }
-            */
+            
+            // User is authorized - set their preference if not already set
+            if (!localStorage.getItem('preferredView')) {
+                localStorage.setItem('preferredView', 'management');
+            }
 
             // Set user info
             const firstName = user.user_metadata?.full_name?.split(' ')[0] || 'Manager';
@@ -1213,7 +1215,7 @@
             
             if (isManagementView) {
                 // Currently on management view, switch to employee view
-                sessionStorage.setItem('redirecting', 'true');
+                localStorage.setItem('preferredView', 'employee');
                 window.location.href = 'dashboard.html?view=regular';
             } else {
                 // This shouldn't happen on management dashboard
