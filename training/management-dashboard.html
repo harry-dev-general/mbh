@@ -163,6 +163,7 @@
             padding: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             margin-bottom: 2rem;
+            overflow: hidden;
         }
         
         .section-header {
@@ -480,7 +481,7 @@
         /* Right Sidebar */
         .right-sidebar {
             width: 360px;
-            padding: 0 2rem;
+            padding: 2rem;
             flex-shrink: 0;
         }
         
@@ -737,7 +738,7 @@
         
         /* Responsive */
         @media (max-width: 1440px) {
-            .dashboard-layout {
+            .dashboard-container {
                 flex-direction: column;
             }
             
@@ -903,6 +904,39 @@
         
         .mobile-overlay.active {
             display: block;
+        }
+        
+        /* Fix for any unintended red bars */
+        .calendar-section::after,
+        .fleet-section::before,
+        .main-content > *::after {
+            display: none !important;
+        }
+        
+        /* Ensure clean spacing between sections */
+        .main-content > section {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Ensure quick actions gradients are contained */
+        .quick-actions-section {
+            overflow: hidden !important;
+        }
+        
+        /* Remove any unintended borders or lines */
+        .calendar-section *,
+        .fleet-section *,
+        .quick-actions-section * {
+            border-color: #e0e6ed !important;
+        }
+        
+        /* Specifically hide any red elements that might be showing */
+        div[style*="background: linear-gradient"][style*="#f5576c"],
+        div[style*="background: linear-gradient"][style*="#f093fb"] {
+            overflow: hidden !important;
+            position: relative !important;
+            z-index: 1 !important;
         }
     </style>
 </head>
