@@ -1585,9 +1585,17 @@
                 const startStr = startDate.toISOString().split('T')[0];
                 const endStr = endDate.toISOString().split('T')[0];
                 
-                // Fetch bookings for the week from backend API
+                // Fetch bookings for the week via API proxy
+                const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I';
                 const response = await fetch(
-                    `/api/bookings/week?startDate=${startStr}&endDate=${endStr}`
+                    `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
+                    `filterByFormula=${encodeURIComponent(`AND({Booking Date}>='${startStr}',{Booking Date}<='${endStr}',{Status}!='CANC')`)}` +
+                    `&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time` +
+                    `&fields[]=Boat&fields[]=Booked Boat Type&fields[]=Status&fields[]=Total Amount` +
+                    `&fields[]=Onboarding Employee&fields[]=Deloading Employee`,
+                    {
+                        method: 'GET'
+                    }
                 );
                 
                 if (!response.ok) {
@@ -1953,9 +1961,18 @@
                 const todayStr = today.toISOString().split('T')[0];
                 const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
                 
-                // Fetch recent bookings from backend API
+                // Fetch recent bookings via API proxy
+                const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I';
                 const response = await fetch(
-                    `/api/bookings/recent?startDate=${sevenDaysAgoStr}&endDate=${todayStr}&limit=10`
+                    `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
+                    `filterByFormula=${encodeURIComponent(`AND({Created Date}>='${sevenDaysAgoStr}',{Status}!='CANC')`)}` +
+                    `&sort[0][field]=Created Time&sort[0][direction]=desc` +
+                    `&maxRecords=10` +
+                    `&fields[]=Customer Name&fields[]=Booking Date&fields[]=Total Amount` +
+                    `&fields[]=Created Time&fields[]=Booked Boat Type&fields[]=Booking Items`,
+                    {
+                        method: 'GET'
+                    }
                 );
                 
                 if (!response.ok) {
@@ -2064,9 +2081,15 @@
                 const todayStr = today.toISOString().split('T')[0];
                 const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
                 
-                // Fetch staff from allocations for today from backend API
+                // Fetch staff from allocations for today via API proxy
+                const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX';
                 const allocationsResponse = await fetch(
-                    `/api/allocations/date/${todayStr}`
+                    `/api/airtable/applkAFOn2qxtu7tx/${ALLOCATIONS_TABLE_ID}?` +
+                    `filterByFormula=${encodeURIComponent(`{Shift Date}='${todayStr}'`)}` +
+                    `&fields[]=Employee&fields[]=Shift Type&fields[]=Start Time&fields[]=End Time&fields[]=Response Status`,
+                    {
+                        method: 'GET'
+                    }
                 );
                 
                 if (!allocationsResponse.ok) {
@@ -2085,9 +2108,15 @@
                     }
                 });
                 
-                // Also check bookings for today
+                // Also check bookings for today via API proxy
+                const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I';
                 const bookingsResponse = await fetch(
-                    `/api/bookings/date/${todayStr}?fields=staff`
+                    `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
+                    `filterByFormula=${encodeURIComponent(`{Booking Date}='${todayStr}'`)}` +
+                    `&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Status`,
+                    {
+                        method: 'GET'
+                    }
                 );
                 
                 if (bookingsResponse.ok) {
