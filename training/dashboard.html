@@ -618,11 +618,19 @@
                 if (managementEmails.includes(user.email.toLowerCase()) || 
                     user.email.includes('@mbh.com')) {
                     isManagement = true;
+                    console.log('Management user detected, viewMode:', viewMode);
                     
                     // Only redirect if they haven't explicitly chosen regular view
                     if (viewMode !== 'regular') {
-                        window.location.href = 'management-dashboard.html';
-                        return; // Stop loading regular dashboard
+                        // Check if we're already coming from management dashboard to prevent loops
+                        const referrer = document.referrer;
+                        if (referrer && referrer.includes('management-dashboard.html')) {
+                            console.log('Preventing redirect loop - coming from management dashboard');
+                        } else {
+                            console.log('Redirecting to management dashboard');
+                            window.location.href = 'management-dashboard.html';
+                            return; // Stop loading regular dashboard
+                        }
                     }
                     
                     // They are management but want regular view - show the toggle button, view switcher, and Staff Allocation button

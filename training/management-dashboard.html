@@ -1274,9 +1274,12 @@
             if (!managementEmails.includes(user.email.toLowerCase()) && 
                 !user.email.includes('@mbh.com')) {
                 // Not a management user, redirect to regular dashboard
+                console.log('Non-management user detected, redirecting to regular dashboard');
                 window.location.href = 'dashboard.html';
                 return;
             }
+            
+            console.log('Management user authorized, loading dashboard');
 
             currentUser = user;
             document.getElementById('userEmail').textContent = user.email;
