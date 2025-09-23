@@ -766,7 +766,7 @@
         <!-- Left Sidebar Navigation -->
         <nav class="sidebar-nav">
             <div class="logo-section">
-                <img src="images/mbh-logo.png" alt="MBH Logo" class="logo">
+                <img src="/images/mbh-logo.png" alt="MBH Logo" class="logo">
                 <div class="logo-text">MBH Portal</div>
             </div>
             
@@ -830,7 +830,7 @@
                 <section class="quick-actions-section" style="margin-bottom: 2rem;">
                     <h2 class="section-title" style="margin-bottom: 1.5rem;">Quick Actions</h2>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-                        <div class="quick-action-card" onclick="window.location.href='daily-run-sheet.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
+                        <div class="quick-action-card" onclick="window.location.href='/daily-run-sheet.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
                             <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                                 <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                                     <i class="fas fa-clipboard-list"></i> Daily Run Sheet
@@ -842,7 +842,7 @@
                             </div>
                         </div>
                         
-                        <div class="quick-action-card" onclick="window.location.href='management-allocations.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
+                        <div class="quick-action-card" onclick="window.location.href='/management-allocations.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
                             <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
                                 <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                                     <i class="fas fa-users-cog"></i> Staff Allocations
@@ -854,7 +854,7 @@
                             </div>
                         </div>
                         
-                        <div class="quick-action-card" onclick="window.location.href='employee-directory.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
+                        <div class="quick-action-card" onclick="window.location.href='/employee-directory.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
                             <div style="padding: 1.5rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
                                 <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                                     <i class="fas fa-address-book"></i> Employee Directory
@@ -918,7 +918,7 @@
                 <h2 style="margin-bottom: 1.5rem;">Staff Management</h2>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                    <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; cursor: pointer;" onclick="window.location.href='management-allocations.html'">
+                    <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; cursor: pointer;" onclick="window.location.href='/management-allocations.html'">
                         <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
                             <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                                 <i class="fas fa-calendar-alt"></i>
@@ -928,7 +928,7 @@
                         </div>
                     </div>
                     
-                    <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; cursor: pointer;" onclick="window.location.href='employee-directory.html'">
+                    <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; cursor: pointer;" onclick="window.location.href='/employee-directory.html'">
                         <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                             <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                                 <i class="fas fa-user-plus"></i>
@@ -1104,7 +1104,7 @@
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                window.location.href = 'auth.html';
+                window.location.href = '/auth.html';
                 return;
             }
 
@@ -1118,12 +1118,16 @@
                 'matt_collins65@outlook.com'
             ];
             
+            // PREVIEW MODE: Management check disabled for testing
+            // Uncomment the following lines to enable management-only access in production
+            /*
             if (!managementEmails.includes(user.email) && 
                 !user.email.includes('@mbh.com')) {
                 // Not a management user, redirect to regular dashboard
-                window.location.href = 'dashboard.html';
+                window.location.href = '/dashboard.html';
                 return;
             }
+            */
 
             // Set user info
             const firstName = user.user_metadata?.full_name?.split(' ')[0] || 'Manager';
@@ -1200,18 +1204,18 @@
             
             if (isManagementView) {
                 // Currently on management view, switch to employee view
-                window.location.href = 'dashboard.html?view=regular';
+                window.location.href = '/dashboard.html?view=regular';
             } else {
                 // Currently showing employee view selected, but we're on management dashboard
                 // This shouldn't happen, but handle it by staying on management
-                window.location.href = 'management-dashboard.html';
+                window.location.href = '/management-dashboard.html';
             }
         }
         
         // Logout function
         async function logout() {
             await supabase.auth.signOut();
-            window.location.href = 'auth.html';
+            window.location.href = '/auth.html';
         }
         
         // Load overview data
