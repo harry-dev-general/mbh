@@ -1118,26 +1118,11 @@
                 'matt_collins65@outlook.com'
             ];
             
-            console.log('User email:', user.email);
-            console.log('Is management user:', managementEmails.includes(user.email) || user.email.includes('@mbh.com'));
-            
-            // Check if user is authorized for management view
             if (!managementEmails.includes(user.email) && 
                 !user.email.includes('@mbh.com')) {
-                // Not a management user
-                console.log('User not authorized for management view');
-                
-                // Clear any management preference since they're not authorized
-                localStorage.removeItem('preferredView');
-                
-                // Redirect to regular dashboard with explicit view parameter
-                window.location.href = 'dashboard.html?view=regular';
+                // Not a management user, redirect to regular dashboard
+                window.location.href = 'dashboard.html';
                 return;
-            }
-            
-            // User is authorized - set their preference if not already set
-            if (!localStorage.getItem('preferredView')) {
-                localStorage.setItem('preferredView', 'management');
             }
 
             // Set user info
@@ -1215,13 +1200,11 @@
             
             if (isManagementView) {
                 // Currently on management view, switch to employee view
-                localStorage.setItem('preferredView', 'employee');
                 window.location.href = 'dashboard.html?view=regular';
             } else {
-                // This shouldn't happen on management dashboard
-                // The toggle should always show management view as active
-                console.log('Toggle view called but already on management dashboard');
-                toggleSwitch.classList.add('management');
+                // Currently showing employee view selected, but we're on management dashboard
+                // This shouldn't happen, but handle it by staying on management
+                window.location.href = 'management-dashboard.html';
             }
         }
         
