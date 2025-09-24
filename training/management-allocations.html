@@ -997,7 +997,7 @@
 
                 <div class="panel bookings-panel">
                     <div class="panel-header">
-                        <span class="panel-title">Today's Bookings</span>
+                        <span class="panel-title">Weekly Bookings</span>
                         <span id="bookingCount" style="color: #666; font-size: 0.9rem;">0</span>
                     </div>
                     <div id="bookingsList">
@@ -1334,6 +1334,7 @@
                 // After all data is loaded, render everything
                 renderStaffList();  // Render staff list after roster data is loaded
                 renderScheduleGrid();
+                renderBookingsList();  // Render bookings list in sidebar
                 renderBookingsOnGrid();
                 renderAllocations();
                 
@@ -1756,9 +1757,8 @@
         const paidBookings = allBookings.filter(r => r.fields['Status'] === 'PAID' || r.fields['Status'] === 'PART');
         console.log(`Found ${paidBookings.length} PAID/PART bookings, ${bookingsData.length} for current week`, bookingsData);
                 
-                renderBookingsList();
+                // Don't render here - let loadWeekData handle rendering after all data is loaded
                 populateBookingsSelect();
-                renderBookingsOnGrid();
             } catch (error) {
                 console.error('Error loading bookings:', error);
                 bookingsData = []; // Ensure bookingsData is empty array on error
@@ -1795,6 +1795,14 @@
                 // Get boat info
                 const boatId = fields['Boat'] && fields['Boat'][0];
                 const boat = boatId ? boatsData.find(b => b.id === boatId) : null;
+                
+                // Debug: Log boat assignment status
+                if (!fields['Boat'] || fields['Boat'].length === 0) {
+                    console.log(`Booking ${fields['Customer Name']} has no boat assigned in Airtable`);
+                } else if (!boat) {
+                    console.log(`Booking ${fields['Customer Name']} has boat ID ${boatId} but boat not found in boatsData`);
+                }
+                
                 const boatBadge = boat ? 
                     `<span class="staff-badge" style="background: #3498db; color: white;">
                         <i class="fas fa-ship"></i> ${boat.fields['Name']}
