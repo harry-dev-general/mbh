@@ -1223,6 +1223,11 @@
             cursor: pointer;
             padding: 0.5rem;
             margin-right: 1rem;
+            transition: color 0.3s ease;
+        }
+        
+        .mobile-menu-btn:hover {
+            color: #dc3545;
         }
         
         @media (max-width: 1024px) {
@@ -1231,13 +1236,23 @@
             }
             
             .sidebar-nav.mobile-open {
-            display: flex;
+                display: flex;
                 position: fixed;
                 top: 0;
                 left: 0;
                 height: 100vh;
                 z-index: 1000;
                 box-shadow: 0 0 30px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(0);
             }
         }
         
@@ -1250,10 +1265,224 @@
             bottom: 0;
             background: rgba(0,0,0,0.5);
             z-index: 999;
+            backdrop-filter: blur(2px);
         }
         
         .mobile-overlay.active {
             display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Additional Mobile Optimizations */
+        @media (max-width: 768px) {
+            /* Mobile Header Improvements */
+            .header {
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                background: white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            }
+            
+            .header-actions {
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+            
+            .header-actions button,
+            .header-actions a {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            /* Mobile Calendar Improvements */
+            .calendar-container {
+                position: relative;
+                padding-bottom: 1rem;
+            }
+            
+            .calendar-container::after {
+                content: '';
+                position: absolute;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                width: 20px;
+                background: linear-gradient(to right, transparent, rgba(245, 246, 250, 0.8));
+                pointer-events: none;
+            }
+            
+            .calendar-grid::-webkit-scrollbar {
+                height: 6px;
+            }
+            
+            .calendar-grid::-webkit-scrollbar-track {
+                background: #f1f5f9;
+                border-radius: 3px;
+            }
+            
+            .calendar-grid::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 3px;
+            }
+            
+            /* Touch-friendly booking cells */
+            .hour-cell {
+                position: relative;
+                touch-action: manipulation;
+            }
+            
+            .hour-cell.has-booking {
+                cursor: pointer;
+            }
+            
+            /* Mobile Fleet Section */
+            .fleet-section {
+                position: relative;
+            }
+            
+            .vessels-list {
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .vessel-card {
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            
+            .vessel-card:active {
+                transform: scale(0.98);
+            }
+            
+            /* Mobile Modals */
+            .modal {
+                padding: 1rem;
+            }
+            
+            .modal-content {
+                width: 100%;
+                max-width: 400px;
+                max-height: 90vh;
+                overflow-y: auto;
+                border-radius: 16px;
+            }
+            
+            /* Bottom Sheet Style for Mobile */
+            @supports (backdrop-filter: blur(10px)) {
+                .modal {
+                    backdrop-filter: blur(10px);
+                    background: rgba(0,0,0,0.3);
+                }
+            }
+        }
+        
+        /* Small Mobile Specific */
+        @media (max-width: 480px) {
+            /* Compact Quick Actions */
+            .quick-actions {
+                display: none; /* Hide on very small screens */
+            }
+            
+            /* Mobile-first Calendar */
+            .calendar-week-nav {
+                position: sticky;
+                top: 60px;
+                background: white;
+                z-index: 90;
+                padding: 0.5rem;
+                margin: -1rem -1rem 1rem;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            
+            /* Simplified Mobile View Toggle */
+            @media (max-width: 480px) {
+                .calendar-container {
+                    margin: 0 -0.5rem;
+                }
+                
+                .calendar-grid {
+                    border-radius: 0;
+                }
+            }
+            
+            /* Mobile Staff Availability */
+            .staff-availability-grid {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 0.5rem;
+            }
+            
+            /* Compact Vessel Cards */
+            .vessel-card {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .vessel-info {
+                flex: 1;
+            }
+            
+            .resource-gauges {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            
+            /* Mobile-friendly Buttons */
+            .btn {
+                min-height: 44px;
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            
+            /* Swipe Hint */
+            .swipe-hint {
+                display: block;
+                text-align: center;
+                color: #64748b;
+                font-size: 0.75rem;
+                margin-top: 0.5rem;
+                padding: 0.5rem;
+                background: #f8fafc;
+                border-radius: 8px;
+            }
+        }
+        
+        /* Touch and Hover States */
+        @media (hover: hover) {
+            .vessel-card:hover {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            
+            .booking-item:hover {
+                transform: translateX(4px);
+            }
+        }
+        
+        @media (hover: none) {
+            /* Remove hover effects on touch devices */
+            .nav-item:hover,
+            .vessel-card:hover,
+            .booking-item:hover {
+                transform: none;
+            }
+            
+            /* Add active states instead */
+            .nav-item:active {
+                background: rgba(220, 53, 69, 0.1);
+            }
+            
+            .vessel-card:active {
+                background: #f8fafc;
+            }
         }
         
         /* Fix for any unintended red bars */
@@ -1445,14 +1674,19 @@
                 </div>
                     
                     <div class="weekly-calendar">
-                        <div class="calendar-grid" id="calendarGrid">
-                            <!-- Calendar will be populated by JavaScript -->
-                            <div class="calendar-loading">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                <p>Loading schedule...</p>
+                        <div class="calendar-container">
+                            <div class="calendar-grid" id="calendarGrid">
+                                <!-- Calendar will be populated by JavaScript -->
+                                <div class="calendar-loading">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Loading schedule...</p>
+                                </div>
+                            </div>
+                            <div class="swipe-hint" id="swipeHint" style="display: none;">
+                                <i class="fas fa-arrows-alt-h"></i> Swipe to see all days
+                            </div>
                         </div>
                     </div>
-                </div>
                 </section>
                 
                 <!-- Fleet Section -->
@@ -1744,6 +1978,45 @@
             }
         }
         
+        // Add mobile touch gestures
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        function handleGesture() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left - could trigger next week
+                    const calendarGrid = document.getElementById('calendarGrid');
+                    if (calendarGrid && calendarGrid.scrollWidth > calendarGrid.clientWidth) {
+                        // Calendar is scrollable, don't change week
+                        return;
+                    }
+                } else {
+                    // Swipe right - could trigger previous week
+                    const calendarGrid = document.getElementById('calendarGrid');
+                    if (calendarGrid && calendarGrid.scrollLeft > 0) {
+                        // Calendar is scrolled, don't change week
+                        return;
+                    }
+                }
+            }
+        }
+        
+        // Add touch listeners for mobile
+        if (window.innerWidth <= 768) {
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            document.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleGesture();
+            });
+        }
+        
         // Load overview data
         async function loadOverviewData() {
             // Load all real-time data for the overview tab
@@ -1904,6 +2177,10 @@
             // Show loading state
             grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading schedule...</p></div>';
             
+            // Hide swipe hint during loading
+            const swipeHint = document.getElementById('swipeHint');
+            if (swipeHint) swipeHint.style.display = 'none';
+            
             try {
                 // Get week start and end dates
                 const startDate = new Date(currentWeekStart);
@@ -2026,6 +2303,23 @@
             });
             
             grid.innerHTML = html;
+            
+            // Show swipe hint on mobile if calendar is scrollable
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    const calendarContainer = grid.parentElement;
+                    if (grid.scrollWidth > calendarContainer.clientWidth) {
+                        const swipeHint = document.getElementById('swipeHint');
+                        if (swipeHint) {
+                            swipeHint.style.display = 'block';
+                            // Hide hint after first scroll
+                            grid.addEventListener('scroll', () => {
+                                swipeHint.style.display = 'none';
+                            }, { once: true });
+                        }
+                    }
+                }, 100);
+            }
                 
             } catch (error) {
                 console.error('Error loading calendar data:', error);
