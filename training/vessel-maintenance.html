@@ -1031,10 +1031,15 @@
             document.getElementById('locationVesselName').textContent = vesselName;
             document.getElementById('locationModal').classList.add('active');
             
-            // Initialize map after modal is visible
+            // Initialize map after modal is visible and DOM is ready
             setTimeout(() => {
+                // Ensure coordinates element exists
+                const coordsElement = document.getElementById('coordinates');
+                if (coordsElement) {
+                    coordsElement.innerHTML = 'Initializing...';
+                }
                 initLocationMap(currentLat, currentLng);
-            }, 100);
+            }, 200);
         }
         
         // Close location modal
@@ -1117,6 +1122,26 @@
             }
         }
         
+        // Reverse geocode coordinates to get address
+        async function reverseGeocode(lat, lng) {
+            try {
+                const geocoder = new google.maps.Geocoder();
+                const response = await new Promise((resolve, reject) => {
+                    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                        if (status === 'OK' && results[0]) {
+                            resolve(results[0].formatted_address);
+                        } else {
+                            reject(new Error('Geocoding failed'));
+                        }
+                    });
+                });
+                return response;
+            } catch (error) {
+                console.error('Reverse geocoding error:', error);
+                return null;
+            }
+        }
+        
         // Save location update
         async function saveLocationUpdate() {
             console.log('saveLocationUpdate called', { currentVesselId, currentLatLng });
@@ -1124,6 +1149,19 @@
             if (!currentVesselId || !currentLatLng) {
                 showMessage('No location selected', 'error');
                 return;
+            }
+            
+            // Show loading state
+            showMessage('Getting address and saving location...', 'info');
+            
+            // Get address from coordinates
+            let address = null;
+            try {
+                address = await reverseGeocode(currentLatLng.lat, currentLatLng.lng);
+                console.log('Reverse geocoded address:', address);
+            } catch (error) {
+                console.error('Failed to get address:', error);
+                // Continue without address
             }
             
             // Get staff ID from profile
@@ -1158,6 +1196,7 @@
                         vesselId: currentVesselId,
                         latitude: currentLatLng.lat,
                         longitude: currentLatLng.lng,
+                        address: address || `${currentLatLng.lat.toFixed(6)}, ${currentLatLng.lng.toFixed(6)}`,
                         manualUpdate: true,
                         staffId
                     })
