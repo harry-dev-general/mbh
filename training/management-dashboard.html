@@ -2483,8 +2483,8 @@
                 const ROSTER_TABLE_ID = 'tblwwK1jWGxnfuzAN';
                 const rosterResponse = await fetch(
                     `/api/airtable/applkAFOn2qxtu7tx/${ROSTER_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`AND({Date}>='${weekDates[0].dateStr}',{Date}<='${weekDates[6].dateStr}')`)}` +
-                    `&fields[]=Employee&fields[]=Date&fields[]=Available From&fields[]=Available To&fields[]=Notes`,
+                    `filterByFormula=${encodeURIComponent(`AND({Date} >= '${weekDates[0].dateStr}', {Date} <= '${weekDates[6].dateStr}')`)}` +
+                    `&fields[]=Employee&fields[]=Date&fields[]=Available From&fields[]=Available Until&fields[]=Notes`,
                     {
                         method: 'GET'
                     }
