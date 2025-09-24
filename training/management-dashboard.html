@@ -878,6 +878,88 @@
             font-weight: 500;
         }
         
+        /* New Staff Availability Grid */
+        .staff-availability-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .day-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .day-column .day-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            text-align: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .day-column .day-label.today {
+            background: #e0f2fe;
+            color: #0284c7;
+            font-weight: 700;
+        }
+        
+        .staff-initials-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            align-items: center;
+            min-height: 80px;
+        }
+        
+        .staff-initial-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e0f2fe;
+            color: #0284c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            title: attr(data-name);
+        }
+        
+        .staff-initial-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        
+        .staff-initial-circle.full-time {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .staff-initial-circle.casual {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .no-staff {
+            font-size: 0.7rem;
+            color: #cbd5e1;
+            font-style: italic;
+            height: 28px;
+            display: flex;
+            align-items: center;
+        }
+        
         /* User Menu */
         .user-menu {
             display: flex;
@@ -1075,6 +1157,20 @@
             
             .availability-chart {
                 display: none;
+            }
+            
+            .staff-availability-grid {
+                gap: 0.25rem;
+            }
+            
+            .staff-initial-circle {
+                width: 24px;
+                height: 24px;
+                font-size: 0.6rem;
+            }
+            
+            .day-column .day-label {
+                font-size: 0.65rem;
             }
             
             .time-toggle {
@@ -1435,44 +1531,13 @@
             <!-- Staff Availability -->
             <section class="sidebar-section">
                 <div class="availability-header">
-                    <h3 class="section-title">Staff Availability</h3>
-                    <div class="time-toggle">
-                        <span>Day</span>
-                        <span class="active">Week</span>
-                        <span>Month</span>
-            </div>
-        </div>
+                    <h3 class="section-title">Staff Availability - Week View</h3>
+                </div>
 
-                <div class="availability-chart">
-                    <div class="day-bar">
-                        <div class="bar low"></div>
-                        <span class="day-label">Mon</span>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar medium"></div>
-                        <span class="day-label">Tues</span>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar medium"></div>
-                        <span class="day-label">Wed</span>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar high">
-                            <img src="https://ui-avatars.com/api/?name=JV&size=30" alt="Staff" class="staff-avatar">
-                        </div>
-                        <span class="day-label">Thurs</span>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar medium"></div>
-                        <span class="day-label">Fri</span>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar high"></div>
-                        <span class="day-label">Sat</span>
-                    </div>
-                    <div class="day-bar">
-                        <div class="bar low"></div>
-                        <span class="day-label">Sun</span>
+                <div class="staff-availability-grid" id="staffAvailabilityGrid">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading staff availability...</p>
                     </div>
                 </div>
             </section>
@@ -2233,6 +2298,16 @@
             return parts[0] || address;
         }
         
+        // Get initials from name
+        function getInitials(name) {
+            if (!name) return '?';
+            const parts = name.trim().split(' ');
+            if (parts.length === 1) {
+                return parts[0].substring(0, 2).toUpperCase();
+            }
+            return parts[0][0].toUpperCase() + parts[parts.length - 1][0].toUpperCase();
+        }
+        
         // Render individual gauge
         function renderGauge(label, percentage) {
             const fillClass = percentage < 25 ? 'low' : percentage < 50 ? 'medium' : '';
@@ -2384,115 +2459,135 @@
         
         // Load staff availability widget
         async function loadStaffAvailability() {
-            const staffGrid = document.querySelector('.staff-grid');
-            if (!staffGrid) return;
+            const staffAvailabilityGrid = document.getElementById('staffAvailabilityGrid');
+            if (!staffAvailabilityGrid) return;
             
             try {
-                // Get today's date
-                const today = new Date();
-                today.setFullYear(2025); // Ensure 2025 context
-                today.setMonth(8); // September
-                today.setDate(24); // Current date is September 24, 2025
-                const todayStr = today.toISOString().split('T')[0];
-                const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                // Get current week's dates (Monday to Sunday)
+                const weekStart = new Date(currentWeekStart);
+                const weekDates = [];
+                const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                 
-                // Fetch staff from allocations for today via API proxy
-                const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX';
-                const allocationsResponse = await fetch(
-                    `/api/airtable/applkAFOn2qxtu7tx/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`{Shift Date}='${todayStr}'`)}` +
-                    `&fields[]=Employee&fields[]=Shift Type&fields[]=Start Time&fields[]=End Time&fields[]=Response Status`,
-                    {
-                        method: 'GET'
-                    }
-                );
-                
-                if (!allocationsResponse.ok) {
-                    throw new Error(`Failed to fetch allocations: ${allocationsResponse.status}`);
-                }
-                
-                const allocationsData = await allocationsResponse.json();
-                const allocations = allocationsData.records || [];
-                
-                // Get unique staff IDs who have accepted shifts
-                const acceptedStaffIds = new Set();
-                allocations.forEach(allocation => {
-                    if (allocation.fields['Employee']?.[0] && 
-                        (allocation.fields['Response Status'] === 'Accepted' || !allocation.fields['Response Status'])) {
-                        acceptedStaffIds.add(allocation.fields['Employee'][0]);
-                    }
-                });
-                
-                // Also check bookings for today via API proxy
-                const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
-                const bookingsResponse = await fetch(
-                    `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`{Booking Date}='${todayStr}'`)}` +
-                    `&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Status`,
-                    {
-                        method: 'GET'
-                    }
-                );
-                
-                if (bookingsResponse.ok) {
-                    const bookingsData = await bookingsResponse.json();
-                    const bookings = bookingsData.records || [];
-                    
-                    bookings.forEach(booking => {
-                        if (booking.fields['Status'] !== 'CANC') {
-                            if (booking.fields['Onboarding Employee']?.[0]) {
-                                acceptedStaffIds.add(booking.fields['Onboarding Employee'][0]);
-                            }
-                            if (booking.fields['Deloading Employee']?.[0]) {
-                                acceptedStaffIds.add(booking.fields['Deloading Employee'][0]);
-                            }
-                        }
+                // Generate dates for the week starting from Monday
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(weekStart);
+                    date.setDate(weekStart.getDate() + i);
+                    weekDates.push({
+                        date: date,
+                        dateStr: date.toISOString().split('T')[0],
+                        dayName: dayNames[i] // Use index directly since we're starting from Monday
                     });
                 }
                 
-                // Update the availability display
-                const staffCount = acceptedStaffIds.size;
-                staffGrid.innerHTML = `
-                    <div class="staff-day ${dayOfWeek === 1 ? 'active' : ''}">
-                        <div class="day-name">Mon</div>
-                        <div class="staff-count">${dayOfWeek === 1 ? staffCount : '-'}</div>
-                        <div class="staff-label">Staff</div>
-                    </div>
-                    <div class="staff-day ${dayOfWeek === 2 ? 'active' : ''}">
-                        <div class="day-name">Tues</div>
-                        <div class="staff-count">${dayOfWeek === 2 ? staffCount : '-'}</div>
-                        <div class="staff-label">Staff</div>
-                    </div>
-                    <div class="staff-day ${dayOfWeek === 3 ? 'active' : ''}">
-                        <div class="day-name">Wed</div>
-                        <div class="staff-count">${dayOfWeek === 3 ? staffCount : '-'}</div>
-                        <div class="staff-label">Staff</div>
-                    </div>
-                    <div class="staff-day ${dayOfWeek === 4 ? 'active' : ''}">
-                        <div class="day-name">Thurs</div>
-                        <div class="staff-count">${dayOfWeek === 4 ? staffCount : '-'}</div>
-                        <div class="staff-label">Staff</div>
-                    </div>
-                    <div class="staff-day ${dayOfWeek === 5 ? 'active' : ''}">
-                        <div class="day-name">Fri</div>
-                        <div class="staff-count">${dayOfWeek === 5 ? staffCount : '-'}</div>
-                        <div class="staff-label">Staff</div>
-                    </div>
-                    <div class="staff-day ${dayOfWeek === 6 ? 'active' : ''}">
-                        <div class="day-name">Sat</div>
-                        <div class="staff-count">${dayOfWeek === 6 ? staffCount : '-'}</div>
-                        <div class="staff-label">Staff</div>
-                    </div>
-                    <div class="staff-day ${dayOfWeek === 0 ? 'active' : ''}">
-                        <div class="day-name">Sun</div>
-                        <div class="staff-count">${dayOfWeek === 0 ? staffCount : '-'}</div>
-                        <div class="staff-label">Staff</div>
-                    </div>
-                `;
+                // Fetch roster data for the week via API proxy
+                const ROSTER_TABLE_ID = 'tblwwK1jWGxnfuzAN';
+                const rosterResponse = await fetch(
+                    `/api/airtable/applkAFOn2qxtu7tx/${ROSTER_TABLE_ID}?` +
+                    `filterByFormula=${encodeURIComponent(`AND({Date}>='${weekDates[0].dateStr}',{Date}<='${weekDates[6].dateStr}')`)}` +
+                    `&fields[]=Employee&fields[]=Date&fields[]=Available From&fields[]=Available To&fields[]=Notes`,
+                    {
+                        method: 'GET'
+                    }
+                );
+                
+                if (!rosterResponse.ok) {
+                    throw new Error(`Failed to fetch roster: ${rosterResponse.status}`);
+                }
+                
+                const rosterData = await rosterResponse.json();
+                const rosterRecords = rosterData.records || [];
+                
+                // Also fetch employee details to get names and types
+                const EMPLOYEES_TABLE_ID = 'tbltAE4NlNePvnkpY';
+                const employeeIds = [...new Set(rosterRecords.filter(r => r.fields['Employee']?.[0]).map(r => r.fields['Employee'][0]))];
+                
+                if (employeeIds.length === 0) {
+                    staffAvailabilityGrid.innerHTML = '<div class="no-data">No staff availability for this week</div>';
+                    return;
+                }
+                
+                const employeesResponse = await fetch(
+                    `/api/airtable/applkAFOn2qxtu7tx/${EMPLOYEES_TABLE_ID}?` +
+                    `filterByFormula=${encodeURIComponent(`OR(${employeeIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}` +
+                    `&fields[]=Name&fields[]=Employment Type`,
+                    {
+                        method: 'GET'
+                    }
+                );
+                
+                if (!employeesResponse.ok) {
+                    throw new Error(`Failed to fetch employees: ${employeesResponse.status}`);
+                }
+                
+                const employeesData = await employeesResponse.json();
+                const employees = {};
+                
+                // Map employee data by ID
+                employeesData.records.forEach(record => {
+                    employees[record.id] = {
+                        name: record.fields['Name'] || 'Unknown',
+                        type: record.fields['Employment Type'] || 'Casual'
+                    };
+                });
+                
+                // Group roster by date
+                const rosterByDate = {};
+                weekDates.forEach(wd => {
+                    rosterByDate[wd.dateStr] = [];
+                });
+                
+                rosterRecords.forEach(record => {
+                    const date = record.fields['Date'];
+                    const employeeId = record.fields['Employee']?.[0];
+                    if (date && employeeId && rosterByDate[date] !== undefined) {
+                        const employee = employees[employeeId];
+                        if (employee) {
+                            rosterByDate[date].push({
+                                name: employee.name,
+                                type: employee.type,
+                                initials: getInitials(employee.name)
+                            });
+                        }
+                    }
+                });
+                
+                // Build the grid HTML
+                let gridHTML = '';
+                // Get today's date in 2025 context
+                const today = new Date();
+                today.setFullYear(2025);
+                today.setMonth(8); // September
+                today.setDate(24); // September 24, 2025
+                const todayStr = today.toISOString().split('T')[0];
+                
+                weekDates.forEach(wd => {
+                    const staff = rosterByDate[wd.dateStr] || [];
+                    const isToday = wd.dateStr === todayStr;
+                    
+                    gridHTML += `
+                        <div class="day-column">
+                            <div class="day-label${isToday ? ' today' : ''}">${wd.dayName}</div>
+                            <div class="staff-initials-container">
+                                ${staff.length > 0 ? 
+                                    staff.map(s => `
+                                        <div class="staff-initial-circle ${s.type.toLowerCase().includes('full') ? 'full-time' : 'casual'}" 
+                                             title="${s.name}" 
+                                             data-name="${s.name}">
+                                            ${s.initials}
+                                        </div>
+                                    `).join('') :
+                                    '<div class="no-staff">-</div>'
+                                }
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                staffAvailabilityGrid.innerHTML = gridHTML;
                 
             } catch (error) {
                 console.error('Error loading staff availability:', error);
-                staffGrid.innerHTML = '<div class="error-state">Failed to load staff data</div>';
+                staffAvailabilityGrid.innerHTML = '<div class="error-state">Failed to load staff availability</div>';
             }
         }
         
