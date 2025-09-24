@@ -711,14 +711,24 @@
         
         // Check authentication
         async function checkAuth() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                window.location.href = 'auth.html';
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session || !session.user) {
+                    // Preserve the current URL to return after auth
+                    const returnUrl = encodeURIComponent(window.location.pathname);
+                    window.location.href = `auth.html?returnUrl=${returnUrl}`;
+                    return false;
+                }
+                currentUser = session.user;
+                document.getElementById('userEmail').textContent = session.user.email;
+                return true;
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                // Preserve the current URL to return after auth
+                const returnUrl = encodeURIComponent(window.location.pathname);
+                window.location.href = `auth.html?returnUrl=${returnUrl}`;
                 return false;
             }
-            currentUser = user;
-            document.getElementById('userEmail').textContent = user.email;
-            return true;
         }
         
         // Go back to previous page
@@ -1123,16 +1133,32 @@
         // Initialize
         async function init() {
             try {
-                // Initialize Supabase client
-                supabase = await window.MBHConfig.initializeSupabase();
+                // Show loading state
+                document.getElementById('vesselGrid').innerHTML = '<div class="loading"><div class="spinner"></div><p>Initializing...</p></div>';
                 
-                if (await checkAuth()) {
+                // Initialize Supabase client
+                console.log('Initializing Supabase...');
+                supabase = await window.MBHConfig.initializeSupabase();
+                console.log('Supabase initialized');
+                
+                // Check authentication
+                const isAuthenticated = await checkAuth();
+                if (isAuthenticated) {
+                    console.log('User authenticated, loading data...');
                     loadGoogleMaps();
                     loadVessels();
                 }
             } catch (error) {
                 console.error('Failed to initialize app:', error);
-                showMessage('Failed to initialize application', 'error');
+                document.getElementById('vesselGrid').innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Failed to initialize application</p>
+                        <button onclick="window.location.reload()" class="action-btn btn-update-status" style="margin-top: 1rem;">
+                            <i class="fas fa-redo"></i> Retry
+                        </button>
+                    </div>
+                `;
             }
         }
         

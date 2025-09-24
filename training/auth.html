@@ -247,8 +247,13 @@
                 if (error) throw error;
 
                 showMessage('Login successful! Redirecting...', 'success');
+                
+                // Get return URL from query parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const returnUrl = urlParams.get('returnUrl') || 'dashboard.html';
+                
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = decodeURIComponent(returnUrl);
                 }, 1500);
 
             } catch (error) {
@@ -345,7 +350,10 @@
         async function checkAuth() {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                window.location.href = 'dashboard.html';
+                // Get return URL from query parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const returnUrl = urlParams.get('returnUrl') || 'dashboard.html';
+                window.location.href = decodeURIComponent(returnUrl);
             }
         }
 
