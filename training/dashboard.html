@@ -301,11 +301,12 @@
         
         /* Footer Styles */
         .footer {
-            background: #2c3e50;
-            color: white;
+            background: #dde4eb;
+            color: #333;
             padding: 1.5rem 2rem;
             margin-top: auto;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            border-top: 1px solid #c5cdd6;
         }
         
         .footer-content {
@@ -319,12 +320,12 @@
         }
         
         .footer-info {
-            opacity: 0.9;
+            opacity: 0.8;
         }
         
         .logout-btn {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.3);
+            background: #2E86AB;
+            border: 2px solid #2E86AB;
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
@@ -338,9 +339,10 @@
         }
         
         .logout-btn:hover {
-            background: rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.5);
+            background: #1B4F72;
+            border-color: #1B4F72;
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
         .logout-btn i {
@@ -853,10 +855,10 @@
 
     <div class="toolbar">
         <div class="toolbar-content">
-            <a href="training-resources.html" class="nav-button">
-                <i class="fas fa-graduation-cap"></i>
-                <div class="title">Training Resources</div>
-                <div class="description">Access training materials</div>
+            <a href="my-schedule.html" class="nav-button">
+                <i class="fas fa-clipboard-list"></i>
+                <div class="title">My Schedule</div>
+                <div class="description">View your work shifts</div>
             </a>
             
             <a href="vessel-locations-map.html" class="nav-button">
@@ -865,22 +867,22 @@
                 <div class="description">View boat locations</div>
             </a>
             
-            <a href="availability.html" class="nav-button availability">
-                <i class="fas fa-calendar-check"></i>
-                <div class="title">Availability Form</div>
-                <div class="description">Submit your schedule</div>
-            </a>
-            
-            <a href="my-schedule.html" class="nav-button">
-                <i class="fas fa-clipboard-list"></i>
-                <div class="title">My Schedule</div>
-                <div class="description">View your work shifts</div>
-            </a>
-            
             <a href="vessel-checklists.html" class="nav-button">
                 <i class="fas fa-clipboard-check"></i>
                 <div class="title">Vessel Checklists</div>
                 <div class="description">Pre & post departure checks</div>
+            </a>
+            
+            <a href="training-resources.html" class="nav-button">
+                <i class="fas fa-graduation-cap"></i>
+                <div class="title">Training Resources</div>
+                <div class="description">Access training materials</div>
+            </a>
+            
+            <a href="availability.html" class="nav-button availability">
+                <i class="fas fa-calendar-check"></i>
+                <div class="title">Availability Form</div>
+                <div class="description">Submit your schedule</div>
             </a>
             
             <!-- Management Only Section - Only visible to management users, even when viewing employee dashboard -->
