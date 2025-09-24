@@ -1861,15 +1861,16 @@
                 
                 // Generate vessel items HTML - API returns processed data
                 vesselsList.innerHTML = vessels.map(vessel => {
-                    const fuel = vessel.currentStatus?.fuelLevel;
-                    const gas = vessel.currentStatus?.gasLevel;
-                    const water = vessel.currentStatus?.waterLevel;
+                    // API returns nested structure with level and percentage
+                    const fuelLevel = vessel.currentStatus?.fuel?.level;
+                    const gasLevel = vessel.currentStatus?.gas?.level;
+                    const waterLevel = vessel.currentStatus?.water?.level;
                     const condition = vessel.currentStatus?.condition || 'Unknown';
                     
-                    // Convert level strings to percentages
-                    const fuelPercentage = getLevelPercentage(fuel);
-                    const gasPercentage = getLevelPercentage(gas);
-                    const waterPercentage = getLevelPercentage(water);
+                    // Use percentage directly from API or calculate fallback
+                    const fuelPercentage = vessel.currentStatus?.fuel?.percentage || getLevelPercentage(fuelLevel);
+                    const gasPercentage = vessel.currentStatus?.gas?.percentage || getLevelPercentage(gasLevel);
+                    const waterPercentage = vessel.currentStatus?.water?.percentage || getLevelPercentage(waterLevel);
                     
                     // Determine vessel status based on condition
                     const statusClass = getVesselStatusClass(condition);
@@ -2199,11 +2200,28 @@
         
         // Google Maps API key (should match the one used in vessel-locations-map.html)
         const GOOGLE_MAPS_API_KEY = 'AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw';
+        // NOTE: If you see "RefererNotAllowedMapError", the API key needs to be authorized for your domain
+        // in Google Cloud Console: https://console.cloud.google.com/apis/credentials
         
         // Initialize Google Maps for fleet
         function initFleetMap() {
             const mapContainer = document.getElementById('fleetMap');
             if (!mapContainer) return;
+            
+            // Check if Google Maps loaded successfully
+            if (!window.google || !window.google.maps || !window.google.maps.Map) {
+                mapContainer.innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: #666;">
+                        <div style="margin-bottom: 1rem;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #f59e0b;"></i>
+                        </div>
+                        <p style="margin-bottom: 0.5rem;">Google Maps is not available</p>
+                        <p style="font-size: 0.875rem;">The API key needs to be authorized for this domain.</p>
+                        <p style="font-size: 0.75rem; margin-top: 1rem;">Vessels with locations are shown in the list on the left.</p>
+                    </div>
+                `;
+                return;
+            }
             
             // Create map centered on Sydney Harbour
             fleetMap = new google.maps.Map(mapContainer, {
@@ -2285,8 +2303,8 @@
                                 <p style="margin: 5px 0;"><strong>Location:</strong> ${location.address || 'Unknown'}</p>
                                 ${location.lastModified ? `<p style="margin: 5px 0;"><small>Updated: ${new Date(location.lastModified).toLocaleString('en-AU')}</small></p>` : ''}
                                 <div style="margin-top: 10px;">
-                                    <span style="margin-right: 10px;">⛽ ${vessel.currentStatus?.fuelLevel || 'N/A'}</span>
-                                    <span>💧 ${vessel.currentStatus?.waterLevel || 'N/A'}</span>
+                                    <span style="margin-right: 10px;">⛽ ${vessel.currentStatus?.fuel?.level || 'N/A'}</span>
+                                    <span>💧 ${vessel.currentStatus?.water?.level || 'N/A'}</span>
                                 </div>
                             </div>
                         `;
