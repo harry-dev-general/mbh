@@ -1872,10 +1872,6 @@
                     const gasPercentage = vessel.currentStatus?.gas?.percentage || getLevelPercentage(gasLevel);
                     const waterPercentage = vessel.currentStatus?.water?.percentage || getLevelPercentage(waterLevel);
                     
-                    // Determine vessel status based on condition
-                    const statusClass = getVesselStatusClass(condition);
-                    const statusIcon = getVesselStatusIcon(condition);
-                    
                     return `
                         <div class="vessel-item">
                             <div class="vessel-icon">
@@ -1884,12 +1880,13 @@
                             <div class="vessel-info">
                                 <div class="vessel-name">${vessel.name || 'Unknown'}</div>
                                 <div class="vessel-status">
-                                    <span class="status-dot ${statusClass}"></span>
-                                    ${statusIcon}
+                                    <i class="fas fa-map-marker-alt" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                                    ${vessel.currentStatus?.location?.address || vessel.location || 'Unknown Location'}
                                 </div>
                             </div>
                             <div class="vessel-stats">
                                 <span class="stat-badge">⛽ ${fuelPercentage}%</span>
+                                <span class="stat-badge"><i class="fas fa-fire" style="margin-right: 2px;"></i>${gasPercentage}%</span>
                                 <span class="stat-badge">💧 ${waterPercentage}%</span>
                             </div>
                         </div>
@@ -1920,30 +1917,6 @@
                 'Full': 100
             };
             return levelMap[level] || 0;
-        }
-        
-        // Helper function to get vessel status class
-        function getVesselStatusClass(condition) {
-            if (condition?.includes('Ready') || condition?.includes('Good')) {
-                return 'active';
-            } else if (condition?.includes('Attention')) {
-                return 'warning';
-            } else if (condition?.includes('Major') || condition?.includes('Non-Operational')) {
-                return 'error';
-            }
-            return 'unknown';
-        }
-        
-        // Helper function to get vessel status icon
-        function getVesselStatusIcon(condition) {
-            if (condition?.includes('Ready') || condition?.includes('Good')) {
-                return 'Ready • Available';
-            } else if (condition?.includes('Attention')) {
-                return 'Needs Attention';
-            } else if (condition?.includes('Major') || condition?.includes('Non-Operational')) {
-                return 'Unavailable';
-            }
-            return condition || 'Unknown';
         }
         
         // Load new bookings from Airtable
