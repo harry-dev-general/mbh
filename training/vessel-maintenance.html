@@ -470,6 +470,8 @@
             display: flex;
             gap: 1rem;
             box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2001;
         }
         
         .location-footer button {
@@ -485,6 +487,7 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            pointer-events: auto;
         }
         
         .location-cancel {
@@ -499,10 +502,17 @@
         .location-save {
             background: #28a745;
             color: white;
+            position: relative;
+            z-index: 10;
         }
         
         .location-save:hover {
             background: #218838;
+        }
+        
+        .location-save:active {
+            background: #1e7e34;
+            transform: scale(0.98);
         }
         
         /* Error & Success Messages */
@@ -689,10 +699,10 @@
         </div>
         
         <div class="location-footer">
-            <button class="location-cancel" onclick="closeLocationModal()">
+            <button type="button" class="location-cancel" onclick="closeLocationModal()">
                 <i class="fas fa-times"></i> Cancel
             </button>
-            <button class="location-save" onclick="saveLocationUpdate()">
+            <button type="button" class="location-save" onclick="event.preventDefault(); saveLocationUpdate();">
                 <i class="fas fa-check"></i> Save Location
             </button>
         </div>
@@ -951,13 +961,22 @@
             }
             
             // Get staff ID from profile
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('airtable_record_id')
-                .eq('id', currentUser.id)
-                .single();
-            
-            const staffId = profile?.airtable_record_id;
+            let staffId = null;
+            try {
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('airtable_record_id')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching profile:', error);
+                } else {
+                    staffId = profile?.airtable_record_id;
+                }
+            } catch (error) {
+                console.error('Failed to fetch staff ID:', error);
+            }
             
             try {
                 const response = await fetch(`/api/vessels/${currentVesselId}/status-update`, {
@@ -1073,22 +1092,40 @@
         
         // Update coordinates display
         function updateCoordinatesDisplay(lat, lng) {
-            document.getElementById('coordinates').innerHTML = 
-                `Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`;
+            const coordsElement = document.getElementById('coordinates');
+            if (coordsElement) {
+                coordsElement.innerHTML = `Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`;
+            } else {
+                console.warn('Coordinates element not found');
+            }
         }
         
         // Save location update
         async function saveLocationUpdate() {
-            if (!currentVesselId || !currentLatLng) return;
+            console.log('saveLocationUpdate called', { currentVesselId, currentLatLng });
+            
+            if (!currentVesselId || !currentLatLng) {
+                showMessage('No location selected', 'error');
+                return;
+            }
             
             // Get staff ID from profile
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('airtable_record_id')
-                .eq('id', currentUser.id)
-                .single();
-            
-            const staffId = profile?.airtable_record_id;
+            let staffId = null;
+            try {
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('airtable_record_id')
+                    .eq('id', currentUser.id)
+                    .single();
+                
+                if (error) {
+                    console.error('Error fetching profile:', error);
+                } else {
+                    staffId = profile?.airtable_record_id;
+                }
+            } catch (error) {
+                console.error('Failed to fetch staff ID:', error);
+            }
             
             try {
                 const response = await fetch(`/api/vessels/${currentVesselId}/update-location`, {
@@ -1104,8 +1141,13 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to update location');
+                    const errorData = await response.text();
+                    console.error('Location update failed:', response.status, errorData);
+                    throw new Error(`Failed to update location: ${response.status}`);
                 }
+                
+                const result = await response.json();
+                console.log('Location update result:', result);
                 
                 showMessage('Location updated successfully', 'success');
                 closeLocationModal();
