@@ -1043,6 +1043,12 @@
         function initLocationMap(currentLat, currentLng) {
             const mapDiv = document.getElementById('locationMap');
             
+            // Make sure coordinates element exists
+            if (!document.getElementById('coordinates')) {
+                console.error('Coordinates element not found in DOM');
+                return;
+            }
+            
             // Default to Sydney if no current location
             const lat = currentLat || -33.8688;
             const lng = currentLng || 151.2093;
@@ -1128,14 +1134,16 @@
             }
             
             try {
-                const response = await fetch(`/api/vessels/${currentVesselId}/update-location`, {
+                const response = await fetch('/api/vessels/update-location', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
+                        vesselId: currentVesselId,
                         latitude: currentLatLng.lat,
                         longitude: currentLatLng.lng,
+                        manualUpdate: true,
                         staffId
                     })
                 });
