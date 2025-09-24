@@ -2026,8 +2026,8 @@
             const staffList = document.getElementById('staffList');
             staffList.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading staff data...</p></div>';
             
-            // Fetch staff data from your API
-            // For now, showing loading state
+            // Since we have the quick action cards instead of a staff list, just show them
+            staffList.innerHTML = ''; // Clear the loading state
         }
         
         // Load vessel data for maintenance tab - NO LONGER USED - Redirects to vessel-maintenance.html
@@ -2126,8 +2126,33 @@
             const announcementsList = document.getElementById('announcementsList');
             announcementsList.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading announcements...</p></div>';
             
-            // Fetch announcements from your API
-            // For now, showing loading state
+            try {
+                const response = await fetch('/api/announcements');
+                const data = await response.json();
+                
+                if (data.success && data.announcements.length > 0) {
+                    announcementsList.innerHTML = data.announcements.map(announcement => `
+                        <div class="announcement-item">
+                            <div class="announcement-header">
+                                <h4>${announcement.title}</h4>
+                                <button class="btn btn-sm btn-danger" onclick="deleteAnnouncement('${announcement.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <p>${announcement.message}</p>
+                            <div class="announcement-meta">
+                                <span>Posted by ${announcement.postedBy || 'Admin'}</span>
+                                <span>${new Date(announcement.createdTime).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    announcementsList.innerHTML = '<p class="text-muted">No announcements posted yet.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+                announcementsList.innerHTML = '<p class="text-danger">Failed to load announcements</p>';
+            }
         }
         
         // Calendar variables - Set to 2025 context
@@ -2851,7 +2876,7 @@
                     const EMPLOYEES_TABLE_ID = 'tbltAE4NlNePvnkpY';
                     const employeesResponse = await fetch(
                         `/api/airtable/applkAFOn2qxtu7tx/${EMPLOYEES_TABLE_ID}?` +
-                        `fields[]=Name&fields[]=Employment%20Type&pageSize=100`,
+                        `fields[]=Name&fields[]=Staff%20Type&pageSize=100`,
                         {
                             method: 'GET'
                         }
@@ -2865,7 +2890,7 @@
                             // Find matching employee by name
                             Object.keys(employees).forEach(id => {
                                 if (employees[id].name === employeeName) {
-                                    employees[id].type = record.fields['Employment Type'] || 'Casual';
+                                    employees[id].type = record.fields['Staff Type'] || 'Casual';
                                 }
                             });
                         });
@@ -3111,6 +3136,61 @@
             }
         }
         
+        // Delete announcement
+        async function deleteAnnouncement(announcementId) {
+            if (!confirm('Are you sure you want to delete this announcement?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/announcements/${announcementId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadAnnouncements(); // Reload the list
+                } else {
+                    alert('Failed to delete announcement: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error deleting announcement:', error);
+                alert('Failed to delete announcement');
+            }
+        }
+        
+        // Handle announcement form submission
+        async function handleAnnouncementSubmit(event) {
+            event.preventDefault();
+            
+            const title = document.getElementById('announcementTitle').value;
+            const message = document.getElementById('announcementMessage').value;
+            
+            try {
+                const response = await fetch('/api/announcements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title, message })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Announcement posted successfully!');
+                    document.getElementById('announcementForm').reset();
+                    loadAnnouncements(); // Reload the list
+                } else {
+                    alert('Failed to post announcement: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error posting announcement:', error);
+                alert('Failed to post announcement');
+            }
+        }
+        
         // Initialize on load
         window.addEventListener('load', () => {
             // Check authentication first
@@ -3137,6 +3217,12 @@
             setInterval(updateBookingTimestamps, 60000);
             
             // Removed simulated bookings - now using real data only
+            
+            // Add event listener for announcement form
+            const announcementForm = document.getElementById('announcementForm');
+            if (announcementForm) {
+                announcementForm.addEventListener('submit', handleAnnouncementSubmit);
+            }
         });
     </script>
 </body>
