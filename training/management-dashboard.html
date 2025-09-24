@@ -2483,7 +2483,7 @@
                 const rosterResponse = await fetch(
                     `/api/airtable/applkAFOn2qxtu7tx/${ROSTER_TABLE_ID}?` +
                     `filterByFormula=${encodeURIComponent(`AND({Date} >= '${weekDates[0].dateStr}', {Date} <= '${weekDates[6].dateStr}')`)}` +
-                    `&fields[]=Employee&fields[]=Date&fields[]=Available%20From&fields[]=Available%20Until&fields[]=Notes`,
+                    `&fields[]=Employee&fields[]=Employee%20Name&fields[]=Date&fields[]=Available%20From&fields[]=Available%20Until&fields[]=Notes`,
                     {
                         method: 'GET'
                     }
@@ -2507,6 +2507,7 @@
                 rosterRecords.forEach(record => {
                     const employeeId = record.fields['Employee']?.[0];
                     const employeeName = record.fields['Employee Name'];
+                    
                     if (employeeId && employeeName && !employees[employeeId]) {
                         employees[employeeId] = {
                             name: employeeName,
