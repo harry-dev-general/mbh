@@ -707,11 +707,7 @@
         let locationMap = null;
         let locationMarker = null;
         let currentLatLng = null;
-        
-        // Initialize Supabase client
-        const supabaseUrl = 'https://etkugeooigiwahikrmzr.supabase.co';
-        const supabaseAnonKey = window.SUPABASE_ANON_KEY;
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        let supabase = null;
         
         // Check authentication
         async function checkAuth() {
@@ -1126,14 +1122,26 @@
         
         // Initialize
         async function init() {
-            if (await checkAuth()) {
-                loadGoogleMaps();
-                loadVessels();
+            try {
+                // Initialize Supabase client
+                supabase = await window.MBHConfig.initializeSupabase();
+                
+                if (await checkAuth()) {
+                    loadGoogleMaps();
+                    loadVessels();
+                }
+            } catch (error) {
+                console.error('Failed to initialize app:', error);
+                showMessage('Failed to initialize application', 'error');
             }
         }
         
-        // Start the app
-        init();
+        // Start the app when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
