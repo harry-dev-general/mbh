@@ -191,6 +191,13 @@
             margin: 1.5rem 0;
         }
         
+        .contact-grid, .docs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
         .card {
             background: #F8F9F9;
             border: 1px solid #E5E7E9;
@@ -265,6 +272,29 @@
             text-decoration: none;
         }
         
+        .doc-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .doc-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .doc-card h4 {
+            color: #2E86AB;
+            margin-bottom: 0.5rem;
+        }
+        
+        .doc-card .file-size {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
         .interactive-map {
             background: #F8F9F9;
             border: 2px solid #D5D8DC;
@@ -275,17 +305,284 @@
             position: relative;
         }
         
+        /* Mobile Navigation Toggle */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .mobile-menu-close {
+            display: none;
+        }
+        
+        /* Tablet Styles */
         @media (max-width: 768px) {
-            .nav ul {
-                flex-direction: column;
+            .header {
+                padding: 1.5rem 1rem;
+                position: relative;
             }
             
             .header h1 {
                 font-size: 1.8rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+            
+            .user-info {
+                position: static;
+                margin-top: 1rem;
+                text-align: center;
+            }
+            
+            .user-info button {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            
+            /* Mobile Navigation */
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .nav {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 80%;
+                max-width: 300px;
+                height: 100vh;
+                background: #2874A6;
+                transition: left 0.3s ease;
+                z-index: 2000;
+                overflow-y: auto;
+            }
+            
+            .nav.active {
+                left: 0;
+            }
+            
+            .nav ul {
+                flex-direction: column;
+                padding-top: 3rem;
+            }
+            
+            .nav a {
+                padding: 1.25rem 1.5rem;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            
+            .mobile-menu-close {
+                display: block;
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+            
+            /* Overlay */
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 1999;
+            }
+            
+            .mobile-overlay.active {
+                display: block;
+            }
+            
+            /* Content adjustments */
+            .container {
+                padding: 1.5rem 1rem;
+                margin-top: 0;
+            }
+            
+            .module {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .module h2 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .module h3 {
+                font-size: 1.25rem;
+            }
+            
+            /* Tables responsive */
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Flowchart responsive */
+            .flowchart {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                min-height: 300px;
+            }
+            
+            /* Emergency contacts grid */
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            /* Documents grid responsive */
+            .docs-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+        
+        /* Small Mobile Styles */
+        @media (max-width: 480px) {
+            .header {
+                padding: 1rem 0.75rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .mobile-menu-btn {
+                left: 0.5rem;
             }
             
             .container {
+                padding: 1rem 0.75rem;
+            }
+            
+            .module {
+                padding: 1.25rem 1rem;
+                border-radius: 8px;
+            }
+            
+            .module h2 {
+                font-size: 1.3rem;
+                padding-bottom: 0.4rem;
+            }
+            
+            .module h3 {
+                font-size: 1.1rem;
+            }
+            
+            .checklist {
+                padding: 0.75rem;
+                margin: 0.75rem 0;
+            }
+            
+            .checklist label {
+                padding: 0.4rem 0;
+                font-size: 0.95rem;
+            }
+            
+            .alert {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+            
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+            
+            /* Video links on mobile */
+            .video-link {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+            
+            .video-link i {
+                font-size: 1.25rem;
+            }
+            
+            /* Contact cards mobile */
+            .contact-card {
                 padding: 1rem;
+            }
+            
+            .contact-card h4 {
+                font-size: 1rem;
+            }
+            
+            .contact-card p {
+                font-size: 0.85rem;
+            }
+            
+            /* Document cards mobile */
+            .doc-card {
+                padding: 1rem;
+            }
+            
+            .doc-card h4 {
+                font-size: 0.95rem;
+            }
+            
+            .doc-card .file-size {
+                font-size: 0.75rem;
+            }
+            
+            /* Table text size */
+            table {
+                font-size: 0.85rem;
+            }
+            
+            table th, table td {
+                padding: 0.5rem;
+            }
+        }
+        
+        /* Touch-friendly adjustments */
+        @media (hover: none) and (pointer: coarse) {
+            .checklist label {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+            
+            .btn {
+                min-height: 44px;
+            }
+            
+            .nav a {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+            
+            .video-link {
+                min-height: 44px;
+            }
+        }
+        
+        /* Smooth scrolling for anchor links */
+        @media (prefers-reduced-motion: no-preference) {
+            html {
+                scroll-behavior: smooth;
             }
         }
         
@@ -341,6 +638,9 @@
 </head>
 <body>
     <div class="header">
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="user-info" id="userInfo" style="display: none;">
             <p>Welcome, <span id="userEmail"></span></p>
             <button onclick="window.location.href='dashboard.html'" style="margin-right: 0.5rem;">Dashboard</button>
@@ -350,7 +650,12 @@
         <p>Comprehensive Training Guide for Safe and Professional Operations</p>
     </div>
     
-    <nav class="nav">
+    <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+    
+    <nav class="nav" id="navMenu">
+        <button class="mobile-menu-close" onclick="toggleMobileMenu()">
+            <i class="fas fa-times"></i>
+        </button>
         <ul>
             <li><a href="#overview">Overview</a></li>
             <li><a href="#locations">Locations</a></li>
@@ -812,6 +1117,33 @@
             await supabase.auth.signOut();
             window.location.href = 'auth.html';
         }
+        
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const nav = document.getElementById('navMenu');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            nav.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (nav.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Close menu when clicking on a nav link
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', () => {
+                const nav = document.getElementById('navMenu');
+                const overlay = document.querySelector('.mobile-overlay');
+                nav.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
 
         // Run auth check when page loads
         checkAuth();
