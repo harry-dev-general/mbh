@@ -416,76 +416,117 @@
         
         .vessels-list {
             overflow-y: auto;
-            padding-right: 1rem;
-        }
-        
-        .vessel-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+            padding-right: 0.5rem;
+            background: #f8f9fa;
             padding: 1rem;
             border-radius: 12px;
-            margin-bottom: 0.75rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
         }
         
-        .vessel-item:hover {
-            background: #e9ecef;
+        /* Vessel Card Styles - Matching daily-run-sheet */
+        .vessel-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            margin-bottom: 1rem;
         }
         
-        .vessel-icon {
-            width: 40px;
-            height: 40px;
-            background: #e3f2fd;
-            border-radius: 10px;
+        .vessel-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .vessel-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            color: #2196f3;
-        }
-        
-        .vessel-info {
-            flex: 1;
+            margin-bottom: 1rem;
         }
         
         .vessel-name {
+            font-size: 1.1rem;
             font-weight: 600;
-            font-size: 0.875rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        .vessel-status {
-            font-size: 0.75rem;
-            color: #64748b;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            color: #333;
         }
         
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-        }
-        
-        .status-dot.active {
-            background: #10b981;
-        }
-        
-        .status-dot.maintenance {
-            background: #f59e0b;
-        }
-        
-        .status-dot.inactive {
-            background: #ef4444;
-        }
-        
-        .vessel-stats {
+        .vessel-location {
             display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #666;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: #D4EDDA;
+            color: #155724;
+        }
+        
+        .status-badge.maintenance {
+            background: #FFF3CD;
+            color: #856404;
+        }
+        
+        .status-badge.unavailable {
+            background: #F8D7DA;
+            color: #721C24;
+        }
+        
+        /* Resource Gauges */
+        .resource-gauges {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .gauge {
+            text-align: center;
+        }
+        
+        .gauge-label {
             font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+        
+        .gauge-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .gauge-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
+        }
+        
+        .gauge-fill.low {
+            background: #f44336;
+        }
+        
+        .gauge-fill.medium {
+            background: #FF9800;
+        }
+        
+        .gauge-value {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            font-weight: 600;
         }
         
         .stat-badge {
@@ -1739,16 +1780,12 @@
             await buildCalendarGrid();
         }
         
-        // Add vessel item interactivity
+        // Add vessel card interactivity
         function initializeVesselInteractivity() {
-            document.querySelectorAll('.vessel-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    // Remove active class from all items
-                    document.querySelectorAll('.vessel-item').forEach(v => {
-                        v.style.background = '#f8f9fa';
-                    });
-                    // Add active class to clicked item
-                    this.style.background = '#e3f2fd';
+            document.querySelectorAll('.vessel-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    // Card click behavior if needed
+                    console.log('Vessel clicked:', this.querySelector('.vessel-name').textContent);
                 });
             });
         }
@@ -1872,22 +1909,42 @@
                     const gasPercentage = vessel.currentStatus?.gas?.percentage || getLevelPercentage(gasLevel);
                     const waterPercentage = vessel.currentStatus?.water?.percentage || getLevelPercentage(waterLevel);
                     
+                    // Extract suburb from location
+                    let locationText = vessel.currentStatus?.location?.address || vessel.location || 'Unknown Location';
+                    const suburb = extractSuburb(locationText);
+                    
+                    // Determine status badge based on condition
+                    let statusText = 'Unknown';
+                    let statusClass = '';
+                    if (condition?.includes('Ready') || condition?.includes('Good')) {
+                        statusText = 'Ready';
+                        statusClass = '';
+                    } else if (condition?.includes('Attention')) {
+                        statusText = 'Needs Attention';
+                        statusClass = 'maintenance';
+                    } else if (condition?.includes('Major') || condition?.includes('Non-Operational')) {
+                        statusText = 'Unavailable';
+                        statusClass = 'unavailable';
+                    }
+                    
                     return `
-                        <div class="vessel-item">
-                            <div class="vessel-icon">
-                                <i class="fas fa-ship"></i>
-                            </div>
-                            <div class="vessel-info">
-                                <div class="vessel-name">${vessel.name || 'Unknown'}</div>
-                                <div class="vessel-status">
-                                    <i class="fas fa-map-marker-alt" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
-                                    ${vessel.currentStatus?.location?.address || vessel.location || 'Unknown Location'}
+                        <div class="vessel-card">
+                            <div class="vessel-header">
+                                <div class="vessel-name">
+                                    <i class="fas fa-ship"></i> ${vessel.name || 'Unknown'}
+                                </div>
+                                <div class="status-badge ${statusClass}">
+                                    ${statusText}
                                 </div>
                             </div>
-                            <div class="vessel-stats">
-                                <span class="stat-badge">⛽ ${fuelPercentage}%</span>
-                                <span class="stat-badge"><i class="fas fa-fire" style="margin-right: 2px;"></i>${gasPercentage}%</span>
-                                <span class="stat-badge">💧 ${waterPercentage}%</span>
+                            <div class="vessel-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Location: ${suburb}</span>
+                            </div>
+                            <div class="resource-gauges">
+                                ${renderGauge('Fuel', fuelPercentage)}
+                                ${renderGauge('Gas', gasPercentage)}
+                                ${renderGauge('Water', waterPercentage)}
                             </div>
                         </div>
                     `;
@@ -1917,6 +1974,46 @@
                 'Full': 100
             };
             return levelMap[level] || 0;
+        }
+        
+        // Helper function to extract suburb from address
+        function extractSuburb(address) {
+            if (!address || address === 'Unknown Location') {
+                return 'Unknown Location';
+            }
+            
+            // Common patterns for Australian addresses
+            // Example: "43 Seaforth Cres, Seaforth NSW 2092, Australia"
+            // We want to extract "Seaforth"
+            
+            const parts = address.split(',');
+            if (parts.length >= 2) {
+                // Try to get the second part which usually contains suburb and state
+                const suburbPart = parts[1].trim();
+                // Remove state code and postcode
+                const suburbMatch = suburbPart.match(/^([^0-9]+?)(?:\s+[A-Z]{2,3})?\s*\d*$/);
+                if (suburbMatch) {
+                    return suburbMatch[1].trim();
+                }
+            }
+            
+            // Fallback - return the first part of the address
+            return parts[0] || address;
+        }
+        
+        // Render individual gauge
+        function renderGauge(label, percentage) {
+            const fillClass = percentage < 25 ? 'low' : percentage < 50 ? 'medium' : '';
+            
+            return `
+                <div class="gauge">
+                    <div class="gauge-label">${label}</div>
+                    <div class="gauge-bar">
+                        <div class="gauge-fill ${fillClass}" style="width: ${percentage}%;"></div>
+                    </div>
+                    <div class="gauge-value">${percentage}%</div>
+                </div>
+            `;
         }
         
         // Load new bookings from Airtable
@@ -2370,3 +2467,4 @@
     </script>
 </body>
 </html>
+
