@@ -2497,39 +2497,59 @@
                 
                 const rosterData = await rosterResponse.json();
                 const rosterRecords = rosterData.records || [];
+                console.log(`Fetched ${rosterRecords.length} roster records for week ${weekDates[0].dateStr} to ${weekDates[6].dateStr}`);
                 
-                // Also fetch employee details to get names and types
-                const EMPLOYEES_TABLE_ID = 'tbltAE4NlNePvnkpY';
-                const employeeIds = [...new Set(rosterRecords.filter(r => r.fields['Employee']?.[0]).map(r => r.fields['Employee'][0]))];
+                // Extract employee info from roster data
+                // The roster already includes Employee Name, so we don't need a separate API call
+                const employees = {};
                 
-                if (employeeIds.length === 0) {
+                // Build employee map from roster data
+                rosterRecords.forEach(record => {
+                    const employeeId = record.fields['Employee']?.[0];
+                    const employeeName = record.fields['Employee Name'];
+                    if (employeeId && employeeName && !employees[employeeId]) {
+                        employees[employeeId] = {
+                            name: employeeName,
+                            type: 'Unknown' // We'll default to 'Casual' styling unless we fetch employment type
+                        };
+                    }
+                });
+                
+                console.log(`Found ${Object.keys(employees).length} unique employees in roster data`);
+                
+                if (Object.keys(employees).length === 0) {
                     staffAvailabilityGrid.innerHTML = '<div class="no-data">No staff availability for this week</div>';
                     return;
                 }
                 
-                const employeesResponse = await fetch(
-                    `/api/airtable/applkAFOn2qxtu7tx/${EMPLOYEES_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`OR(${employeeIds.map(id => `RECORD_ID()='${id}'`).join(',')})`)}` +
-                    `&fields[]=Name&fields[]=Employment Type`,
-                    {
-                        method: 'GET'
+                // Optionally fetch employment types
+                // We'll fetch all employees and filter client-side to get employment types
+                try {
+                    const EMPLOYEES_TABLE_ID = 'tbltAE4NlNePvnkpY';
+                    const employeesResponse = await fetch(
+                        `/api/airtable/applkAFOn2qxtu7tx/${EMPLOYEES_TABLE_ID}?` +
+                        `fields[]=Name&fields[]=Employment%20Type&pageSize=100`,
+                        {
+                            method: 'GET'
+                        }
+                    );
+                    
+                    if (employeesResponse.ok) {
+                        const employeesData = await employeesResponse.json();
+                        // Update employment types for matched employees
+                        employeesData.records.forEach(record => {
+                            const employeeName = record.fields['Name'];
+                            // Find matching employee by name
+                            Object.keys(employees).forEach(id => {
+                                if (employees[id].name === employeeName) {
+                                    employees[id].type = record.fields['Employment Type'] || 'Casual';
+                                }
+                            });
+                        });
                     }
-                );
-                
-                if (!employeesResponse.ok) {
-                    throw new Error(`Failed to fetch employees: ${employeesResponse.status}`);
+                } catch (error) {
+                    console.log('Could not fetch employment types, using defaults:', error);
                 }
-                
-                const employeesData = await employeesResponse.json();
-                const employees = {};
-                
-                // Map employee data by ID
-                employeesData.records.forEach(record => {
-                    employees[record.id] = {
-                        name: record.fields['Name'] || 'Unknown',
-                        type: record.fields['Employment Type'] || 'Casual'
-                    };
-                });
                 
                 // Group roster by date
                 const rosterByDate = {};
@@ -2571,8 +2591,11 @@
                             <div class="staff-initials-container">
                                 ${staff.length > 0 ? 
                                     staff.map(s => `
-                                        <div class="staff-initial-circle ${s.type.toLowerCase().includes('full') ? 'full-time' : 'casual'}" 
-                                             title="${s.name}" 
+                                        <div class="staff-initial-circle ${
+                                            s.type === 'Unknown' ? 'casual' : 
+                                            s.type.toLowerCase().includes('full') ? 'full-time' : 'casual'
+                                        }" 
+                                             title="${s.name} (${s.type})" 
                                              data-name="${s.name}">
                                             ${s.initials}
                                         </div>
