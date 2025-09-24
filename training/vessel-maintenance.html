@@ -769,7 +769,14 @@
         // Load vessel data
         async function loadVessels() {
             try {
-                const response = await fetch('/api/vessels/maintenance-status');
+                // Get current session for authorization
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                const response = await fetch('/api/vessels/maintenance-status', {
+                    headers: {
+                        'Authorization': session ? `Bearer ${session.access_token}` : ''
+                    }
+                });
                 if (!response.ok) {
                     throw new Error('Failed to fetch vessel data');
                 }
@@ -979,10 +986,14 @@
             }
             
             try {
+                // Get current session for authorization
+                const { data: { session } } = await supabase.auth.getSession();
+                
                 const response = await fetch(`/api/vessels/${currentVesselId}/status-update`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': session ? `Bearer ${session.access_token}` : ''
                     },
                     body: JSON.stringify({
                         fuel,
@@ -1134,10 +1145,14 @@
             }
             
             try {
+                // Get current session for authorization
+                const { data: { session } } = await supabase.auth.getSession();
+                
                 const response = await fetch('/api/vessels/update-location', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': session ? `Bearer ${session.access_token}` : ''
                     },
                     body: JSON.stringify({
                         vesselId: currentVesselId,
