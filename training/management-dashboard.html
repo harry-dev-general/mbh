@@ -69,7 +69,7 @@
         .logo-text {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #dc3545;
+            color: #1B4F72;
         }
         
         /* View Toggle */
@@ -93,7 +93,7 @@
         }
         
         .toggle-switch.management {
-            background: #dc3545;
+            background: #1B4F72;
         }
         
         .toggle-slider {
@@ -130,13 +130,13 @@
         
         .nav-item:hover {
             background: #f8f9fa;
-            color: #dc3545;
+            color: #1B4F72;
         }
         
         .nav-item.active {
-            background: #fee2e2;
-            color: #dc3545;
-            border-right: 3px solid #dc3545;
+            background: #e6f2f8;
+            color: #1B4F72;
+            border-right: 3px solid #1B4F72;
         }
         
         .nav-item i {
@@ -999,7 +999,7 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: #dc3545;
+            background: #1B4F72;
             color: white;
             display: flex;
             align-items: center;
@@ -1213,6 +1213,17 @@
             }
         }
         
+        /* Quick Action Card Hover Effect */
+        .quick-action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+        }
+        
+        /* Submit Button Hover Effect */
+        .btn-submit:hover {
+            background: #2E86AB !important;
+        }
+        
         /* Mobile Menu */
         .mobile-menu-btn {
             display: none;
@@ -1227,7 +1238,7 @@
         }
         
         .mobile-menu-btn:hover {
-            color: #dc3545;
+            color: #1B4F72;
         }
         
         @media (max-width: 1024px) {
@@ -1477,7 +1488,7 @@
             
             /* Add active states instead */
             .nav-item:active {
-                background: rgba(220, 53, 69, 0.1);
+                background: rgba(27, 79, 114, 0.1);
             }
             
             .vessel-card:active {
@@ -1616,43 +1627,28 @@
                 <!-- Quick Actions Section -->
                 <section class="quick-actions-section" style="margin-bottom: 2rem;">
                     <h2 class="section-title" style="margin-bottom: 1.5rem;">Quick Actions</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-                        <div class="quick-action-card" onclick="window.location.href='daily-run-sheet.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
-                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                                <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fas fa-clipboard-list"></i> Daily Run Sheet
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div class="quick-action-card" onclick="window.location.href='daily-run-sheet.html'" style="background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%); border-radius: 12px; padding: 1.25rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; color: white;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <i class="fas fa-clipboard-list" style="font-size: 1.5rem;"></i>
+                                <span style="font-size: 1.1rem; font-weight: 600;">Daily Run Sheet</span>
+                            </div>
                         </div>
-                                <div style="font-size: 0.875rem; opacity: 0.9;">View today's operations, vessel status, and booking timeline</div>
-                    </div>
-                            <div style="padding: 0.75rem 1.5rem; text-align: center; background: #f8f9fa;">
-                                <span style="color: #667eea; font-weight: 500; font-size: 0.875rem;">View Dashboard →</span>
-                    </div>
-                </div>
                 
-                        <div class="quick-action-card" onclick="window.location.href='management-allocations.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
-                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-                                <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fas fa-users-cog"></i> Staff Allocations
+                        <div class="quick-action-card" onclick="window.location.href='management-allocations.html'" style="background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%); border-radius: 12px; padding: 1.25rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; color: white;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <i class="fas fa-users-cog" style="font-size: 1.5rem;"></i>
+                                <span style="font-size: 1.1rem; font-weight: 600;">Staff Allocations</span>
+                            </div>
                         </div>
-                                <div style="font-size: 0.875rem; opacity: 0.9;">Manage daily staff assignments and vessel allocations</div>
-                    </div>
-                            <div style="padding: 0.75rem 1.5rem; text-align: center; background: #f8f9fa;">
-                                <span style="color: #f093fb; font-weight: 500; font-size: 0.875rem;">Manage Allocations →</span>
-                    </div>
-                </div>
                 
-                        <div class="quick-action-card" onclick="window.location.href='employee-directory.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
-                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
-                                <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fas fa-address-book"></i> Employee Directory
+                        <div class="quick-action-card" onclick="window.location.href='employee-directory.html'" style="background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%); border-radius: 12px; padding: 1.25rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; color: white;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <i class="fas fa-address-book" style="font-size: 1.5rem;"></i>
+                                <span style="font-size: 1.1rem; font-weight: 600;">Employee Directory</span>
+                            </div>
                         </div>
-                                <div style="font-size: 0.875rem; opacity: 0.9;">View and manage employee information and contacts</div>
                     </div>
-                            <div style="padding: 0.75rem 1.5rem; text-align: center; background: #f8f9fa;">
-                                <span style="color: #4facfe; font-weight: 500; font-size: 0.875rem;">View Directory →</span>
-                    </div>
-                </div>
-            </div>
                 </section>
                 
                 <!-- Weekly Calendar Section -->
@@ -1714,7 +1710,7 @@
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                     <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; cursor: pointer;" onclick="window.location.href='management-allocations.html'">
-                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%); color: white;">
                         <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                             <i class="fas fa-calendar-alt"></i>
                             Weekly Schedule
@@ -1724,7 +1720,7 @@
                 </div>
                 
                     <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; cursor: pointer;" onclick="window.location.href='employee-directory.html'">
-                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%); color: white;">
                         <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                             <i class="fas fa-user-plus"></i>
                             Employee Directory
@@ -1761,7 +1757,7 @@
                             <textarea class="form-textarea" id="announcementMessage" placeholder="Enter your announcement message" required style="width: 100%; padding: 0.75rem; border: 1px solid #e0e6ed; border-radius: 8px; min-height: 120px;"></textarea>
                     </div>
                     
-                        <button type="submit" class="btn-submit" style="background: #dc3545; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
+                        <button type="submit" class="btn-submit" style="background: #1B4F72; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
                             <i class="fas fa-paper-plane"></i> Post Announcement
                         </button>
                     </form>
