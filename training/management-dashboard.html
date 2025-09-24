@@ -6,8 +6,7 @@
     <title>Management Dashboard - MBH Staff Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Google Maps API will be loaded dynamically -->
     <style>
         * {
             margin: 0;
@@ -1146,7 +1145,7 @@
                         </div>
                         
                         <!-- Map -->
-                        <div id="fleetMap"></div>
+                        <div id="fleetMap" style="height: 400px; width: 100%;"></div>
                     </div>
                 </section>
             </div>
@@ -2194,6 +2193,162 @@
             }
         }
         
+        // Google Maps functions
+        let fleetMap;
+        let fleetMarkers = [];
+        
+        // Google Maps API key (should match the one used in vessel-locations-map.html)
+        const GOOGLE_MAPS_API_KEY = 'AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw';
+        
+        // Initialize Google Maps for fleet
+        function initFleetMap() {
+            const mapContainer = document.getElementById('fleetMap');
+            if (!mapContainer) return;
+            
+            // Create map centered on Sydney Harbour
+            fleetMap = new google.maps.Map(mapContainer, {
+                center: { lat: -33.810856, lng: 151.256586 },
+                zoom: 13,
+                mapTypeId: 'hybrid',
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                    position: google.maps.ControlPosition.TOP_LEFT
+                },
+                zoomControl: true,
+                zoomControlOptions: {
+                    position: google.maps.ControlPosition.RIGHT_CENTER
+                },
+                streetViewControl: false,
+                fullscreenControl: true,
+                fullscreenControlOptions: {
+                    position: google.maps.ControlPosition.RIGHT_TOP
+                }
+            });
+            
+            // Load vessel data and add markers
+            loadVesselMarkers();
+        }
+        
+        // Load vessel markers on the map
+        async function loadVesselMarkers() {
+            try {
+                // Fetch vessel data from API
+                const response = await fetch('/api/vessels/maintenance-status');
+                if (!response.ok) throw new Error('Failed to fetch vessel data');
+                
+                const data = await response.json();
+                const vessels = data.vessels || [];
+                
+                // Clear existing markers
+                fleetMarkers.forEach(marker => marker.setMap(null));
+                fleetMarkers = [];
+                
+                // Add marker for each vessel with location
+                vessels.forEach(vessel => {
+                    if (vessel.currentStatus?.location?.latitude) {
+                        const location = vessel.currentStatus.location;
+                        const position = { 
+                            lat: location.latitude, 
+                            lng: location.longitude 
+                        };
+                        
+                        // Determine marker color based on vessel condition
+                        const condition = vessel.currentStatus?.condition || 'Unknown';
+                        let markerColor = 'red';
+                        if (condition?.includes('Ready') || condition?.includes('Good')) {
+                            markerColor = 'green';
+                        } else if (condition?.includes('Attention')) {
+                            markerColor = 'yellow';
+                        }
+                        
+                        // Create custom marker
+                        const marker = new google.maps.Marker({
+                            position: position,
+                            map: fleetMap,
+                            title: vessel.name,
+                            icon: {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                scale: 10,
+                                fillColor: markerColor,
+                                fillOpacity: 0.8,
+                                strokeColor: 'white',
+                                strokeWeight: 2
+                            }
+                        });
+                        
+                        // Create info window content
+                        const infoContent = `
+                            <div style="padding: 10px;">
+                                <h4 style="margin: 0 0 10px 0;">${vessel.name}</h4>
+                                <p style="margin: 5px 0;"><strong>Status:</strong> ${condition}</p>
+                                <p style="margin: 5px 0;"><strong>Location:</strong> ${location.address || 'Unknown'}</p>
+                                ${location.lastModified ? `<p style="margin: 5px 0;"><small>Updated: ${new Date(location.lastModified).toLocaleString('en-AU')}</small></p>` : ''}
+                                <div style="margin-top: 10px;">
+                                    <span style="margin-right: 10px;">⛽ ${vessel.currentStatus?.fuelLevel || 'N/A'}</span>
+                                    <span>💧 ${vessel.currentStatus?.waterLevel || 'N/A'}</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        const infoWindow = new google.maps.InfoWindow({
+                            content: infoContent
+                        });
+                        
+                        marker.addListener('click', () => {
+                            // Close any open info windows
+                            fleetMarkers.forEach(m => {
+                                if (m.infoWindow) m.infoWindow.close();
+                            });
+                            infoWindow.open(fleetMap, marker);
+                        });
+                        
+                        // Store reference to info window
+                        marker.infoWindow = infoWindow;
+                        fleetMarkers.push(marker);
+                    }
+                });
+                
+                // Fit map to show all markers
+                if (fleetMarkers.length > 0) {
+                    const bounds = new google.maps.LatLngBounds();
+                    fleetMarkers.forEach(marker => {
+                        bounds.extend(marker.getPosition());
+                    });
+                    fleetMap.fitBounds(bounds);
+                    
+                    // Don't zoom in too much for single marker
+                    if (fleetMarkers.length === 1) {
+                        fleetMap.setZoom(14);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading vessel markers:', error);
+            }
+        }
+        
+        // Load Google Maps script
+        function loadGoogleMapsAndInitFleet() {
+            if (window.google && window.google.maps) {
+                // Google Maps already loaded
+                initFleetMap();
+            } else {
+                // Create and load the Google Maps script
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initFleetMap&libraries=&v=weekly`;
+                script.async = true;
+                script.defer = true;
+                script.onerror = function() {
+                    console.error('Failed to load Google Maps. Please check API key and restrictions.');
+                    document.getElementById('fleetMap').innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">Failed to load map</div>';
+                };
+                document.head.appendChild(script);
+                
+                // Make initFleetMap available globally for the callback
+                window.initFleetMap = initFleetMap;
+            }
+        }
+        
         // Initialize on load
         window.addEventListener('load', () => {
             // Check authentication first
@@ -2211,34 +2366,9 @@
                 }, index * 100);
             });
             
-            // Initialize map after page load
+            // Load Google Maps API and initialize map
             setTimeout(() => {
-                const map = L.map('fleetMap').setView([-33.7977, 151.2853], 13);
-                
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
-                
-                // Add vessel markers
-                const vessels = [
-                    { name: 'Junior', lat: -33.7900, lng: 151.2850, status: 'active' },
-                    { name: 'Sandstone', lat: -33.7977, lng: 151.2853, status: 'active' },
-                    { name: 'Sea Explorer', lat: -33.7850, lng: 151.2900, status: 'active' },
-                ];
-                
-                vessels.forEach(vessel => {
-                    const markerColor = vessel.status === 'active' ? 'blue' : 'gray';
-                    const marker = L.circleMarker([vessel.lat, vessel.lng], {
-                        radius: 8,
-                        fillColor: markerColor,
-                        color: '#fff',
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.8
-                    }).addTo(map);
-                    
-                    marker.bindPopup(`<strong>${vessel.name}</strong><br>Status: ${vessel.status}`);
-                });
+                loadGoogleMapsAndInitFleet();
             }, 500);
             
             // Update timestamps every minute
