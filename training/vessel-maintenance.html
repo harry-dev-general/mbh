@@ -259,14 +259,6 @@
             background: #218838;
         }
         
-        .btn-checklist {
-            background: #6c757d;
-        }
-        
-        .btn-checklist:hover {
-            background: #5a6268;
-        }
-        
         /* Status Update Modal */
         .status-modal {
             display: none;
@@ -898,12 +890,6 @@
                             <button class="action-btn btn-update-location" onclick="openLocationModal('${vessel.id}', '${vessel.name}', ${status.location?.latitude || 'null'}, ${status.location?.longitude || 'null'})">
                                 <i class="fas fa-map-marker-alt"></i> Update Location
                             </button>
-                            <a href="pre-departure-checklist.html?vessel=${encodeURIComponent(vessel.name)}" class="action-btn btn-checklist">
-                                <i class="fas fa-clipboard-check"></i> Pre-Departure
-                            </a>
-                            <a href="post-departure-checklist.html?vessel=${encodeURIComponent(vessel.name)}" class="action-btn btn-checklist">
-                                <i class="fas fa-clipboard-list"></i> Post-Departure
-                            </a>
                         </div>
                     </div>
                 `;
