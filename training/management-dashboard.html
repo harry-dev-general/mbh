@@ -206,6 +206,13 @@
             text-decoration: none;
             font-size: 0.875rem;
             font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .view-all-btn:hover {
+            color: #2563eb;
+            text-decoration: underline;
         }
         
         .calendar-controls {
@@ -559,6 +566,123 @@
             font-weight: 600;
         }
         
+        /* Vessel Maintenance Tab Styles */
+        .vessel-maintenance-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        
+        .vessel-maintenance-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .vessel-maintenance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .vessel-maintenance-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .vessel-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .vessel-status.status-ready {
+            background: #D4EDDA;
+            color: #155724;
+        }
+        
+        .vessel-status.status-attention {
+            background: #FFF3CD;
+            color: #856404;
+        }
+        
+        .vessel-status.status-unavailable {
+            background: #F8D7DA;
+            color: #721C24;
+        }
+        
+        .vessel-maintenance-details {
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .detail-value {
+            color: #333;
+        }
+        
+        .vessel-maintenance-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #475569;
+            transform: translateY(-1px);
+        }
+        
         .stat-badge {
             padding: 0.25rem 0.5rem;
             border-radius: 6px;
@@ -841,7 +965,7 @@
             }
             
             .right-sidebar {
-                width: 100%;
+            width: 100%;
                 max-width: 600px;
                 margin: 0 auto;
                 padding: 0 2rem 2rem;
@@ -941,7 +1065,7 @@
             }
             
             .time-labels {
-                display: none;
+            display: none;
             }
             
             .booking-slot {
@@ -980,7 +1104,7 @@
             }
             
             .sidebar-nav.mobile-open {
-                display: flex;
+            display: flex;
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -1068,16 +1192,16 @@
             <div class="logo-section">
                 <img src="images/mbh-logo.png" alt="MBH Logo" class="logo">
                 <div class="logo-text">MBH Portal</div>
-            </div>
+                </div>
             
             <div class="sidebar-content">
-                <div class="view-toggle">
+                    <div class="view-toggle">
                     <span>Employee</span>
-                    <div class="toggle-switch management" id="toggleSwitch" onclick="toggleView()">
-                        <div class="toggle-slider"></div>
-                    </div>
+                        <div class="toggle-switch management" id="toggleSwitch" onclick="toggleView()">
+                            <div class="toggle-slider"></div>
+                        </div>
                     <span>Manager</span>
-                </div>
+                    </div>
                 
                 <ul class="nav-items">
                     <li class="nav-item active" onclick="switchTab('overview', event)">
@@ -1097,15 +1221,15 @@
                         <span>Announcements</span>
                     </li>
                 </ul>
-            </div>
-            
+    </div>
+
             <div class="logout-container">
                 <button onclick="logout()" style="width: 100%; padding: 0.75rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s ease;">
                     <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-        </nav>
-        
+            </button>
+        </div>
+    </nav>
+
         <!-- Dashboard Layout (Main + Right Sidebar) -->
         <div class="dashboard-layout">
             <!-- Main Content -->
@@ -1125,10 +1249,10 @@
                         <div class="user-info">
                             <div class="user-name" id="userDisplayName">Loading...</div>
                             <div class="user-role">Manager</div>
-                        </div>
-                        <div class="user-avatar" id="userAvatar">?</div>
                     </div>
+                        <div class="user-avatar" id="userAvatar">?</div>
                 </div>
+                    </div>
             </header>
             
             <!-- Overview Tab Content -->
@@ -1138,41 +1262,41 @@
                     <h2 class="section-title" style="margin-bottom: 1.5rem;">Quick Actions</h2>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                         <div class="quick-action-card" onclick="window.location.href='daily-run-sheet.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
-                            <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                                 <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-clipboard-list"></i> Daily Run Sheet
-                                </div>
+                            <i class="fas fa-clipboard-list"></i> Daily Run Sheet
+                        </div>
                                 <div style="font-size: 0.875rem; opacity: 0.9;">View today's operations, vessel status, and booking timeline</div>
-                            </div>
+                    </div>
                             <div style="padding: 0.75rem 1.5rem; text-align: center; background: #f8f9fa;">
                                 <span style="color: #667eea; font-weight: 500; font-size: 0.875rem;">View Dashboard →</span>
-                            </div>
-                        </div>
-                        
+                    </div>
+                </div>
+                
                         <div class="quick-action-card" onclick="window.location.href='management-allocations.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
-                            <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
                                 <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-users-cog"></i> Staff Allocations
-                                </div>
+                            <i class="fas fa-users-cog"></i> Staff Allocations
+                        </div>
                                 <div style="font-size: 0.875rem; opacity: 0.9;">Manage daily staff assignments and vessel allocations</div>
-                            </div>
+                    </div>
                             <div style="padding: 0.75rem 1.5rem; text-align: center; background: #f8f9fa;">
                                 <span style="color: #f093fb; font-weight: 500; font-size: 0.875rem;">Manage Allocations →</span>
-                            </div>
-                        </div>
-                        
+                    </div>
+                </div>
+                
                         <div class="quick-action-card" onclick="window.location.href='employee-directory.html'" style="background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s ease;">
-                            <div style="padding: 1.5rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
                                 <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-address-book"></i> Employee Directory
-                                </div>
+                            <i class="fas fa-address-book"></i> Employee Directory
+                        </div>
                                 <div style="font-size: 0.875rem; opacity: 0.9;">View and manage employee information and contacts</div>
-                            </div>
+                    </div>
                             <div style="padding: 0.75rem 1.5rem; text-align: center; background: #f8f9fa;">
                                 <span style="color: #4facfe; font-weight: 500; font-size: 0.875rem;">View Directory →</span>
-                            </div>
-                        </div>
                     </div>
+                </div>
+            </div>
                 </section>
                 
                 <!-- Weekly Calendar Section -->
@@ -1190,8 +1314,8 @@
                             <button class="calendar-nav-btn today-btn" onclick="goToToday()" title="Go to current week" style="margin-left: 10px;">
                                 Today
                             </button>
-                        </div>
                     </div>
+                </div>
                     
                     <div class="weekly-calendar">
                         <div class="calendar-grid" id="calendarGrid">
@@ -1199,17 +1323,17 @@
                             <div class="calendar-loading">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 <p>Loading schedule...</p>
-                            </div>
                         </div>
                     </div>
+                </div>
                 </section>
                 
                 <!-- Fleet Section -->
                 <section class="fleet-section">
                     <div class="section-header">
                         <h2 class="section-title">Fleet</h2>
-                        <a href="#" class="view-all-btn">View All</a>
-                    </div>
+                        <a href="#" class="view-all-btn" onclick="switchTab('vessels', event); return false;">View All</a>
+            </div>
                     
                     <div class="fleet-container">
                         <!-- Vessels List -->
@@ -1221,78 +1345,78 @@
                         <div id="fleetMap" style="height: 450px; width: 100%;"></div>
                     </div>
                 </section>
-            </div>
-            
-            <!-- Staff Management Tab -->
+        </div>
+
+        <!-- Staff Management Tab -->
             <div id="staff-tab" class="tab-content" style="display: none;">
-                <h2 style="margin-bottom: 1.5rem;">Staff Management</h2>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <h2 style="margin-bottom: 1.5rem;">Staff Management</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                     <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; cursor: pointer;" onclick="window.location.href='management-allocations.html'">
-                        <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-                            <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-calendar-alt"></i>
-                                Weekly Schedule
-                            </div>
-                            <div style="opacity: 0.95; font-size: 0.9rem;">View and manage weekly staff allocations</div>
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-calendar-alt"></i>
+                            Weekly Schedule
                         </div>
+                        <div style="opacity: 0.95; font-size: 0.9rem;">View and manage weekly staff allocations</div>
                     </div>
-                    
+                </div>
+                
                     <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; cursor: pointer;" onclick="window.location.href='employee-directory.html'">
-                        <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                            <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-user-plus"></i>
-                                Employee Directory
-                            </div>
-                            <div style="opacity: 0.95; font-size: 0.9rem;">Manage employee records and contacts</div>
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-user-plus"></i>
+                            Employee Directory
                         </div>
+                        <div style="opacity: 0.95; font-size: 0.9rem;">Manage employee records and contacts</div>
                     </div>
-                </div>
-                
-                <div id="staffList" style="margin-top: 2rem;">
-                    <!-- Staff list will be loaded here -->
                 </div>
             </div>
             
-            <!-- Vessel Maintenance Tab -->
+            <div id="staffList" style="margin-top: 2rem;">
+                <!-- Staff list will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Vessel Maintenance Tab -->
             <div id="vessels-tab" class="tab-content" style="display: none;">
-                <h2 style="margin-bottom: 1.5rem;">Vessel Maintenance & Checklists</h2>
-                
-                <div class="vessel-grid" id="vesselGrid">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Loading vessel information...</p>
-                    </div>
+            <h2 style="margin-bottom: 1.5rem;">Vessel Maintenance & Checklists</h2>
+            
+            <div class="vessel-grid" id="vesselGrid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading vessel information...</p>
                 </div>
             </div>
-            
-            <!-- Announcements Tab -->
+        </div>
+
+        <!-- Announcements Tab -->
             <div id="announcements-tab" class="tab-content" style="display: none;">
-                <h2 style="margin-bottom: 1.5rem;">Staff Announcements</h2>
-                
+            <h2 style="margin-bottom: 1.5rem;">Staff Announcements</h2>
+            
                 <div class="announcement-form" style="background: white; padding: 2rem; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-                    <h3 style="margin-bottom: 1rem;">Post New Announcement</h3>
-                    <form id="announcementForm">
+                <h3 style="margin-bottom: 1rem;">Post New Announcement</h3>
+                <form id="announcementForm">
                         <div class="form-group" style="margin-bottom: 1rem;">
                             <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Title</label>
                             <input type="text" class="form-input" id="announcementTitle" placeholder="Enter announcement title" required style="width: 100%; padding: 0.75rem; border: 1px solid #e0e6ed; border-radius: 8px;">
-                        </div>
-                        
+                    </div>
+                    
                         <div class="form-group" style="margin-bottom: 1rem;">
                             <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Message</label>
                             <textarea class="form-textarea" id="announcementMessage" placeholder="Enter your announcement message" required style="width: 100%; padding: 0.75rem; border: 1px solid #e0e6ed; border-radius: 8px; min-height: 120px;"></textarea>
-                        </div>
-                        
+                    </div>
+                    
                         <button type="submit" class="btn-submit" style="background: #dc3545; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">
                             <i class="fas fa-paper-plane"></i> Post Announcement
                         </button>
                     </form>
-                </div>
+                            </div>
                 
                 <div id="announcementsList">
                     <!-- Announcements will be loaded here -->
-                </div>
-            </div>
+                            </div>
+                            </div>
         </main>
         
         <!-- Right Sidebar -->
@@ -1304,14 +1428,14 @@
                     <span class="new-indicator">
                         <i class="fas fa-circle"></i> Live
                     </span>
-                </div>
-                
+                    </div>
+                    
                 <div class="bookings-list" id="newBookingsList">
                     <!-- Loading state - will be replaced by real data -->
                     <div class="loading-state">
                         <i class="fas fa-spinner fa-spin"></i>
                         <p>Loading new bookings...</p>
-                    </div>
+            </div>
                 </div>
             </section>
             
@@ -1323,9 +1447,9 @@
                         <span>Day</span>
                         <span class="active">Week</span>
                         <span>Month</span>
-                    </div>
-                </div>
-                
+            </div>
+        </div>
+
                 <div class="availability-chart">
                     <div class="day-bar">
                         <div class="bar low"></div>
@@ -1362,7 +1486,7 @@
         </aside>
         </div> <!-- End of dashboard-layout -->
     </div>
-    
+
     <script>
         // Initialize Supabase - must match the same instance as dashboard.html
         const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
@@ -1397,7 +1521,7 @@
                 window.location.href = 'auth.html';
                 return;
             }
-            
+
             if (!session || !session.user) {
                 console.log('No active session, redirecting to auth');
                 window.location.href = 'auth.html';
@@ -1414,7 +1538,7 @@
                 'admin@mbh.com',
                 'operations@mbh.com'
             ];
-            
+
             if (!managementEmails.includes(user.email.toLowerCase()) && 
                 !user.email.includes('@mbh.com')) {
                 // Not a management user, redirect to regular dashboard
@@ -1547,13 +1671,93 @@
             // For now, showing loading state
         }
         
-        // Load vessel data
+        // Load vessel data for maintenance tab
         async function loadVesselData() {
             const vesselGrid = document.getElementById('vesselGrid');
             vesselGrid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading vessel information...</p></div>';
             
-            // Fetch vessel data from your API
-            // For now, showing loading state
+            try {
+                // Fetch vessels from backend API (same as fleet data)
+                const response = await fetch('/api/vessels/maintenance-status');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch vessel data');
+                }
+                
+                const data = await response.json();
+                const vessels = data.vessels || [];
+                
+                if (vessels.length === 0) {
+                    vesselGrid.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-ship" style="font-size: 3rem; color: #94a3b8; margin-bottom: 1rem;"></i>
+                            <p>No vessels found</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Display vessels in a grid
+                vesselGrid.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                        ${vessels.map(vessel => {
+                            const condition = vessel.currentStatus?.condition || 'Unknown';
+                            let statusClass = '';
+                            let statusText = 'Unknown';
+                            
+                            if (condition?.includes('Ready') || condition?.includes('Good')) {
+                                statusText = 'Ready';
+                                statusClass = 'status-ready';
+                            } else if (condition?.includes('Attention')) {
+                                statusText = 'Needs Attention';
+                                statusClass = 'status-attention';
+                            } else if (condition?.includes('Major') || condition?.includes('Non-Operational')) {
+                                statusText = 'Unavailable';
+                                statusClass = 'status-unavailable';
+                            }
+                            
+                            return `
+                                <div class="vessel-maintenance-card">
+                                    <div class="vessel-maintenance-header">
+                                        <h3><i class="fas fa-ship"></i> ${vessel.name}</h3>
+                                        <span class="vessel-status ${statusClass}">${statusText}</span>
+                                    </div>
+                                    <div class="vessel-maintenance-details">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Location:</span>
+                                            <span class="detail-value">${vessel.currentStatus?.location?.address || vessel.location || 'Unknown'}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Last Check:</span>
+                                            <span class="detail-value">${vessel.lastCheckType || 'N/A'}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Days Since Check:</span>
+                                            <span class="detail-value">${vessel.daysSinceCheck || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                    <div class="vessel-maintenance-actions">
+                                        <a href="pre-departure-checklist.html?vessel=${encodeURIComponent(vessel.name)}" class="action-btn btn-primary">
+                                            <i class="fas fa-clipboard-check"></i> Pre-Departure
+                                        </a>
+                                        <a href="post-departure-checklist.html?vessel=${encodeURIComponent(vessel.name)}" class="action-btn btn-secondary">
+                                            <i class="fas fa-clipboard-list"></i> Post-Departure
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading vessel data:', error);
+                vesselGrid.innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Failed to load vessel data</p>
+                    </div>
+                `;
+            }
         }
         
         // Load announcements
@@ -1581,7 +1785,7 @@
             updateWeekDisplay();
             await buildCalendarGrid();
         }
-        
+
         // Update week display
         function updateWeekDisplay() {
             const endDate = new Date(currentWeekStart);
@@ -1636,12 +1840,12 @@
                     throw new Error(`Failed to fetch bookings: ${response.status}`);
                 }
                 
-                const data = await response.json();
-                const allBookings = data.records || [];
-                
+                    const data = await response.json();
+                    const allBookings = data.records || [];
+                    
                 // Filter bookings by date on client side
                 const bookings = allBookings.filter(record => {
-                    const bookingDate = record.fields['Booking Date'];
+                        const bookingDate = record.fields['Booking Date'];
                     return bookingDate >= startStr && bookingDate <= endStr;
                 });
                 
@@ -1678,28 +1882,28 @@
                 });
                 
                 // Build the grid HTML
-                let html = '<div></div>'; // Empty corner cell
-                
+            let html = '<div></div>'; // Empty corner cell
+            
                 // Day headers
-                days.forEach((day, index) => {
-                    const date = new Date(currentWeekStart);
-                    date.setDate(date.getDate() + index);
+            days.forEach((day, index) => {
+                const date = new Date(currentWeekStart);
+                date.setDate(date.getDate() + index);
                     const isToday = isDateToday(date);
-                    
-                    html += `
+                
+                html += `
                         <div class="day-header ${isToday ? 'today' : ''}">
                             <div class="day-name">${day}</div>
                             <div class="day-date">${date.getDate()}/${(date.getMonth() + 1).toString().padStart(2, '0')}</div>
-                        </div>
-                    `;
-                });
-                
+                    </div>
+                `;
+            });
+            
                 // Time slots and day cells
                 timeSlots.forEach(time => {
                     html += `<div class="time-label">${time}</div>`;
                     
                     for (let day = 0; day < 7; day++) {
-                        const date = new Date(currentWeekStart);
+                    const date = new Date(currentWeekStart);
                         date.setDate(date.getDate() + day);
                         const isToday = isDateToday(date);
                         const dateKey = date.toISOString().split('T')[0];
@@ -1712,12 +1916,12 @@
                         cellBookings.forEach((booking, index) => {
                             if (index < 2) { // Show max 2 bookings per cell
                                 const staffClass = booking.hasStaff ? 'staffed' : 'unstaffed';
-                                html += `
+                    html += `
                                     <div class="calendar-event ${staffClass}" title="${booking.customer} - ${booking.boat}">
                                         <div class="event-time">${booking.boat}</div>
                                         <div class="event-details">${booking.customer}</div>
-                                    </div>
-                                `;
+                        </div>
+                    `;
                             }
                         });
                         
@@ -1727,9 +1931,9 @@
                         
                         html += '</div>';
                     }
-                });
-                
-                grid.innerHTML = html;
+            });
+            
+            grid.innerHTML = html;
                 
             } catch (error) {
                 console.error('Error loading calendar data:', error);
@@ -1893,7 +2097,7 @@
         // Load week data (for calendar)
         async function loadWeekData() {
             // Initialize calendar with current week
-            updateWeekDisplay();
+                updateWeekDisplay();
             await buildCalendarGrid();
             
             // Load other real-time data
@@ -1946,13 +2150,13 @@
                     const suburb = extractSuburb(locationText);
                     
                     // Determine status badge based on condition
-                    let statusText = 'Unknown';
+            let statusText = 'Unknown';
                     let statusClass = '';
                     if (condition?.includes('Ready') || condition?.includes('Good')) {
                         statusText = 'Ready';
                         statusClass = '';
                     } else if (condition?.includes('Attention')) {
-                        statusText = 'Needs Attention';
+                statusText = 'Needs Attention';
                         statusClass = 'maintenance';
                     } else if (condition?.includes('Major') || condition?.includes('Non-Operational')) {
                         statusText = 'Unavailable';
@@ -1961,15 +2165,15 @@
                     
                     return `
                         <div class="vessel-card">
-                            <div class="vessel-header">
+                <div class="vessel-header">
                                 <div class="vessel-name">
                                     <i class="fas fa-ship"></i> ${vessel.name || 'Unknown'}
-                                </div>
+                    </div>
                                 <div class="status-badge ${statusClass}">
                                     ${statusText}
-                                </div>
+                </div>
                             </div>
-                            <div class="vessel-location">
+                    <div class="vessel-location">
                                 <i class="fas fa-map-marker-alt"></i>
                                 <span>Location: ${suburb}</span>
                             </div>
@@ -1977,8 +2181,8 @@
                                 ${renderGauge('Fuel', fuelPercentage)}
                                 ${renderGauge('Gas', gasPercentage)}
                                 ${renderGauge('Water', waterPercentage)}
-                            </div>
                         </div>
+                    </div>
                     `;
                 }).join('');
                 
@@ -2119,7 +2323,7 @@
                             <div class="booking-stats">
                                 <div class="booking-value">$${fields['Total Amount'] || 0}</div>
                                 <div class="booking-label">Total</div>
-                            </div>
+                        </div>
                         </div>
                     `;
                 }).join('');
@@ -2156,7 +2360,7 @@
                 return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
             } else if (diffDays < 7) {
                 return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-            } else {
+                } else {
                 // For older bookings, show the date
                 return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             }
@@ -2329,7 +2533,7 @@
             fleetMap = new google.maps.Map(mapContainer, {
                 center: { lat: -33.810856, lng: 151.256586 },
                 zoom: 13,
-                mapTypeId: 'hybrid',
+                    mapTypeId: 'hybrid',
                 mapTypeControl: true,
                 mapTypeControlOptions: {
                     style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
@@ -2472,7 +2676,7 @@
         // Initialize on load
         window.addEventListener('load', () => {
             // Check authentication first
-            checkAuth();
+        checkAuth();
             
             // Animate sections on load
             const sections = document.querySelectorAll('.calendar-section, .fleet-section, .sidebar-section');
