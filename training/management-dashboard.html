@@ -2484,12 +2484,36 @@
             await buildCalendarGrid();
         }
         
-        // Add vessel card interactivity
+        // Add vessel card interactivity to link with map markers
         function initializeVesselInteractivity() {
             document.querySelectorAll('.vessel-card').forEach(card => {
                 card.addEventListener('click', function() {
-                    // Card click behavior if needed
-                    console.log('Vessel clicked:', this.querySelector('.vessel-name').textContent);
+                    const vesselName = this.getAttribute('data-vessel-name');
+                    
+                    // Find the corresponding marker
+                    const marker = fleetMarkers.find(m => m.vesselName === vesselName);
+                    
+                    if (marker) {
+                        // Close any open info windows
+                        fleetMarkers.forEach(m => {
+                            if (m.infoWindow) m.infoWindow.close();
+                        });
+                        
+                        // Open the info window for the clicked vessel
+                        marker.infoWindow.open(fleetMap, marker);
+                        
+                        // Center and zoom the map on the marker
+                        fleetMap.setCenter(marker.getPosition());
+                        fleetMap.setZoom(15);
+                        
+                        // Smooth scroll to map if not in view
+                        const mapContainer = document.getElementById('fleetMap');
+                        if (mapContainer) {
+                            mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    } else {
+                        console.warn(`No marker found for vessel: ${vesselName}`);
+                    }
                 });
             });
         }
@@ -2649,7 +2673,7 @@
                     }
                     
                     return `
-                        <div class="vessel-card">
+                        <div class="vessel-card" data-vessel-name="${vessel.name}" style="cursor: pointer;">
                 <div class="vessel-header">
                                 <div class="vessel-name">
                                     <i class="fas fa-ship"></i> ${vessel.name || 'Unknown'}
@@ -3194,6 +3218,9 @@
                                 strokeWeight: 2
                             }
                         });
+                        
+                        // Store vessel name with the marker for later lookup
+                        marker.vesselName = vessel.name;
                         
                         // Create info window content
                         const locationType = location.isFixed ? 'Storage Location' : 'Last Known Location';
