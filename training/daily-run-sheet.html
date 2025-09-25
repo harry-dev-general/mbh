@@ -896,11 +896,13 @@
         function updateJumpToButton() {
             const button = document.getElementById('jumpToBookingsBtn');
             if (button && nextBookingDate) {
-                const date = new Date(nextBookingDate + 'T00:00:00');
+                const [year, month, day] = nextBookingDate.split('-').map(Number);
+                const date = new Date(year, month - 1, day); // month is 0-indexed
                 const formatter = new Intl.DateTimeFormat('en-US', { 
                     weekday: 'short', 
                     month: 'short', 
-                    day: 'numeric' 
+                    day: 'numeric',
+                    timeZone: 'Australia/Sydney'
                 });
                 const formattedDate = formatter.format(date);
                 button.innerHTML = `<i class="fas fa-calendar-check"></i> Jump to ${formattedDate}`;
@@ -1060,11 +1062,13 @@
                 `;
                 
                 if (nextBookingDate) {
-                    const nextDate = new Date(nextBookingDate + 'T00:00:00');
+                    const [year, month, day] = nextBookingDate.split('-').map(Number);
+                    const nextDate = new Date(year, month - 1, day); // month is 0-indexed
                     const formatter = new Intl.DateTimeFormat('en-US', { 
                         weekday: 'long', 
                         month: 'short', 
-                        day: 'numeric' 
+                        day: 'numeric',
+                        timeZone: 'Australia/Sydney'
                     });
                     const formattedDate = formatter.format(nextDate);
                     
