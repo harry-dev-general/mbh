@@ -564,18 +564,20 @@ app.get('/api/shift-response', async (req, res) => {
 // API endpoint to trigger shift notifications (called from allocation form)
 app.post('/api/send-shift-notification', async (req, res) => {
   try {
-    const {
-      employeeId,
-      allocationId,
-      shiftType,
-      shiftDate,
-      startTime,
-      endTime,
-      customerName,
-      role,
-      isBookingAllocation,
-      notes
-    } = req.body;
+  const {
+    employeeId,
+    allocationId,
+    shiftType,
+    shiftDate,
+    startTime,
+    endTime,
+    customerName,
+    role,
+    isBookingAllocation,
+    notes,
+    isUpdate,
+    originalNotes
+  } = req.body;
     
     // Fetch employee details from Airtable
     const employeeResponse = await axios.get(
@@ -610,7 +612,9 @@ app.post('/api/send-shift-notification', async (req, res) => {
       customerName,
       role,
       isBookingAllocation,
-      notes
+      notes,
+      isUpdate,
+      originalNotes
     });
     
     res.json(result);

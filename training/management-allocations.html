@@ -3130,9 +3130,10 @@
                 }
             }, 100);
             
-            // Store the allocation ID for update
+            // Store the allocation ID and response status for update
             document.getElementById('allocationForm').dataset.allocationId = allocationId;
             document.getElementById('allocationForm').dataset.isEdit = 'true';
+            document.getElementById('allocationForm').dataset.responseStatus = allocation['Response Status'] || 'Pending';
             
             // Enable all fields for editing
             document.getElementById('allocationType').disabled = false;
@@ -3322,6 +3323,28 @@
                     const startTime = document.getElementById('startTime').value;
                     const endTime = document.getElementById('endTime').value;
                     const shiftType = document.getElementById('allocationType').value;
+                    const newNotes = document.getElementById('notes').value || '';
+                    
+                    // First, fetch the current allocation to check status and compare notes
+                    const currentAllocationResponse = await fetchWithRetry(
+                        `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                            }
+                        }
+                    );
+                    
+                    if (!currentAllocationResponse.ok) {
+                        throw new Error('Failed to fetch current allocation data');
+                    }
+                    
+                    const currentAllocation = await currentAllocationResponse.json();
+                    const originalNotes = currentAllocation.fields['Notes'] || '';
+                    const responseStatus = currentAllocation.fields['Response Status'];
+                    const notesChanged = originalNotes !== newNotes;
+                    const isAccepted = responseStatus === 'Accepted';
                     
                     // Update the existing allocation record
                     const updateResponse = await fetchWithRetry(
@@ -3339,7 +3362,7 @@
                                     'Start Time': startTime,
                                     'End Time': endTime,
                                     'Shift Type': shiftType,
-                                    'Notes': document.getElementById('notes').value || '',
+                                    'Notes': newNotes,
                                     'Response Date': new Date().toISOString(),
                                     'Response Method': 'Portal'
                                 }
@@ -3352,7 +3375,44 @@
                         throw new Error(`Failed to update allocation: ${errorText}`);
                     }
                     
-                    alert('Allocation updated successfully!');
+                    // If notes changed and shift is accepted, send update SMS
+                    if (notesChanged && isAccepted && newNotes) {
+                        console.log('Notes changed on accepted shift, sending update SMS...');
+                        
+                        try {
+                            const notificationData = {
+                                employeeId: employeeId,
+                                allocationId: allocationId,
+                                shiftType: shiftType,
+                                shiftDate: shiftDate,
+                                startTime: startTime,
+                                endTime: endTime,
+                                notes: newNotes,
+                                isUpdate: true,  // New flag to indicate this is an update
+                                originalNotes: originalNotes
+                            };
+                            
+                            const notifyResponse = await fetch('/api/send-shift-notification', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(notificationData)
+                            });
+                            
+                            if (notifyResponse.ok) {
+                                const result = await notifyResponse.json();
+                                console.log('Update SMS sent successfully:', result);
+                                alert('Allocation updated successfully! Update SMS sent to staff member.');
+                            } else {
+                                console.error('Failed to send update SMS');
+                                alert('Allocation updated successfully! (SMS notification failed)');
+                            }
+                        } catch (notifyError) {
+                            console.error('Error sending update SMS:', notifyError);
+                            alert('Allocation updated successfully! (SMS notification failed)');
+                        }
+                    } else {
+                        alert('Allocation updated successfully!');
+                    }
                     
                     // Close modal and refresh
                     closeAllocationModal();

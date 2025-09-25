@@ -101,6 +101,8 @@ function consumeToken(token) {
  * @param {string} params.role - Role (e.g., 'Onboarding', 'Deloading')
  * @param {boolean} params.isBookingAllocation - Whether this is a booking-specific allocation
  * @param {string} params.notes - Additional notes/instructions for the shift
+ * @param {boolean} params.isUpdate - Whether this is an update to an existing accepted shift
+ * @param {string} params.originalNotes - Original notes before update (for comparison)
  * @returns {Promise<object>} - Result of SMS send operation
  */
 async function sendShiftNotification(params) {
@@ -116,7 +118,9 @@ async function sendShiftNotification(params) {
         customerName,
         role,
         isBookingAllocation = false,
-        notes
+        notes,
+        isUpdate = false,
+        originalNotes
     } = params;
     
     // Format the date nicely
@@ -137,7 +141,28 @@ async function sendShiftNotification(params) {
     // Build the message
     let message = '';
     
-    if (isBookingAllocation) {
+    if (isUpdate) {
+        // Update message for already accepted shifts
+        message = `📝 MBH Staff Update - Shift Instructions Changed
+
+Hi ${employeeName},
+
+Your shift details have been updated:
+
+📅 ${formattedDate}
+⏰ ${startTime} - ${endTime}
+📋 Type: ${shiftType}
+${role ? `🎯 Role: ${role}` : ''}
+
+🆕 NEW INSTRUCTIONS:
+${notes}
+
+${originalNotes ? `Previous instructions: ${originalNotes}` : 'No previous instructions'}
+
+Your shift acceptance is still confirmed. This is just an update to the instructions.
+
+Questions? Contact management.`;
+    } else if (isBookingAllocation) {
         // Booking-specific allocation message
         message = `🚤 MBH Staff Alert - New ${role} Assignment
 
