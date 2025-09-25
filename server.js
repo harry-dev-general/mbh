@@ -144,13 +144,72 @@ app.get('/api/daily-run-sheet', async (req, res) => {
             postDepartureChecklist: b.fields['Post Departure Checklist']
         }));
         
-        // Calculate stats
+        // Calculate stats based on actual booking times
+        // Use Sydney timezone for accurate time calculations
+        const now = new Date();
+        const sydneyTime = new Date(now.toLocaleString("en-US", {timeZone: "Australia/Sydney"}));
+        const currentTime = sydneyTime.getHours() * 60 + sydneyTime.getMinutes(); // Convert to minutes for easier comparison
+        
+        // Helper function to parse time string to minutes
+        const parseTime = (timeStr) => {
+            if (!timeStr) return null;
+            const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (!match) return null;
+            let [_, hours, minutes, period] = match;
+            hours = parseInt(hours);
+            minutes = parseInt(minutes);
+            if (period.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+            if (period.toUpperCase() === 'AM' && hours === 12) hours = 0;
+            return hours * 60 + minutes;
+        };
+        
+        let onWaterCount = 0;
+        let preparingCount = 0;
+        let returningCount = 0;
+        
+        // Check each booking's status based on current time
+        console.log(`Current Sydney time: ${sydneyTime.toLocaleTimeString('en-AU')} (${currentTime} mins)`);
+        
+        bookings.forEach(booking => {
+            const onboardingTime = parseTime(booking.fields['Onboarding Time']);
+            const deloadingTime = parseTime(booking.fields['Deloading Time']);
+            const startTime = parseTime(booking.fields['Start Time']);
+            
+            if (onboardingTime !== null && deloadingTime !== null) {
+                // Calculate preparation time (30 mins before onboarding)
+                const prepTime = onboardingTime - 30;
+                // Calculate returning soon time (30 mins before deloading)
+                const returningSoonTime = deloadingTime - 30;
+                
+                // Debug logging
+                console.log(`Booking ${booking.fields['Customer Name']}: onboard=${booking.fields['Onboarding Time']} (${onboardingTime}min), deload=${booking.fields['Deloading Time']} (${deloadingTime}min)`);
+                
+                if (currentTime >= prepTime && currentTime < onboardingTime) {
+                    // Currently preparing (30 mins before onboarding)
+                    preparingCount++;
+                    console.log(`  -> Status: PREPARING`);
+                } else if (currentTime >= onboardingTime && currentTime < returningSoonTime) {
+                    // Currently on water
+                    onWaterCount++;
+                    console.log(`  -> Status: ON WATER`);
+                } else if (currentTime >= returningSoonTime && currentTime < deloadingTime) {
+                    // Returning soon (30 mins before deloading)
+                    returningCount++;
+                    console.log(`  -> Status: RETURNING SOON`);
+                } else {
+                    console.log(`  -> Status: NOT ACTIVE (current=${currentTime}, prep=${prepTime}, onboard=${onboardingTime}, return=${returningSoonTime}, deload=${deloadingTime})`);
+                }
+            }
+        });
+        
         const stats = {
             totalBookings: bookings.length,
-            onWater: vesselStatuses.filter(v => v.status === 'on_water').length,
-            preparing: vesselStatuses.filter(v => v.status === 'preparing').length,
-            returning: vesselStatuses.filter(v => v.status === 'returning').length
+            onWater: onWaterCount,
+            preparing: preparingCount,
+            returning: returningCount
         };
+        
+        console.log(`Stats calculated: Total=${stats.totalBookings}, OnWater=${stats.onWater}, Preparing=${stats.preparing}, Returning=${stats.returning}`);
         
         res.json({
             success: true,
