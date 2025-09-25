@@ -2782,15 +2782,14 @@
                 const sevenDaysAgo = new Date(today);
                 sevenDaysAgo.setDate(today.getDate() - 7);
                 
-                // Format dates for Airtable
-                const todayStr = formatLocalDate(today);
-                const sevenDaysAgoStr = formatLocalDate(sevenDaysAgo);
+                // Format dates for Airtable datetime comparison
+                const sevenDaysAgoISO = sevenDaysAgo.toISOString();
                 
                 // Fetch recent bookings via API proxy
                 const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
                 const response = await fetch(
                     `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`AND({Created Date}>='${sevenDaysAgoStr}',{Status}!='CANC')`)}` +
+                    `filterByFormula=${encodeURIComponent(`AND({Created Time}>='${sevenDaysAgoISO}',{Status}!='CANC')`)}` +
                     `&sort[0][field]=Created Time&sort[0][direction]=desc` +
                     `&maxRecords=5` +
                     `&fields[]=Customer Name&fields[]=Booking Date&fields[]=Total Amount` +
@@ -2820,9 +2819,17 @@
                 // Generate booking items HTML
                 bookingsList.innerHTML = bookings.map(record => {
                     const fields = record.fields;
-                    const createdTime = new Date(fields['Created Time']);
+                    
+                    // Handle Created Time field
+                    let timeAgo = 'recently';
+                    if (fields['Created Time']) {
+                        const createdTime = new Date(fields['Created Time']);
+                        if (!isNaN(createdTime.getTime())) {
+                            timeAgo = getTimeAgo(createdTime);
+                        }
+                    }
+                    
                     const bookingDate = new Date(fields['Booking Date']);
-                    const timeAgo = getTimeAgo(createdTime);
                     
                     // Extract boat type from fields
                     const boatType = fields['Booked Boat Type'] || 
@@ -2857,11 +2864,7 @@
         
         // Helper function to calculate time ago
         function getTimeAgo(date) {
-            const now = new Date();
-            now.setFullYear(2025); // Ensure 2025 context
-            now.setMonth(8); // September
-            now.setDate(24); // Current date is September 24, 2025
-            now.setHours(9, 47, 0, 0); // Current time context: 9:47 AM
+            const now = new Date(); // Use actual current date/time
             
             const diffMs = now - date;
             const diffMins = Math.floor(diffMs / 60000);
