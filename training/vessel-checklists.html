@@ -576,7 +576,8 @@
             // Fetch ALL PAID bookings and filter client-side
             try {
                 const response = await fetch(
-                    `https://api.airtable.com/v0/${BASE_ID}/tblRe0cDmK3bG2kPf?filterByFormula={Status}='PAID'&pageSize=100`,
+                    `https://api.airtable.com/v0/${BASE_ID}/tblRe0cDmK3bG2kPf?filterByFormula={Status}='PAID'&pageSize=100&` +
+                    `fields[]=Booking Date&fields[]=Onboarding Employee&fields[]=Deloading Employee`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -588,10 +589,23 @@
                 console.log('All PAID bookings:', data);
                 
                 if (data.records) {
-                    // Filter for pre-departure (onboarding) assignments
+                    // Get today's date at midnight for comparison
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    // Filter for pre-departure (onboarding) assignments that haven't passed
                     const preDepartureBookings = data.records.filter(record => {
                         const onboardingEmployees = record.fields['Onboarding Employee'] || [];
-                        return onboardingEmployees.includes(employeeRecordId);
+                        const bookingDate = record.fields['Booking Date'];
+                        
+                        // Check if booking date is today or in the future
+                        if (bookingDate) {
+                            const bookingDateObj = new Date(bookingDate);
+                            bookingDateObj.setHours(0, 0, 0, 0);
+                            return onboardingEmployees.includes(employeeRecordId) && bookingDateObj >= today;
+                        }
+                        
+                        return false;
                     });
                     
                     const preDepCount = preDepartureBookings.length;
@@ -601,10 +615,19 @@
                         badge.style.display = 'block';
                     }
                     
-                    // Filter for post-departure (deloading) assignments
+                    // Filter for post-departure (deloading) assignments that haven't passed
                     const postDepartureBookings = data.records.filter(record => {
                         const deloadingEmployees = record.fields['Deloading Employee'] || [];
-                        return deloadingEmployees.includes(employeeRecordId);
+                        const bookingDate = record.fields['Booking Date'];
+                        
+                        // Check if booking date is today or in the future
+                        if (bookingDate) {
+                            const bookingDateObj = new Date(bookingDate);
+                            bookingDateObj.setHours(0, 0, 0, 0);
+                            return deloadingEmployees.includes(employeeRecordId) && bookingDateObj >= today;
+                        }
+                        
+                        return false;
                     });
                     
                     const postDepCount = postDepartureBookings.length;
@@ -614,7 +637,7 @@
                         badge.style.display = 'block';
                     }
                     
-                    console.log(`Found ${preDepCount} pre-departure and ${postDepCount} post-departure assignments`);
+                    console.log(`Found ${preDepCount} pre-departure and ${postDepCount} post-departure assignments for today or future dates`);
                 }
             } catch (error) {
                 console.error('Error counting checklists:', error);

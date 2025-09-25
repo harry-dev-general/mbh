@@ -635,14 +635,27 @@
                 const data = await response.json();
                 console.log('All PAID bookings:', data);
                 
-                // Filter for bookings where current user is onboarding employee
+                // Get today's date at midnight for comparison
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                // Filter for bookings where current user is onboarding employee AND booking date hasn't passed
                 if (data.records) {
                     assignedBookings = data.records.filter(record => {
                         const onboardingEmployees = record.fields['Onboarding Employee'] || [];
-                        return onboardingEmployees.includes(employeeRecordId);
+                        const bookingDate = record.fields['Booking Date'];
+                        
+                        // Check if booking date is today or in the future
+                        if (bookingDate && onboardingEmployees.includes(employeeRecordId)) {
+                            const bookingDateObj = new Date(bookingDate);
+                            bookingDateObj.setHours(0, 0, 0, 0);
+                            return bookingDateObj >= today;
+                        }
+                        
+                        return false;
                     });
                     
-                    console.log(`Found ${assignedBookings.length} assigned bookings from ${data.records.length} total PAID bookings`);
+                    console.log(`Found ${assignedBookings.length} assigned bookings for today or future dates from ${data.records.length} total PAID bookings`);
                 } else {
                     assignedBookings = [];
                 }
