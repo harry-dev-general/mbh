@@ -2615,6 +2615,23 @@
                     
                     // Extract suburb from location
                     let locationText = vessel.currentStatus?.location?.address || vessel.location || 'Unknown Location';
+                    
+                    // Check if using fixed location
+                    const fixedLocations = {
+                        'Work Boat': 'Fergusons Marina',
+                        'Ice Cream Boat': 'Dalbora The Spit',
+                        'Sandstone': 'Balmoral Mooring',
+                        'Pumice Stone': 'Little Manly Commercial Mooring',
+                        'Junior': 'Seaforth Mooring',
+                        'Polycraft Yam': 'Manly Boat Hire Base',
+                        'Polycraft Merc': 'Manly Boat Hire Base'
+                    };
+                    
+                    const isFixedLocation = !vessel.currentStatus?.location?.latitude && fixedLocations[vessel.name];
+                    if (isFixedLocation) {
+                        locationText = fixedLocations[vessel.name];
+                    }
+                    
                     const suburb = extractSuburb(locationText);
                     
                     // Determine status badge based on condition
@@ -2642,8 +2659,8 @@
                 </div>
                             </div>
                     <div class="vessel-location">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>Location: ${suburb}</span>
+                                <i class="fas ${isFixedLocation ? 'fa-anchor' : 'fa-map-marker-alt'}"></i>
+                                <span>Location: ${suburb}${isFixedLocation ? ' (Storage)' : ''}</span>
                             </div>
                             <div class="resource-gauges">
                                 ${renderGauge('Fuel', fuelPercentage)}
@@ -3086,10 +3103,69 @@
                 fleetMarkers.forEach(marker => marker.setMap(null));
                 fleetMarkers = [];
                 
+                // Fixed locations for vessels without GPS data
+                const fixedLocations = {
+                    'Work Boat': {
+                        latitude: -33.8126,
+                        longitude: 151.2738,
+                        address: 'Fergusons Marina',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Ice Cream Boat': {
+                        latitude: -33.8058,
+                        longitude: 151.2485,
+                        address: 'Dalbora The Spit',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Sandstone': {
+                        latitude: -33.8028,
+                        longitude: 151.2659,
+                        address: 'Balmoral Mooring',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Pumice Stone': {
+                        latitude: -33.8074,
+                        longitude: 151.2723,
+                        address: 'Little Manly Commercial Mooring',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Junior': {
+                        latitude: -33.7974,
+                        longitude: 151.2508,
+                        address: 'Seaforth Mooring',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Polycraft Yam': {
+                        latitude: -33.8085,
+                        longitude: 151.2735,
+                        address: 'Manly Boat Hire Base',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Polycraft Merc': {
+                        latitude: -33.8085,
+                        longitude: 151.2735,
+                        address: 'Manly Boat Hire Base',
+                        captured: true,
+                        isFixed: true
+                    }
+                };
+                
                 // Add marker for each vessel with location
                 vessels.forEach(vessel => {
-                    if (vessel.currentStatus?.location?.latitude) {
-                        const location = vessel.currentStatus.location;
+                    let location = vessel.currentStatus?.location;
+                    
+                    // Use fixed location if vessel doesn't have GPS data
+                    if (!location?.latitude && fixedLocations[vessel.name]) {
+                        location = fixedLocations[vessel.name];
+                    }
+                    
+                    if (location?.latitude) {
                         const position = { 
                             lat: location.latitude, 
                             lng: location.longitude 
@@ -3120,12 +3196,14 @@
                         });
                         
                         // Create info window content
+                        const locationType = location.isFixed ? 'Storage Location' : 'Last Known Location';
                         const infoContent = `
                             <div style="padding: 10px;">
                                 <h4 style="margin: 0 0 10px 0;">${vessel.name}</h4>
                                 <p style="margin: 5px 0;"><strong>Status:</strong> ${condition}</p>
-                                <p style="margin: 5px 0;"><strong>Location:</strong> ${location.address || 'Unknown'}</p>
+                                <p style="margin: 5px 0;"><strong>${locationType}:</strong> ${location.address || 'Unknown'}</p>
                                 ${location.lastModified ? `<p style="margin: 5px 0;"><small>Updated: ${new Date(location.lastModified).toLocaleString('en-AU')}</small></p>` : ''}
+                                ${location.isFixed ? `<p style="margin: 5px 0; font-style: italic; color: #666;"><small>📍 Default storage location</small></p>` : ''}
                                 <div style="margin-top: 10px;">
                                     <span style="margin-right: 10px;">⛽ ${vessel.currentStatus?.fuel?.level || 'N/A'}</span>
                                     <span>💧 ${vessel.currentStatus?.water?.level || 'N/A'}</span>
