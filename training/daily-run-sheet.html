@@ -861,9 +861,6 @@
         
         // State management
         const today = new Date();
-        today.setFullYear(2025); // Ensure we're in 2025 context
-        today.setMonth(8); // September (0-indexed)
-        today.setDate(17); // Current context: Sept 17, 2025
         let currentDate = today.toISOString().split('T')[0];
         let runSheetData = null;
         let currentUser = null;
@@ -929,9 +926,6 @@
             // Today button
             document.getElementById('todayBtn').addEventListener('click', () => {
                 const today = new Date();
-                today.setFullYear(2025); // Ensure we're in 2025 context
-                today.setMonth(8); // September (0-indexed)
-                today.setDate(17); // Current context: Sept 17, 2025
                 currentDate = today.toISOString().split('T')[0];
                 dateInput.value = currentDate;
                 loadDailyRunSheet();
