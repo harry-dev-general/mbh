@@ -864,6 +864,48 @@
         let currentDate = today.toISOString().split('T')[0];
         let runSheetData = null;
         let currentUser = null;
+        let nextBookingDate = null;
+        
+        // Find next booking date from Airtable
+        async function findNextBookingDate() {
+            try {
+                // Query Airtable directly for upcoming bookings
+                const today = new Date().toISOString().split('T')[0];
+                const response = await fetch(
+                    `/api/airtable/applkAFOn2qxtu7tx/tblRe0cDmK3bG2kPf?` +
+                    `filterByFormula=${encodeURIComponent(`AND({Booking Date} > '${today}', OR({Status}='PAID', {Status}='PART'))`)}&` +
+                    `fields[]=Booking Date&` +
+                    `sort[0][field]=Booking Date&` +
+                    `sort[0][direction]=asc&` +
+                    `maxRecords=1`
+                );
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.records && data.records.length > 0) {
+                        nextBookingDate = data.records[0].fields['Booking Date'];
+                        updateJumpToButton();
+                    }
+                }
+            } catch (error) {
+                console.error('Error finding next booking date:', error);
+            }
+        }
+        
+        // Update Jump To button text
+        function updateJumpToButton() {
+            const button = document.getElementById('jumpToBookingsBtn');
+            if (button && nextBookingDate) {
+                const date = new Date(nextBookingDate + 'T00:00:00');
+                const formatter = new Intl.DateTimeFormat('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+                const formattedDate = formatter.format(date);
+                button.innerHTML = `<i class="fas fa-calendar-check"></i> Jump to ${formattedDate}`;
+            }
+        }
         
         // Check authentication
         async function checkAuth() {
@@ -877,8 +919,11 @@
             // Set up date controls
             setupDateControls();
             
-            // Load initial data
-            await loadDailyRunSheet();
+            // Load initial data and find next booking
+            await Promise.all([
+                loadDailyRunSheet(),
+                findNextBookingDate()
+            ]);
         }
         
         // Initialize on page load
@@ -939,8 +984,12 @@
             
             // Jump to latest bookings button
             document.getElementById('jumpToBookingsBtn').addEventListener('click', () => {
-                // Navigate to this Saturday (September 20, 2025) - has multiple bookings
-                navigateToDate('2025-09-20');
+                if (nextBookingDate) {
+                    navigateToDate(nextBookingDate);
+                } else {
+                    // If no next booking found, try to find it again
+                    findNextBookingDate();
+                }
             });
         }
         
@@ -1001,23 +1050,38 @@
             const { bookings } = runSheetData;
             
             if (!bookings || bookings.length === 0) {
-                section.innerHTML = `
+                let emptyStateHTML = `
                     <div class="no-data">
                         <i class="fas fa-calendar-times"></i>
                         <p>No bookings scheduled for ${formatDate(currentDate)}</p>
                         <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
                             Try navigating to a different date using the date controls above.
                         </p>
+                `;
+                
+                if (nextBookingDate) {
+                    const nextDate = new Date(nextBookingDate + 'T00:00:00');
+                    const formatter = new Intl.DateTimeFormat('en-US', { 
+                        weekday: 'long', 
+                        month: 'short', 
+                        day: 'numeric' 
+                    });
+                    const formattedDate = formatter.format(nextDate);
+                    
+                    emptyStateHTML += `
                         <p style="font-size: 0.85em; color: #999; margin-top: 5px;">
-                            Note: Upcoming bookings are scheduled for this weekend.
+                            Next booking is scheduled for ${formattedDate}.
                         </p>
-                        <button onclick="navigateToDate('2025-09-20')" style="margin-top: 15px; padding: 10px 20px; background: white; color: #1B4F72; border: 2px solid #1B4F72; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 0.9rem;"
+                        <button onclick="navigateToDate('${nextBookingDate}')" style="margin-top: 15px; padding: 10px 20px; background: white; color: #1B4F72; border: 2px solid #1B4F72; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 0.9rem;"
                                 onmouseover="this.style.background='#1B4F72'; this.style.color='white';"
                                 onmouseout="this.style.background='white'; this.style.color='#1B4F72';">
-                            <i class="fas fa-calendar-day"></i> Jump to Saturday, Sept 20
+                            <i class="fas fa-calendar-day"></i> Jump to ${formattedDate}
                         </button>
-                    </div>
-                `;
+                    `;
+                }
+                
+                emptyStateHTML += `</div>`;
+                section.innerHTML = emptyStateHTML;
                 return;
             }
             
