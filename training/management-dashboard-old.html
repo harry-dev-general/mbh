@@ -1,0 +1,2650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Dashboard - MBH Staff Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .logo {
+            height: 60px;
+            width: auto;
+        }
+        
+        .title-section h1 {
+            font-size: 2rem;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .title-section p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .user-section {
+            text-align: right;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-white {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-white:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .view-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            margin-right: 1rem;
+        }
+        
+        .toggle-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 28px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .toggle-switch.management {
+            background: #FFF;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: #DC143C;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .toggle-switch.management .toggle-slider {
+            transform: translateX(32px);
+        }
+        
+        .toggle-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .dashboard-nav {
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+        
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-tab.active {
+            color: #DC143C;
+            border-bottom-color: #DC143C;
+            font-weight: 600;
+            background: rgba(220, 20, 60, 0.05);
+            box-shadow: 0 -2px 8px rgba(220, 20, 60, 0.1) inset;
+        }
+        
+        .nav-tab:hover {
+            color: #8B0000;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Overview Grid */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .stat-icon.green {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .stat-icon.orange {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        
+        .stat-icon.red {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .stat-icon.blue {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* Weekly Calendar Styles */
+        .calendar-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+        
+        .calendar-header {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .calendar-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .week-nav {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .week-nav button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .week-nav button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .week-display {
+            font-size: 0.95rem;
+            padding: 0 1rem;
+        }
+        
+        .time-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: 0;
+            min-height: 600px;
+        }
+        
+        .time-label {
+            padding: 0.5rem;
+            text-align: right;
+            font-size: 0.85rem;
+            color: #666;
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .day-header {
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 600;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        .day-header.today-header {
+            background: #fee5e5;
+            color: #DC143C;
+            font-weight: 700;
+        }
+        
+        .day-column {
+            border-right: 1px solid #e0e0e0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            align-content: flex-start;
+            gap: 2px;
+            padding: 2px;
+            min-height: 40px;
+        }
+        
+        .day-column.today-column {
+            background: #fff8f8;
+        }
+        
+        .booking-block {
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: 100%;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .booking-block:hover {
+            z-index: 15;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .booking-block:hover > div {
+            white-space: normal;
+            word-break: break-word;
+        }
+        
+        /* Smart layout for multiple items */
+        .day-column:has(> :nth-child(2)) > * {
+            flex: 1 1 48%;
+        }
+        
+        .day-column:has(> :nth-child(3)) > * {
+            flex: 1 1 31%;
+        }
+        
+        /* Vessel Maintenance Section */
+        .vessel-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .vessel-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .vessel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .vessel-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .vessel-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        /* Vessel location styles */
+        .vessel-location {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .vessel-location-info {
+            flex: 1;
+        }
+        
+        .vessel-location-address {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+        
+        .vessel-location-time {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .vessel-location-map-btn {
+            background: #2E86AB;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+        }
+        
+        .vessel-location-map-btn:hover {
+            background: #1F5F7B;
+        }
+        
+        /* Map modal styles */
+        .map-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .map-modal.active {
+            display: flex;
+        }
+        
+        .map-modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .map-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .map-modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .map-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .map-modal-close:hover {
+            color: #333;
+        }
+        
+        .map-container {
+            height: 400px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+        
+        /* Update location styles */
+        .update-location-btn {
+            background: #2E86AB;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+            margin-left: 0.5rem;
+        }
+        
+        .update-location-btn:hover {
+            background: #1F5F7B;
+        }
+        
+        /* Location update modal styles */
+        .location-update-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 2000;
+            flex-direction: column;
+        }
+        
+        .location-update-modal.active {
+            display: flex;
+        }
+        
+        .location-update-header {
+            background: #2E86AB;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .location-update-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .location-update-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .location-update-map {
+            flex: 1;
+            position: relative;
+        }
+        
+        .location-update-instructions {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            text-align: center;
+            font-size: 0.9rem;
+            z-index: 1;
+            max-width: 90%;
+        }
+        
+        .location-update-footer {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .location-confirm-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+        }
+        
+        .location-confirm-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+        }
+        
+        .location-cancel-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .location-cancel-btn:hover {
+            background: #5a6268;
+        }
+        
+        .location-coordinates {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-size: 0.8rem;
+            font-family: monospace;
+            z-index: 1;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .location-update-instructions {
+                font-size: 0.85rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .location-update-footer {
+                padding: 0.75rem;
+            }
+            
+            .location-confirm-btn,
+            .location-cancel-btn {
+                padding: 0.6rem 1.5rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        .status-operational {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-maintenance {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        
+        .status-issue {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .checklist-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .checklist-item {
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #ccc;
+        }
+        
+        .checklist-item.complete {
+            border-left-color: #28a745;
+        }
+        
+        .checklist-item.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .checklist-item.overdue {
+            border-left-color: #dc3545;
+        }
+        
+        /* Announcement Section */
+        .announcement-form {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #DC143C;
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .announcement-priority {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .priority-option {
+            flex: 1;
+        }
+        
+        .priority-option input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+        }
+        
+        .announcements-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .announcement-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #ddd;
+        }
+        
+        .announcement-card.high {
+            border-left-color: #dc3545;
+        }
+        
+        .announcement-card.medium {
+            border-left-color: #ffc107;
+        }
+        
+        .announcement-card.low {
+            border-left-color: #28a745;
+        }
+        
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #DC143C;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-container {
+                margin-top: 1rem;
+            }
+        }
+        
+        /* Status Update Modal Styles */
+        .status-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .status-modal.active {
+            display: flex;
+        }
+        
+        .status-modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status-modal-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .status-modal-header h3 {
+            margin: 0;
+            color: #8B0000;
+            font-size: 1.5rem;
+        }
+        
+        .status-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        
+        .status-form .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .status-form label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        .status-form select,
+        .status-form textarea {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+        
+        .status-form select:focus,
+        .status-form textarea:focus {
+            outline: none;
+            border-color: #2E86AB;
+        }
+        
+        .status-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: flex-end;
+        }
+        
+        .modal-actions .btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        
+        .update-status-btn {
+            background: #2E86AB;
+            color: white;
+            border: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+            margin-left: 0.5rem;
+        }
+        
+        .update-status-btn:hover {
+            background: #1B4F72;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="/images/mbh-logo.png" alt="MBH Logo" class="logo">
+                <div class="title-section">
+                    <h1><i class="fas fa-crown"></i> Management Dashboard</h1>
+                    <p>Manly Boat Hire Operations Center</p>
+                </div>
+            </div>
+            <div class="user-section">
+                <div class="user-info">
+                    <div>
+                        <div id="userEmail" style="margin-bottom: 0.25rem;">Loading...</div>
+                        <div style="font-size: 0.85rem; opacity: 0.8;">Administrator</div>
+                    </div>
+                    <div class="view-toggle">
+                        <span class="toggle-label">View:</span>
+                        <span class="toggle-text">Employee</span>
+                        <div class="toggle-switch management" id="toggleSwitch" onclick="toggleView()">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span class="toggle-text">Manager</span>
+                    </div>
+                    <button class="btn btn-white" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="dashboard-nav">
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('overview', event)">
+                <i class="fas fa-chart-line"></i> Overview
+            </button>
+            <button class="nav-tab" onclick="switchTab('staff', event)">
+                <i class="fas fa-users"></i> Staff Management
+            </button>
+            <button class="nav-tab" onclick="switchTab('vessels', event)">
+                <i class="fas fa-ship"></i> Vessel Maintenance
+            </button>
+            <button class="nav-tab" onclick="switchTab('announcements', event)">
+                <i class="fas fa-bullhorn"></i> Announcements
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <h2 style="margin-bottom: 1.5rem;">Today's Overview</h2>
+            
+            <div class="overview-grid">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-value" id="todayBookings">0</div>
+                    <div class="stat-label">Today's Bookings</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="staffOnDuty">0</div>
+                    <div class="stat-label">Staff on Duty</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-ship"></i>
+                    </div>
+                    <div class="stat-value" id="vesselsActive">0</div>
+                    <div class="stat-label">Vessels Active</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-value" id="pendingIssues">0</div>
+                    <div class="stat-label">Pending Issues</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer;" onclick="window.location.href='daily-run-sheet.html'">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-clipboard-list"></i> Daily Run Sheet
+                        </div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">View today's operations, vessel status, and booking timeline</div>
+                    </div>
+                    <div style="padding: 1rem; text-align: center; background: #f8f9fa;">
+                        <span style="color: #667eea; font-weight: 500;">View Dashboard →</span>
+                    </div>
+                </div>
+                
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer;" onclick="window.location.href='management-allocations.html'">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-users-cog"></i> Staff Allocations
+                        </div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Manage daily staff assignments and vessel allocations</div>
+                    </div>
+                    <div style="padding: 1rem; text-align: center; background: #f8f9fa;">
+                        <span style="color: #f093fb; font-weight: 500;">Manage Allocations →</span>
+                    </div>
+                </div>
+                
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer;" onclick="window.location.href='employee-directory.html'">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-address-book"></i> Employee Directory
+                        </div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">View and manage employee information and contacts</div>
+                    </div>
+                    <div style="padding: 1rem; text-align: center; background: #f8f9fa;">
+                        <span style="color: #4facfe; font-weight: 500;">View Directory →</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h3><i class="fas fa-calendar-week"></i> Weekly Bookings</h3>
+                    <div class="week-nav">
+                        <button onclick="changeWeek(-1)"><i class="fas fa-chevron-left"></i></button>
+                        <span class="week-display" id="weekDisplay">Loading...</span>
+                        <button onclick="changeWeek(1)"><i class="fas fa-chevron-right"></i></button>
+                        <button onclick="goToCurrentWeek()">Today</button>
+                    </div>
+                </div>
+                <div class="calendar-body" style="padding: 1rem;">
+                    <div id="scheduleGrid" class="time-grid">
+                        <div class="loading" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                            <div class="spinner"></div>
+                            <p>Loading bookings...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Management Tab -->
+        <div id="staff-tab" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Staff Management</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer;" onclick="window.location.href='management-allocations.html'">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-calendar-alt"></i>
+                            Weekly Schedule
+                        </div>
+                        <div style="opacity: 0.95; font-size: 0.9rem;">View and manage weekly staff allocations</div>
+                    </div>
+                </div>
+                
+                <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; cursor: pointer;" onclick="window.location.href='employee-directory.html'">
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-user-plus"></i>
+                            Employee Directory
+                        </div>
+                        <div style="opacity: 0.95; font-size: 0.9rem;">Manage employee records and contacts</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="staffList" style="margin-top: 2rem;">
+                <!-- Staff list will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Vessel Maintenance Tab -->
+        <div id="vessels-tab" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Vessel Maintenance & Checklists</h2>
+            
+            <div class="vessel-grid" id="vesselGrid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading vessel information...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcements Tab -->
+        <div id="announcements-tab" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Staff Announcements</h2>
+            
+            <div class="announcement-form">
+                <h3 style="margin-bottom: 1rem;">Post New Announcement</h3>
+                <form id="announcementForm">
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-input" id="announcementTitle" placeholder="Enter announcement title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-textarea" id="announcementMessage" placeholder="Enter your announcement message" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <div class="announcement-priority">
+                            <div class="priority-option">
+                                <label>
+                                    <input type="radio" name="priority" value="Low" checked>
+                                    <span style="color: #28a745;">Low</span>
+                                </label>
+                            </div>
+                            <div class="priority-option">
+                                <label>
+                                    <input type="radio" name="priority" value="Medium">
+                                    <span style="color: #ffc107;">Medium</span>
+                                </label>
+                            </div>
+                            <div class="priority-option">
+                                <label>
+                                    <input type="radio" name="priority" value="High">
+                                    <span style="color: #dc3545;">High</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Expires On (Optional)</label>
+                        <input type="date" class="form-input" id="announcementExpiry">
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane"></i> Post Announcement
+                    </button>
+                </form>
+            </div>
+            
+            <h3 style="margin: 2rem 0 1rem;">Active Announcements</h3>
+            <div class="announcements-list" id="announcementsList">
+                <!-- Announcements will be loaded here -->
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Airtable configuration
+        const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
+        const BASE_ID = 'applkAFOn2qxtu7tx';
+        const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
+        const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
+        const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX';
+        const VESSELS_TABLE_ID = 'tblNLoBNb4daWzjob'; // Boats table
+        const ANNOUNCEMENTS_TABLE_ID = 'tblAnnouncements'; // You'll need to create this table
+
+        let currentUser = null;
+        let employeeRecordId = null;
+        let currentWeekStart = null;
+        let bookingsData = [];
+
+        // Check authentication
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            // Check if user is management
+            const managementEmails = [
+                'harry@priceoffice.com.au',
+                'mmckelvey03@gmail.com',
+                'manager@mbh.com',
+                'admin@mbh.com',
+                'operations@mbh.com'
+            ];
+
+            if (!managementEmails.includes(user.email.toLowerCase()) && 
+                !user.email.includes('@mbh.com')) {
+                // Not a management user, redirect to regular dashboard
+                console.log('Non-management user detected, redirecting to regular dashboard');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            console.log('Management user authorized, loading dashboard');
+
+            currentUser = user;
+            document.getElementById('userEmail').textContent = user.email;
+            
+            // Try to fetch employee record for management user
+            await fetchEmployeeRecord(user.email);
+            
+            // Check for tab parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam && ['overview', 'staff', 'vessels', 'announcements'].includes(tabParam)) {
+                // Switch to specified tab
+                switchTab(tabParam);
+            } else {
+                // Load initial data for overview
+                loadOverviewData();
+            }
+        }
+        
+        // Fetch employee record for current user
+        async function fetchEmployeeRecord(email) {
+            try {
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}?filterByFormula={Email}='${email}'`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+                if (data.records && data.records.length > 0) {
+                    employeeRecordId = data.records[0].id;
+                    console.log('Employee record found:', employeeRecordId);
+                }
+            } catch (error) {
+                console.error('Error fetching employee record:', error);
+                // Not critical for management users
+            }
+        }
+
+        // Tab switching
+        function switchTab(tabName, event) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Set active nav tab
+            if (event && event.target) {
+                // Called from click event
+                event.target.closest('.nav-tab').classList.add('active');
+            } else {
+                // Called programmatically - find the correct button
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    if (tab.getAttribute('onclick').includes(`'${tabName}'`)) {
+                        tab.classList.add('active');
+                    }
+                });
+            }
+            
+            // Load tab-specific data
+            switch(tabName) {
+                case 'overview':
+                    loadOverviewData();
+                    break;
+                case 'vessels':
+                    loadVesselData();
+                    break;
+                case 'announcements':
+                    loadAnnouncements();
+                    break;
+                case 'staff':
+                    loadStaffData();
+                    break;
+            }
+        }
+
+        // Get Monday of current week
+        function getMonday(date) {
+            const d = new Date(date);
+            d.setFullYear(2025); // Ensure we're in 2025 context
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff));
+        }
+
+        // Format date for display
+        function formatWeekDisplay(date) {
+            const endDate = new Date(date);
+            endDate.setDate(endDate.getDate() + 6);
+            
+            const options = { month: 'short', day: 'numeric' };
+            const startStr = date.toLocaleDateString('en-AU', options);
+            const endStr = endDate.toLocaleDateString('en-AU', options);
+            
+            return `${startStr} - ${endStr}`;
+        }
+
+        // Change week navigation
+        function changeWeek(direction) {
+            currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+            updateWeekDisplay();
+            loadCalendarData();
+        }
+
+        // Go to current week
+        function goToCurrentWeek() {
+            const today = new Date();
+            today.setFullYear(2025); // Ensure we're in 2025 context
+            currentWeekStart = getMonday(today);
+            updateWeekDisplay();
+            loadCalendarData();
+        }
+
+        // Update week display
+        function updateWeekDisplay() {
+            document.getElementById('weekDisplay').textContent = formatWeekDisplay(currentWeekStart);
+        }
+
+        // Load calendar data
+        async function loadCalendarData() {
+            try {
+                // Include all relevant booking statuses (matching staff allocation page logic)
+                const filter = encodeURIComponent(`OR({Status}='PAID', {Status}='PART', {Status}='Confirmed', {Status}='Pending')`);
+
+                // Fetch ALL bookings with relevant statuses
+                const response = await fetch(
+                    `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
+                    `filterByFormula=${filter}&pageSize=100&_t=${Date.now()}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const allBookings = data.records || [];
+                    
+                    // Filter for current week
+                    const startDate = formatDate(currentWeekStart);
+                    const endDate = new Date(currentWeekStart);
+                    endDate.setDate(endDate.getDate() + 6);
+                    const endDateStr = formatDate(endDate);
+                    
+                    bookingsData = allBookings.filter(record => {
+                        const bookingDate = record.fields['Booking Date'];
+                        if (!bookingDate) return false;
+                        
+                        // Include if booking is within the current week
+                        return bookingDate >= startDate && bookingDate <= endDateStr;
+                    });
+                    
+                    console.log(`Loaded ${bookingsData.length} bookings for week ${startDate} to ${endDateStr}`);
+                    
+                    renderScheduleGrid();
+                    renderBookingsOnGrid();
+                }
+            } catch (error) {
+                console.error('Error loading calendar data:', error);
+            }
+        }
+
+        // Render the weekly schedule grid
+        function renderScheduleGrid() {
+            const grid = document.getElementById('scheduleGrid');
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const hours = Array.from({length: 15}, (_, i) => i + 6); // 6am to 8pm
+            
+            // Get today's date for highlighting
+            const today = new Date();
+            today.setFullYear(2025); // Ensure we're in 2025 context
+            const todayStr = formatDate(today);
+            
+            let html = '<div></div>'; // Empty corner cell
+            
+            // Day headers with dates
+            days.forEach((day, index) => {
+                const date = new Date(currentWeekStart);
+                date.setDate(date.getDate() + index);
+                const dateStr = formatDate(date);
+                const dayNum = date.getDate();
+                const month = date.getMonth() + 1;
+                const dateDisplay = `${dayNum.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+                
+                // Check if this is today
+                const isToday = dateStr === todayStr;
+                
+                html += `
+                    <div class="day-header ${isToday ? 'today-header' : ''}" data-date="${dateStr}">
+                        <div>${day}</div>
+                        <div style="font-size: 11px; opacity: 0.8; margin-top: 2px;">${dateDisplay}</div>
+                    </div>
+                `;
+            });
+            
+            // Time slots and day columns
+            hours.forEach(hour => {
+                html += `<div class="time-label">${hour}:00</div>`;
+                days.forEach((day, dayIndex) => {
+                    const date = new Date(currentWeekStart);
+                    date.setDate(date.getDate() + dayIndex);
+                    const dateStr = formatDate(date);
+                    
+                    // Check if this is today
+                    const isToday = dateStr === todayStr;
+                    
+                    html += `
+                        <div class="day-column ${isToday ? 'today-column' : ''}" 
+                             data-date="${dateStr}" 
+                             data-hour="${hour}">
+                        </div>
+                    `;
+                });
+            });
+            
+            grid.innerHTML = html;
+        }
+
+        // Render bookings on the grid
+        function renderBookingsOnGrid() {
+            // Clear existing booking displays
+            document.querySelectorAll('.booking-block').forEach(block => block.remove());
+            
+            bookingsData.forEach(record => {
+                const booking = record.fields;
+                if (!booking['Booking Date']) return;
+                
+                const bookingDate = booking['Booking Date'];
+                const customerName = booking['Customer Name'] || 'Unknown Customer';
+                const onboardingTime = booking['Onboarding Time'] || booking['Start Time'] || '09:00';
+                const deloadingTime = booking['Deloading Time'] || booking['Finish Time'] || '17:00';
+                const vessel = booking['Vessel'] || '';
+                const status = booking['Status'] || '';
+                
+                // Check staffing status
+                const hasOnboardingStaff = booking['Onboarding Employee'] && booking['Onboarding Employee'].length > 0;
+                const hasDeloadingStaff = booking['Deloading Employee'] && booking['Deloading Employee'].length > 0;
+                const isFullyStaffed = hasOnboardingStaff && hasDeloadingStaff;
+                
+                // Debug log for missing bookings
+                if (customerName.toLowerCase().includes('sam')) {
+                    console.log('Sam booking found:', {
+                        customer: customerName,
+                        date: bookingDate,
+                        status: status,
+                        onboarding: onboardingTime,
+                        deloading: deloadingTime
+                    });
+                }
+                
+                // Create onboarding block
+                if (onboardingTime) {
+                    createBookingBlock(bookingDate, onboardingTime, 'onboarding', customerName, isFullyStaffed, vessel, status);
+                }
+                
+                // Create deloading block
+                if (deloadingTime && deloadingTime !== onboardingTime) {
+                    createBookingBlock(bookingDate, deloadingTime, 'deloading', customerName, isFullyStaffed, vessel, status);
+                }
+            });
+            
+            console.log(`Rendered ${bookingsData.length} bookings on grid`);
+        }
+        
+        // Create a booking block on the grid
+        function createBookingBlock(date, time, type, customerName, isFullyStaffed, vessel, status) {
+            // Handle different time formats
+            let hour;
+            if (time.toLowerCase().includes('pm') || time.toLowerCase().includes('am')) {
+                const timeStr = time.replace(/\s/g, '').toLowerCase();
+                const hourMatch = timeStr.match(/(\d{1,2}):/);
+                if (hourMatch) {
+                    hour = parseInt(hourMatch[1]);
+                    if (timeStr.includes('pm') && hour !== 12) {
+                        hour += 12;
+                    } else if (timeStr.includes('am') && hour === 12) {
+                        hour = 0;
+                    }
+                }
+            } else {
+                const timeParts = time.split(':');
+                hour = parseInt(timeParts[0]);
+            }
+            
+            if (isNaN(hour)) return;
+            
+            // Find the cell for this booking
+            const cell = document.querySelector(`[data-date="${date}"][data-hour="${hour}"]`);
+            if (!cell) return;
+            
+            const bookingBlock = document.createElement('div');
+            bookingBlock.className = 'booking-block';
+            
+            // Color based on staffing and type
+            let bgColor, borderColor;
+            if (!isFullyStaffed) {
+                bgColor = '#ffebee';
+                borderColor = '#f44336';
+            } else if (type === 'onboarding') {
+                bgColor = '#e3f2fd';
+                borderColor = '#2196f3';
+            } else {
+                bgColor = '#fff3e0';
+                borderColor = '#ff9800';
+            }
+            
+            bookingBlock.style.cssText = `
+                background: ${bgColor};
+                border: 2px solid ${borderColor};
+            `;
+            
+            const icon = type === 'onboarding' ? '🚢' : '⚓';
+            const vesselText = vessel ? ` - ${vessel}` : '';
+            
+            bookingBlock.innerHTML = `
+                <div style="font-weight: 600;">${icon} ${customerName}</div>
+                <div style="font-size: 10px; opacity: 0.8;">${time}${vesselText}</div>
+                ${status && status !== 'PAID' && status !== 'Confirmed' ? `<div style="font-size: 9px; opacity: 0.7;">(${status})</div>` : ''}
+            `;
+            
+            bookingBlock.title = `${customerName}\nStatus: ${status}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} at ${time}${vesselText}\n${isFullyStaffed ? 'Fully Staffed' : 'NEEDS STAFF'}`;
+            
+            cell.appendChild(bookingBlock);
+        }
+
+        // Load overview data
+        async function loadOverviewData() {
+            try {
+                // Initialize calendar
+                const today = new Date();
+                today.setFullYear(2025); // Ensure we're in 2025 context
+                currentWeekStart = getMonday(today);
+                updateWeekDisplay();
+                await loadCalendarData();
+                
+                // Get today's date for metrics
+                const todayStr = formatDate(today);
+                
+                // Fetch dashboard overview from our API
+                const response = await fetch(`/api/dashboard-overview?date=${todayStr}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update the stat cards
+                    document.getElementById('todayBookings').textContent = data.todayBookings || '0';
+                    document.getElementById('staffOnDuty').textContent = data.staffOnDuty || '0';
+                    document.getElementById('vesselsActive').textContent = data.vesselsActive || '0';
+                    document.getElementById('pendingIssues').textContent = data.pendingIssues || '0';
+                    
+                    // Show pending issues alert if any
+                    if (data.pendingIssues > 0 && data.details?.nonOperationalVessels) {
+                        console.log('Non-operational vessels:', data.details.nonOperationalVessels);
+                        // Could add a visual alert here if needed
+                    }
+                } else {
+                    console.error('Failed to load dashboard overview:', data.error);
+                    // Set default values on error
+                    document.getElementById('todayBookings').textContent = '0';
+                    document.getElementById('staffOnDuty').textContent = '0';
+                    document.getElementById('vesselsActive').textContent = '0';
+                    document.getElementById('pendingIssues').textContent = '0';
+                }
+                
+            } catch (error) {
+                console.error('Error loading overview data:', error);
+                // Set default values on error
+                document.getElementById('todayBookings').textContent = '0';
+                document.getElementById('staffOnDuty').textContent = '0';
+                document.getElementById('vesselsActive').textContent = '0';
+                document.getElementById('pendingIssues').textContent = '0';
+            }
+        }
+
+        // Load vessel maintenance data
+        async function loadVesselData() {
+            const vesselGrid = document.getElementById('vesselGrid');
+            
+            // Show loading state
+            vesselGrid.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading vessel information...</p>
+                </div>
+            `;
+            
+            try {
+                // Fetch vessel maintenance data from our API
+                const response = await fetch('/api/vessels/maintenance-status');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load vessel data');
+                }
+                
+                // Clear loading state
+                vesselGrid.innerHTML = '';
+                
+                // Display summary alerts if any vessels need attention
+                if (data.summary.critical > 0 || data.summary.warning > 0) {
+                    const alertHtml = `
+                        <div style="grid-column: 1 / -1; background: #fff3cd; border: 1px solid #ffeaa7; 
+                                    border-radius: 8px; padding: 1rem; margin-bottom: 1rem; display: flex; 
+                                    align-items: center; gap: 1rem;">
+                            <i class="fas fa-exclamation-triangle" style="color: #f39c12; font-size: 1.5rem;"></i>
+                            <div>
+                                <h3 style="margin: 0 0 0.25rem 0; font-size: 1rem;">Fleet Status Alert</h3>
+                                <p style="margin: 0; font-size: 0.875rem; color: #666;">
+                                    ${data.summary.critical} vessel(s) need immediate attention, 
+                                    ${data.summary.warning} vessel(s) have warnings
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    vesselGrid.insertAdjacentHTML('beforeend', alertHtml);
+                }
+                
+                // Store vessel data globally and render each vessel
+                vesselsData = data.vessels;
+                console.log('Vessel data received:', data.vessels);
+                data.vessels.forEach(vessel => {
+                    console.log(`Vessel ${vessel.name}:`, {
+                        location: vessel.currentStatus?.location,
+                        lastCheck: vessel.lastCheck
+                    });
+                    const vesselCard = createVesselCard(vessel);
+                    vesselGrid.appendChild(vesselCard);
+                });
+                
+            } catch (error) {
+                console.error('Error loading vessel data:', error);
+                vesselGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 1rem; color: #dc3545;"></i>
+                        <p>Failed to load vessel maintenance data</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
+                        <button onclick="loadVesselData()" class="btn btn-primary" style="margin-top: 1rem;">
+                            <i class="fas fa-sync"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        function createVesselCard(vessel) {
+            const card = document.createElement('div');
+            card.className = 'vessel-card';
+            
+            // Fixed locations for specific vessels
+            const fixedLocations = {
+                'Work Boat': {
+                    latitude: -33.8126,
+                    longitude: 151.2738,
+                    address: 'Fergusons Marina',
+                    captured: true,
+                    isFixed: true
+                },
+                'Ice Cream Boat': {
+                    latitude: -33.8058,
+                    longitude: 151.2485,
+                    address: 'Dalbora Marina The Spit, A Arm',
+                    captured: true,
+                    isFixed: true
+                }
+            };
+            
+            // Set default location for fixed vessels if no location exists
+            if (fixedLocations[vessel.name]) {
+                if (!vessel.currentStatus) {
+                    vessel.currentStatus = {};
+                }
+                // Only use fixed location if there's no existing location data
+                if (!vessel.currentStatus.location || !vessel.currentStatus.location.latitude) {
+                    vessel.currentStatus.location = fixedLocations[vessel.name];
+                } else {
+                    // Mark that this vessel has a storage location
+                    vessel.currentStatus.location.storageLocation = fixedLocations[vessel.name];
+                }
+            }
+            
+            // Determine status class and text
+            let statusClass = 'status-unknown';
+            let statusText = 'Unknown';
+            
+            if (vessel.overallStatus === 'Critical') {
+                statusClass = 'status-maintenance';
+                statusText = 'Critical';
+            } else if (vessel.overallStatus === 'Warning') {
+                statusClass = 'status-warning';
+                statusText = 'Needs Attention';
+            } else if (vessel.overallStatus === 'Ready') {
+                statusClass = 'status-operational';
+                statusText = 'Operational';
+            }
+            
+            // Format last check time
+            let lastCheckInfo = 'No recent checks';
+            if (vessel.lastCheck.time) {
+                const timeSince = getTimeSince(new Date(vessel.lastCheck.time));
+                lastCheckInfo = `${vessel.lastCheck.type}: ${timeSince}`;
+            }
+            
+            // Build HTML
+            card.innerHTML = `
+                <div class="vessel-header">
+                    <div>
+                        <div class="vessel-name">${vessel.name}</div>
+                        <div style="font-size: 0.875rem; color: #666;">${vessel.type}</div>
+                    </div>
+                    <div class="vessel-status ${statusClass}">${statusText}</div>
+                </div>
+                
+                ${vessel.currentStatus && vessel.currentStatus.location && vessel.currentStatus.location.captured ? `
+                    <div class="vessel-location">
+                        <div class="vessel-location-info">
+                            <div class="vessel-location-address">
+                                <i class="fas fa-map-marker-alt"></i> ${vessel.currentStatus.location.address || 'Location captured'}
+                                ${vessel.currentStatus.location.storageLocation && !vessel.currentStatus.location.isFixed ? 
+                                    `<br><small style="color: #666; font-size: 0.85em;"><i class="fas fa-warehouse"></i> Storage: ${vessel.currentStatus.location.storageLocation.address}</small>` : 
+                                    ''
+                                }
+                            </div>
+                            <div class="vessel-location-time">
+                                ${vessel.currentStatus.location.isFixed ? 
+                                    '<i class="fas fa-warehouse"></i> Storage Location' :
+                                    `<i class="fas fa-clock"></i> Updated: ${(vessel.currentStatus.location.lastModified || vessel.lastCheck?.time) ? new Date(vessel.currentStatus.location.lastModified || vessel.lastCheck.time).toLocaleString('en-AU', {
+                                        dateStyle: 'short',
+                                        timeStyle: 'short'
+                                    }) : 'Unknown'}`
+                                }
+                            </div>
+                        </div>
+                        <button class="vessel-location-map-btn" onclick="showVesselLocationMap('${vessel.id}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude}, '${vessel.name.replace(/'/g, "\\'")}')">
+                            <i class="fas fa-map"></i> Map
+                        </button>
+                        <button class="update-location-btn" onclick="updateVesselLocation('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', ${vessel.currentStatus.location.latitude}, ${vessel.currentStatus.location.longitude})">
+                            <i class="fas fa-map-pin"></i> Update
+                        </button>
+                    </div>
+                ` : `
+                    <div class="vessel-location">
+                        <div class="vessel-location-info">
+                            <div class="vessel-location-address">
+                                <i class="fas fa-map-marker-alt"></i> No location data available
+                            </div>
+                        </div>
+                        <button class="update-location-btn" onclick="updateVesselLocation('${vessel.id}', '${vessel.name.replace(/'/g, "\\'")}', null, null)">
+                            <i class="fas fa-map-pin"></i> Set Location
+                        </button>
+                    </div>
+                `}
+                
+                ${vessel.currentStatus ? `
+                    <div style="margin: 1rem 0;">
+                        ${createGauge('Fuel', vessel.currentStatus.fuel)}
+                        ${createGauge('Gas', vessel.currentStatus.gas)}
+                        ${createGauge('Water', vessel.currentStatus.water)}
+                    </div>
+                ` : `
+                    <div style="text-align: center; padding: 2rem 0; color: #999;">
+                        <i class="fas fa-question-circle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                        <p>No checklist data available</p>
+                    </div>
+                `}
+                
+                <div class="checklist-summary" style="border-top: 1px solid #eee; padding-top: 1rem; margin-top: 1rem;">
+                    <div style="font-size: 0.875rem; color: #666;">
+                        <i class="fas fa-clock"></i> ${lastCheckInfo}
+                    </div>
+                    ${vessel.currentStatus && vessel.currentStatus.staffMember ? `
+                        <div style="font-size: 0.875rem; color: #666; margin-top: 0.25rem;">
+                            <i class="fas fa-user"></i> Last updated by: ${vessel.currentStatus.staffMember}
+                        </div>
+                    ` : ''}
+                    <div style="margin-top: 0.75rem;">
+                        <button class="update-status-btn" data-vessel-id="${vessel.id}" data-vessel-name="${vessel.name.replace(/"/g, '&quot;')}" onclick="handleStatusUpdateClick(this)">
+                            <i class="fas fa-clipboard-check"></i> Update Status
+                        </button>
+                    </div>
+                </div>
+                
+                ${vessel.alerts.length > 0 ? `
+                    <div style="margin-top: 1rem;">
+                        ${vessel.alerts.map(alert => `
+                            <div style="font-size: 0.875rem; padding: 0.5rem; margin-bottom: 0.25rem; 
+                                        background: ${alert.type === 'critical' ? '#ffebee' : '#fff3e0'}; 
+                                        color: ${alert.type === 'critical' ? '#c62828' : '#f57c00'}; 
+                                        border-radius: 4px;">
+                                <i class="fas fa-exclamation-triangle"></i> ${alert.message}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `;
+            
+            return card;
+        }
+        
+        function createGauge(type, levelData) {
+            if (!levelData) return '';
+            
+            const percentage = levelData.percentage || 0;
+            const level = levelData.level || 'Unknown';
+            
+            // Determine color based on percentage
+            let colorClass = '';
+            if (percentage >= 75) colorClass = 'gauge-high';
+            else if (percentage >= 50) colorClass = 'gauge-medium';
+            else if (percentage >= 25) colorClass = 'gauge-low';
+            else colorClass = 'gauge-critical';
+            
+            const icon = type === 'Fuel' ? '⛽' : type === 'Gas' ? '🔥' : '💧';
+            const warning = percentage <= 25 ? ' ⚠️' : '';
+            
+            return `
+                <div style="margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                        <span style="font-size: 0.875rem; font-weight: 500;">
+                            ${icon} ${type}
+                        </span>
+                        <span style="font-size: 0.875rem; font-weight: 600;">
+                            ${percentage}%${warning}
+                        </span>
+                    </div>
+                    <div style="height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden;">
+                        <div class="${colorClass}" style="height: 100%; width: ${percentage}%; 
+                             background: ${percentage >= 75 ? '#4caf50' : 
+                                         percentage >= 50 ? '#ffc107' : 
+                                         percentage >= 25 ? '#ff9800' : '#f44336'};
+                             transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getTimeSince(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+            
+            if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            if (diffMins > 0) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            return 'Just now';
+        }
+
+        // Load announcements
+        async function loadAnnouncements() {
+            const announcementsList = document.getElementById('announcementsList');
+            
+            // Show loading state
+            announcementsList.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading announcements...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/announcements?includeExpired=true');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load announcements');
+                }
+                
+                if (result.announcements.length === 0) {
+                    announcementsList.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #666;">
+                            <i class="fas fa-bullhorn" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                            <p>No announcements yet</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Clear loading state
+                announcementsList.innerHTML = '';
+                
+                // Display each announcement
+                result.announcements.forEach(record => {
+                    const announcement = record.fields;
+                    const card = document.createElement('div');
+                    card.className = `announcement-card ${(announcement.Priority || 'Low').toLowerCase()}`;
+                    
+                    const isExpired = announcement['Expiry Date'] && 
+                                    new Date(announcement['Expiry Date']) < new Date();
+                    
+                    const createdTime = new Date(record.createdTime);
+                    const timeAgo = getTimeSince(createdTime);
+                    
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong>${announcement.Title}</strong>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <span style="color: ${
+                                    announcement.Priority === 'High' ? '#dc3545' : 
+                                    announcement.Priority === 'Medium' ? '#ffc107' : '#28a745'
+                                }; font-size: 0.85rem; text-transform: uppercase;">
+                                    ${announcement.Priority || 'LOW'}
+                                </span>
+                                <button onclick="editAnnouncement('${record.id}')" 
+                                        class="btn btn-sm" 
+                                        style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteAnnouncementConfirm('${record.id}', '${announcement.Title}')" 
+                                        class="btn btn-sm" 
+                                        style="padding: 0.25rem 0.5rem; font-size: 0.8rem; background: #dc3545; color: white;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p style="margin-bottom: 0.5rem; ${isExpired ? 'opacity: 0.6;' : ''}">${announcement.Message}</p>
+                        <div style="font-size: 0.85rem; color: #666;">
+                            Posted by ${announcement['Posted By'] || 'Management'} • ${timeAgo}
+                            ${announcement['Expiry Date'] ? ` • Expires: ${new Date(announcement['Expiry Date']).toLocaleDateString()}` : ''}
+                            ${isExpired ? ' • <span style="color: #dc3545;">EXPIRED</span>' : ''}
+                            ${announcement['SMS Sent'] ? ' • <i class="fas fa-sms"></i> SMS Sent' : ''}
+                        </div>
+                    `;
+                    
+                    announcementsList.appendChild(card);
+                });
+                
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+                announcementsList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; margin-bottom: 1rem; color: #dc3545;"></i>
+                        <p>Failed to load announcements</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
+                        <button onclick="loadAnnouncements()" class="btn btn-primary" style="margin-top: 1rem;">
+                            <i class="fas fa-sync"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        // Delete announcement with confirmation
+        async function deleteAnnouncementConfirm(id, title) {
+            if (!confirm(`Are you sure you want to delete the announcement "${title}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/announcements/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Announcement deleted successfully');
+                    loadAnnouncements();
+                } else {
+                    throw new Error(result.error || 'Failed to delete announcement');
+                }
+            } catch (error) {
+                console.error('Error deleting announcement:', error);
+                alert('Failed to delete announcement: ' + error.message);
+            }
+        }
+        
+        // Edit announcement (placeholder for now)
+        function editAnnouncement(id) {
+            alert('Edit functionality coming soon!');
+            // TODO: Implement edit modal or inline editing
+        }
+
+        // Load staff data
+        async function loadStaffData() {
+            // This would load staff-specific management data
+            console.log('Loading staff management data...');
+        }
+
+        // Handle announcement form submission
+        document.getElementById('announcementForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+            
+            const title = document.getElementById('announcementTitle').value;
+            const message = document.getElementById('announcementMessage').value;
+            const priority = document.querySelector('input[name="priority"]:checked').value;
+            const expiry = document.getElementById('announcementExpiry').value;
+            
+            // Ask if they want to send SMS
+            const sendSMS = confirm('Do you want to send this announcement as SMS to all active staff?');
+            
+            try {
+                const response = await fetch('/api/announcements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title,
+                        message,
+                        priority,
+                        expiryDate: expiry,
+                        sendSMS,
+                        postedBy: currentUser.email
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    let successMsg = 'Announcement posted successfully!';
+                    if (sendSMS) {
+                        successMsg += ` SMS sent to ${result.sent || 0} staff members.`;
+                    }
+                    alert(successMsg);
+                    
+                    // Reset form
+                    e.target.reset();
+                    
+                    // Reload announcements
+                    loadAnnouncements();
+                } else {
+                    throw new Error(result.error || 'Failed to post announcement');
+                }
+            } catch (error) {
+                console.error('Error posting announcement:', error);
+                alert('Failed to post announcement: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        // Logout function
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'auth.html';
+        }
+        
+        // Toggle between employee and manager view
+        function toggleView() {
+            const toggleSwitch = document.getElementById('toggleSwitch');
+            const isManagementView = toggleSwitch.classList.contains('management');
+            
+            if (isManagementView) {
+                // Currently on management view, switch to employee view
+                window.location.href = 'dashboard.html?view=regular';
+            } else {
+                // Currently showing employee view selected, but we're on management dashboard
+                // This shouldn't happen, but handle it by staying on management
+                window.location.href = 'management-dashboard.html';
+            }
+        }
+
+        // Format date helper
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Show vessel location on map
+        function showVesselLocationMap(vesselId, lat, lng, vesselName) {
+            const modal = document.getElementById('locationMapModal');
+            const mapDiv = document.getElementById('locationMap');
+            
+            // Update modal title
+            document.getElementById('mapModalTitle').textContent = `${vesselName} - Current Location`;
+            
+            // Show modal
+            modal.classList.add('active');
+            
+            // Initialize map after modal is visible
+            setTimeout(() => {
+                if (window.google && window.google.maps) {
+                    const map = new google.maps.Map(mapDiv, {
+                        center: { lat: lat, lng: lng },
+                        zoom: 16,
+                        mapTypeId: 'hybrid'
+                    });
+                    
+                    // Add marker
+                    new google.maps.Marker({
+                        position: { lat: lat, lng: lng },
+                        map: map,
+                        title: vesselName,
+                        animation: google.maps.Animation.DROP
+                    });
+                    
+                    // Add accuracy circle if available
+                    const accuracy = 50; // Default accuracy radius
+                    new google.maps.Circle({
+                        strokeColor: '#FF0000',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: '#FF0000',
+                        fillOpacity: 0.15,
+                        map: map,
+                        center: { lat: lat, lng: lng },
+                        radius: accuracy
+                    });
+                }
+            }, 100);
+        }
+        
+        // Close map modal
+        function closeLocationMapModal() {
+            document.getElementById('locationMapModal').classList.remove('active');
+        }
+        
+        // Close modal when clicking overlay
+        function closeMapModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeLocationMapModal();
+            }
+        }
+        
+        // Update vessel location
+        let updateMap = null;
+        let updateMarker = null;
+        let currentVesselId = null;
+        let currentVesselName = null;
+        
+        function updateVesselLocation(vesselId, vesselName, currentLat, currentLng) {
+            currentVesselId = vesselId;
+            currentVesselName = vesselName;
+            
+            // Update modal title
+            document.getElementById('updateLocationTitle').textContent = `Update Location - ${vesselName}`;
+            
+            // Show modal
+            document.getElementById('locationUpdateModal').classList.add('active');
+            
+            // Initialize map after modal is visible
+            setTimeout(() => {
+                initUpdateLocationMap(currentLat, currentLng);
+            }, 100);
+        }
+        
+        function initUpdateLocationMap(currentLat, currentLng) {
+            const mapDiv = document.getElementById('updateLocationMap');
+            
+            // Default to Sydney if no current location
+            const lat = currentLat || -33.8688;
+            const lng = currentLng || 151.2093;
+            
+            if (window.google && window.google.maps) {
+                // Initialize map
+                updateMap = new google.maps.Map(mapDiv, {
+                    center: { lat: lat, lng: lng },
+                    zoom: currentLat ? 16 : 12,
+                    mapTypeId: 'hybrid',
+                    fullscreenControl: false,
+                    streetViewControl: false
+                });
+                
+                // Add draggable marker
+                updateMarker = new google.maps.Marker({
+                    position: { lat: lat, lng: lng },
+                    map: updateMap,
+                    draggable: true,
+                    animation: google.maps.Animation.DROP,
+                    title: 'Drag to update location'
+                });
+                
+                // Update coordinates display
+                updateCoordinatesDisplay(lat, lng);
+                
+                // Listen for marker drag
+                updateMarker.addListener('dragend', function() {
+                    const position = updateMarker.getPosition();
+                    updateCoordinatesDisplay(position.lat(), position.lng());
+                });
+                
+                // Listen for map clicks
+                updateMap.addListener('click', function(e) {
+                    updateMarker.setPosition(e.latLng);
+                    updateCoordinatesDisplay(e.latLng.lat(), e.latLng.lng());
+                });
+            }
+        }
+        
+        function updateCoordinatesDisplay(lat, lng) {
+            const coordsDiv = document.getElementById('locationCoordinates');
+            if (coordsDiv) {
+                coordsDiv.innerHTML = `Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`;
+            }
+        }
+        
+        function closeLocationUpdateModal() {
+            document.getElementById('locationUpdateModal').classList.remove('active');
+            updateMap = null;
+            updateMarker = null;
+            currentVesselId = null;
+            currentVesselName = null;
+        }
+        
+        async function confirmLocationUpdate() {
+            if (!updateMarker || !currentVesselId) return;
+            
+            const position = updateMarker.getPosition();
+            const lat = position.lat();
+            const lng = position.lng();
+            
+            // Show loading state
+            const confirmBtn = document.querySelector('.location-confirm-btn');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            confirmBtn.disabled = true;
+            
+            try {
+                // Get address from coordinates
+                const geocoder = new google.maps.Geocoder();
+                let address = 'Location updated';
+                
+                try {
+                    const result = await new Promise((resolve, reject) => {
+                        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                            if (status === 'OK' && results[0]) {
+                                resolve(results[0].formatted_address);
+                            } else {
+                                resolve('Location updated');
+                            }
+                        });
+                    });
+                    address = result;
+                } catch (e) {
+                    console.error('Geocoding error:', e);
+                }
+                
+                // Save to backend
+                console.log('Sending location update:', {
+                    vesselId: currentVesselId,
+                    latitude: lat,
+                    longitude: lng,
+                    address: address
+                });
+                
+                const response = await fetch('/api/vessels/update-location', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${(await supabase.auth.getSession())?.data.session?.access_token}`
+                    },
+                    body: JSON.stringify({
+                        vesselId: currentVesselId,
+                        latitude: lat,
+                        longitude: lng,
+                        address: address,
+                        manualUpdate: true
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Location update response:', result);
+                console.log('Response status:', response.status);
+                
+                if (result.success) {
+                    // Show success message in modal before closing
+                    const modal = document.getElementById('locationUpdateModal');
+                    const successDiv = document.createElement('div');
+                    successDiv.style.cssText = 'background: #4CAF50; color: white; padding: 15px; margin: 10px 0; border-radius: 4px; text-align: center; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 90%; max-width: 400px;';
+                    successDiv.textContent = `✓ Location updated successfully for ${currentVesselName}`;
+                    modal.appendChild(successDiv);
+                    
+                    // Close modal after delay and reload data
+                    setTimeout(() => {
+                        closeLocationUpdateModal();
+                        const activeTabElement = document.querySelector('.tab-content.active');
+                        if (activeTabElement && activeTabElement.id === 'vessels-tab') {
+                            loadVesselData();
+                        }
+                    }, 1500);
+                } else {
+                    throw new Error(result.error || 'Failed to update location');
+                }
+            } catch (error) {
+                console.error('Error updating location:', error);
+                
+                // Show error in modal instead of alert
+                const modal = document.getElementById('locationUpdateModal');
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = 'background: #dc3545; color: white; padding: 15px; margin: 10px 0; border-radius: 4px; text-align: center; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 90%; max-width: 400px;';
+                errorDiv.textContent = `✗ Error: ${error.message || 'Failed to update location'}`;
+                modal.appendChild(errorDiv);
+                
+                // Remove error message after 3 seconds
+                setTimeout(() => errorDiv.remove(), 3000);
+            } finally {
+                // Restore button state
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+            }
+        }
+
+        // Status Update Modal Functions
+        let currentStatusVesselId = null;
+        let currentStatusVesselName = null;
+        let vesselsData = []; // Store vessel data globally
+        
+        function handleStatusUpdateClick(button) {
+            const vesselId = button.getAttribute('data-vessel-id');
+            const vesselName = button.getAttribute('data-vessel-name');
+            
+            // Find the vessel data from the stored vessels
+            const vessel = vesselsData.find(v => v.id === vesselId);
+            const currentStatus = vessel?.currentStatus ? {
+                fuel: vessel.currentStatus.fuel?.level || '',
+                gas: vessel.currentStatus.gas?.level || '',
+                water: vessel.currentStatus.water?.level || '',
+                condition: vessel.currentStatus.condition || ''
+            } : null;
+            
+            openStatusUpdateModal(vesselId, vesselName, currentStatus);
+        }
+        
+        function openStatusUpdateModal(vesselId, vesselName, currentStatus) {
+            currentStatusVesselId = vesselId;
+            currentStatusVesselName = vesselName;
+            
+            // Update modal title
+            document.getElementById('updateVesselName').textContent = vesselName;
+            
+            // Reset form
+            document.getElementById('statusUpdateForm').reset();
+            
+            // Pre-populate current values if available
+            if (currentStatus) {
+                if (currentStatus.fuel) document.getElementById('updateFuelLevel').value = currentStatus.fuel;
+                if (currentStatus.gas) document.getElementById('updateGasLevel').value = currentStatus.gas;
+                if (currentStatus.water) document.getElementById('updateWaterLevel').value = currentStatus.water;
+                if (currentStatus.condition) document.getElementById('updateCondition').value = currentStatus.condition;
+            }
+            
+            // Show modal
+            document.getElementById('statusUpdateModal').classList.add('active');
+        }
+        
+        function closeStatusUpdateModal() {
+            document.getElementById('statusUpdateModal').classList.remove('active');
+            currentStatusVesselId = null;
+            currentStatusVesselName = null;
+        }
+        
+        function closeStatusModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeStatusUpdateModal();
+            }
+        }
+        
+        async function submitStatusUpdate() {
+            if (!currentStatusVesselId) return;
+            
+            // Get form values
+            const fuel = document.getElementById('updateFuelLevel').value;
+            const gas = document.getElementById('updateGasLevel').value;
+            const water = document.getElementById('updateWaterLevel').value;
+            const condition = document.getElementById('updateCondition').value;
+            const notes = document.getElementById('updateNotes').value;
+            
+            // Check if at least one field is being updated
+            if (!fuel && !gas && !water && !condition) {
+                alert('Please select at least one field to update');
+                return;
+            }
+            
+            // Get current employee record ID from local storage or session
+            let staffId = null;
+            if (employeeRecordId) {
+                staffId = employeeRecordId;
+            }
+            
+            // Show loading state
+            const submitBtn = document.querySelector('#statusUpdateModal .btn-primary');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            submitBtn.disabled = true;
+            
+            try {
+                const updateData = {
+                    staffId: staffId
+                };
+                
+                // Only include fields that have values
+                if (fuel) updateData.fuel = fuel;
+                if (gas) updateData.gas = gas;
+                if (water) updateData.water = water;
+                if (condition) updateData.condition = condition;
+                if (notes) updateData.notes = notes;
+                
+                const response = await fetch(`/api/vessels/${currentStatusVesselId}/status-update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('Status updated successfully:', result);
+                    
+                    // Store vessel name before closing modal (which resets it)
+                    const vesselName = currentStatusVesselName;
+                    
+                    // Close modal
+                    closeStatusUpdateModal();
+                    
+                    // Show success message
+                    alert(`${vesselName} status updated successfully!`);
+                    
+                    // Reload vessel data to show updated status
+                    await loadVesselData();
+                } else {
+                    throw new Error(result.error || 'Failed to update status');
+                }
+            } catch (error) {
+                console.error('Error updating vessel status:', error);
+                alert(`Failed to update status: ${error.message}`);
+            } finally {
+                // Restore button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // Initialize on page load
+        checkAuth();
+    </script>
+    
+    <!-- Map Modal -->
+    <div id="locationMapModal" class="map-modal" onclick="closeMapModalOnOverlay(event)">
+        <div class="map-modal-content" onclick="event.stopPropagation()">
+            <div class="map-modal-header">
+                <h3 class="map-modal-title" id="mapModalTitle">Vessel Location</h3>
+                <button class="map-modal-close" onclick="closeLocationMapModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="locationMap" class="map-container"></div>
+        </div>
+    </div>
+    
+    <!-- Status Update Modal -->
+    <div id="statusUpdateModal" class="status-modal" onclick="closeStatusModalOnOverlay(event)">
+        <div class="status-modal-content" onclick="event.stopPropagation()">
+            <div class="status-modal-header">
+                <h3>Update Vessel Status - <span id="updateVesselName"></span></h3>
+            </div>
+            
+            <form class="status-form" id="statusUpdateForm">
+                <!-- Fuel Level -->
+                <div class="form-group">
+                    <label for="updateFuelLevel">Fuel Level</label>
+                    <select id="updateFuelLevel" name="fuel">
+                        <option value="">-- No Change --</option>
+                        <option value="Empty">Empty (0%)</option>
+                        <option value="Quarter">Quarter (25%)</option>
+                        <option value="Half">Half (50%)</option>
+                        <option value="Three-Quarter">Three-Quarter (75%)</option>
+                        <option value="Full">Full (100%)</option>
+                    </select>
+                </div>
+                
+                <!-- Gas Level -->
+                <div class="form-group">
+                    <label for="updateGasLevel">Gas Bottle Level</label>
+                    <select id="updateGasLevel" name="gas">
+                        <option value="">-- No Change --</option>
+                        <option value="Empty">Empty (0%)</option>
+                        <option value="Quarter">Quarter (25%)</option>
+                        <option value="Half">Half (50%)</option>
+                        <option value="Three-Quarter">Three-Quarter (75%)</option>
+                        <option value="Full">Full (100%)</option>
+                    </select>
+                </div>
+                
+                <!-- Water Level -->
+                <div class="form-group">
+                    <label for="updateWaterLevel">Water Tank Level</label>
+                    <select id="updateWaterLevel" name="water">
+                        <option value="">-- No Change --</option>
+                        <option value="Empty">Empty (0%)</option>
+                        <option value="Quarter">Quarter (25%)</option>
+                        <option value="Half">Half (50%)</option>
+                        <option value="Three-Quarter">Three-Quarter (75%)</option>
+                        <option value="Full">Full (100%)</option>
+                    </select>
+                </div>
+                
+                <!-- Overall Condition -->
+                <div class="form-group">
+                    <label for="updateCondition">Overall Condition</label>
+                    <select id="updateCondition" name="condition">
+                        <option value="">-- No Change --</option>
+                        <option value="Good - Ready for Next Booking">Good - Ready for Next Booking</option>
+                        <option value="Needs Attention">Needs Attention</option>
+                        <option value="Major Issues - Do Not Use">Major Issues - Do Not Use</option>
+                    </select>
+                </div>
+                
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="updateNotes">Notes</label>
+                    <textarea id="updateNotes" name="notes" 
+                        placeholder="Any additional information about the vessel status..."></textarea>
+                </div>
+            </form>
+            
+            <div class="modal-actions">
+                <button onclick="submitStatusUpdate()" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Update
+                </button>
+                <button onclick="closeStatusUpdateModal()" class="btn btn-secondary">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Location Update Modal -->
+    <div id="locationUpdateModal" class="location-update-modal">
+        <div class="location-update-header">
+            <h3 class="location-update-title" id="updateLocationTitle">Update Location</h3>
+            <button class="location-update-close" onclick="closeLocationUpdateModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="location-update-map" id="updateLocationMap">
+            <div class="location-update-instructions">
+                <i class="fas fa-hand-pointer"></i> Drag the marker or tap on the map to set location
+            </div>
+            <div class="location-coordinates" id="locationCoordinates">
+                Lat: 0.000000<br>Lng: 0.000000
+            </div>
+        </div>
+        <div class="location-update-footer">
+            <button class="location-cancel-btn" onclick="closeLocationUpdateModal()">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button class="location-confirm-btn" onclick="confirmLocationUpdate()">
+                <i class="fas fa-check"></i> Confirm Location
+            </button>
+        </div>
+    </div>
+    
+    <!-- Google Maps API -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw"></script>
+</body>
+</html>

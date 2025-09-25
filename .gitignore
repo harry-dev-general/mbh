@@ -36,3 +36,6 @@ build/
 
 # Railway specific
 .railway/
+# Log files
+logs.*.json
+deployment.log

@@ -688,5 +688,81 @@ if (isStaffChanging) {
 
 ---
 
+## 14. Management Dashboard UI Redesign
+
+### Overview
+Complete redesign of the management dashboard to provide a cleaner, more efficient interface with better operational visibility.
+
+### Major Changes
+1. **Weekly Calendar Component**
+   - Replaced static overview cards with dynamic weekly calendar
+   - Compact bi-hourly time slots (6 AM - 8 PM)
+   - Color-coded bookings with vessel assignments
+   - Current time indicator
+
+2. **New Bookings Feed**
+   - Changed from "Upcoming Bookings" to "New Bookings"
+   - Shows recently added bookings with timestamps
+   - Real-time simulation for demonstration
+
+3. **UI Simplification**
+   - Removed search bar and notification icons
+   - Three-column responsive layout
+   - Mobile-optimized with hamburger menu
+   - Consistent color scheme throughout
+
+4. **Logout Button Fix**
+   - Fixed positioning issues with flexbox layout
+   - Stays at bottom of sidebar without following scroll
+   - Proper z-index layering
+
+### Technical Implementation
+- Pure CSS/JavaScript (no frameworks)
+- Flexbox and CSS Grid for layouts
+- Mobile breakpoints at 1440px, 1024px, 768px
+- Performance optimized with minimal DOM updates
+
+---
+
+## 15. Authentication Redirect Loop Fix
+
+### Critical Issue
+Management users experienced infinite redirect loops between auth.html → dashboard.html → management-dashboard.html → auth.html
+
+### Root Causes
+1. **Different Supabase Projects**: Management dashboard using different credentials
+2. **Session Check Method**: Using unreliable `getUser()` instead of `getSession()`
+3. **Missing Auth Handler**: No `onAuthStateChange` listener
+4. **Email List Mismatch**: Different authorized emails between dashboards
+
+### Solution
+1. **Unified Supabase Configuration**
+   ```javascript
+   // Both dashboards now use same project
+   const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+   ```
+
+2. **Robust Session Checking**
+   ```javascript
+   // Use getSession() for reliability
+   const { data: { session }, error } = await supabase.auth.getSession();
+   ```
+
+3. **Auth State Monitoring**
+   ```javascript
+   supabase.auth.onAuthStateChange((event, session) => {
+       // Handle auth events properly
+   });
+   ```
+
+4. **Synchronized Management Lists**
+   - Aligned email lists across all dashboards
+   - Consistent authorization checks
+
+### Key Learning
+Always use `getSession()` for Supabase auth checks in multi-page applications to avoid race conditions during session restoration.
+
+---
+
 *Documentation created: September 9, 2025*
-*Last updated: September 19, 2025 (Add-ons management feature completed, SMS notification logic fixed)*
+*Last updated: September 23, 2025 (Dashboard redesign, redirect loop fix, comprehensive documentation update)*
