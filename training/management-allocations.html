@@ -3423,7 +3423,8 @@
                             startTime: startTime,
                             endTime: endTime,
                             isReassignment: true,
-                            role: 'General'
+                            role: 'General',
+                            notes: document.getElementById('notes').value || ''
                         };
                         
                         console.log('Sending SMS notification for reassignment:', notificationData);
@@ -3677,7 +3678,8 @@
                             startTime: document.getElementById('startTime').value,
                             endTime: document.getElementById('endTime').value,
                             role: roleValue,
-                            isBookingAllocation: false
+                            isBookingAllocation: false,
+                            notes: document.getElementById('notes').value || ''
                         };
                         
                         const notifyResponse = await fetch('/api/send-shift-notification', {

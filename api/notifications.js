@@ -100,6 +100,7 @@ function consumeToken(token) {
  * @param {string} params.customerName - Customer name (for booking allocations)
  * @param {string} params.role - Role (e.g., 'Onboarding', 'Deloading')
  * @param {boolean} params.isBookingAllocation - Whether this is a booking-specific allocation
+ * @param {string} params.notes - Additional notes/instructions for the shift
  * @returns {Promise<object>} - Result of SMS send operation
  */
 async function sendShiftNotification(params) {
@@ -114,7 +115,8 @@ async function sendShiftNotification(params) {
         endTime,
         customerName,
         role,
-        isBookingAllocation = false
+        isBookingAllocation = false,
+        notes
     } = params;
     
     // Format the date nicely
@@ -147,6 +149,7 @@ You've been assigned to a customer booking:
 ⏰ ${startTime} - ${endTime}
 👤 Customer: ${customerName}
 📋 Role: ${role}
+${notes ? `\n📝 Notes: ${notes}` : ''}
 
 Please confirm your availability:
 
@@ -167,6 +170,7 @@ You've been assigned a new shift:
 ⏰ ${startTime} - ${endTime}
 📋 Type: ${shiftType}
 ${role ? `🎯 Role: ${role}` : ''}
+${notes ? `📝 Notes: ${notes}` : ''}
 
 Please confirm your availability:
 

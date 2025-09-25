@@ -573,7 +573,8 @@ app.post('/api/send-shift-notification', async (req, res) => {
       endTime,
       customerName,
       role,
-      isBookingAllocation
+      isBookingAllocation,
+      notes
     } = req.body;
     
     // Fetch employee details from Airtable
@@ -608,7 +609,8 @@ app.post('/api/send-shift-notification', async (req, res) => {
       endTime,
       customerName,
       role,
-      isBookingAllocation
+      isBookingAllocation,
+      notes
     });
     
     res.json(result);
