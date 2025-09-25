@@ -1887,7 +1887,7 @@
                 // Specify fields to reduce payload (including Response Status for color coding)
                 const fields = ['Name', 'Employee', 'Shift Date', 'Start Time', 'End Time',
                                'Shift Type', 'Shift Status', 'Role', 'Booking', 'Duration',
-                               'Response Status', 'Response Date', 'Response Method'];
+                               'Response Status', 'Response Date', 'Response Method', 'Notes'];
                 const fieldsParam = fields.map(f => `fields[]=${encodeURIComponent(f)}`).join('&');
                 
                 const response = await fetchWithRetry(
@@ -2076,9 +2076,10 @@
                         <div style="font-size: 10px;">${startTime} - ${endTime}</div>
                         <div style="font-size: 9px; opacity: 0.9;">${durationHours}h ${shiftType}</div>
                         ${allocation['Role'] ? `<small style="opacity: 0.8;">${allocation['Role']}</small>` : ''}
+                        ${allocation['Notes'] ? `<div style="font-size: 9px; margin-top: 2px; font-style: italic; opacity: 0.85;">📝 ${allocation['Notes']}</div>` : ''}
                     `;
                     
-                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours\nStatus: ${responseStatus}\n\nClick to edit allocation times`;
+                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours\nStatus: ${responseStatus}${allocation['Notes'] ? '\n\nNotes: ' + allocation['Notes'] : ''}\n\nClick to edit allocation times`;
                     
                     // Add click handler to edit allocation
                     allocationBlock.onclick = (e) => {
@@ -2984,6 +2985,13 @@
             document.getElementById('startTime').value = `${hour.padStart(2, '0')}:00`;
             document.getElementById('endTime').value = `${(parseInt(hour) + 1).toString().padStart(2, '0')}:00`;
             
+            // Reset allocation type to default and trigger field visibility
+            document.getElementById('allocationType').value = 'General Operations';
+            toggleBookingField();
+            
+            // Clear notes field for new allocation
+            document.getElementById('notes').value = '';
+            
             // Populate staff for the selected date
             populateStaffForDate(date);
             
@@ -3109,8 +3117,7 @@
             document.getElementById('allocationDate').value = allocation['Shift Date'];
             document.getElementById('startTime').value = allocation['Start Time'] || '09:00';
             document.getElementById('endTime').value = allocation['End Time'] || '17:00';
-            // Notes field is not available in the Staff Allocations table
-            document.getElementById('notes').value = '';
+            document.getElementById('notes').value = allocation['Notes'] || '';
             
             // Populate staff dropdown for the shift date
             populateStaffForDate(allocation['Shift Date']);
@@ -3137,10 +3144,10 @@
             document.getElementById('bookingGroup').style.display = 'none';
             document.getElementById('roleGroup').style.display = 'none';
             
-            // Hide notes field (not available in Staff Allocations table)
+            // Show notes field for shift allocations
             const notesGroup = document.getElementById('notes')?.parentElement;
             if (notesGroup) {
-                notesGroup.style.display = 'none';
+                notesGroup.style.display = 'block';
             }
             
             // Update submit button text
@@ -3253,6 +3260,7 @@
             const roleGroup = document.getElementById('roleGroup');
             const boatGroup = document.getElementById('boatGroup');
             const staffOptionalLabel = document.getElementById('staffOptionalLabel');
+            const notesGroup = document.getElementById('notes')?.parentElement;
             
             // Show booking selection for Boat Hire or Ice Cream Boat Operations
             if (type === 'Boat Hire' || type === 'Ice Cream Boat Operations') {
@@ -3267,6 +3275,11 @@
                 boatGroup.style.display = 'none';
                 // Staff is required for general allocations
                 staffOptionalLabel.style.display = 'none';
+            }
+            
+            // Always show notes field for all allocation types
+            if (notesGroup) {
+                notesGroup.style.display = 'block';
             }
         }
 
@@ -3326,6 +3339,7 @@
                                     'Start Time': startTime,
                                     'End Time': endTime,
                                     'Shift Type': shiftType,
+                                    'Notes': document.getElementById('notes').value || '',
                                     'Response Date': new Date().toISOString(),
                                     'Response Method': 'Portal'
                                 }
@@ -3619,7 +3633,8 @@
                     'Start Time': document.getElementById('startTime').value,
                     'End Time': document.getElementById('endTime').value,
                     'Shift Type': allocationType,
-                    'Shift Status': 'Scheduled'
+                    'Shift Status': 'Scheduled',
+                    'Notes': document.getElementById('notes').value || ''
                 };
                 
                 // Add Role only if selected
