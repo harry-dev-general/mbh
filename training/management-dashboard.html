@@ -1224,6 +1224,58 @@
             background: #2E86AB !important;
         }
         
+        /* Announcement Styles */
+        .announcement-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        .announcement-header h4 {
+            margin: 0;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        
+        .announcement-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e6ed;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+            text-align: center;
+            padding: 2rem;
+        }
+        
         /* Mobile Menu */
         .mobile-menu-btn {
             display: none;
@@ -1867,6 +1919,9 @@
             }
             
             console.log('Management user authorized:', user.email);
+            
+            // Store user email for announcements
+            currentUserEmail = user.email;
 
             // Set user info
             const firstName = user.user_metadata?.full_name?.split(' ')[0] || 'Manager';
@@ -1977,6 +2032,7 @@
         // Add mobile touch gestures
         let touchStartX = 0;
         let touchEndX = 0;
+        let currentUserEmail = 'Admin'; // Store current user email
         
         function handleGesture() {
             const swipeThreshold = 50;
@@ -2134,15 +2190,15 @@
                     announcementsList.innerHTML = data.announcements.map(announcement => `
                         <div class="announcement-item">
                             <div class="announcement-header">
-                                <h4>${announcement.title}</h4>
+                                <h4>${announcement.fields?.Title || 'Untitled'}</h4>
                                 <button class="btn btn-sm btn-danger" onclick="deleteAnnouncement('${announcement.id}')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
-                            <p>${announcement.message}</p>
+                            <p>${announcement.fields?.Message || ''}</p>
                             <div class="announcement-meta">
-                                <span>Posted by ${announcement.postedBy || 'Admin'}</span>
-                                <span>${new Date(announcement.createdTime).toLocaleDateString()}</span>
+                                <span>Posted by ${announcement.fields?.['Posted By'] || 'Admin'}</span>
+                                <span>${announcement.fields?.['Expiry Date'] ? new Date(announcement.fields['Expiry Date']).toLocaleDateString() : 'No expiry'}</span>
                             </div>
                         </div>
                     `).join('');
@@ -3166,6 +3222,10 @@
             
             const title = document.getElementById('announcementTitle').value;
             const message = document.getElementById('announcementMessage').value;
+            const sendSMS = confirm('Do you want to send this announcement as an SMS to all active roster staff?');
+            
+            // Use the stored current user email
+            const userEmail = currentUserEmail;
             
             try {
                 const response = await fetch('/api/announcements', {
@@ -3173,13 +3233,26 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ title, message })
+                    body: JSON.stringify({ 
+                        title, 
+                        message,
+                        postedBy: userEmail,
+                        sendSMS: sendSMS,
+                        priority: 'Low' // Default priority
+                    })
                 });
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('Announcement posted successfully!');
+                    let successMessage = 'Announcement posted successfully!';
+                    if (sendSMS && result.sent) {
+                        successMessage += `\nSMS sent to ${result.sent} staff members.`;
+                        if (result.failed > 0) {
+                            successMessage += `\n${result.failed} SMS messages failed.`;
+                        }
+                    }
+                    alert(successMessage);
                     document.getElementById('announcementForm').reset();
                     loadAnnouncements(); // Reload the list
                 } else {
