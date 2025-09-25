@@ -3022,6 +3022,8 @@
             delete form.dataset.isReassignment;
             delete form.dataset.isEdit;
             delete form.dataset.allocationId;
+            delete form.dataset.responseStatus;
+            delete form.dataset.originalNotes;
             
             // Re-enable all fields
             document.getElementById('allocationType').disabled = false;
@@ -3130,10 +3132,11 @@
                 }
             }, 100);
             
-            // Store the allocation ID and response status for update
+            // Store the allocation ID, response status, and original notes for update
             document.getElementById('allocationForm').dataset.allocationId = allocationId;
             document.getElementById('allocationForm').dataset.isEdit = 'true';
             document.getElementById('allocationForm').dataset.responseStatus = allocation['Response Status'] || 'Pending';
+            document.getElementById('allocationForm').dataset.originalNotes = allocation['Notes'] || '';
             
             // Enable all fields for editing
             document.getElementById('allocationType').disabled = false;
@@ -3325,26 +3328,19 @@
                     const shiftType = document.getElementById('allocationType').value;
                     const newNotes = document.getElementById('notes').value || '';
                     
-                    // First, fetch the current allocation to check status and compare notes
-                    const currentAllocationResponse = await fetchWithRetry(
-                        `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`,
-                        {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                            }
-                        }
-                    );
-                    
-                    if (!currentAllocationResponse.ok) {
-                        throw new Error('Failed to fetch current allocation data');
-                    }
-                    
-                    const currentAllocation = await currentAllocationResponse.json();
-                    const originalNotes = currentAllocation.fields['Notes'] || '';
-                    const responseStatus = currentAllocation.fields['Response Status'];
+                    // Get stored values from dataset
+                    const originalNotes = e.target.dataset.originalNotes || '';
+                    const responseStatus = e.target.dataset.responseStatus || 'Pending';
                     const notesChanged = originalNotes !== newNotes;
                     const isAccepted = responseStatus === 'Accepted';
+                    
+                    console.log('Update check:', {
+                        originalNotes,
+                        newNotes,
+                        notesChanged,
+                        responseStatus,
+                        isAccepted
+                    });
                     
                     // Update the existing allocation record
                     const updateResponse = await fetchWithRetry(
