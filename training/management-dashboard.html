@@ -2211,16 +2211,20 @@
             }
         }
         
-        // Calendar variables - Set to 2025 context
+        // Calendar variables - Use actual current date
         let currentWeekStart = new Date();
-        currentWeekStart.setFullYear(2025); // Ensure 2025 context
-        currentWeekStart.setMonth(8); // September (0-indexed)
-        currentWeekStart.setDate(24); // Current date is September 24, 2025
         currentWeekStart.setHours(0, 0, 0, 0);
         const dayOfWeek = currentWeekStart.getDay();
         const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Adjust for Monday start
         currentWeekStart.setDate(currentWeekStart.getDate() + diff);
         
+        // Helper function to format date as YYYY-MM-DD in local timezone
+        function formatLocalDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
         
         // Initialize calendar
         async function initCalendar() {
@@ -2265,8 +2269,8 @@
                 endDate.setDate(endDate.getDate() + 6);
                 
                 // Format dates for Airtable
-                const startStr = startDate.toISOString().split('T')[0];
-                const endStr = endDate.toISOString().split('T')[0];
+                const startStr = formatLocalDate(startDate);
+                const endStr = formatLocalDate(endDate);
                 
                 // Fetch bookings via API proxy - get all non-cancelled bookings and filter client-side
                 const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
@@ -2291,8 +2295,15 @@
                     
                 // Filter bookings by date on client side
                 const bookings = allBookings.filter(record => {
-                        const bookingDate = record.fields['Booking Date'];
-                    return bookingDate >= startStr && bookingDate <= endStr;
+                    const bookingDate = record.fields['Booking Date'];
+                    if (!bookingDate) return false;
+                    
+                    // Parse date properly to avoid timezone issues
+                    const date = new Date(bookingDate + 'T00:00:00');
+                    const dateStr = formatLocalDate(date);
+                    
+                    // Compare dates as strings to avoid timezone issues
+                    return dateStr >= startStr && dateStr <= endStr;
                 });
                 
                 // Debug: Log fetched bookings
@@ -2305,8 +2316,8 @@
                 const bookingsByDateAndTime = {};
                 bookings.forEach(record => {
                     const fields = record.fields;
-                    const bookingDate = new Date(fields['Booking Date']);
-                    const dateKey = bookingDate.toISOString().split('T')[0];
+                    const bookingDate = new Date(fields['Booking Date'] + 'T00:00:00');
+                    const dateKey = formatLocalDate(bookingDate);
                     
                     // Parse start time
                     const startTime = parseTimeToSlot(fields['Start Time']);
@@ -2352,7 +2363,7 @@
                     const date = new Date(currentWeekStart);
                         date.setDate(date.getDate() + day);
                         const isToday = isDateToday(date);
-                        const dateKey = date.toISOString().split('T')[0];
+                        const dateKey = formatLocalDate(date);
                         const cellKey = `${dateKey}-${time}`;
                         const cellBookings = bookingsByDateAndTime[cellKey] || [];
                         
@@ -2448,9 +2459,6 @@
         // Check if date is today
         function isDateToday(date) {
             const today = new Date();
-            today.setFullYear(2025); // Ensure 2025 context
-            today.setMonth(8); // September
-            today.setDate(24); // Current date is September 24, 2025
             return date.getDate() === today.getDate() &&
                    date.getMonth() === today.getMonth() &&
                    date.getFullYear() === today.getFullYear();
@@ -2467,9 +2475,6 @@
         async function goToToday() {
             // Reset to current week
             currentWeekStart = new Date();
-            currentWeekStart.setFullYear(2025); // Ensure 2025 context
-            currentWeekStart.setMonth(8); // September (0-indexed)
-            currentWeekStart.setDate(24); // Current date is September 24, 2025
             currentWeekStart.setHours(0, 0, 0, 0);
             const dayOfWeek = currentWeekStart.getDay();
             const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Adjust for Monday start
@@ -2733,15 +2738,12 @@
             try {
                 // Get today's date and calculate recent bookings (last 7 days)
                 const today = new Date();
-                today.setFullYear(2025); // Ensure 2025 context
-                today.setMonth(8); // September
-                today.setDate(24); // Current date is September 24, 2025
                 const sevenDaysAgo = new Date(today);
                 sevenDaysAgo.setDate(today.getDate() - 7);
                 
                 // Format dates for Airtable
-                const todayStr = today.toISOString().split('T')[0];
-                const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+                const todayStr = formatLocalDate(today);
+                const sevenDaysAgoStr = formatLocalDate(sevenDaysAgo);
                 
                 // Fetch recent bookings via API proxy
                 const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
@@ -2876,7 +2878,7 @@
                     date.setDate(weekStart.getDate() + i);
                     weekDates.push({
                         date: date,
-                        dateStr: date.toISOString().split('T')[0],
+                        dateStr: formatLocalDate(date),
                         dayName: dayNames[i] // Use index directly since we're starting from Monday
                     });
                 }
@@ -2978,12 +2980,9 @@
                 
                 // Build the grid HTML
                 let gridHTML = '';
-                // Get today's date in 2025 context
+                // Get today's date
                 const today = new Date();
-                today.setFullYear(2025);
-                today.setMonth(8); // September
-                today.setDate(24); // September 24, 2025
-                const todayStr = today.toISOString().split('T')[0];
+                const todayStr = formatLocalDate(today);
                 
                 weekDates.forEach(wd => {
                     const staff = rosterByDate[wd.dateStr] || [];
