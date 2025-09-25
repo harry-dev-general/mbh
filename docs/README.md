@@ -4,7 +4,9 @@ Welcome to the MBH Staff Portal documentation. This portal is a comprehensive we
 
 ## 🚀 Quick Start
 
+- **AI Assistant?** Start with the [AI Project Understanding Guide](./AI_PROJECT_UNDERSTANDING_GUIDE.md)
 - **New to the project?** Start with the [Project Overview](./00-overview/project-overview.md)
+- **Recent changes?** See [September 2025 Implementations](./SEPTEMBER_2025_IMPLEMENTATIONS.md)
 - **Setting up?** Check the [Deployment Guide](./01-setup/deployment-guide.md)
 - **Need help?** See [Troubleshooting Guide](./05-troubleshooting/common-issues.md)
 

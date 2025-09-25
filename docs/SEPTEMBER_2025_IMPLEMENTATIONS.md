@@ -764,5 +764,119 @@ Always use `getSession()` for Supabase auth checks in multi-page applications to
 
 ---
 
+## 16. Date Handling Fixes (September 25, 2025)
+
+### Multiple Hardcoded Date Issues
+Fixed several components that had hardcoded dates causing incorrect displays.
+
+#### Management Dashboard - Weekly Schedule
+- **Issue**: Hardcoded to September 24, 2025
+- **Fix**: Removed `setFullYear(2025)`, `setMonth(8)`, `setDate(24)`
+- **Added**: `formatLocalDate()` helper for consistent date comparisons
+
+#### Daily Run Sheet - Calendar Default
+- **Issue**: Defaulted to September 17, 2025
+- **Fix**: Use actual current date with `new Date()`
+
+#### Jump To Button
+- **Issue**: Hardcoded "Jump to next booking 20 Sep"
+- **Fix**: Dynamic lookup of next booking from Airtable
+- **Added**: Timezone-aware date formatting
+
+#### New Bookings Timestamp
+- **Issue**: Used fake "Added X ago" times
+- **Fix**: Use actual `Created Time` field from Airtable
+- **Note**: Changed from `Created Date` to `Created Time` for datetime filtering
+
+### Key Solutions
+1. **Date Helper Function**:
+   ```javascript
+   function formatLocalDate(date) {
+       const year = date.getFullYear();
+       const month = String(date.getMonth() + 1).padStart(2, '0');
+       const day = String(date.getDate()).padStart(2, '0');
+       return `${year}-${month}-${day}`;
+   }
+   ```
+
+2. **Timezone-Aware Date Construction**:
+   ```javascript
+   const [year, month, day] = dateString.split('-').map(Number);
+   const date = new Date(year, month - 1, day);
+   ```
+
+---
+
+## 17. Fleet Map Enhancements (September 25, 2025)
+
+### Show All Vessels
+- **Issue**: Only 3 vessels with GPS data were visible
+- **Fix**: Added fixed storage locations for all 7 vessels
+
+### Fixed Vessel Locations
+```javascript
+const fixedLocations = {
+    'Work Boat': { latitude: -33.8126, longitude: 151.2738, address: 'Fergusons Marina' },
+    'Ice Cream Boat': { latitude: -33.8058, longitude: 151.2485, address: 'Dalbora The Spit' },
+    'Sandstone': { latitude: -33.8028, longitude: 151.2659, address: 'Balmoral Mooring' },
+    'Pumice Stone': { latitude: -33.8074, longitude: 151.2723, address: 'Little Manly Commercial Mooring' },
+    'Junior': { latitude: -33.7974, longitude: 151.2508, address: 'Seaforth Mooring' },
+    'Polycraft Yam': { latitude: -33.8085, longitude: 151.2735, address: 'Manly Boat Hire Base' },
+    'Polycraft Merc': { latitude: -33.8085, longitude: 151.2735, address: 'Manly Boat Hire Base' }
+};
+```
+
+### Visual Differentiation
+- **GPS Locations**: Map pin icon (📍), "Last Known Location"
+- **Storage Locations**: Anchor icon (⚓), "Storage Location" label
+
+### Interactive Vessel Cards
+- Click vessel card → Opens map popup
+- Centers and zooms map (level 15)
+- Smooth scroll if map not visible
+- Added `data-vessel-name` attribute for linking
+
+---
+
+## 18. Daily Run Sheet Stats Logic Correction (September 25, 2025)
+
+### Business Logic Clarification
+Fixed misunderstanding of time fields:
+- **Onboarding Time**: Staff preparation start (NOT customer start)
+- **Start Time**: Customer trip start
+- **Finish Time**: Customer trip end  
+- **Deloading Time**: Staff cleanup end
+
+### Updated Stats Calculation
+```javascript
+// Preparing: Between Onboarding and Start Time
+if (currentTime >= onboardingTime && currentTime < startTime) {
+    preparingCount++;
+}
+
+// On Water: Between Start and 30 mins before Finish
+const returningSoonTime = finishTime - 30;
+if (currentTime >= startTime && currentTime < returningSoonTime) {
+    onWaterCount++;
+}
+
+// Returning Soon: Last 30 minutes
+if (currentTime >= returningSoonTime && currentTime < finishTime) {
+    returningCount++;
+}
+```
+
+---
+
+## 19. Railway Infrastructure Issue (September 25, 2025)
+
+### Docker Registry Failure
+- **Issue**: "connection reset by peer" during Docker push
+- **Impact**: All deployments blocked for ~3 days
+- **Resolution**: Railway resolved infrastructure issue
+- **Project ID**: 4f5a2937-91c1-4754-a858-0f03f6b8af2f
+
+---
+
 *Documentation created: September 9, 2025*
-*Last updated: September 23, 2025 (Dashboard redesign, redirect loop fix, comprehensive documentation update)*
+*Last updated: September 25, 2025 (Date handling fixes, fleet map enhancements, stats logic correction)*
