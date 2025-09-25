@@ -1212,12 +1212,24 @@
         }
         
         // Load Google Maps API
-        function loadGoogleMaps() {
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw&libraries=&v=weekly`;
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
+        async function loadGoogleMaps() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                const GOOGLE_MAPS_API_KEY = config.googleMapsApiKey;
+                
+                if (!GOOGLE_MAPS_API_KEY) {
+                    throw new Error('Google Maps API key not configured on server');
+                }
+                
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=&v=weekly`;
+                script.async = true;
+                script.defer = true;
+                document.head.appendChild(script);
+            } catch (error) {
+                console.error('Failed to load Google Maps configuration:', error);
+            }
         }
         
         // Initialize

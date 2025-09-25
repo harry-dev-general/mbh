@@ -91,6 +91,13 @@ app.use(express.static(path.join(__dirname, 'training')));
 // Add vessel maintenance routes
 app.use('/api/vessels', vesselRoutes);
 
+// Config endpoint for frontend configuration
+app.get('/api/config', (req, res) => {
+    res.json({
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ''
+    });
+});
+
 // Daily Run Sheet API endpoints
 app.get('/api/daily-run-sheet', async (req, res) => {
     try {

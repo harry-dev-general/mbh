@@ -3066,8 +3066,8 @@
         let fleetMap;
         let fleetMarkers = [];
         
-        // Google Maps API key (should match the one used in vessel-locations-map.html)
-        const GOOGLE_MAPS_API_KEY = 'AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw';
+        // Google Maps API key is now loaded from server configuration
+        let GOOGLE_MAPS_API_KEY = null;
         // NOTE: If you see "RefererNotAllowedMapError", the API key needs to be authorized for your domain
         // in Google Cloud Console: https://console.cloud.google.com/apis/credentials
         
@@ -3278,7 +3278,24 @@
         }
         
         // Load Google Maps script
-        function loadGoogleMapsAndInitFleet() {
+        async function loadGoogleMapsAndInitFleet() {
+            // First, load the API key from server config
+            if (!GOOGLE_MAPS_API_KEY) {
+                try {
+                    const response = await fetch('/api/config');
+                    const config = await response.json();
+                    GOOGLE_MAPS_API_KEY = config.googleMapsApiKey;
+                    
+                    if (!GOOGLE_MAPS_API_KEY) {
+                        throw new Error('Google Maps API key not configured on server');
+                    }
+                } catch (error) {
+                    console.error('Failed to load configuration:', error);
+                    document.getElementById('fleetMap').innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">Map configuration error</div>';
+                    return;
+                }
+            }
+            
             if (window.google && window.google.maps) {
                 // Google Maps already loaded
                 initFleetMap();
