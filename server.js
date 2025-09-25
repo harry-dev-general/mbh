@@ -172,32 +172,31 @@ app.get('/api/daily-run-sheet', async (req, res) => {
         
         bookings.forEach(booking => {
             const onboardingTime = parseTime(booking.fields['Onboarding Time']);
-            const deloadingTime = parseTime(booking.fields['Deloading Time']);
             const startTime = parseTime(booking.fields['Start Time']);
+            const finishTime = parseTime(booking.fields['Finish Time']);
+            const deloadingTime = parseTime(booking.fields['Deloading Time']);
             
-            if (onboardingTime !== null && deloadingTime !== null) {
-                // Calculate preparation time (30 mins before onboarding)
-                const prepTime = onboardingTime - 30;
-                // Calculate returning soon time (30 mins before deloading)
-                const returningSoonTime = deloadingTime - 30;
+            if (startTime !== null && finishTime !== null) {
+                // Calculate returning soon time (30 mins before finish)
+                const returningSoonTime = finishTime - 30;
                 
                 // Debug logging
-                console.log(`Booking ${booking.fields['Customer Name']}: onboard=${booking.fields['Onboarding Time']} (${onboardingTime}min), deload=${booking.fields['Deloading Time']} (${deloadingTime}min)`);
+                console.log(`Booking ${booking.fields['Customer Name']}: onboard=${booking.fields['Onboarding Time']}, start=${booking.fields['Start Time']} (${startTime}min), finish=${booking.fields['Finish Time']} (${finishTime}min)`);
                 
-                if (currentTime >= prepTime && currentTime < onboardingTime) {
-                    // Currently preparing (30 mins before onboarding)
+                if (onboardingTime !== null && currentTime >= onboardingTime && currentTime < startTime) {
+                    // Currently preparing (between onboarding time and start time)
                     preparingCount++;
-                    console.log(`  -> Status: PREPARING`);
-                } else if (currentTime >= onboardingTime && currentTime < returningSoonTime) {
-                    // Currently on water
+                    console.log(`  -> Status: PREPARING (staff preparing boat)`);
+                } else if (currentTime >= startTime && currentTime < returningSoonTime) {
+                    // Currently on water (between start time and 30 mins before finish)
                     onWaterCount++;
                     console.log(`  -> Status: ON WATER`);
-                } else if (currentTime >= returningSoonTime && currentTime < deloadingTime) {
-                    // Returning soon (30 mins before deloading)
+                } else if (currentTime >= returningSoonTime && currentTime < finishTime) {
+                    // Returning soon (30 mins before finish time)
                     returningCount++;
                     console.log(`  -> Status: RETURNING SOON`);
                 } else {
-                    console.log(`  -> Status: NOT ACTIVE (current=${currentTime}, prep=${prepTime}, onboard=${onboardingTime}, return=${returningSoonTime}, deload=${deloadingTime})`);
+                    console.log(`  -> Status: NOT ACTIVE`);
                 }
             }
         });
