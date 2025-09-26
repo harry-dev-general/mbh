@@ -317,6 +317,21 @@
             margin-bottom: 1rem;
         }
         
+        .refresh-btn {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+        
         /* Live Indicator */
         .live-indicator {
             display: flex;
@@ -384,6 +399,9 @@
             <a href="management-dashboard.html" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
             </a>
+            <button class="btn btn-secondary" onclick="refreshData()" title="Manually refresh data">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
             <button class="btn btn-primary" onclick="exportSalesData()">
                 <i class="fas fa-download"></i> Export Data
             </button>
@@ -537,24 +555,32 @@
         }
         
         // Initialize page
-        function initializePage() {
+        async function initializePage() {
             // Prevent multiple initializations
             if (isInitialized) return;
             isInitialized = true;
             
-            loadIceCreamSales();
-            loadStats();
+            // Load data sequentially to avoid overwhelming Airtable
+            await loadIceCreamSales();
+            
+            // Small delay before loading stats
+            setTimeout(() => {
+                loadStats();
+            }, 500);
             
             // Clear any existing interval
             if (refreshInterval) {
                 clearInterval(refreshInterval);
             }
             
-            // Refresh data every 30 seconds
-            refreshInterval = setInterval(() => {
-                loadIceCreamSales();
-                loadStats();
-            }, 30000);
+            // Refresh data every 60 seconds (increased from 30)
+            refreshInterval = setInterval(async () => {
+                // Load sequentially with delay
+                await loadIceCreamSales();
+                setTimeout(() => {
+                    loadStats();
+                }, 500);
+            }, 60000);
         }
         
         // Load ice cream sales from Airtable
@@ -564,6 +590,16 @@
             isLoadingSales = true;
             
             const container = document.getElementById('salesTableContainer');
+            
+            // Show loading state only if no data is displayed
+            if (allSales.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading ice cream sales...</p>
+                    </div>
+                `;
+            }
             
             try {
                 const dateFilter = document.getElementById('dateFilter').value;
@@ -591,34 +627,53 @@
                         filterFormula = '';
                 }
                 
-                // Fetch ice cream sales via API proxy
+                // Fetch ice cream sales via API proxy with timeout
                 const ICE_CREAM_TABLE_ID = 'tblTajm845Fiij8ud';
-                const response = await fetch(
-                    `/api/airtable/applkAFOn2qxtu7tx/${ICE_CREAM_TABLE_ID}?` +
-                    (filterFormula ? `filterByFormula=${encodeURIComponent(filterFormula)}&` : '') +
-                    `sort[0][field]=Sale Date&sort[0][direction]=desc` +
-                    `&sort[1][field]=Sale Time&sort[1][direction]=desc` +
-                    `&maxRecords=100`,
-                    {
-                        method: 'GET'
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                
+                try {
+                    const response = await fetch(
+                        `/api/airtable/applkAFOn2qxtu7tx/${ICE_CREAM_TABLE_ID}?` +
+                        (filterFormula ? `filterByFormula=${encodeURIComponent(filterFormula)}&` : '') +
+                        `sort[0][field]=Sale Date&sort[0][direction]=desc` +
+                        `&sort[1][field]=Sale Time&sort[1][direction]=desc` +
+                        `&maxRecords=50`, // Reduced from 100 to 50 for faster response
+                        {
+                            method: 'GET',
+                            signal: controller.signal
+                        }
+                    );
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch sales: ${response.status}`);
                     }
-                );
-                
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch sales: ${response.status}`);
+                    
+                    const data = await response.json();
+                    allSales = data.records || [];
+                    
+                    displaySales(allSales);
+                    
+                } catch (innerError) {
+                    if (innerError.name === 'AbortError') {
+                        throw new Error('Request timed out - please try again');
+                    }
+                    throw innerError;
                 }
-                
-                const data = await response.json();
-                allSales = data.records || [];
-                
-                displaySales(allSales);
                 
             } catch (error) {
                 console.error('Error loading ice cream sales:', error);
+                const errorMessage = error.message.includes('timed out') 
+                    ? 'Loading is taking too long. Please refresh the page.'
+                    : 'Failed to load sales data';
+                    
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <p>Failed to load sales data</p>
+                        <p>${errorMessage}</p>
+                        ${error.message.includes('timed out') ? '<button onclick="location.reload()" class="refresh-btn">Refresh Page</button>' : ''}
                     </div>
                 `;
             } finally {
@@ -696,16 +751,48 @@
                 const yesterday = new Date(today);
                 yesterday.setDate(today.getDate() - 1);
                 
-                // Fetch today's sales
-                const todayFilter = `{Sale Date} = '${formatDate(today)}'`;
-                const todayResponse = await fetch(
-                    `/api/airtable/applkAFOn2qxtu7tx/tblTajm845Fiij8ud?` +
-                    `filterByFormula=${encodeURIComponent(todayFilter)}`,
-                    { method: 'GET' }
-                );
+                // If we already have sales data and it's filtered by today, use it
+                const dateFilter = document.getElementById('dateFilter').value;
+                let todaySales = [];
                 
-                const todayData = await todayResponse.json();
-                const todaySales = todayData.records || [];
+                if (dateFilter === 'today' && allSales.length > 0) {
+                    // Use existing data
+                    todaySales = allSales;
+                } else {
+                    // Fetch today's sales with timeout
+                    const todayFilter = `{Sale Date} = '${formatDate(today)}'`;
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+                    
+                    try {
+                        const todayResponse = await fetch(
+                            `/api/airtable/applkAFOn2qxtu7tx/tblTajm845Fiij8ud?` +
+                            `filterByFormula=${encodeURIComponent(todayFilter)}&maxRecords=20`, // Limit to 20 for stats
+                            { 
+                                method: 'GET',
+                                signal: controller.signal
+                            }
+                        );
+                        
+                        clearTimeout(timeoutId);
+                        
+                        if (!todayResponse.ok) {
+                            throw new Error(`Failed to fetch stats: ${todayResponse.status}`);
+                        }
+                        
+                        const todayData = await todayResponse.json();
+                        todaySales = todayData.records || [];
+                        
+                    } catch (error) {
+                        if (error.name === 'AbortError') {
+                            console.error('Stats request timed out');
+                            // Continue with empty data rather than failing completely
+                            todaySales = [];
+                        } else {
+                            throw error;
+                        }
+                    }
+                }
                 
                 // Calculate stats
                 const todayCount = todaySales.length;
@@ -883,6 +970,29 @@
             return `${year}-${month}-${day}`;
         }
         
+        // Manual refresh function
+        async function refreshData() {
+            const refreshBtn = document.querySelector('button[onclick="refreshData()"]');
+            const icon = refreshBtn.querySelector('i');
+            
+            // Add spinning animation
+            icon.classList.add('fa-spin');
+            refreshBtn.disabled = true;
+            
+            try {
+                await loadIceCreamSales();
+                setTimeout(() => {
+                    loadStats();
+                }, 500);
+            } finally {
+                // Remove spinning animation
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                    refreshBtn.disabled = false;
+                }, 1000);
+            }
+        }
+        
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
             if (refreshInterval) {
@@ -904,12 +1014,17 @@
                 refreshInterval = null;
             } else if (!document.hidden && !refreshInterval && isInitialized) {
                 // Restart refresh when page becomes visible again (only if initialized)
-                loadIceCreamSales();
-                loadStats();
-                refreshInterval = setInterval(() => {
-                    loadIceCreamSales();
-                    loadStats();
-                }, 30000);
+                loadIceCreamSales().then(() => {
+                    setTimeout(() => {
+                        loadStats();
+                    }, 500);
+                });
+                refreshInterval = setInterval(async () => {
+                    await loadIceCreamSales();
+                    setTimeout(() => {
+                        loadStats();
+                    }, 500);
+                }, 60000);
             }
         });
     </script>
