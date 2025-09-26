@@ -1238,6 +1238,19 @@
                 // Show loading state
                 document.getElementById('vesselGrid').innerHTML = '<div class="loading"><div class="spinner"></div><p>Initializing...</p></div>';
                 
+                // Wait for config to be available
+                if (!window.MBHConfig) {
+                    console.log('Waiting for config to load...');
+                    await new Promise(resolve => {
+                        const checkConfig = setInterval(() => {
+                            if (window.MBHConfig) {
+                                clearInterval(checkConfig);
+                                resolve();
+                            }
+                        }, 100);
+                    });
+                }
+                
                 // Initialize Supabase client
                 console.log('Initializing Supabase...');
                 supabase = await window.MBHConfig.initializeSupabase();
