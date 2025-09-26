@@ -94,7 +94,10 @@ app.use('/api/vessels', vesselRoutes);
 // Config endpoint for frontend configuration
 app.get('/api/config', (req, res) => {
     res.json({
-        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ''
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
+        SUPABASE_URL: process.env.SUPABASE_URL || 'https://etkugeooigiwahikrmzr.supabase.co',
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU',
+        API_BASE_URL: '' // Empty string means use relative URLs
     });
 });
 
@@ -408,15 +411,8 @@ app.get('/api/airtable/*', async (req, res) => {
   }
 });
 
-// Environment variables endpoint (for client-side configuration)
-app.get('/api/config', (req, res) => {
-  res.json({
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-    // Don't expose the Airtable API key
-    API_BASE_URL: ''  // Empty string means use relative URLs
-  });
-});
+// Note: The /api/config endpoint has been moved earlier in the file
+// to consolidate all frontend configuration in one place
 
 // Shift response endpoint - handles magic link clicks from SMS
 app.get('/api/shift-response', async (req, res) => {
