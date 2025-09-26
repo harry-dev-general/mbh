@@ -789,6 +789,30 @@
             color: #ccc;
             margin-bottom: 1rem;
         }
+        
+        /* Add-on indicator badge */
+        .addon-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff9800;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            z-index: 15;
+        }
+        
+        /* Ensure allocation blocks are positioned for absolute children */
+        .allocation-block {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -1173,14 +1197,16 @@
             const typeLabel = type === 'onboarding' ? '🚢 ON' : '🏁 OFF';
             const typeColorClass = type === 'onboarding' ? 'onboarding-block' : 'deloading-block';
             
-            // Get add-on icons only for onboarding
-            const addOnIcons = type === 'onboarding' ? getAddOnIcons(booking.addOns) : '';
+            // Check if booking has add-ons (only for onboarding)
+            const hasAddOns = type === 'onboarding' && booking.addOns && booking.addOns.trim() !== '' && booking.addOns !== 'None';
+            const addOnIndicator = hasAddOns ? '<span class="addon-indicator" title="This booking includes add-ons">+</span>' : '';
             
             return `
                 <div class="allocation-block ${typeColorClass} ${statusClass}" 
                      style="left: ${left}px; width: ${width}px;"
-                     title="${booking.customerName} - ${type === 'onboarding' ? 'Onboarding' : 'Deloading'} at ${time}"
+                     title="${booking.customerName} - ${type === 'onboarding' ? 'Onboarding' : 'Deloading'} at ${time}${hasAddOns ? ' (includes add-ons)' : ''}"
                      onclick='showBookingDetails(${JSON.stringify(booking).replace(/'/g, "&apos;")}, "${type}")'>
+                    ${addOnIndicator}
                     <div style="display: flex; flex-direction: column; gap: 0.2rem;">
                         <div style="font-weight: 600; font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem;">
                             <span>${typeLabel}</span>
@@ -1191,7 +1217,6 @@
                         <div style="font-size: 0.65rem; opacity: 0.9; display: flex; align-items: center; gap: 0.2rem;">
                             <i class="fas ${hasStaff ? 'fa-user-check' : 'fa-user-times'}" style="font-size: 0.6rem;"></i>
                             <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${staffName}</span>
-                            ${addOnIcons}
                         </div>
                     </div>
                 </div>

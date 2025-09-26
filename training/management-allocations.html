@@ -919,6 +919,30 @@
         .user-info.show-mobile {
             z-index: 1000;
         }
+        
+        /* Add-on indicator badge */
+        .addon-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff9800;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            z-index: 15;
+        }
+        
+        /* Ensure booking blocks are positioned for absolute children */
+        .booking-block {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -2304,7 +2328,12 @@
                     <i class="fas fa-anchor"></i> ${bookedBoatType}
                 </div>` : '';
             
+            // Check if booking has add-ons
+            const hasAddOns = booking['Add-ons'] && booking['Add-ons'].trim() !== '' && booking['Add-ons'] !== 'None';
+            const addOnIndicator = hasAddOns ? '<span class="addon-indicator" title="This booking includes add-ons">+</span>' : '';
+            
             bookingBlock.innerHTML = `
+                ${addOnIndicator}
                 <div style="font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     ${typeLabel} ${customerName}
                 </div>
@@ -2317,8 +2346,9 @@
             
             const boatTitle = boatName ? `\nBoat Assigned: ${boatName}` : '\nBoat Assigned: None';
             const boatTypeTitle = bookedBoatType ? `\nBoat Type: ${bookedBoatType}` : '';
+            const addOnsTitle = hasAddOns ? `\nAdd-ons: ${booking['Add-ons']}` : '';
             const completionStatus = isAllocationComplete ? 'COMPLETE ✅' : (hasStaff ? 'Needs Boat' : (hasBoat ? 'Needs Staff' : 'Needs Staff & Boat'));
-            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Booking Start' : 'Booking Finish'}: ${displayTime}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} Time: ${time}\nStaff: ${hasStaff ? 'Assigned' : 'NEEDED'}\nBoat: ${hasBoat ? boatName || 'Assigned' : 'NEEDED'}${boatTypeTitle}\nStatus: ${completionStatus}\nClick to manage allocation`;
+            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Booking Start' : 'Booking Finish'}: ${displayTime}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} Time: ${time}\nStaff: ${hasStaff ? 'Assigned' : 'NEEDED'}\nBoat: ${hasBoat ? boatName || 'Assigned' : 'NEEDED'}${boatTypeTitle}${addOnsTitle}\nStatus: ${completionStatus}\nClick to manage allocation`;
             
             // Add click handler to open allocation modal
             bookingBlock.onclick = (e) => {

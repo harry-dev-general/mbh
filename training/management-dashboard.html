@@ -1599,6 +1599,30 @@
             margin-top: auto;
             background: white;
         }
+        
+        /* Add-on indicator badge */
+        .addon-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff9800;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            z-index: 15;
+        }
+        
+        /* Ensure calendar events are positioned for absolute children */
+        .calendar-event {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -2331,7 +2355,8 @@
                             boat: fields['Booked Boat Type'] || 'Boat',
                             status: fields['Status'],
                             amount: fields['Total Amount'],
-                            hasStaff: !!(fields['Onboarding Employee']?.[0] || fields['Deloading Employee']?.[0])
+                            hasStaff: !!(fields['Onboarding Employee']?.[0] || fields['Deloading Employee']?.[0]),
+                            addOns: fields['Add-ons'] || ''
                         });
                     } else {
                         console.warn(`Could not parse time for booking: ${fields['Customer Name']} with time: ${fields['Start Time']}`);
@@ -2373,8 +2398,11 @@
                         cellBookings.forEach((booking, index) => {
                             if (index < 2) { // Show max 2 bookings per cell
                                 const staffClass = booking.hasStaff ? 'staffed' : 'unstaffed';
+                                const hasAddOns = booking.addOns && booking.addOns.trim() !== '' && booking.addOns !== 'None';
+                                const addOnIndicator = hasAddOns ? '<span class="addon-indicator" title="This booking includes add-ons">+</span>' : '';
                     html += `
-                                    <div class="calendar-event ${staffClass}" title="${booking.customer} - ${booking.boat}">
+                                    <div class="calendar-event ${staffClass}" title="${booking.customer} - ${booking.boat}${hasAddOns ? ' (includes add-ons)' : ''}">
+                                        ${addOnIndicator}
                                         <div class="event-time">${booking.boat}</div>
                                         <div class="event-details">${booking.customer}</div>
                         </div>
