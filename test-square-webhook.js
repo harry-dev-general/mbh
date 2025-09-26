@@ -4,10 +4,10 @@
  */
 
 const crypto = require('crypto');
-const fetch = require('node-fetch');
+const axios = require('axios');
 
 // Configuration
-const WEBHOOK_URL = 'http://localhost:3000/api/square-webhook';
+const WEBHOOK_URL = 'http://localhost:8080/api/square-webhook';
 const SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || 'CPK571BwzDvZCy58EhV8FQ';
 
 // Generate Square webhook signature
@@ -72,19 +72,15 @@ async function testPaymentCompleted() {
     console.log('');
     
     try {
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
+        const response = await axios.post(WEBHOOK_URL, webhookBody, {
             headers: {
                 'Content-Type': 'application/json',
                 'x-square-hmacsha256-signature': signature
-            },
-            body: JSON.stringify(webhookBody)
+            }
         });
         
-        const responseText = await response.text();
-        
         console.log('✅ Response status:', response.status);
-        console.log('📥 Response body:', responseText);
+        console.log('📥 Response body:', response.data);
         
         if (response.status === 200) {
             console.log('\n🎉 Webhook test successful!');
@@ -94,8 +90,13 @@ async function testPaymentCompleted() {
         }
         
     } catch (error) {
-        console.error('❌ Error sending webhook:', error.message);
-        console.log('\nMake sure the server is running on port 3000');
+        if (error.response) {
+            console.log('❌ Response status:', error.response.status);
+            console.log('📥 Response body:', error.response.data);
+        } else {
+            console.error('❌ Error sending webhook:', error.message);
+        }
+        console.log('\nMake sure the server is running on port 8080');
     }
 }
 
@@ -129,17 +130,15 @@ async function testPaymentPending() {
     const signature = generateSignature(webhookBody, SIGNATURE_KEY);
     
     try {
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
+        const response = await axios.post(WEBHOOK_URL, webhookBody, {
             headers: {
                 'Content-Type': 'application/json',
                 'x-square-hmacsha256-signature': signature
-            },
-            body: JSON.stringify(webhookBody)
+            }
         });
         
         console.log('✅ Response status:', response.status);
-        console.log('📥 Response:', await response.text());
+        console.log('📥 Response:', response.data);
         console.log('\nThis should have been skipped (PENDING status)');
         
     } catch (error) {
@@ -163,20 +162,23 @@ async function testInvalidSignature() {
     };
     
     try {
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
+        const response = await axios.post(WEBHOOK_URL, webhookBody, {
             headers: {
                 'Content-Type': 'application/json',
                 'x-square-hmacsha256-signature': 'invalid-signature'
-            },
-            body: JSON.stringify(webhookBody)
+            }
         });
         
         console.log('📥 Response status:', response.status);
         console.log('Should be 401 Unauthorized');
         
     } catch (error) {
-        console.error('❌ Error:', error.message);
+        if (error.response) {
+            console.log('📥 Response status:', error.response.status);
+            console.log('Expected 401 Unauthorized:', error.response.status === 401 ? '✅' : '❌');
+        } else {
+            console.error('❌ Error:', error.message);
+        }
     }
 }
 
