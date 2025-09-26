@@ -756,7 +756,7 @@
                     try {
                         const todayResponse = await fetch(
                             `/api/airtable/applkAFOn2qxtu7tx/tblTajm845Fiij8ud?` +
-                            `filterByFormula=${encodeURIComponent(todayFilter)}&maxRecords=20`, // Limit to 20 for stats
+                            `filterByFormula=${encodeURIComponent(todayFilter)}&maxRecords=100`, // Increased limit to handle more daily sales
                             { 
                                 method: 'GET',
                                 signal: controller.signal
