@@ -411,11 +411,11 @@
     <!-- Main Content -->
     <main class="main-container">
         <!-- Stats Overview -->
-        <div class="stats-grid" id="statsGrid">
+        <div class="stats-grid" id="statsGrid" style="grid-template-columns: repeat(2, 1fr); max-width: 600px;">
             <div class="stat-card">
                 <div class="stat-header">
                     <div>
-                        <div class="stat-value">--</div>
+                        <div class="stat-value">0</div>
                         <div class="stat-label">Sales Today</div>
                     </div>
                     <div class="stat-icon sales">
@@ -423,14 +423,14 @@
                     </div>
                 </div>
                 <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i> -- from yesterday
+                    <i class="fas fa-arrow-up"></i> Live tracking
                 </div>
             </div>
             
             <div class="stat-card">
                 <div class="stat-header">
                     <div>
-                        <div class="stat-value">$--</div>
+                        <div class="stat-value">$0.00</div>
                         <div class="stat-label">Revenue Today</div>
                     </div>
                     <div class="stat-icon revenue">
@@ -438,37 +438,7 @@
                     </div>
                 </div>
                 <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i> -- from yesterday
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div>
-                        <div class="stat-value">$--</div>
-                        <div class="stat-label">Average Sale</div>
-                    </div>
-                    <div class="stat-icon average">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                </div>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i> -- this week
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div>
-                        <div class="stat-value">--</div>
-                        <div class="stat-label">Active Vessels</div>
-                    </div>
-                    <div class="stat-icon vessels">
-                        <i class="fas fa-ship"></i>
-                    </div>
-                </div>
-                <div class="stat-change">
-                    -- vessels operating
+                    <i class="fas fa-chart-line"></i> Real-time
                 </div>
             </div>
         </div>
@@ -611,7 +581,8 @@
                 
                 switch(dateFilter) {
                     case 'today':
-                        filterFormula = `{Sale Date} = '${formatDate(today)}'`;
+                        // Use IS_SAME for accurate date comparison
+                        filterFormula = `IS_SAME({Sale Date}, '${formatDate(today)}', 'day')`;
                         break;
                     case 'week':
                         const weekAgo = new Date(today);
@@ -653,6 +624,17 @@
                     
                     const data = await response.json();
                     allSales = data.records || [];
+                    
+                    console.log('Loaded ice cream sales:', {
+                        count: allSales.length,
+                        dateFilter: dateFilter,
+                        filterFormula: filterFormula,
+                        sales: allSales.map(s => ({
+                            customer: s.fields['Customer Name'],
+                            amount: s.fields['Sale Amount'],
+                            date: s.fields['Sale Date']
+                        }))
+                    });
                     
                     displaySales(allSales);
                     
@@ -760,7 +742,10 @@
                     todaySales = allSales;
                 } else {
                     // Fetch today's sales with timeout
-                    const todayFilter = `{Sale Date} = '${formatDate(today)}'`;
+                    // Use IS_SAME for accurate date comparison
+                    const todayFilter = `IS_SAME({Sale Date}, '${formatDate(today)}', 'day')`;
+                    console.log('Fetching stats for date:', formatDate(today), 'Filter:', todayFilter);
+                    
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
                     
@@ -799,22 +784,22 @@
                 const todayRevenue = todaySales.reduce((sum, record) => {
                     return sum + (record.fields['Sale Amount'] || 0);
                 }, 0);
-                const todayAverage = todayCount > 0 ? todayRevenue / todayCount : 0;
                 
-                // Count unique vessels
-                const vessels = new Set();
-                todaySales.forEach(record => {
-                    if (record.fields['Vessel/Operation']) {
-                        vessels.add(record.fields['Vessel/Operation']);
-                    }
+                console.log('Today\'s sales data:', {
+                    date: formatDate(today),
+                    salesCount: todayCount,
+                    revenue: todayRevenue,
+                    sales: todaySales.map(s => ({
+                        customer: s.fields['Customer Name'],
+                        amount: s.fields['Sale Amount'],
+                        date: s.fields['Sale Date']
+                    }))
                 });
                 
                 // Update UI
                 updateStats({
                     salesCount: todayCount,
-                    revenue: todayRevenue,
-                    average: todayAverage,
-                    vessels: vessels.size
+                    revenue: todayRevenue
                 });
                 
             } catch (error) {
@@ -829,67 +814,23 @@
             const statsGrid = document.getElementById('statsGrid');
             if (!statsGrid) return;
             
-            statsGrid.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value">${stats.salesCount}</div>
-                            <div class="stat-label">Sales Today</div>
-                        </div>
-                        <div class="stat-icon sales">
-                            <i class="fas fa-ice-cream"></i>
-                        </div>
-                    </div>
-                    <div class="stat-change positive">
-                        <i class="fas fa-arrow-up"></i> Live tracking
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value">$${stats.revenue.toFixed(2)}</div>
-                            <div class="stat-label">Revenue Today</div>
-                        </div>
-                        <div class="stat-icon revenue">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                    </div>
-                    <div class="stat-change positive">
-                        <i class="fas fa-chart-line"></i> Real-time
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value">$${stats.average.toFixed(2)}</div>
-                            <div class="stat-label">Average Sale</div>
-                        </div>
-                        <div class="stat-icon average">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                    </div>
-                    <div class="stat-change">
-                        <i class="fas fa-info-circle"></i> Today's average
-                    </div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value">${stats.vessels}</div>
-                            <div class="stat-label">Active Vessels</div>
-                        </div>
-                        <div class="stat-icon vessels">
-                            <i class="fas fa-ship"></i>
-                        </div>
-                    </div>
-                    <div class="stat-change">
-                        Unique vessels today
-                    </div>
-                </div>
-            `;
+            // Update existing stat cards instead of replacing all HTML
+            const statCards = statsGrid.querySelectorAll('.stat-card');
+            
+            // Update Sales Today
+            if (statCards[0]) {
+                statCards[0].querySelector('.stat-value').textContent = stats.salesCount;
+            }
+            
+            // Update Revenue Today
+            if (statCards[1]) {
+                statCards[1].querySelector('.stat-value').textContent = `$${stats.revenue.toFixed(2)}`;
+            }
+            
+            console.log('Stats updated:', {
+                salesCount: stats.salesCount,
+                revenue: stats.revenue
+            });
         }
         
         // Filter sales
