@@ -496,6 +496,9 @@
         // Global variables
         let allSales = [];
         let refreshInterval;
+        let isLoadingSales = false;
+        let isLoadingStats = false;
+        let isInitialized = false;
         
         // Listen for auth state changes
         supabase.auth.onAuthStateChange((event, session) => {
@@ -535,8 +538,17 @@
         
         // Initialize page
         function initializePage() {
+            // Prevent multiple initializations
+            if (isInitialized) return;
+            isInitialized = true;
+            
             loadIceCreamSales();
             loadStats();
+            
+            // Clear any existing interval
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
             
             // Refresh data every 30 seconds
             refreshInterval = setInterval(() => {
@@ -547,6 +559,10 @@
         
         // Load ice cream sales from Airtable
         async function loadIceCreamSales() {
+            // Prevent duplicate requests
+            if (isLoadingSales) return;
+            isLoadingSales = true;
+            
             const container = document.getElementById('salesTableContainer');
             
             try {
@@ -605,6 +621,8 @@
                         <p>Failed to load sales data</p>
                     </div>
                 `;
+            } finally {
+                isLoadingSales = false;
             }
         }
         
@@ -668,6 +686,10 @@
         
         // Load statistics
         async function loadStats() {
+            // Prevent duplicate requests
+            if (isLoadingStats) return;
+            isLoadingStats = true;
+            
             try {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -710,6 +732,8 @@
                 
             } catch (error) {
                 console.error('Error loading stats:', error);
+            } finally {
+                isLoadingStats = false;
             }
         }
         
@@ -863,6 +887,29 @@
         window.addEventListener('beforeunload', () => {
             if (refreshInterval) {
                 clearInterval(refreshInterval);
+            }
+        });
+        
+        // Also cleanup when navigating away via back button or links
+        window.addEventListener('pagehide', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+        
+        // Cleanup if page becomes hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            } else if (!document.hidden && !refreshInterval && isInitialized) {
+                // Restart refresh when page becomes visible again (only if initialized)
+                loadIceCreamSales();
+                loadStats();
+                refreshInterval = setInterval(() => {
+                    loadIceCreamSales();
+                    loadStats();
+                }, 30000);
             }
         });
     </script>
