@@ -8,7 +8,7 @@ const fetch = require('node-fetch');
 
 // Configuration
 const WEBHOOK_URL = 'http://localhost:3000/api/square-webhook';
-const SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || 'test-key';
+const SIGNATURE_KEY = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || 'CPK571BwzDvZCy58EhV8FQ';
 
 // Generate Square webhook signature
 function generateSignature(body, key) {
@@ -44,12 +44,12 @@ async function testPaymentCompleted() {
                         amount: 25000,
                         currency: 'AUD'
                     },
-                    receipt_number: `TEST-${Date.now()}`,
+                    receipt_number: `ICE-${Date.now()}`,
                     receipt_url: 'https://example.com/receipt',
                     order_id: `test_order_${Date.now()}`,
-                    buyer_email_address: 'test.customer@example.com',
+                    buyer_email_address: 'icecream.customer@example.com',
                     buyer_phone_number: '+61412345678',
-                    note: 'Test booking from Square',
+                    note: 'Ice cream boat sale - Walker Courtney',
                     location_id: 'LXXXXXXXXX',
                     source_type: 'CARD'
                 }

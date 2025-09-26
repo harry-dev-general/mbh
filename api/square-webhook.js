@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const router = express.Router();
+const { Client, Environment } = require('square');
 
 /**
  * Square Webhook Handler
@@ -9,7 +10,17 @@ const router = express.Router();
  * Events handled:
  * - payment.created
  * - payment.updated
+ * 
+ * Filters for: Ice-Cream-Boat-Sales category only
  */
+
+// Initialize Square client
+const squareClient = new Client({
+    accessToken: process.env.SQUARE_ACCESS_TOKEN || 'EAAAlxvlv1BGVkvpMDljJs4JeK6o0Z4JzXpLgFRmrBhH5HQ_lET7JTWL7uoSxmYb',
+    environment: process.env.SQUARE_ENVIRONMENT === 'production' 
+        ? Environment.Production 
+        : Environment.Sandbox
+});
 
 // Verify Square webhook signature for security
 function verifyWebhookSignature(body, signature, signingKey) {
@@ -78,6 +89,70 @@ function generateBookingCode() {
     return `SQ-${dateStr}-${random}`;
 }
 
+// Check if order belongs to Ice-Cream-Boat-Sales category
+async function isIceCreamBoatSale(orderId) {
+    if (!orderId) {
+        console.log('❌ No order ID provided, skipping');
+        return false;
+    }
+    
+    try {
+        console.log(`🔍 Checking order ${orderId} for Ice-Cream-Boat-Sales category...`);
+        
+        // Fetch order details from Square
+        const response = await squareClient.ordersApi.retrieveOrder(orderId);
+        const order = response.result.order;
+        
+        // Check line items for category
+        const lineItems = order.lineItems || [];
+        
+        for (const item of lineItems) {
+            // Check if item has catalog object ID
+            if (item.catalogObjectId) {
+                // Fetch catalog item details
+                const catalogResponse = await squareClient.catalogApi.retrieveCatalogObject(
+                    item.catalogObjectId,
+                    true // Include related objects
+                );
+                
+                const catalogItem = catalogResponse.result.object;
+                
+                // Check if item belongs to Ice-Cream-Boat-Sales category
+                if (catalogItem.itemData?.categoryId) {
+                    // Fetch category details
+                    const categoryResponse = await squareClient.catalogApi.retrieveCatalogObject(
+                        catalogItem.itemData.categoryId
+                    );
+                    
+                    const category = categoryResponse.result.object;
+                    const categoryName = category.categoryData?.name;
+                    
+                    console.log(`📦 Item category: ${categoryName}`);
+                    
+                    if (categoryName === 'Ice-Cream-Boat-Sales') {
+                        console.log('✅ Order contains Ice-Cream-Boat-Sales items');
+                        return true;
+                    }
+                }
+            }
+            
+            // Also check item name as fallback
+            if (item.name && item.name.toLowerCase().includes('ice cream')) {
+                console.log('✅ Order contains ice cream items (by name)');
+                return true;
+            }
+        }
+        
+        console.log('❌ Order does not contain Ice-Cream-Boat-Sales items');
+        return false;
+        
+    } catch (error) {
+        console.error('Error checking order category:', error);
+        // If we can't check, default to false to avoid creating unwanted records
+        return false;
+    }
+}
+
 // Main webhook handler
 router.post('/square-webhook', async (req, res) => {
     console.log('\n🔔 Square webhook received at', new Date().toISOString());
@@ -87,13 +162,11 @@ router.post('/square-webhook', async (req, res) => {
         const signature = req.headers['x-square-hmacsha256-signature'];
         const body = JSON.stringify(req.body);
         
-        if (!process.env.SQUARE_WEBHOOK_SIGNATURE_KEY) {
-            console.error('❌ SQUARE_WEBHOOK_SIGNATURE_KEY not configured');
-            return res.status(500).send('Server configuration error');
-        }
+        const webhookSignatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY || 'CPK571BwzDvZCy58EhV8FQ';
         
-        if (!verifyWebhookSignature(body, signature, process.env.SQUARE_WEBHOOK_SIGNATURE_KEY)) {
+        if (!verifyWebhookSignature(body, signature, webhookSignatureKey)) {
             console.error('❌ Invalid webhook signature');
+            console.error('Expected signature with key:', webhookSignatureKey.substring(0, 10) + '...');
             return res.status(401).send('Unauthorized');
         }
         
@@ -122,6 +195,13 @@ router.post('/square-webhook', async (req, res) => {
             console.log(`💰 Payment ${paymentId}: $${amount} ${currency}`);
             console.log(`📄 Receipt: ${receiptNumber}`);
             
+            // 4a. Check if this is an ice cream boat sale
+            const isIceCreamSale = await isIceCreamBoatSale(orderId);
+            if (!isIceCreamSale) {
+                console.log('⏭️ Skipping - Not an Ice-Cream-Boat-Sale');
+                return res.status(200).send('OK - Not ice cream sale');
+            }
+            
             // 5. Extract customer details
             const customerEmail = payment.buyer_email_address || '';
             const customerName = extractCustomerName(payment);
@@ -129,19 +209,49 @@ router.post('/square-webhook', async (req, res) => {
             
             console.log(`👤 Customer: ${customerName} (${customerEmail})`);
             
-            // 6. Set default booking details
-            // These would ideally come from order metadata or catalog items
+            // 6. Extract booking details from order
             const now = new Date();
-            const bookingDetails = {
-                boatType: 'Square Payment', // Update when order API is integrated
+            let bookingDetails = {
+                boatType: 'Ice Cream Boat Operations',
                 addOns: '',
                 bookingDate: formatDateAEST(now),
                 startTime: '09:00 am',
                 endTime: '05:00 pm'
             };
             
-            // TODO: If order_id exists, fetch order details from Square API
-            // to get actual boat type, add-ons, and booking times
+            // Fetch order details to get more specific information
+            if (orderId) {
+                try {
+                    const orderResponse = await squareClient.ordersApi.retrieveOrder(orderId);
+                    const order = orderResponse.result.order;
+                    
+                    // Extract first line item as boat type
+                    if (order.lineItems && order.lineItems.length > 0) {
+                        bookingDetails.boatType = order.lineItems[0].name || 'Ice Cream Boat Operations';
+                        
+                        // Extract modifiers as add-ons
+                        const addOns = [];
+                        order.lineItems.forEach(item => {
+                            if (item.modifiers) {
+                                item.modifiers.forEach(modifier => {
+                                    addOns.push(`${modifier.name} - $${(modifier.totalPriceMoney.amount / 100).toFixed(2)}`);
+                                });
+                            }
+                        });
+                        bookingDetails.addOns = addOns.join(', ');
+                    }
+                    
+                    // Check for custom attributes or metadata
+                    if (order.metadata) {
+                        bookingDetails.bookingDate = order.metadata.booking_date || bookingDetails.bookingDate;
+                        bookingDetails.startTime = order.metadata.start_time || bookingDetails.startTime;
+                        bookingDetails.endTime = order.metadata.end_time || bookingDetails.endTime;
+                    }
+                    
+                } catch (error) {
+                    console.error('Error fetching order details:', error);
+                }
+            }
             
             // 7. Check for duplicate payment
             // TODO: Implement duplicate check by querying Airtable for Square Payment ID

@@ -13,7 +13,7 @@
 SQUARE_ACCESS_TOKEN=EAAAlxvlv1BGVkvpMDljJs4JeK6o0Z4JzXpLgFRmrBhH5HQ_lET7JTWL7uoSxmYb
 SQUARE_APPLICATION_ID=sandbox-sq0idb-XMJPuJhbFV7hveP13KCkzQ
 SQUARE_ENVIRONMENT=sandbox
-SQUARE_WEBHOOK_SIGNATURE_KEY=to_be_added
+SQUARE_WEBHOOK_SIGNATURE_KEY=CPK571BwzDvZCy58EhV8FQ
 ```
 
 ### 2. Test the connection:
@@ -47,14 +47,16 @@ node test-square-webhook.js
 railway variables set SQUARE_ACCESS_TOKEN=EAAAlxvlv1BGVkvpMDljJs4JeK6o0Z4JzXpLgFRmrBhH5HQ_lET7JTWL7uoSxmYb
 railway variables set SQUARE_APPLICATION_ID=sandbox-sq0idb-XMJPuJhbFV7hveP13KCkzQ
 railway variables set SQUARE_ENVIRONMENT=sandbox
-railway variables set SQUARE_WEBHOOK_SIGNATURE_KEY=your_key_here
+railway variables set SQUARE_WEBHOOK_SIGNATURE_KEY=CPK571BwzDvZCy58EhV8FQ
 ```
 
 ## 📝 Notes
 - Webhook will create bookings in your existing Bookings Dashboard table
+- **Only Ice-Cream-Boat-Sales category transactions will be recorded**
 - Phone numbers will be captured automatically
 - Add-on indicators will show if Square order includes modifiers
 - All times converted to Sydney timezone
+- Webhook signature key is already configured: CPK571BwzDvZCy58EhV8FQ
 
 ## 🚀 Production Checklist
 - [ ] Get production Square credentials
