@@ -216,7 +216,29 @@ new Date().toLocaleString('en-AU', {timeZone: 'Australia/Sydney'})
 1. **Redirect loops**: Check auth state with `getSession()` not `getUser()`
 2. **Missing data**: Verify Airtable field names match exactly
 3. **Wrong dates**: Check for hardcoded dates or timezone issues
-4. **Map not loading**: Verify Google Maps API key
+4. **Map not loading**: Verify Google Maps API key (now served via `/api/config`)
+5. **Slow API responses**: Airtable rate limits (5 req/sec), use timeouts
+6. **Date filtering**: Use `IS_SAME()` for Airtable date field comparisons
+
+## 🚀 Recent Implementations (September 2025)
+
+### New Features
+1. **Square Integration** - Automatic ice cream sales sync (`/api/square-webhook.js`)
+2. **Ice Cream Sales Page** - Live dashboard at `/training/ice-cream-sales.html`
+3. **Add-on Indicators** - Visual badges on bookings with add-ons
+4. **Phone Number Capture** - From Checkfront webhooks
+5. **Secure API Keys** - Google Maps key via `/api/config` endpoint
+
+### Performance Fixes
+- Request timeouts (30s sales, 15s stats)
+- Sequential loading with delays
+- Reduced payload sizes
+- Smart refresh intervals
+
+### Key Documentation
+- `/docs/SEPTEMBER_2025_FEATURE_IMPLEMENTATIONS.md` - Detailed implementation guide
+- `/docs/02-features/ice-cream-sales/` - Ice cream feature docs
+- `/docs/03-integrations/square/` - Square integration docs
 
 ## 📞 Support Resources
 
@@ -224,6 +246,7 @@ new Date().toLocaleString('en-AU', {timeZone: 'Australia/Sydney'})
 - Internal: `/docs/` directory structure
 - Airtable API: https://airtable.com/api
 - Supabase Auth: https://supabase.com/docs/guides/auth
+- Square API: https://developer.squareup.com/docs
 
 ### Project Context
 - **Client**: Manly Boat Hire
@@ -237,6 +260,8 @@ new Date().toLocaleString('en-AU', {timeZone: 'Australia/Sydney'})
 2. **Mobile Experience**: Staff primarily use phones
 3. **Reliability**: System must work during peak season
 4. **SMS Communications**: Critical for staff coordination
+5. **Payment Integration**: Square integration for ice cream sales
+6. **Performance**: Handling slow Airtable API responses
 
 ## 💡 Best Practices Summary
 
