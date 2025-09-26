@@ -15,7 +15,6 @@ async function testDirectIceCreamSale() {
                 'Customer Name': 'Test Customer - Sarah Johnson',
                 'Customer Email': 'test.icecream@example.com',
                 'Phone Number': '+61412345678',
-                'Status': 'PAID',
                 'Sale Amount': 25.00,
                 'Vessel/Operation': 'Ice Cream Boat - Walker Courtney',
                 'Add-ons': 'Extra Scoop - $5.00, Waffle Cone - $2.00',

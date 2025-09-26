@@ -262,7 +262,6 @@ router.post('/square-webhook', async (req, res) => {
                 'Customer Name': customerName,
                 'Customer Email': customerEmail,
                 'Phone Number': customerPhone,
-                'Status': mapSquareStatus(payment.status),
                 'Sale Amount': amount,
                 'Vessel/Operation': bookingDetails.boatType,
                 'Add-ons': bookingDetails.addOns,
@@ -270,7 +269,7 @@ router.post('/square-webhook', async (req, res) => {
                 'Sale Time': formatTimeAEST(now),
                 'Square Payment ID': paymentId,
                 'Square Order ID': orderId || '',
-                'Notes': `Ice cream sale processed at ${formatTimeAEST(now)} on ${formatDateAEST(now)}`
+                'Notes': `Ice cream sale (${mapSquareStatus(payment.status)}) processed at ${formatTimeAEST(now)} on ${formatDateAEST(now)}`
             };
             
             console.log('📊 Creating Ice Cream Sale record in Airtable...');
