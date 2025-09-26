@@ -11,7 +11,7 @@ const { Client, Environment } = require('square');
  * - payment.created
  * - payment.updated
  * 
- * Filters for: Ice-Cream-Boat-Sales category only
+ * Filters for: Ice Creams category only
  */
 
 // Initialize Square client
@@ -89,7 +89,7 @@ function generateBookingCode() {
     return `SQ-${dateStr}-${random}`;
 }
 
-// Check if order belongs to Ice-Cream-Boat-Sales category
+// Check if order belongs to Ice Creams category
 async function isIceCreamBoatSale(orderId) {
     if (!orderId) {
         console.log('❌ No order ID provided, skipping');
@@ -97,7 +97,7 @@ async function isIceCreamBoatSale(orderId) {
     }
     
     try {
-        console.log(`🔍 Checking order ${orderId} for Ice-Cream-Boat-Sales category...`);
+        console.log(`🔍 Checking order ${orderId} for Ice Creams category...`);
         
         // Fetch order details from Square
         const response = await squareClient.ordersApi.retrieveOrder(orderId);
@@ -129,8 +129,8 @@ async function isIceCreamBoatSale(orderId) {
                     
                     console.log(`📦 Item category: ${categoryName}`);
                     
-                    if (categoryName === 'Ice-Cream-Boat-Sales') {
-                        console.log('✅ Order contains Ice-Cream-Boat-Sales items');
+                    if (categoryName === 'Ice Creams') {
+                        console.log('✅ Order contains Ice Creams items');
                         return true;
                     }
                 }
@@ -143,7 +143,7 @@ async function isIceCreamBoatSale(orderId) {
             }
         }
         
-        console.log('❌ Order does not contain Ice-Cream-Boat-Sales items');
+        console.log('❌ Order does not contain Ice Creams items');
         return false;
         
     } catch (error) {
@@ -198,7 +198,7 @@ router.post('/square-webhook', async (req, res) => {
             // 4a. Check if this is an ice cream boat sale
             const isIceCreamSale = await isIceCreamBoatSale(orderId);
             if (!isIceCreamSale) {
-                console.log('⏭️ Skipping - Not an Ice-Cream-Boat-Sale');
+                console.log('⏭️ Skipping - Not an Ice Creams sale');
                 return res.status(200).send('OK - Not ice cream sale');
             }
             
