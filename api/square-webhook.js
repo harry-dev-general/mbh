@@ -256,31 +256,29 @@ router.post('/square-webhook', async (req, res) => {
             // 7. Check for duplicate payment
             // TODO: Implement duplicate check by querying Airtable for Square Payment ID
             
-            // 8. Prepare Airtable record
+            // 8. Prepare Airtable record for Ice Cream Boat Sales table
             const recordData = {
-                'Booking Code': receiptNumber,
+                'Sale Code': receiptNumber,
                 'Customer Name': customerName,
                 'Customer Email': customerEmail,
                 'Phone Number': customerPhone,
                 'Status': mapSquareStatus(payment.status),
-                'Total Amount': amount,
-                'Booking Items': bookingDetails.boatType,
+                'Sale Amount': amount,
+                'Vessel/Operation': bookingDetails.boatType,
                 'Add-ons': bookingDetails.addOns,
-                'Booking Date': bookingDetails.bookingDate,
-                'Start Time': bookingDetails.startTime,
-                'Finish Time': bookingDetails.endTime,
-                'Created Date': formatDateAEST(now),
-                'Payment Source': 'Square',
+                'Sale Date': bookingDetails.bookingDate,
+                'Sale Time': formatTimeAEST(now),
                 'Square Payment ID': paymentId,
-                'Square Order ID': orderId || ''
+                'Square Order ID': orderId || '',
+                'Notes': `Ice cream sale processed at ${formatTimeAEST(now)} on ${formatDateAEST(now)}`
             };
             
-            console.log('📊 Creating Airtable record...');
+            console.log('📊 Creating Ice Cream Sale record in Airtable...');
             
             // 9. Create record in Airtable
-            const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Bookings Dashboard table
+            const ICE_CREAM_SALES_TABLE_ID = 'tblTajm845Fiij8ud'; // Ice Cream Boat Sales table
             const airtableResponse = await fetch(
-                `${process.env.BASE_URL || 'http://localhost:3000'}/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}`,
+                `${process.env.BASE_URL || 'http://localhost:3000'}/api/airtable/applkAFOn2qxtu7tx/${ICE_CREAM_SALES_TABLE_ID}`,
                 {
                     method: 'POST',
                     headers: {
@@ -301,7 +299,7 @@ router.post('/square-webhook', async (req, res) => {
             
             const result = await airtableResponse.json();
             const newRecordId = result.records[0].id;
-            console.log(`✅ Booking created: ${newRecordId}`);
+            console.log(`✅ Ice cream sale recorded: ${newRecordId}`);
             
             // 10. Send SMS notification (optional)
             // TODO: Add SMS notification similar to Checkfront webhook
