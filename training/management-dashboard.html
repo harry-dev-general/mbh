@@ -2303,7 +2303,7 @@
                     `filterByFormula=${encodeURIComponent(`OR({Status}='PAID',{Status}='PART',{Status}='Confirmed',{Status}='Pending')`)}` +
                     `&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time` +
                     `&fields[]=Boat&fields[]=Booked Boat Type&fields[]=Status&fields[]=Total Amount` +
-                    `&fields[]=Onboarding Employee&fields[]=Deloading Employee` +
+                    `&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Add-ons` +
                     `&pageSize=100`,
                     {
                         method: 'GET'
@@ -2333,7 +2333,8 @@
                 // Debug: Log fetched bookings
                 console.log(`Fetched ${allBookings.length} total bookings, ${bookings.length} for week ${startStr} to ${endStr}`);
                 bookings.forEach(record => {
-                    console.log(`Booking: ${record.fields['Customer Name']} on ${record.fields['Booking Date']} at ${record.fields['Start Time']} - Status: ${record.fields['Status']}`);
+                    const addOns = record.fields['Add-ons'] || 'None';
+                    console.log(`Booking: ${record.fields['Customer Name']} on ${record.fields['Booking Date']} at ${record.fields['Start Time']} - Status: ${record.fields['Status']} - Add-ons: ${addOns}`);
                 });
                 
                 // Group bookings by date and time
