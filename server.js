@@ -312,6 +312,10 @@ app.use('/api', webhookLogger);
 // Add Checkfront webhook handler
 app.use('/api/checkfront', checkfrontWebhook);
 
+// Add Square webhook handler
+const squareWebhook = require('./api/square-webhook');
+app.use('/api', squareWebhook);
+
 // Add add-ons management routes
 app.use('/api/addons', addonsManagement);
 
