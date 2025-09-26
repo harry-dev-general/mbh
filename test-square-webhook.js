@@ -37,11 +37,11 @@ async function testPaymentCompleted() {
                     updated_at: new Date().toISOString(),
                     status: 'COMPLETED',
                     amount_money: {
-                        amount: 25000, // $250.00
+                        amount: 2500, // $25.00 (ice cream sale)
                         currency: 'AUD'
                     },
                     total_money: {
-                        amount: 25000,
+                        amount: 2500,
                         currency: 'AUD'
                     },
                     receipt_number: `ICE-${Date.now()}`,
@@ -49,6 +49,11 @@ async function testPaymentCompleted() {
                     order_id: `test_order_${Date.now()}`,
                     buyer_email_address: 'icecream.customer@example.com',
                     buyer_phone_number: '+61412345678',
+                    card_details: {
+                        card: {
+                            cardholder_name: 'Sarah Johnson'
+                        }
+                    },
                     note: 'Ice cream boat sale - Walker Courtney',
                     location_id: 'LXXXXXXXXX',
                     source_type: 'CARD'
@@ -83,7 +88,7 @@ async function testPaymentCompleted() {
         
         if (response.status === 200) {
             console.log('\n🎉 Webhook test successful!');
-            console.log('Check your Airtable for the new booking record.');
+            console.log('Check your "Ice Cream Boat Sales" table in Airtable for the new sale record.');
         } else {
             console.log('\n❌ Webhook test failed');
         }
