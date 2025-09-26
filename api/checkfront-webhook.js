@@ -231,6 +231,7 @@ async function processCheckfrontWebhook(webhookData) {
     const bookingCode = booking.code || null;
     const customerEmail = customer.email || null;
     const customerName = customer.name || null;
+    const customerPhone = customer.phone || null;
     const bookingStatus = booking.status || 'PEND';
     const totalAmount = parseFloat(order.total || 0);
     
@@ -306,6 +307,7 @@ async function processCheckfrontWebhook(webhookData) {
         'Booking Code': bookingCode,
         'Customer Name': customerName,
         'Customer Email': customerEmail,
+        'Phone Number': customerPhone,
         'Status': bookingStatus,
         'Total Amount': totalAmount,
         'Booking Items': boatSKU,
@@ -321,6 +323,7 @@ async function processCheckfrontWebhook(webhookData) {
     console.log('📊 Summary:');
     console.log(`  Booking: ${bookingCode}`);
     console.log(`  Customer: ${customerName}`);
+    console.log(`  Phone: ${customerPhone || 'Not provided'}`);
     console.log(`  Boat: ${boatSKU || 'None'}`);
     console.log(`  Add-ons: ${addOnsFormatted || 'None'}`);
     console.log(`  Total: $${totalAmount}`);
