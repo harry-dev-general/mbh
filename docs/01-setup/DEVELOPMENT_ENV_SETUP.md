@@ -47,6 +47,36 @@ PORT=3000
 NODE_ENV=development
 ```
 
+## Quick Start
+
+For immediate development setup, create a `.env` file with these values:
+
+```bash
+# Create .env file
+cat > .env << EOF
+# Supabase Configuration (Public keys - safe for development)
+SUPABASE_URL=https://etkugeooigiwahikrmzr.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU
+
+# Google Maps - REQUIRED FOR FLEET MAP
+GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY_HERE
+
+# Airtable - REQUIRED FOR ALL DATA
+AIRTABLE_API_KEY=YOUR_AIRTABLE_API_KEY_HERE
+
+# Optional for SMS features
+TWILIO_ACCOUNT_SID=optional_for_development
+TWILIO_AUTH_TOKEN=optional_for_development
+TWILIO_FROM_NUMBER=+1234567890
+
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+EOF
+```
+
+**Note**: You MUST replace `YOUR_GOOGLE_MAPS_API_KEY_HERE` and `YOUR_AIRTABLE_API_KEY_HERE` with actual values for the app to work.
+
 ## Starting the Development Server
 
 1. **Install dependencies** (if not already done):
