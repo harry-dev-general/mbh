@@ -454,7 +454,11 @@ app.get('/api/shift-response', async (req, res) => {
       });
       
       // Redirect to the standalone confirmation page (no auth required)
-      const confirmationUrl = `${process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app'}/training/shift-confirmation.html?${confirmationParams}`;
+      const baseUrl = process.env.BASE_URL || 
+                      (process.env.RAILWAY_ENVIRONMENT === 'development' 
+                        ? 'https://mbh-development.up.railway.app' 
+                        : 'https://mbh-production-f0d1.up.railway.app');
+      const confirmationUrl = `${baseUrl}/training/shift-confirmation.html?${confirmationParams}`;
       console.log('Redirecting to confirmation page:', confirmationUrl);
       return res.redirect(302, confirmationUrl);
       

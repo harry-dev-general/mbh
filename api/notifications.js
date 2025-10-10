@@ -16,7 +16,11 @@ if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM_NUMBER) {
 }
 
 // Base URL for magic links
-const BASE_URL = process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app';
+// Automatically detect Railway environment
+const BASE_URL = process.env.BASE_URL || 
+                 (process.env.RAILWAY_ENVIRONMENT === 'development' 
+                   ? 'https://mbh-development.up.railway.app' 
+                   : 'https://mbh-production-f0d1.up.railway.app');
 
 /**
  * Generate a secure magic link token for shift acceptance
