@@ -2630,57 +2630,6 @@
         function renderBookingsOnGrid() {
             // This function is now handled by FullCalendar
             // Keeping empty function to prevent errors from existing calls
-                const booking = record.fields;
-                if (!booking['Booking Date']) return;
-                
-                const bookingDate = booking['Booking Date'];
-                const customerName = booking['Customer Name'] || 'Unknown Customer';
-                const onboardingTime = booking['Onboarding Time'] || booking['Start Time'] || '09:00';
-                const deloadingTime = booking['Deloading Time'] || booking['Finish Time'] || '17:00';
-                
-                // Debug logging for specific bookings
-                if (customerName.includes('Raoa')) {
-                    console.log('Processing Raoa booking:', {
-                        date: bookingDate,
-                        customer: customerName,
-                        onboardingTime: onboardingTime,
-                        deloadingTime: deloadingTime,
-                        startTime: booking['Start Time'],
-                        finishTime: booking['Finish Time'],
-                        onboardingEmployee: booking['Onboarding Employee'],
-                        deloadingEmployee: booking['Deloading Employee']
-                    });
-                }
-                
-                // Check staffing status
-                const hasOnboardingStaff = booking['Onboarding Employee'] && booking['Onboarding Employee'].length > 0;
-                const hasDeloadingStaff = booking['Deloading Employee'] && booking['Deloading Employee'].length > 0;
-                const isFullyStaffed = hasOnboardingStaff && hasDeloadingStaff;
-                
-                // Debug log to see staff assignment status
-                if (booking['Customer Name']) {
-                    console.log(`Booking ${booking['Customer Name']}: Onboarding Staff:`, booking['Onboarding Employee'], 'Deloading Staff:', booking['Deloading Employee']);
-                }
-                
-                // Get response statuses
-                const onboardingResponse = booking['Onboarding Response'] || '';
-                const deloadingResponse = booking['Deloading Response'] || '';
-                
-                // Create onboarding block
-                if (onboardingTime) {
-                    createBookingBlock(bookingDate, onboardingTime, 'onboarding', customerName, isFullyStaffed, record, hasOnboardingStaff, booking['Start Time'], onboardingResponse);
-                }
-                
-                // Create deloading block
-                if (deloadingTime && deloadingTime !== onboardingTime) {
-                    createBookingBlock(bookingDate, deloadingTime, 'deloading', customerName, isFullyStaffed, record, hasDeloadingStaff, booking['Finish Time'], deloadingResponse);
-                }
-            });
-            
-            console.log('Rendered', bookingsData.length, 'bookings on grid');
-            
-            // Handle overlapping allocations and bookings
-            handleOverlappingAllocations();
         }
         
         // Create a booking block on the grid
