@@ -2344,8 +2344,13 @@
                 const boat = boatsData.find(b => b.id === booking['Boat']?.[0]);
                 const hasAddOns = booking['Add-ons'] && booking['Add-ons'].trim() !== '';
                 
-                // Onboarding event
-                if (booking['Onboarding Time']) {
+                // Onboarding event - check both field names
+                const onboardingTime = booking['Onboarding Time'] || booking['Start Time'];
+                if (onboardingTime) {
+                    // Debug log time format
+                    if (index === 0) {
+                        console.log('Onboarding time:', onboardingTime, 'Booking date:', booking['Booking Date']);
+                    }
                     const onboardingStaff = staffData.find(s => s.id === booking['Onboarding Employee']?.[0]);
                     const hasStaff = !!booking['Onboarding Employee']?.length;
                     const responseStatus = booking['Onboarding Response'] || (hasStaff ? 'Pending' : '');
@@ -2359,8 +2364,8 @@
                     events.push({
                         id: `booking-on-${record.id}`,
                         title: `🚢 ON ${booking['Customer Name'] || 'Unknown'}`,
-                        start: `${booking['Booking Date']}T${booking['Onboarding Time']}`,
-                        end: `${booking['Booking Date']}T${addMinutes(booking['Onboarding Time'], 30)}`,
+                        start: `${booking['Booking Date']}T${convertTo24HourFormat(onboardingTime)}`,
+                        end: `${booking['Booking Date']}T${addMinutes(onboardingTime, 30)}`,
                         classNames: ['booking-event', statusClass],
                         extendedProps: {
                             recordType: 'booking',
@@ -2377,8 +2382,9 @@
                     });
                 }
                 
-                // Deloading event
-                if (booking['Deloading Time']) {
+                // Deloading event - check both field names
+                const deloadingTime = booking['Deloading Time'] || booking['Finish Time'];
+                if (deloadingTime) {
                     const deloadingStaff = staffData.find(s => s.id === booking['Deloading Employee']?.[0]);
                     const hasStaff = !!booking['Deloading Employee']?.length;
                     const responseStatus = booking['Deloading Response'] || (hasStaff ? 'Pending' : '');
@@ -2392,8 +2398,8 @@
                     events.push({
                         id: `booking-off-${record.id}`,
                         title: `🏁 OFF ${booking['Customer Name'] || 'Unknown'}`,
-                        start: `${booking['Booking Date']}T${booking['Deloading Time']}`,
-                        end: `${booking['Booking Date']}T${addMinutes(booking['Deloading Time'], 30)}`,
+                        start: `${booking['Booking Date']}T${convertTo24HourFormat(deloadingTime)}`,
+                        end: `${booking['Booking Date']}T${addMinutes(deloadingTime, 30)}`,
                         classNames: ['booking-event', statusClass],
                         extendedProps: {
                             recordType: 'booking',
@@ -2411,6 +2417,10 @@
                 }
             });
             
+            console.log('Total booking events created:', events.length);
+            if (events.length > 0) {
+                console.log('Sample booking event:', events[0]);
+            }
             return events;
         }
 
@@ -2423,11 +2433,44 @@
 
         // Helper function to add minutes to a time string
         function addMinutes(timeStr, minutes) {
-            const [h, m] = timeStr.split(':').map(Number);
+            // First convert to 24-hour format if needed
+            const time24 = convertTo24HourFormat(timeStr);
+            const [h, m] = time24.split(':').map(Number);
             const totalMinutes = h * 60 + m + minutes;
             const newHour = Math.floor(totalMinutes / 60);
             const newMinute = totalMinutes % 60;
             return `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
+        }
+        
+        // Convert 12-hour time format to 24-hour format
+        function convertTo24HourFormat(timeStr) {
+            if (!timeStr) return '09:00'; // Default time
+            
+            // If already in 24-hour format (no AM/PM)
+            if (!timeStr.toLowerCase().includes('am') && !timeStr.toLowerCase().includes('pm')) {
+                // Ensure it has seconds
+                const parts = timeStr.split(':');
+                if (parts.length === 2) {
+                    return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:00`;
+                }
+                return timeStr;
+            }
+            
+            // Parse 12-hour format
+            const timeParts = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+            if (!timeParts) return '09:00:00'; // Default if parsing fails
+            
+            let hour = parseInt(timeParts[1]);
+            const minute = timeParts[2];
+            const period = timeParts[3].toLowerCase();
+            
+            if (period === 'pm' && hour !== 12) {
+                hour += 12;
+            } else if (period === 'am' && hour === 12) {
+                hour = 0;
+            }
+            
+            return `${hour.toString().padStart(2, '0')}:${minute}:00`;
         }
 
         // Update calendar events
