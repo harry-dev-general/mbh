@@ -1562,8 +1562,6 @@
 
         // Load all data for the week
         async function loadWeekData() {
-            updateWeekDisplay();
-            
             try {
                 // Load all data in parallel
                 await Promise.all([
@@ -1597,14 +1595,8 @@
 
         // Update week display
         function updateWeekDisplay() {
-            const weekEnd = new Date(currentWeekStart);
-            weekEnd.setDate(weekEnd.getDate() + 6);
-            
-            const options = { month: 'short', day: 'numeric' };
-            const startStr = currentWeekStart.toLocaleDateString('en-US', options);
-            const endStr = weekEnd.toLocaleDateString('en-US', options);
-            
-            document.getElementById('currentWeek').textContent = `${startStr} - ${endStr}`;
+            // Week display is now handled by FullCalendar's title
+            // Keeping empty function to prevent errors from existing calls
         }
 
         // Load staff from Employee Details table
@@ -2291,7 +2283,6 @@
                 datesSet: function(dateInfo) {
                     // Update currentWeekStart when navigating
                     currentWeekStart = getMonday(dateInfo.start);
-                    updateWeekDisplay();
                     // Reload data for the new week
                     loadWeekData();
                 }
@@ -4577,7 +4568,12 @@
                         // Change week to show first booking
                         currentWeekStart = new Date(firstBookingDate);
                         currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay() + 1); // Monday
-                        updateWeekDisplay();
+                        
+                        // Update calendar to show the new week
+                        if (calendar) {
+                            calendar.gotoDate(currentWeekStart);
+                        }
+                        
                         await Promise.all([
                             loadBookings(),
                             loadAllocations(),
