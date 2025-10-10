@@ -919,6 +919,229 @@
         .user-info.show-mobile {
             z-index: 1000;
         }
+
+        /* FullCalendar Custom Styles */
+        #calendar {
+            background: white;
+            padding: 1rem;
+        }
+
+        /* Preserve existing color scheme for events */
+        .fc-event {
+            border: none;
+            font-size: 11px;
+            padding: 2px 4px;
+            cursor: pointer;
+            margin: 1px 0;
+        }
+
+        /* Allocation event colors */
+        .fc-event.allocation-event {
+            opacity: 0.9;
+        }
+
+        .fc-event.allocation-accepted {
+            background: #4caf50;
+            border-color: #2e7d32;
+            color: white;
+        }
+
+        .fc-event.allocation-declined {
+            background: #f44336;
+            border-color: #c62828;
+            color: white;
+        }
+
+        .fc-event.allocation-pending {
+            background: #ff9800;
+            border-color: #f57c00;
+            color: white;
+        }
+
+        .fc-event.allocation-unassigned {
+            background: #e0e0e0;
+            border-color: #bdbdbd;
+            color: #333;
+        }
+
+        /* Booking event colors */
+        .fc-event.booking-onboarding {
+            background: #2196f3;
+            color: white;
+        }
+
+        .fc-event.booking-deloading {
+            background: #1976d2;
+            color: white;
+        }
+
+        .fc-event.booking-needs-staff {
+            background: #ff5252;
+            color: white;
+        }
+
+        /* Custom event content */
+        .fc-event-custom {
+            position: relative;
+            padding: 2px 4px;
+            overflow: visible;
+        }
+
+        .fc-event-title-wrap {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .fc-event-boat {
+            font-size: 9px;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Add-on indicator */
+        .addon-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff9800;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        /* FullCalendar theme adjustments */
+        .fc-theme-standard td,
+        .fc-theme-standard th {
+            border-color: #e0e0e0;
+        }
+
+        .fc-col-header-cell {
+            background: #f8f9fa;
+            font-weight: 600;
+            padding: 10px 0;
+        }
+
+        .fc-day-today {
+            background: #f3f8ff !important;
+        }
+
+        .fc-day-today .fc-col-header-cell {
+            background: #e3f2fd;
+            color: #1976d2;
+            font-weight: 700;
+        }
+
+        .fc-timegrid-slot {
+            height: 3em;
+        }
+
+        .fc-timegrid-slot-label {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Header toolbar styling */
+        .fc-toolbar {
+            margin-bottom: 1.5rem;
+        }
+
+        .fc-toolbar-title {
+            font-size: 1.3rem;
+            color: #1B4F72;
+            font-weight: 600;
+        }
+
+        .fc-button {
+            background: #2E86AB;
+            border: none;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        .fc-button:hover {
+            background: #1B4F72;
+        }
+
+        .fc-button-active {
+            background: #1B4F72 !important;
+        }
+
+        /* Mobile responsive for FullCalendar */
+        @media (max-width: 768px) {
+            .fc-timegrid-slot {
+                height: 40px;
+            }
+            
+            .fc-event {
+                font-size: 10px;
+                padding: 1px 2px;
+            }
+
+            .fc-toolbar {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .fc-toolbar-chunk {
+                display: flex;
+                justify-content: center;
+            }
+
+            .fc-toolbar-title {
+                font-size: 1.1rem;
+            }
+
+            .addon-indicator {
+                width: 14px;
+                height: 14px;
+                font-size: 9px;
+            }
+        }
+
+        /* Hover effects */
+        .fc-event:hover {
+            opacity: 1;
+            transform: scale(1.02);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        /* Clickable time slots */
+        .fc-timegrid-slot:hover {
+            background: #f5f5f5;
+            cursor: pointer;
+        }
+
+        /* Remove default FullCalendar event time display */
+        .fc-event-time {
+            display: none;
+        }
+
+        /* Event overlap handling */
+        .fc-timegrid-event-harness {
+            margin-right: 2px;
+        }
+
+        /* Loading state for calendar */
+        #calendar .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
     </style>
 </head>
 <body>
@@ -966,13 +1189,8 @@
     <div class="container">
         <div class="date-selector">
             <div class="date-nav">
-                <button class="btn btn-primary" onclick="changeWeek(-1)">
-                    <i class="fas fa-chevron-left"></i> Previous
-                </button>
+                <!-- Navigation is now handled by FullCalendar toolbar -->
                 <span class="current-week" id="currentWeek">Loading...</span>
-                <button class="btn btn-primary" onclick="changeWeek(1)">
-                    Next <i class="fas fa-chevron-right"></i>
-                </button>
             </div>
             <button class="btn btn-success" onclick="openAllocationModal()">
                 <i class="fas fa-plus"></i> New Allocation
@@ -1286,6 +1504,7 @@
         let bookingsData = [];
         let allocationsData = [];
         let boatsData = [];
+        let calendar = null; // FullCalendar instance
 
         // Week already initialized to Monday above
 
@@ -1310,11 +1529,14 @@
 
         // Change week view
         function changeWeek(direction) {
-            const newDate = new Date(currentWeekStart);
-            newDate.setDate(newDate.getDate() + (direction * 7));
-            currentWeekStart = newDate;
-            console.log('Changed to week:', formatLocalDate(currentWeekStart));
-            loadWeekData();
+            if (!calendar) return;
+            
+            if (direction === -1) {
+                calendar.prev();
+            } else if (direction === 1) {
+                calendar.next();
+            }
+            // The datesSet callback in FullCalendar will handle updating currentWeekStart and loading data
         }
 
         // Load all data for the week
@@ -1335,8 +1557,7 @@
                 renderStaffList();  // Render staff list after roster data is loaded
                 renderScheduleGrid();
                 renderBookingsList();  // Render bookings list in sidebar
-                renderBookingsOnGrid();
-                renderAllocations();
+                // Calendar events are now rendered by FullCalendar
                 
                 console.log('All data loaded and rendered successfully');
             } catch (error) {
@@ -1344,8 +1565,7 @@
                 // Still try to render with whatever data we have
                 renderStaffList();  // Render staff list even on error
                 renderScheduleGrid();
-                renderBookingsOnGrid();
-                renderAllocations();
+                // Calendar events are now rendered by FullCalendar
             }
         }
 
@@ -1763,7 +1983,7 @@
                 console.error('Error loading bookings:', error);
                 bookingsData = []; // Ensure bookingsData is empty array on error
                 renderBookingsList(); // Update UI to show no bookings or error
-                renderBookingsOnGrid(); // Clear any existing bookings from grid
+                updateCalendarEvents(); // Update calendar to reflect changes
             }
         }
 
@@ -1909,9 +2129,9 @@
                 allocationsData = data.records || [];
                 console.log('Found allocations:', allocationsData.length, allocationsData);
                 
-                // Update the schedule grid to show allocations
+                // Update the calendar to show allocations
                 if (allocationsData.length > 0) {
-                    renderAllocations();
+                    updateCalendarEvents();
                 }
             } catch (error) {
                 console.error('Error loading allocations:', error);
@@ -1921,69 +2141,299 @@
 
         // Render the weekly schedule grid
         function renderScheduleGrid() {
-            const grid = document.getElementById('scheduleGrid');
-            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const hours = Array.from({length: 15}, (_, i) => i + 6); // 6am to 8pm
+            const calendarEl = document.getElementById('calendar');
             
-            // Get today's date for highlighting
-            const today = new Date();
-            today.setFullYear(2025);
-            const todayStr = formatLocalDate(today);
+            // If calendar already exists, just update events
+            if (calendar) {
+                updateCalendarEvents();
+                return;
+            }
             
-            let html = '<div></div>'; // Empty corner cell
+            // Clear any existing loading message
+            calendarEl.innerHTML = '';
             
-            // Day headers with dates
-            days.forEach((day, index) => {
-                const date = new Date(currentWeekStart);
-                date.setDate(date.getDate() + index);
-                const dateStr = formatLocalDate(date);
-                const dayNum = date.getDate();
-                const month = date.getMonth() + 1;
-                const dateDisplay = `${dayNum.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+            // Initialize FullCalendar with configuration
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                // View Configuration
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: ''  // No view switcher for now
+                },
                 
-                // Check if this is today
-                const isToday = dateStr === todayStr;
+                // Time Configuration
+                slotMinTime: '06:00:00',
+                slotMaxTime: '20:00:00',
+                slotDuration: '00:30:00',
+                firstDay: 1, // Monday
                 
-                html += `
-                    <div class="day-header ${isToday ? 'today-header' : ''}" data-date="${dateStr}">
-                        <div>${day}</div>
-                        <div style="font-size: 11px; opacity: 0.8; margin-top: 2px;">${dateDisplay}</div>
-                    </div>
-                `;
+                // Event Display
+                eventMaxStack: 4,
+                dayMaxEvents: false,
+                eventOverlap: true,
+                slotEventOverlap: true,
+                
+                // Timezone
+                timeZone: 'Australia/Sydney',
+                
+                // Styling
+                height: 'auto',
+                expandRows: true,
+                
+                // Set initial date to current week start
+                initialDate: formatLocalDate(currentWeekStart),
+                
+                // Event click handler
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    const props = info.event.extendedProps;
+                    
+                    if (props.recordType === 'booking') {
+                        openBookingAllocationModal(props.record, props.allocationType);
+                    } else if (props.recordType === 'allocation') {
+                        const employee = {
+                            id: props.employeeId,
+                            fields: { Name: props.employeeName }
+                        };
+                        openAllocationEditModal(props.record, employee);
+                    }
+                },
+                
+                // Date click handler for empty cells
+                dateClick: function(info) {
+                    // Extract date and time from the clicked slot
+                    const clickedDate = formatLocalDate(info.date);
+                    const hour = info.date.getHours();
+                    const minutes = info.date.getMinutes();
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                    
+                    openAllocationModal();
+                    document.getElementById('allocationDate').value = clickedDate;
+                    document.getElementById('startTime').value = timeStr;
+                },
+                
+                // Custom event rendering
+                eventContent: function(arg) {
+                    const event = arg.event;
+                    const props = event.extendedProps;
+                    
+                    // Add-on indicator
+                    const addOnIndicator = props.hasAddOns ? 
+                        '<span class="addon-indicator" title="This booking includes add-ons">+</span>' : '';
+                    
+                    // Status icons
+                    let statusIcon = '';
+                    if (props.recordType === 'booking') {
+                        if (!props.hasStaff) {
+                            statusIcon = ' ❌';
+                        } else if (props.responseStatus === 'Accepted') {
+                            statusIcon = ' ✅';
+                        } else if (props.responseStatus === 'Declined') {
+                            statusIcon = ' ❌';
+                        } else {
+                            statusIcon = ' ⏳';
+                        }
+                    }
+                    
+                    // Notes indicator
+                    const notesIndicator = props.notes ? ' 📝' : '';
+                    
+                    // Boat info for bookings
+                    const boatInfo = props.boatName ? 
+                        `<div class="fc-event-boat">⚓ ${props.boatName}</div>` : '';
+                    
+                    return {
+                        html: `
+                            <div class="fc-event-custom">
+                                ${addOnIndicator}
+                                <div class="fc-event-title-wrap">
+                                    ${event.title}${statusIcon}${notesIndicator}
+                                </div>
+                                ${boatInfo}
+                            </div>
+                        `
+                    };
+                },
+                
+                // Week navigation handlers
+                datesSet: function(dateInfo) {
+                    // Update currentWeekStart when navigating
+                    currentWeekStart = getMonday(dateInfo.start);
+                    updateWeekDisplay();
+                    // Reload data for the new week
+                    loadWeekData();
+                }
             });
             
-            // Time slots and day columns
-            hours.forEach(hour => {
-                html += `<div class="time-label">${hour}:00</div>`;
-                days.forEach((day, dayIndex) => {
-                    const date = new Date(currentWeekStart);
-                    date.setDate(date.getDate() + dayIndex);
-                    const dateStr = formatLocalDate(date);
-                    
-                    // Check if this is today
-                    const isToday = dateStr === todayStr;
-                    
-                    html += `
-                        <div class="day-column ${isToday ? 'today-column' : ''}" 
-                             data-date="${dateStr}" 
-                             data-hour="${hour}"
-                             onclick="handleCellClick(this)">
-                        </div>
-                    `;
-                });
-            });
+            // Render the calendar
+            calendar.render();
             
-            grid.innerHTML = html;
-            
-            // Add bookings and allocations to grid
-            renderBookingsOnGrid();
-            renderAllocations();
+            // Load events after calendar is rendered
+            updateCalendarEvents();
         }
 
-        // Render allocations on the grid
+        // Transform allocations data to FullCalendar events
+        function transformAllocationsToEvents(allocationsData) {
+            return allocationsData.map(record => {
+                const allocation = record.fields;
+                if (!allocation['Shift Date'] || !allocation['Start Time']) return null;
+                
+                const employee = staffData.find(s => s.id === allocation['Employee']?.[0]);
+                const responseStatus = allocation['Response Status'] || 'Pending';
+                
+                // Determine status class
+                let statusClass = 'allocation-pending';
+                if (responseStatus === 'Accepted') {
+                    statusClass = 'allocation-accepted';
+                } else if (responseStatus === 'Declined') {
+                    statusClass = 'allocation-declined';
+                } else if (!allocation['Employee']) {
+                    statusClass = 'allocation-unassigned';
+                }
+                
+                return {
+                    id: `allocation-${record.id}`,
+                    title: employee?.fields.Name || 'Unassigned',
+                    start: `${allocation['Shift Date']}T${allocation['Start Time']}`,
+                    end: allocation['End Time'] ? 
+                        `${allocation['Shift Date']}T${allocation['End Time']}` : 
+                        `${allocation['Shift Date']}T${addHours(allocation['Start Time'], 8)}`,
+                    classNames: ['allocation-event', statusClass],
+                    extendedProps: {
+                        recordType: 'allocation',
+                        record: record,
+                        employeeId: allocation['Employee']?.[0],
+                        employeeName: employee?.fields.Name,
+                        shiftType: allocation['Shift Type'],
+                        responseStatus: responseStatus,
+                        notes: allocation['Notes']
+                    }
+                };
+            }).filter(event => event !== null);
+        }
+
+        // Transform bookings data to FullCalendar events
+        function transformBookingsToEvents(bookingsData) {
+            const events = [];
+            
+            bookingsData.forEach(record => {
+                const booking = record.fields;
+                if (!booking['Booking Date']) return;
+                
+                const boat = boatsData.find(b => b.id === booking['Boat']?.[0]);
+                const hasAddOns = booking['Add-ons'] && booking['Add-ons'].trim() !== '';
+                
+                // Onboarding event
+                if (booking['Onboarding Time']) {
+                    const onboardingStaff = staffData.find(s => s.id === booking['Onboarding Employee']?.[0]);
+                    const hasStaff = !!booking['Onboarding Employee']?.length;
+                    const responseStatus = booking['Onboarding Response'] || (hasStaff ? 'Pending' : '');
+                    
+                    // Determine status class
+                    let statusClass = 'booking-onboarding';
+                    if (!hasStaff) {
+                        statusClass += ' booking-needs-staff';
+                    }
+                    
+                    events.push({
+                        id: `booking-on-${record.id}`,
+                        title: `🚢 ON ${booking['Customer Name'] || 'Unknown'}`,
+                        start: `${booking['Booking Date']}T${booking['Onboarding Time']}`,
+                        end: `${booking['Booking Date']}T${addMinutes(booking['Onboarding Time'], 30)}`,
+                        classNames: ['booking-event', statusClass],
+                        extendedProps: {
+                            recordType: 'booking',
+                            allocationType: 'onboarding',
+                            record: record,
+                            hasAddOns: hasAddOns,
+                            hasStaff: hasStaff,
+                            staffId: booking['Onboarding Employee']?.[0],
+                            staffName: onboardingStaff?.fields.Name,
+                            boatId: booking['Boat']?.[0],
+                            boatName: boat?.fields.Name,
+                            responseStatus: responseStatus
+                        }
+                    });
+                }
+                
+                // Deloading event
+                if (booking['Deloading Time']) {
+                    const deloadingStaff = staffData.find(s => s.id === booking['Deloading Employee']?.[0]);
+                    const hasStaff = !!booking['Deloading Employee']?.length;
+                    const responseStatus = booking['Deloading Response'] || (hasStaff ? 'Pending' : '');
+                    
+                    // Determine status class
+                    let statusClass = 'booking-deloading';
+                    if (!hasStaff) {
+                        statusClass += ' booking-needs-staff';
+                    }
+                    
+                    events.push({
+                        id: `booking-off-${record.id}`,
+                        title: `🏁 OFF ${booking['Customer Name'] || 'Unknown'}`,
+                        start: `${booking['Booking Date']}T${booking['Deloading Time']}`,
+                        end: `${booking['Booking Date']}T${addMinutes(booking['Deloading Time'], 30)}`,
+                        classNames: ['booking-event', statusClass],
+                        extendedProps: {
+                            recordType: 'booking',
+                            allocationType: 'deloading',
+                            record: record,
+                            hasAddOns: hasAddOns,
+                            hasStaff: hasStaff,
+                            staffId: booking['Deloading Employee']?.[0],
+                            staffName: deloadingStaff?.fields.Name,
+                            boatId: booking['Boat']?.[0],
+                            boatName: boat?.fields.Name,
+                            responseStatus: responseStatus
+                        }
+                    });
+                }
+            });
+            
+            return events;
+        }
+
+        // Helper function to add hours to a time string
+        function addHours(timeStr, hours) {
+            const [h, m] = timeStr.split(':').map(Number);
+            const newHour = h + hours;
+            return `${newHour.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        }
+
+        // Helper function to add minutes to a time string
+        function addMinutes(timeStr, minutes) {
+            const [h, m] = timeStr.split(':').map(Number);
+            const totalMinutes = h * 60 + m + minutes;
+            const newHour = Math.floor(totalMinutes / 60);
+            const newMinute = totalMinutes % 60;
+            return `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
+        }
+
+        // Update calendar events
+        function updateCalendarEvents() {
+            if (!calendar) return;
+            
+            // Remove all existing events
+            calendar.removeAllEvents();
+            
+            // Transform and add allocation events
+            const allocationEvents = transformAllocationsToEvents(allocationsData);
+            
+            // Transform and add booking events
+            const bookingEvents = transformBookingsToEvents(bookingsData);
+            
+            // Add all events to calendar
+            const allEvents = [...allocationEvents, ...bookingEvents];
+            allEvents.forEach(event => {
+                calendar.addEvent(event);
+            });
+        }
+
+        // Replace the old renderAllocations function with empty function
         function renderAllocations() {
-            // Clear existing allocation displays
-            document.querySelectorAll('.allocation-block').forEach(block => block.remove());
+            // This function is now handled by FullCalendar
+            // Keeping empty function to prevent errors from existing calls
             
             allocationsData.forEach(record => {
                 const allocation = record.fields;
@@ -2102,12 +2552,14 @@
             
             console.log('Rendered', allocationsData.length, 'allocations on grid');
             
-            // Handle overlapping allocations
-            handleOverlappingAllocations();
+            // Now handled by FullCalendar - update events instead
+            updateCalendarEvents();
         }
         
         // Handle overlapping allocations by adjusting their positions
         function handleOverlappingAllocations() {
+            // This function is now handled by FullCalendar's built-in overlap handling
+            return;
             // Group allocations and bookings by date
             const allocationsByDate = {};
             document.querySelectorAll('.allocation-block, .booking-block').forEach(block => {
@@ -2170,10 +2622,8 @@
 
         // Render bookings on the grid
         function renderBookingsOnGrid() {
-            // Clear existing booking displays
-            document.querySelectorAll('.booking-block').forEach(block => block.remove());
-            
-            bookingsData.forEach(record => {
+            // This function is now handled by FullCalendar
+            // Keeping empty function to prevent errors from existing calls
                 const booking = record.fields;
                 if (!booking['Booking Date']) return;
                 
@@ -3652,7 +4102,7 @@
                             // Force reload of bookings to show updated staff and boat assignments
                             await loadBookings();
                             renderBookingsList();
-                            renderBookingsOnGrid();
+                            updateCalendarEvents();
                             
                             // Create appropriate success message based on what was updated
                             let successMessage = 'Booking updated successfully!';
@@ -3759,7 +4209,7 @@
                     setTimeout(async () => {
                         // Reload allocations for general shifts
                         await loadAllocations();
-                        renderScheduleGrid();
+                        updateCalendarEvents();
                         alert('Shift allocated successfully!');
                     }, 1000); // 1 second delay for Airtable to process
                 } else {
@@ -3987,7 +4437,7 @@
                     alert('Test booking created successfully! Refreshing...');
                     await loadBookings();
                     renderBookingsList();
-                    renderBookingsOnGrid();
+                    updateCalendarEvents();
                 } else {
                     const error = await response.text();
                     console.error('Failed to create test booking:', error);
@@ -4070,8 +4520,7 @@
                             loadStaffAvailability()
                         ]);
                         renderBookingsList();
-                        renderBookingsOnGrid();
-                        renderAllocationsOnGrid();
+                        updateCalendarEvents();
                     }
                 }
             } catch (error) {
