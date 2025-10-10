@@ -197,6 +197,18 @@ Original functions are preserved in git history.
 4. **Recurring events**: Support for regular weekly shifts
 5. **Conflict detection**: Visual warnings for double-bookings
 
+## Critical Implementation Note
+
+**Issue Discovered**: October 10, 2025
+
+During deployment testing, it was discovered that the FullCalendar CDN links were documented in the implementation plan but not actually added to the HTML file during the initial implementation. This caused:
+
+1. `ReferenceError: FullCalendar is not defined`
+2. Blank calendar display
+3. Weekly Bookings component stuck in loading state
+
+**Resolution**: Added the missing CDN links and improved error handling to prevent cascading failures.
+
 ## Maintenance Notes
 
 - FullCalendar updates should be tested thoroughly before applying
