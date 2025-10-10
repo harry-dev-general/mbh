@@ -740,8 +740,8 @@ app.get('/training/dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
 });
 
-// Admin endpoint to manually trigger reminder check (protected)
-app.post('/api/admin/trigger-reminders', requireAuth, async (req, res) => {
+// Admin endpoint to manually trigger reminder check
+app.post('/api/admin/trigger-reminders', async (req, res) => {
   try {
     console.log('Manual reminder check triggered by admin');
     await reminderScheduler.checkAndSendReminders();
@@ -759,8 +759,8 @@ app.post('/api/admin/trigger-reminders', requireAuth, async (req, res) => {
   }
 });
 
-// Admin endpoint to view reminder status (protected)
-app.get('/api/admin/reminder-status', requireAuth, (req, res) => {
+// Admin endpoint to view reminder status
+app.get('/api/admin/reminder-status', (req, res) => {
   const status = {
     schedulerActive: true,
     trackerSize: reminderScheduler.reminderTracker.size,
