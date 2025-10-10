@@ -70,10 +70,17 @@ const REMINDER_INTERVAL_MS = 12 * 60 * 60 * 1000;
 
 ## Admin Tools
 
+**Security**: These endpoints require an admin API key. Pass it via:
+- Header: `X-Admin-Key: your-key`
+- Query parameter: `?adminKey=your-key`
+
+Default key: `mbh-admin-2025` (set `ADMIN_API_KEY` env var in production)
+
 ### 1. Manual Trigger (for testing)
 
 ```bash
 POST /api/admin/trigger-reminders
+Headers: X-Admin-Key: mbh-admin-2025
 ```
 
 Manually triggers a reminder check. Useful for testing without waiting.
@@ -81,7 +88,7 @@ Manually triggers a reminder check. Useful for testing without waiting.
 ### 2. View Reminder Status
 
 ```bash
-GET /api/admin/reminder-status
+GET /api/admin/reminder-status?adminKey=mbh-admin-2025
 ```
 
 Shows:
@@ -158,18 +165,21 @@ Please confirm ASAP:
 - Check for reminder SMS after 6 hours
 
 **Option B: Manual Trigger (Faster)**
-```bash
-# From browser console while logged in:
-fetch('/api/admin/trigger-reminders', { method: 'POST' })
+```javascript
+// From browser console:
+fetch('/api/admin/trigger-reminders', { 
+  method: 'POST',
+  headers: { 'X-Admin-Key': 'mbh-admin-2025' }
+})
   .then(r => r.json())
   .then(console.log)
 ```
 
 ### 3. Check Status
 
-```bash
-# From browser console:
-fetch('/api/admin/reminder-status')
+```javascript
+// From browser console:
+fetch('/api/admin/reminder-status?adminKey=mbh-admin-2025')
   .then(r => r.json())
   .then(console.log)
 ```

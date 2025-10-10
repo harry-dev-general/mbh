@@ -740,8 +740,22 @@ app.get('/training/dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
 });
 
+// Simple admin authentication middleware
+const adminAuth = (req, res, next) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.adminKey;
+  const expectedKey = process.env.ADMIN_API_KEY || 'mbh-admin-2025';
+  
+  if (adminKey !== expectedKey) {
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Unauthorized - Invalid admin key' 
+    });
+  }
+  next();
+};
+
 // Admin endpoint to manually trigger reminder check
-app.post('/api/admin/trigger-reminders', async (req, res) => {
+app.post('/api/admin/trigger-reminders', adminAuth, async (req, res) => {
   try {
     console.log('Manual reminder check triggered by admin');
     await reminderScheduler.checkAndSendReminders();
@@ -760,7 +774,7 @@ app.post('/api/admin/trigger-reminders', async (req, res) => {
 });
 
 // Admin endpoint to view reminder status
-app.get('/api/admin/reminder-status', (req, res) => {
+app.get('/api/admin/reminder-status', adminAuth, (req, res) => {
   const status = {
     schedulerActive: true,
     trackerSize: reminderScheduler.reminderTracker.size,
