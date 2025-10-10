@@ -133,7 +133,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             align-items: center;
         }
         
@@ -1076,9 +1076,26 @@
         .fc-button:hover {
             background: #1B4F72;
         }
-
+        
+        /* View Selector Button Group */
+        .fc-button-group .fc-button {
+            margin-left: -1px;
+        }
+        
+        .fc-button-group .fc-button:first-child {
+            margin-left: 0;
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .fc-button-group .fc-button:last-child {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+        
         .fc-button-active {
             background: #1B4F72 !important;
+            font-weight: 600;
         }
 
         /* Mobile responsive for FullCalendar */
@@ -1196,10 +1213,6 @@
 
     <div class="container">
         <div class="date-selector">
-            <div class="date-nav">
-                <!-- Navigation is now handled by FullCalendar toolbar -->
-                <span class="current-week" id="currentWeek">Loading...</span>
-            </div>
             <button class="btn btn-success" onclick="openAllocationModal()">
                 <i class="fas fa-plus"></i> New Allocation
             </button>
@@ -2173,7 +2186,7 @@
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: ''  // No view switcher for now
+                    right: 'timeGridWeek,timeGridDay'
                 },
                 
                 // Time Configuration
@@ -2194,6 +2207,10 @@
                 // Styling
                 height: 'auto',
                 expandRows: true,
+                slotHeight: 50,
+                eventMinHeight: 30,
+                displayEventTime: true,
+                displayEventEnd: false,
                 
                 // Set initial date to current week start
                 initialDate: formatLocalDate(currentWeekStart),
@@ -2335,22 +2352,12 @@
                 const booking = record.fields;
                 if (!booking['Booking Date']) return;
                 
-                // Debug log first booking to see available fields
-                if (index === 0) {
-                    console.log('First booking fields:', Object.keys(booking));
-                    console.log('Booking details:', booking);
-                }
-                
                 const boat = boatsData.find(b => b.id === booking['Boat']?.[0]);
                 const hasAddOns = booking['Add-ons'] && booking['Add-ons'].trim() !== '';
                 
                 // Onboarding event - check both field names
                 const onboardingTime = booking['Onboarding Time'] || booking['Start Time'];
                 if (onboardingTime) {
-                    // Debug log time format
-                    if (index === 0) {
-                        console.log('Onboarding time:', onboardingTime, 'Booking date:', booking['Booking Date']);
-                    }
                     const onboardingStaff = staffData.find(s => s.id === booking['Onboarding Employee']?.[0]);
                     const hasStaff = !!booking['Onboarding Employee']?.length;
                     const responseStatus = booking['Onboarding Response'] || (hasStaff ? 'Pending' : '');
@@ -2417,10 +2424,6 @@
                 }
             });
             
-            console.log('Total booking events created:', events.length);
-            if (events.length > 0) {
-                console.log('Sample booking event:', events[0]);
-            }
             return events;
         }
 
@@ -2476,32 +2479,23 @@
         // Update calendar events
         function updateCalendarEvents() {
             if (!calendar) {
-                console.log('Calendar not initialized yet');
                 return;
             }
-            
-            console.log('Updating calendar events...');
-            console.log('Allocations data:', allocationsData.length, allocationsData);
-            console.log('Bookings data:', bookingsData.length, bookingsData);
             
             // Remove all existing events
             calendar.removeAllEvents();
             
             // Transform and add allocation events
             const allocationEvents = transformAllocationsToEvents(allocationsData);
-            console.log('Allocation events:', allocationEvents.length, allocationEvents);
             
             // Transform and add booking events
             const bookingEvents = transformBookingsToEvents(bookingsData);
-            console.log('Booking events:', bookingEvents.length, bookingEvents);
             
             // Add all events to calendar
             const allEvents = [...allocationEvents, ...bookingEvents];
-            console.log('Total events to add:', allEvents.length);
             allEvents.forEach(event => {
                 calendar.addEvent(event);
             });
-            console.log('Calendar events added successfully');
         }
 
         // Replace the old renderAllocations function with empty function
