@@ -18,7 +18,7 @@ const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
  */
 async function handleShiftResponse(token) {
     // Validate the token
-    const tokenData = notifications.validateMagicToken(token);
+    const tokenData = await notifications.validateMagicToken(token);
     
     if (!tokenData) {
         return {
@@ -28,7 +28,7 @@ async function handleShiftResponse(token) {
         };
     }
     
-    const { allocationId, employeeId, action, isBookingAllocation, role } = tokenData;
+    const { recordId, allocationId, employeeId, action, isBookingAllocation, role } = tokenData;
     
     try {
         let allocationData = {};
@@ -112,7 +112,7 @@ async function handleShiftResponse(token) {
         }
         
         // Mark token as used
-        notifications.consumeToken(token);
+        await notifications.consumeToken(token, recordId);
         
         // Fetch employee details for phone number
         const employeeResponse = await axios.get(

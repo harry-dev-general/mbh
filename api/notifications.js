@@ -2,6 +2,7 @@
 // Handles SMS notifications for shift allocations with secure magic links
 
 const crypto = require('crypto');
+const tokenStorage = require('./token-storage');
 
 // Twilio credentials - MUST be set in environment variables
 const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID;
@@ -17,9 +18,6 @@ if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM_NUMBER) {
 // Base URL for magic links
 const BASE_URL = process.env.BASE_URL || 'https://mbh-production-f0d1.up.railway.app';
 
-// Store for magic link tokens (in production, use Redis or database)
-const magicTokens = new Map();
-
 /**
  * Generate a secure magic link token for shift acceptance
  * @param {string} allocationId - The shift allocation record ID (or booking ID for booking allocations)
@@ -27,63 +25,31 @@ const magicTokens = new Map();
  * @param {string} action - 'accept' or 'deny'
  * @param {boolean} isBookingAllocation - Whether this is a booking-specific allocation
  * @param {string} role - The role for booking allocations (Onboarding/Deloading)
- * @returns {string} - The generated token
+ * @returns {Promise<string>} - The generated token
  */
-function generateMagicToken(allocationId, employeeId, action, isBookingAllocation = false, role = null) {
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72 hours expiry
-    
-    // Store token with metadata
-    magicTokens.set(token, {
-        allocationId,
-        employeeId,
-        action,
-        expiresAt,
-        isBookingAllocation,
-        role,
-        used: false
-    });
-    
-    return token;
+async function generateMagicToken(allocationId, employeeId, action, isBookingAllocation = false, role = null) {
+    // Use persistent token storage instead of in-memory Map
+    return await tokenStorage.generateAndStoreToken(allocationId, employeeId, action, isBookingAllocation, role);
 }
 
 /**
  * Validate a magic link token
  * @param {string} token - The token to validate
- * @returns {object|null} - Token data if valid, null otherwise
+ * @returns {Promise<object|null>} - Token data if valid, null otherwise
  */
-function validateMagicToken(token) {
-    const tokenData = magicTokens.get(token);
-    
-    if (!tokenData) {
-        return null;
-    }
-    
-    // Check if expired
-    if (new Date() > tokenData.expiresAt) {
-        magicTokens.delete(token);
-        return null;
-    }
-    
-    // Check if already used
-    if (tokenData.used) {
-        return null;
-    }
-    
-    return tokenData;
+async function validateMagicToken(token) {
+    // Use persistent token storage
+    return await tokenStorage.validateToken(token);
 }
 
 /**
  * Mark a token as used
  * @param {string} token - The token to mark as used
+ * @param {string} recordId - The Airtable record ID of the token
  */
-function consumeToken(token) {
-    const tokenData = magicTokens.get(token);
-    if (tokenData) {
-        tokenData.used = true;
-        // Keep for audit trail, but it won't be valid anymore
-        setTimeout(() => magicTokens.delete(token), 24 * 60 * 60 * 1000); // Delete after 24 hours
-    }
+async function consumeToken(token, recordId) {
+    // Use persistent token storage
+    await tokenStorage.markTokenAsUsed(token, recordId);
 }
 
 /**
@@ -131,8 +97,8 @@ async function sendShiftNotification(params) {
     });
     
     // Generate magic link tokens for accept and deny
-    const acceptToken = generateMagicToken(allocationId, employeeId, 'accept', isBookingAllocation, role);
-    const denyToken = generateMagicToken(allocationId, employeeId, 'deny', isBookingAllocation, role);
+    const acceptToken = await generateMagicToken(allocationId, employeeId, 'accept', isBookingAllocation, role);
+    const denyToken = await generateMagicToken(allocationId, employeeId, 'deny', isBookingAllocation, role);
     
     // Create magic links
     const acceptLink = `${BASE_URL}/api/shift-response?token=${acceptToken}`;
@@ -272,8 +238,8 @@ async function sendShiftReminder(params) {
     } = params;
     
     // Generate new magic link tokens
-    const acceptToken = generateMagicToken(allocationId, employeeId, 'accept');
-    const denyToken = generateMagicToken(allocationId, employeeId, 'deny');
+    const acceptToken = await generateMagicToken(allocationId, employeeId, 'accept');
+    const denyToken = await generateMagicToken(allocationId, employeeId, 'deny');
     
     // Create magic links
     const acceptLink = `${BASE_URL}/api/shift-response?token=${acceptToken}`;
