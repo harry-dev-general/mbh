@@ -6,9 +6,9 @@
     <title>Staff Allocation Dashboard - MBH Management</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- FullCalendar v6 Standard Bundle -->
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.css' rel='stylesheet' />
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js'></script>
+    <!-- FullCalendar v6 Standard Bundle (using allowed CDN) -->
+    <link href='https://unpkg.com/fullcalendar@6.1.19/index.global.min.css' rel='stylesheet' />
+    <script src='https://unpkg.com/fullcalendar@6.1.19/index.global.min.js'></script>
     <style>
         * {
             margin: 0;
@@ -2331,9 +2331,15 @@
         function transformBookingsToEvents(bookingsData) {
             const events = [];
             
-            bookingsData.forEach(record => {
+            bookingsData.forEach((record, index) => {
                 const booking = record.fields;
                 if (!booking['Booking Date']) return;
+                
+                // Debug log first booking to see available fields
+                if (index === 0) {
+                    console.log('First booking fields:', Object.keys(booking));
+                    console.log('Booking details:', booking);
+                }
                 
                 const boat = boatsData.find(b => b.id === booking['Boat']?.[0]);
                 const hasAddOns = booking['Add-ons'] && booking['Add-ons'].trim() !== '';
@@ -2426,22 +2432,33 @@
 
         // Update calendar events
         function updateCalendarEvents() {
-            if (!calendar) return;
+            if (!calendar) {
+                console.log('Calendar not initialized yet');
+                return;
+            }
+            
+            console.log('Updating calendar events...');
+            console.log('Allocations data:', allocationsData.length, allocationsData);
+            console.log('Bookings data:', bookingsData.length, bookingsData);
             
             // Remove all existing events
             calendar.removeAllEvents();
             
             // Transform and add allocation events
             const allocationEvents = transformAllocationsToEvents(allocationsData);
+            console.log('Allocation events:', allocationEvents.length, allocationEvents);
             
             // Transform and add booking events
             const bookingEvents = transformBookingsToEvents(bookingsData);
+            console.log('Booking events:', bookingEvents.length, bookingEvents);
             
             // Add all events to calendar
             const allEvents = [...allocationEvents, ...bookingEvents];
+            console.log('Total events to add:', allEvents.length);
             allEvents.forEach(event => {
                 calendar.addEvent(event);
             });
+            console.log('Calendar events added successfully');
         }
 
         // Replace the old renderAllocations function with empty function
