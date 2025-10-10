@@ -238,12 +238,14 @@ async function sendShiftReminder(params) {
         employeeId,
         shiftDate,
         startTime,
-        hoursUntilShift
+        hoursUntilShift,
+        isBookingAllocation = false,
+        role = null
     } = params;
     
     // Generate new magic link tokens
-    const acceptToken = await generateMagicToken(allocationId, employeeId, 'accept');
-    const denyToken = await generateMagicToken(allocationId, employeeId, 'deny');
+    const acceptToken = await generateMagicToken(allocationId, employeeId, 'accept', isBookingAllocation, role);
+    const denyToken = await generateMagicToken(allocationId, employeeId, 'deny', isBookingAllocation, role);
     
     // Create magic links
     const acceptLink = `${BASE_URL}/api/shift-response?token=${acceptToken}`;

@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 8080;
 const notifications = require('./api/notifications');
 const shiftResponseHandler = require('./api/shift-response-handler');
 const announcements = require('./api/announcements');
+const reminderScheduler = require('./api/reminder-scheduler');
 
 // Import vessel maintenance routes
 const vesselRoutes = require('./api/routes/vessel-maintenance');
@@ -739,6 +740,39 @@ app.get('/training/dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
 });
 
+// Admin endpoint to manually trigger reminder check (protected)
+app.post('/api/admin/trigger-reminders', requireAuth, async (req, res) => {
+  try {
+    console.log('Manual reminder check triggered by admin');
+    await reminderScheduler.checkAndSendReminders();
+    res.json({ 
+      success: true, 
+      message: 'Reminder check completed',
+      trackerSize: reminderScheduler.reminderTracker.size
+    });
+  } catch (error) {
+    console.error('Error in manual reminder trigger:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+// Admin endpoint to view reminder status (protected)
+app.get('/api/admin/reminder-status', requireAuth, (req, res) => {
+  const status = {
+    schedulerActive: true,
+    trackerSize: reminderScheduler.reminderTracker.size,
+    reminders: Array.from(reminderScheduler.reminderTracker.entries()).map(([key, timestamp]) => ({
+      key,
+      lastSent: new Date(timestamp).toLocaleString('en-AU'),
+      minutesAgo: Math.floor((Date.now() - timestamp) / 1000 / 60)
+    }))
+  };
+  res.json(status);
+});
+
 // Catch-all route for HTML5 client-side routing
 app.get('*', (req, res) => {
   // If it's not an API route and the file doesn't exist, serve dashboard
@@ -750,4 +784,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`MBH Staff Portal running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  // Start the reminder scheduler
+  reminderScheduler.startReminderScheduler();
 });
