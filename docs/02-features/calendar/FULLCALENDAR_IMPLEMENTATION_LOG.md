@@ -226,3 +226,62 @@ During deployment testing, it was discovered that the FullCalendar CDN links wer
 ---
 
 This implementation successfully addresses all identified issues while maintaining 100% backward compatibility with existing business logic. The system is now more maintainable, performant, and provides a better user experience for managing staff allocations.
+
+## Post-Implementation Updates
+
+### Phase 2: Bug Fixes and View Enhancement (October 10, 2025)
+
+After initial deployment to development environment, the following issues were identified and resolved:
+
+#### 1. Content Security Policy (CSP) Issue
+**Problem**: FullCalendar CSS blocked by CSP - `cdn.jsdelivr.net` not in allowed list  
+**Solution**: Changed CDN from jsdelivr to unpkg (which is allowed)
+```html
+<!-- Changed from -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.css' rel='stylesheet' />
+<!-- To -->
+<link href='https://unpkg.com/fullcalendar@6.1.19/index.global.min.css' rel='stylesheet' />
+```
+
+#### 2. Bookings Not Displaying
+**Problem**: Only 1 allocation showed, but 11 bookings (22 events) were missing  
+**Root Cause**: Field name mismatch - Airtable uses different field names  
+**Solution**: Added fallback field checking:
+```javascript
+const onboardingTime = booking['Onboarding Time'] || booking['Start Time'];
+const deloadingTime = booking['Deloading Time'] || booking['Finish Time'];
+```
+
+#### 3. Time Format Compatibility
+**Problem**: Times in 12-hour format (e.g., "1:00 PM") not parsing correctly  
+**Solution**: Implemented `convertTo24HourFormat()` function:
+```javascript
+// Converts "1:00 PM" to "13:00:00"
+function convertTo24HourFormat(timeStr) {
+    // Handle both 12-hour and 24-hour formats
+    // Returns time in HH:MM:SS format for FullCalendar
+}
+```
+
+#### 4. Event Readability
+**Problem**: Overlapping events made calendar difficult to read  
+**Solution**: 
+- Enabled Week/Day view switching in headerToolbar
+- Added display configuration:
+  - `slotHeight: 50` - Increased row height
+  - `eventMinHeight: 30` - Minimum event height
+  - `displayEventTime: true` - Show start times
+  - `displayEventEnd: false` - Hide end times to reduce clutter
+
+#### 5. UI Polish
+- Styled view selector buttons to match MBH theme
+- Removed redundant week display (shown in FullCalendar title)
+- Simplified date-selector to only show "New Allocation" button
+- All debug logging removed after successful implementation
+
+### Final Status: ✅ Fully Operational
+- All 23 events display correctly (1 allocation + 22 booking events)
+- Week and Day views available for better readability
+- Mobile responsive design maintained
+- All original functionality preserved
+- Ready for production deployment
