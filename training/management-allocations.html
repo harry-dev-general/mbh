@@ -1078,7 +1078,8 @@
         }
         
         /* View Selector Button Group */
-        .fc-button-group .fc-button {
+        .fc-button-group .fc-button,
+        .fc-todayDayView-button {
             margin-left: -1px;
         }
         
@@ -1088,20 +1089,37 @@
             border-bottom-left-radius: 4px;
         }
         
-        .fc-button-group .fc-button:last-child {
+        .fc-button-group .fc-button:last-child,
+        .fc-todayDayView-button {
             border-top-right-radius: 4px;
             border-bottom-right-radius: 4px;
         }
         
-        .fc-button-active {
+        .fc-button-active,
+        .fc-todayDayView-button.fc-button-active {
             background: #1B4F72 !important;
             font-weight: 600;
+        }
+        
+        /* Make custom day button part of the group */
+        .fc-timeGridWeek-button {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+        
+        /* Control time slot height */
+        .fc-timegrid-slot {
+            height: 50px;
+        }
+        
+        .fc-timegrid-slot-minor {
+            border-top-style: dotted;
         }
 
         /* Mobile responsive for FullCalendar */
         @media (max-width: 768px) {
             .fc-timegrid-slot {
-                height: 40px;
+                height: 40px !important;
             }
             
             .fc-event {
@@ -2178,7 +2196,7 @@
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'timeGridWeek,timeGridDay'
+                    right: 'timeGridWeek,todayDayView'
                 },
                 
                 // Time Configuration
@@ -2199,7 +2217,6 @@
                 // Styling
                 height: 'auto',
                 expandRows: true,
-                slotHeight: 50,
                 eventMinHeight: 30,
                 displayEventTime: true,
                 displayEventEnd: false,
@@ -2285,6 +2302,37 @@
                     currentWeekStart = getMonday(dateInfo.start);
                     // Reload data for the new week
                     loadWeekData();
+                },
+                
+                // Custom button handlers
+                customButtons: {
+                    todayDayView: {
+                        text: 'Day',
+                        click: function() {
+                            // Switch to day view and jump to today
+                            calendar.changeView('timeGridDay');
+                            const today = new Date();
+                            today.setHours(12, 0, 0, 0);
+                            calendar.gotoDate(today);
+                        }
+                    }
+                },
+                
+                // View change handler to manage button states
+                viewDidMount: function(arg) {
+                    // Update custom button active state
+                    const dayButton = document.querySelector('.fc-todayDayView-button');
+                    const weekButton = document.querySelector('.fc-timeGridWeek-button');
+                    
+                    if (dayButton && weekButton) {
+                        if (arg.view.type === 'timeGridDay') {
+                            dayButton.classList.add('fc-button-active');
+                            weekButton.classList.remove('fc-button-active');
+                        } else {
+                            dayButton.classList.remove('fc-button-active');
+                            weekButton.classList.add('fc-button-active');
+                        }
+                    }
                 }
             });
             
