@@ -1001,7 +1001,7 @@
             text-overflow: ellipsis;
         }
 
-        /* Add-on indicator */
+        /* Add-on indicator badge */
         .addon-indicator {
             position: absolute;
             top: -4px;
@@ -1017,7 +1017,7 @@
             font-size: 11px;
             font-weight: bold;
             box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            z-index: 10;
+            z-index: 15;
         }
 
         /* FullCalendar theme adjustments */
@@ -1141,6 +1141,11 @@
             align-items: center;
             justify-content: center;
             min-height: 400px;
+        }
+        
+        /* Ensure booking blocks are positioned for absolute children */
+        .booking-block {
+            position: relative;
         }
     </style>
 </head>
@@ -1903,7 +1908,8 @@
                     `fields[]=Status&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Duration&` +
                     `fields[]=Add-ons&` +
                     `fields[]=Onboarding Time&fields[]=Deloading Time&fields[]=Boat&fields[]=Booked Boat Type&` +
-                    `fields[]=Booking Items&fields[]=Total Amount&_t=${Date.now()}`,
+                    `fields[]=Booking Items&fields[]=Total Amount&` +
+                    `fields[]=Onboarding Response&fields[]=Deloading Response&_t=${Date.now()}`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -2656,14 +2662,18 @@
                     console.log(`Booking ${booking['Customer Name']}: Onboarding Staff:`, booking['Onboarding Employee'], 'Deloading Staff:', booking['Deloading Employee']);
                 }
                 
+                // Get response statuses
+                const onboardingResponse = booking['Onboarding Response'] || '';
+                const deloadingResponse = booking['Deloading Response'] || '';
+                
                 // Create onboarding block
                 if (onboardingTime) {
-                    createBookingBlock(bookingDate, onboardingTime, 'onboarding', customerName, isFullyStaffed, record, hasOnboardingStaff, booking['Start Time']);
+                    createBookingBlock(bookingDate, onboardingTime, 'onboarding', customerName, isFullyStaffed, record, hasOnboardingStaff, booking['Start Time'], onboardingResponse);
                 }
                 
                 // Create deloading block
                 if (deloadingTime && deloadingTime !== onboardingTime) {
-                    createBookingBlock(bookingDate, deloadingTime, 'deloading', customerName, isFullyStaffed, record, hasDeloadingStaff, booking['Finish Time']);
+                    createBookingBlock(bookingDate, deloadingTime, 'deloading', customerName, isFullyStaffed, record, hasDeloadingStaff, booking['Finish Time'], deloadingResponse);
                 }
             });
             
@@ -2674,7 +2684,7 @@
         }
         
         // Create a booking block on the grid
-        function createBookingBlock(date, time, type, customerName, isFullyStaffed, bookingRecord, hasStaff, actualBookingTime) {
+        function createBookingBlock(date, time, type, customerName, isFullyStaffed, bookingRecord, hasStaff, actualBookingTime, responseStatus = '') {
             // Handle different time formats: "09:00 am", "9:00 AM", "09:00", etc.
             let hour;
             if (time.toLowerCase().includes('pm') || time.toLowerCase().includes('am')) {
@@ -2711,16 +2721,34 @@
             // Check if this specific allocation is complete (has both staff AND boat)
             const isAllocationComplete = hasStaff && hasBoat;
             
-            // Style based on allocation completion status
-            const baseColor = isAllocationComplete ? '#4caf50' : '#f44336'; // Green if complete, red if not
-            const borderColor = isAllocationComplete ? '#2e7d32' : '#c62828';
-            
-            // Use different opacity based on what's missing
+            // Style based on staff assignment and response status
+            let baseColor;
+            let borderColor;
             let opacity = '1';
-            if (!hasStaff && !hasBoat) {
-                opacity = '0.7'; // Both missing
-            } else if (!hasStaff || !hasBoat) {
-                opacity = '0.85'; // One missing
+            
+            if (!hasStaff) {
+                // No staff assigned - RED
+                baseColor = '#f44336';
+                borderColor = '#c62828';
+                opacity = '0.9';
+            } else if (responseStatus === 'Accepted') {
+                // Staff assigned and accepted - GREEN
+                baseColor = '#4caf50';
+                borderColor = '#2e7d32';
+            } else if (responseStatus === 'Declined') {
+                // Staff assigned but declined - RED
+                baseColor = '#f44336';
+                borderColor = '#c62828';
+            } else {
+                // Staff assigned but pending response - ORANGE
+                baseColor = '#ff9800';
+                borderColor = '#f57c00';
+                opacity = '0.9';
+            }
+            
+            // Additional opacity adjustment if boat is missing
+            if (!hasBoat && opacity === '1') {
+                opacity = '0.85';
             }
             
             bookingBlock.style.cssText = `
@@ -2739,7 +2767,23 @@
             `;
             
             const typeLabel = type === 'onboarding' ? '🚢 ON' : '🏁 OFF';
-            const staffIcon = hasStaff ? '✓' : '✗';
+            let staffIcon;
+            let statusText;
+            
+            if (!hasStaff) {
+                staffIcon = '❌';
+                statusText = 'Unassigned';
+            } else if (responseStatus === 'Accepted') {
+                staffIcon = '✅';
+                statusText = 'Accepted';
+            } else if (responseStatus === 'Declined') {
+                staffIcon = '❌';
+                statusText = 'Declined';
+            } else {
+                staffIcon = '⏳';
+                statusText = 'Pending';
+            }
+            
             const boatIcon = hasBoat ? '⚓' : '✗';
             
             // Use the actual booking time for display
@@ -2754,12 +2798,20 @@
                     <i class="fas fa-anchor"></i> ${bookedBoatType}
                 </div>` : '';
             
+            // Check if booking has add-ons
+            const hasAddOns = booking['Add-ons'] && booking['Add-ons'].trim() !== '' && booking['Add-ons'] !== 'None';
+            const addOnIndicator = hasAddOns ? '<span class="addon-indicator" title="This booking includes add-ons">+</span>' : '';
+            
             bookingBlock.innerHTML = `
+                ${addOnIndicator}
                 <div style="font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     ${typeLabel} ${customerName}
                 </div>
                 <div style="font-size: 9px; opacity: 0.9;">
-                    ${displayTime} Staff:${staffIcon} Boat:${boatIcon}
+                    ${displayTime} ${staffIcon} ${statusText}
+                </div>
+                <div style="font-size: 8px; opacity: 0.8;">
+                    Boat:${boatIcon}
                 </div>
                 ${boatTypeInfo}
                 ${boatInfo}
@@ -2767,8 +2819,9 @@
             
             const boatTitle = boatName ? `\nBoat Assigned: ${boatName}` : '\nBoat Assigned: None';
             const boatTypeTitle = bookedBoatType ? `\nBoat Type: ${bookedBoatType}` : '';
-            const completionStatus = isAllocationComplete ? 'COMPLETE ✅' : (hasStaff ? 'Needs Boat' : (hasBoat ? 'Needs Staff' : 'Needs Staff & Boat'));
-            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Booking Start' : 'Booking Finish'}: ${displayTime}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} Time: ${time}\nStaff: ${hasStaff ? 'Assigned' : 'NEEDED'}\nBoat: ${hasBoat ? boatName || 'Assigned' : 'NEEDED'}${boatTypeTitle}\nStatus: ${completionStatus}\nClick to manage allocation`;
+            const addOnsTitle = hasAddOns ? `\nAdd-ons: ${booking['Add-ons']}` : '';
+            const staffStatusText = hasStaff ? `Assigned - ${statusText}` : 'NEEDED';
+            bookingBlock.title = `${customerName}\n${type === 'onboarding' ? 'Booking Start' : 'Booking Finish'}: ${displayTime}\n${type === 'onboarding' ? 'Onboarding' : 'Deloading'} Time: ${time}\nStaff: ${staffStatusText}\nBoat: ${hasBoat ? boatName || 'Assigned' : 'NEEDED'}${boatTypeTitle}${addOnsTitle}\nClick to manage allocation`;
             
             // Add click handler to open allocation modal
             bookingBlock.onclick = (e) => {

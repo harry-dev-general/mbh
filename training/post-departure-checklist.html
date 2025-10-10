@@ -1435,16 +1435,33 @@
     
     <!-- Google Maps API for geocoding and map preview -->
     <script>
-        // Load Google Maps API
-        const GOOGLE_MAPS_API_KEY = 'AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw';
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
-        script.async = true;
-        script.defer = true;
-        script.onerror = function() {
-            console.log('Google Maps failed to load. Location capture will still work without address lookup.');
-        };
-        document.head.appendChild(script);
+        // Load Google Maps API from server configuration
+        async function loadGoogleMapsWithConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                const GOOGLE_MAPS_API_KEY = config.googleMapsApiKey;
+                
+                if (!GOOGLE_MAPS_API_KEY) {
+                    throw new Error('Google Maps API key not configured on server');
+                }
+                
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+                script.async = true;
+                script.defer = true;
+                script.onerror = function() {
+                    console.log('Google Maps failed to load. Location capture will still work without address lookup.');
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+                console.log('Location capture will still work without address lookup.');
+            }
+        }
+        
+        // Initialize loading
+        loadGoogleMapsWithConfig();
     </script>
 </body>
 </html> 

@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ice Cream Boat Sales - MBH Staff Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f6fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .logo {
+            height: 40px;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: #1B4F72;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #154360;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #e0e6ed;
+            color: #64748b;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+        
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        /* Stats Overview */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        
+        .stat-icon.sales {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+        
+        .stat-icon.revenue {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .stat-icon.average {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .stat-icon.vessels {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .stat-change {
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .stat-change.positive {
+            color: #16a34a;
+        }
+        
+        .stat-change.negative {
+            color: #dc2626;
+        }
+        
+        /* Sales Table Section */
+        .sales-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: #64748b;
+            cursor: pointer;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            width: 250px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+        
+        /* Sales Table */
+        .sales-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .sales-table th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e0e6ed;
+        }
+        
+        .sales-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .sales-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .customer-name {
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .vessel-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #1B4F72;
+            font-weight: 500;
+        }
+        
+        .sale-amount {
+            font-weight: 600;
+            color: #16a34a;
+        }
+        
+        .add-ons {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .sale-time {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+        
+        /* Loading States */
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+        
+        .loading-state i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .refresh-btn {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+        
+        /* Live Indicator */
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #16a34a;
+            font-weight: 500;
+        }
+        
+        .live-indicator i {
+            font-size: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .sales-table {
+                font-size: 0.875rem;
+            }
+            
+            .sales-table th,
+            .sales-table td {
+                padding: 0.5rem;
+            }
+            
+            .hide-mobile {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <img src="../assets/logo.png" alt="MBH Logo" class="logo">
+            <h1 class="page-title">🍦 Ice Cream Boat Sales</h1>
+        </div>
+        <div class="header-actions">
+            <span class="live-indicator">
+                <i class="fas fa-circle"></i> Live Updates
+            </span>
+            <a href="management-dashboard.html" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <button class="btn btn-secondary" onclick="refreshData()" title="Manually refresh data">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="btn btn-primary" onclick="exportSalesData()">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Stats Overview -->
+        <div class="stats-grid" id="statsGrid" style="grid-template-columns: repeat(2, 1fr); max-width: 600px;">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Sales Today</div>
+                    </div>
+                    <div class="stat-icon sales">
+                        <i class="fas fa-ice-cream"></i>
+                    </div>
+                </div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i> Live tracking
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value">$0.00</div>
+                        <div class="stat-label">Revenue Today</div>
+                    </div>
+                    <div class="stat-icon revenue">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+                <div class="stat-change positive">
+                    <i class="fas fa-chart-line"></i> Real-time
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sales Table Section -->
+        <section class="sales-section">
+            <div class="section-header">
+                <h2 class="section-title">Recent Ice Cream Sales</h2>
+                <div class="filter-controls">
+                    <select class="filter-select" id="dateFilter" onchange="filterSales()">
+                        <option value="today">Today</option>
+                        <option value="week" selected>This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="all">All Time</option>
+                    </select>
+                    <select class="filter-select" id="vesselFilter" onchange="filterSales()">
+                        <option value="all">All Vessels</option>
+                        <option value="walker-courtney">Walker Courtney</option>
+                        <option value="pumice-stone">Pumice Stone</option>
+                    </select>
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search sales..." onkeyup="searchSales()">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="salesTableContainer">
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading ice cream sales...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Global variables
+        let allSales = [];
+        let refreshInterval;
+        let isLoadingSales = false;
+        let isLoadingStats = false;
+        let isInitialized = false;
+        
+        // Listen for auth state changes
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') {
+                window.location.href = 'auth.html';
+            }
+            
+            if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+                if (session) {
+                    checkManagerAccess(session.user);
+                }
+            }
+        });
+        
+        // Check if user is a manager
+        async function checkManagerAccess(user) {
+            const userEmail = user.email;
+            
+            // Check if user is authorized manager
+            const authorizedManagers = [
+                'harry@priceoffice.com.au',
+                'harryjamesp45@gmail.com',
+                'sarah@priceoffice.com.au',
+                'brian@manlybh.com.au',
+                'sarah@manlybh.com.au',
+                'mmckelvey03@gmail.com',
+                'manager@mbh.com',
+                'admin@mbh.com',
+                'operations@mbh.com'
+            ];
+            
+            if (!authorizedManagers.includes(userEmail)) {
+                alert('Access denied. This page is for managers only.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            console.log('Manager authorized:', userEmail);
+            initializePage();
+        }
+        
+        // Initialize page
+        async function initializePage() {
+            // Prevent multiple initializations
+            if (isInitialized) return;
+            isInitialized = true;
+            
+            // Load data sequentially to avoid overwhelming Airtable
+            await loadIceCreamSales();
+            
+            // Small delay before loading stats
+            setTimeout(() => {
+                loadStats();
+            }, 500);
+            
+            // Clear any existing interval
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            // Refresh data every 60 seconds (increased from 30)
+            refreshInterval = setInterval(async () => {
+                // Load sequentially with delay
+                await loadIceCreamSales();
+                setTimeout(() => {
+                    loadStats();
+                }, 500);
+            }, 60000);
+        }
+        
+        // Load ice cream sales from Airtable
+        async function loadIceCreamSales() {
+            // Prevent duplicate requests
+            if (isLoadingSales) return;
+            isLoadingSales = true;
+            
+            const container = document.getElementById('salesTableContainer');
+            
+            // Show loading state only if no data is displayed
+            if (allSales.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading ice cream sales...</p>
+                    </div>
+                `;
+            }
+            
+            try {
+                const dateFilter = document.getElementById('dateFilter').value;
+                let filterFormula = '';
+                
+                // Build date filter
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                switch(dateFilter) {
+                    case 'today':
+                        // Use IS_SAME for accurate date comparison
+                        filterFormula = `IS_SAME({Sale Date}, '${formatDate(today)}', 'day')`;
+                        break;
+                    case 'week':
+                        const weekAgo = new Date(today);
+                        weekAgo.setDate(today.getDate() - 7);
+                        filterFormula = `{Sale Date} >= '${formatDate(weekAgo)}'`;
+                        break;
+                    case 'month':
+                        const monthAgo = new Date(today);
+                        monthAgo.setMonth(today.getMonth() - 1);
+                        filterFormula = `{Sale Date} >= '${formatDate(monthAgo)}'`;
+                        break;
+                    default:
+                        filterFormula = '';
+                }
+                
+                // Fetch ice cream sales via API proxy with timeout
+                const ICE_CREAM_TABLE_ID = 'tblTajm845Fiij8ud';
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                
+                try {
+                    const response = await fetch(
+                        `/api/airtable/applkAFOn2qxtu7tx/${ICE_CREAM_TABLE_ID}?` +
+                        (filterFormula ? `filterByFormula=${encodeURIComponent(filterFormula)}&` : '') +
+                        `sort[0][field]=Sale Date&sort[0][direction]=desc` +
+                        `&sort[1][field]=Sale Time&sort[1][direction]=desc` +
+                        `&maxRecords=50`, // Reduced from 100 to 50 for faster response
+                        {
+                            method: 'GET',
+                            signal: controller.signal
+                        }
+                    );
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch sales: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    allSales = data.records || [];
+                    
+                    console.log('Loaded ice cream sales:', {
+                        count: allSales.length,
+                        dateFilter: dateFilter,
+                        filterFormula: filterFormula,
+                        sales: allSales.map(s => ({
+                            customer: s.fields['Customer Name'],
+                            amount: s.fields['Sale Amount'],
+                            date: s.fields['Sale Date']
+                        }))
+                    });
+                    
+                    displaySales(allSales);
+                    
+                } catch (innerError) {
+                    if (innerError.name === 'AbortError') {
+                        throw new Error('Request timed out - please try again');
+                    }
+                    throw innerError;
+                }
+                
+            } catch (error) {
+                console.error('Error loading ice cream sales:', error);
+                const errorMessage = error.message.includes('timed out') 
+                    ? 'Loading is taking too long. Please refresh the page.'
+                    : 'Failed to load sales data';
+                    
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>${errorMessage}</p>
+                        ${error.message.includes('timed out') ? '<button onclick="location.reload()" class="refresh-btn">Refresh Page</button>' : ''}
+                    </div>
+                `;
+            } finally {
+                isLoadingSales = false;
+            }
+        }
+        
+        // Display sales in table
+        function displaySales(sales) {
+            const container = document.getElementById('salesTableContainer');
+            
+            if (sales.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-ice-cream"></i>
+                        <p>No ice cream sales found for the selected period</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const tableHTML = `
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Vessel/Operation</th>
+                            <th>Amount</th>
+                            <th class="hide-mobile">Add-ons</th>
+                            <th>Date & Time</th>
+                            <th class="hide-mobile">Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sales.map(record => {
+                            const fields = record.fields;
+                            const saleDate = new Date(fields['Sale Date']);
+                            const dateStr = saleDate.toLocaleDateString('en-AU', { 
+                                day: 'numeric', 
+                                month: 'short' 
+                            });
+                            
+                            return `
+                                <tr>
+                                    <td class="customer-name">${fields['Customer Name'] || 'Walk-in'}</td>
+                                    <td class="vessel-name">
+                                        <i class="fas fa-ship"></i>
+                                        ${fields['Vessel/Operation'] || 'Unknown'}
+                                    </td>
+                                    <td class="sale-amount">$${fields['Sale Amount'] || 0}</td>
+                                    <td class="add-ons hide-mobile">${fields['Add-ons'] || 'None'}</td>
+                                    <td class="sale-time">
+                                        ${dateStr} ${fields['Sale Time'] || ''}
+                                    </td>
+                                    <td class="hide-mobile">${fields['Phone Number'] || '-'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        // Load statistics
+        async function loadStats() {
+            // Prevent duplicate requests
+            if (isLoadingStats) return;
+            isLoadingStats = true;
+            
+            try {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                
+                // If we already have sales data and it's filtered by today, use it
+                const dateFilter = document.getElementById('dateFilter').value;
+                let todaySales = [];
+                
+                if (dateFilter === 'today' && allSales.length > 0) {
+                    // Use existing data
+                    todaySales = allSales;
+                } else {
+                    // Fetch today's sales with timeout
+                    // Use IS_SAME for accurate date comparison
+                    const todayFilter = `IS_SAME({Sale Date}, '${formatDate(today)}', 'day')`;
+                    console.log('Fetching stats for date:', formatDate(today), 'Filter:', todayFilter);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+                    
+                    try {
+                        const todayResponse = await fetch(
+                            `/api/airtable/applkAFOn2qxtu7tx/tblTajm845Fiij8ud?` +
+                            `filterByFormula=${encodeURIComponent(todayFilter)}&maxRecords=100`, // Increased limit to handle more daily sales
+                            { 
+                                method: 'GET',
+                                signal: controller.signal
+                            }
+                        );
+                        
+                        clearTimeout(timeoutId);
+                        
+                        if (!todayResponse.ok) {
+                            throw new Error(`Failed to fetch stats: ${todayResponse.status}`);
+                        }
+                        
+                        const todayData = await todayResponse.json();
+                        todaySales = todayData.records || [];
+                        
+                    } catch (error) {
+                        if (error.name === 'AbortError') {
+                            console.error('Stats request timed out');
+                            // Continue with empty data rather than failing completely
+                            todaySales = [];
+                        } else {
+                            throw error;
+                        }
+                    }
+                }
+                
+                // Calculate stats
+                const todayCount = todaySales.length;
+                const todayRevenue = todaySales.reduce((sum, record) => {
+                    return sum + (record.fields['Sale Amount'] || 0);
+                }, 0);
+                
+                console.log('Today\'s sales data:', {
+                    date: formatDate(today),
+                    salesCount: todayCount,
+                    revenue: todayRevenue,
+                    sales: todaySales.map(s => ({
+                        customer: s.fields['Customer Name'],
+                        amount: s.fields['Sale Amount'],
+                        date: s.fields['Sale Date']
+                    }))
+                });
+                
+                // Update UI
+                updateStats({
+                    salesCount: todayCount,
+                    revenue: todayRevenue
+                });
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            } finally {
+                isLoadingStats = false;
+            }
+        }
+        
+        // Update stats UI
+        function updateStats(stats) {
+            const statsGrid = document.getElementById('statsGrid');
+            if (!statsGrid) return;
+            
+            // Update existing stat cards instead of replacing all HTML
+            const statCards = statsGrid.querySelectorAll('.stat-card');
+            
+            // Update Sales Today
+            if (statCards[0]) {
+                statCards[0].querySelector('.stat-value').textContent = stats.salesCount;
+            }
+            
+            // Update Revenue Today
+            if (statCards[1]) {
+                statCards[1].querySelector('.stat-value').textContent = `$${stats.revenue.toFixed(2)}`;
+            }
+            
+            console.log('Stats updated:', {
+                salesCount: stats.salesCount,
+                revenue: stats.revenue
+            });
+        }
+        
+        // Filter sales
+        function filterSales() {
+            loadIceCreamSales();
+        }
+        
+        // Search sales
+        function searchSales() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const vesselFilter = document.getElementById('vesselFilter').value;
+            
+            let filteredSales = allSales;
+            
+            // Apply vessel filter
+            if (vesselFilter !== 'all') {
+                filteredSales = filteredSales.filter(record => {
+                    const vessel = (record.fields['Vessel/Operation'] || '').toLowerCase();
+                    return vessel.includes(vesselFilter.replace('-', ' '));
+                });
+            }
+            
+            // Apply search filter
+            if (searchTerm) {
+                filteredSales = filteredSales.filter(record => {
+                    const fields = record.fields;
+                    const searchableText = [
+                        fields['Customer Name'],
+                        fields['Vessel/Operation'],
+                        fields['Add-ons'],
+                        fields['Phone Number']
+                    ].join(' ').toLowerCase();
+                    
+                    return searchableText.includes(searchTerm);
+                });
+            }
+            
+            displaySales(filteredSales);
+        }
+        
+        // Export sales data
+        function exportSalesData() {
+            // Convert sales to CSV
+            const headers = ['Date', 'Time', 'Customer', 'Vessel', 'Amount', 'Add-ons', 'Phone'];
+            const csvData = [headers];
+            
+            allSales.forEach(record => {
+                const fields = record.fields;
+                csvData.push([
+                    fields['Sale Date'] || '',
+                    fields['Sale Time'] || '',
+                    fields['Customer Name'] || '',
+                    fields['Vessel/Operation'] || '',
+                    fields['Sale Amount'] || '',
+                    fields['Add-ons'] || '',
+                    fields['Phone Number'] || ''
+                ]);
+            });
+            
+            // Create CSV string
+            const csv = csvData.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+            
+            // Download CSV
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ice-cream-sales-${formatDate(new Date())}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Helper function to format date
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Manual refresh function
+        async function refreshData() {
+            const refreshBtn = document.querySelector('button[onclick="refreshData()"]');
+            const icon = refreshBtn.querySelector('i');
+            
+            // Add spinning animation
+            icon.classList.add('fa-spin');
+            refreshBtn.disabled = true;
+            
+            try {
+                await loadIceCreamSales();
+                setTimeout(() => {
+                    loadStats();
+                }, 500);
+            } finally {
+                // Remove spinning animation
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                    refreshBtn.disabled = false;
+                }, 1000);
+            }
+        }
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+        
+        // Also cleanup when navigating away via back button or links
+        window.addEventListener('pagehide', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+        
+        // Cleanup if page becomes hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            } else if (!document.hidden && !refreshInterval && isInitialized) {
+                // Restart refresh when page becomes visible again (only if initialized)
+                loadIceCreamSales().then(() => {
+                    setTimeout(() => {
+                        loadStats();
+                    }, 500);
+                });
+                refreshInterval = setInterval(async () => {
+                    await loadIceCreamSales();
+                    setTimeout(() => {
+                        loadStats();
+                    }, 500);
+                }, 60000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1537,28 +1537,50 @@
     
     <!-- Google Maps JavaScript API -->
         <!-- Google Maps API -->
-    <!-- SECURITY: API key should be added via environment variable or restricted in Google Cloud Console -->
+    <!-- SECURITY: API key is now loaded from server configuration -->
     <script>
-        // Temporary solution - the API key should be restricted to this domain in Google Cloud Console
-        const GOOGLE_MAPS_API_KEY = 'AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw';
+        // Load Google Maps API key from server configuration
+        async function loadGoogleMapsWithConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                const GOOGLE_MAPS_API_KEY = config.googleMapsApiKey;
+                
+                if (!GOOGLE_MAPS_API_KEY) {
+                    throw new Error('Google Maps API key not configured on server');
+                }
+                
+                // Create and load the Google Maps script
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap&libraries=&v=weekly`;
+                script.async = true;
+                script.defer = true;
+                script.onerror = function() {
+                    console.error('Failed to load Google Maps. Please check API key and restrictions.');
+                    // Show fallback message
+                    document.getElementById('map').innerHTML = `
+                        <div style="padding: 20px; text-align: center;">
+                            <h3>Map temporarily unavailable</h3>
+                            <p>Please use the "Get Directions" buttons for navigation.</p>
+                            <p style="color: #888; font-size: 0.9em;">If you're an admin, check the console for details.</p>
+                        </div>
+                    `;
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+                document.getElementById('map').innerHTML = `
+                    <div style="padding: 20px; text-align: center;">
+                        <h3>Map configuration error</h3>
+                        <p>Please contact support.</p>
+                        <p style="color: #888; font-size: 0.9em;">Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
         
-        // Create and load the Google Maps script
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap&libraries=&v=weekly`;
-        script.async = true;
-        script.defer = true;
-        script.onerror = function() {
-            console.error('Failed to load Google Maps. Please check API key and restrictions.');
-            // Show fallback message
-            document.getElementById('map').innerHTML = `
-                <div style="padding: 20px; text-align: center;">
-                    <h3>Map temporarily unavailable</h3>
-                    <p>Please use the "Get Directions" buttons for navigation.</p>
-                    <p style="color: #888; font-size: 0.9em;">If you're an admin, check the console for details.</p>
-                </div>
-            `;
-        };
-        document.head.appendChild(script);
+        // Initialize loading
+        loadGoogleMapsWithConfig();
         
         // Mobile toggle functionality
         function toggleMobileSidebar() {

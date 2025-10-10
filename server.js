@@ -91,6 +91,16 @@ app.use(express.static(path.join(__dirname, 'training')));
 // Add vessel maintenance routes
 app.use('/api/vessels', vesselRoutes);
 
+// Config endpoint for frontend configuration
+app.get('/api/config', (req, res) => {
+    res.json({
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
+        SUPABASE_URL: process.env.SUPABASE_URL || 'https://etkugeooigiwahikrmzr.supabase.co',
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU',
+        API_BASE_URL: '' // Empty string means use relative URLs
+    });
+});
+
 // Daily Run Sheet API endpoints
 app.get('/api/daily-run-sheet', async (req, res) => {
     try {
@@ -144,13 +154,71 @@ app.get('/api/daily-run-sheet', async (req, res) => {
             postDepartureChecklist: b.fields['Post Departure Checklist']
         }));
         
-        // Calculate stats
+        // Calculate stats based on actual booking times
+        // Use Sydney timezone for accurate time calculations
+        const now = new Date();
+        const sydneyTime = new Date(now.toLocaleString("en-US", {timeZone: "Australia/Sydney"}));
+        const currentTime = sydneyTime.getHours() * 60 + sydneyTime.getMinutes(); // Convert to minutes for easier comparison
+        
+        // Helper function to parse time string to minutes
+        const parseTime = (timeStr) => {
+            if (!timeStr) return null;
+            const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (!match) return null;
+            let [_, hours, minutes, period] = match;
+            hours = parseInt(hours);
+            minutes = parseInt(minutes);
+            if (period.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+            if (period.toUpperCase() === 'AM' && hours === 12) hours = 0;
+            return hours * 60 + minutes;
+        };
+        
+        let onWaterCount = 0;
+        let preparingCount = 0;
+        let returningCount = 0;
+        
+        // Check each booking's status based on current time
+        console.log(`Current Sydney time: ${sydneyTime.toLocaleTimeString('en-AU')} (${currentTime} mins)`);
+        
+        bookings.forEach(booking => {
+            const onboardingTime = parseTime(booking.fields['Onboarding Time']);
+            const startTime = parseTime(booking.fields['Start Time']);
+            const finishTime = parseTime(booking.fields['Finish Time']);
+            const deloadingTime = parseTime(booking.fields['Deloading Time']);
+            
+            if (startTime !== null && finishTime !== null) {
+                // Calculate returning soon time (30 mins before finish)
+                const returningSoonTime = finishTime - 30;
+                
+                // Debug logging
+                console.log(`Booking ${booking.fields['Customer Name']}: onboard=${booking.fields['Onboarding Time']}, start=${booking.fields['Start Time']} (${startTime}min), finish=${booking.fields['Finish Time']} (${finishTime}min)`);
+                
+                if (onboardingTime !== null && currentTime >= onboardingTime && currentTime < startTime) {
+                    // Currently preparing (between onboarding time and start time)
+                    preparingCount++;
+                    console.log(`  -> Status: PREPARING (staff preparing boat)`);
+                } else if (currentTime >= startTime && currentTime < returningSoonTime) {
+                    // Currently on water (between start time and 30 mins before finish)
+                    onWaterCount++;
+                    console.log(`  -> Status: ON WATER`);
+                } else if (currentTime >= returningSoonTime && currentTime < finishTime) {
+                    // Returning soon (30 mins before finish time)
+                    returningCount++;
+                    console.log(`  -> Status: RETURNING SOON`);
+                } else {
+                    console.log(`  -> Status: NOT ACTIVE`);
+                }
+            }
+        });
+        
         const stats = {
             totalBookings: bookings.length,
-            onWater: vesselStatuses.filter(v => v.status === 'on_water').length,
-            preparing: vesselStatuses.filter(v => v.status === 'preparing').length,
-            returning: vesselStatuses.filter(v => v.status === 'returning').length
+            onWater: onWaterCount,
+            preparing: preparingCount,
+            returning: returningCount
         };
+        
+        console.log(`Stats calculated: Total=${stats.totalBookings}, OnWater=${stats.onWater}, Preparing=${stats.preparing}, Returning=${stats.returning}`);
         
         res.json({
             success: true,
@@ -247,6 +315,10 @@ app.use('/api', webhookLogger);
 // Add Checkfront webhook handler
 app.use('/api/checkfront', checkfrontWebhook);
 
+// Add Square webhook handler
+const squareWebhook = require('./api/square-webhook');
+app.use('/api', squareWebhook);
+
 // Add add-ons management routes
 app.use('/api/addons', addonsManagement);
 
@@ -339,15 +411,8 @@ app.get('/api/airtable/*', async (req, res) => {
   }
 });
 
-// Environment variables endpoint (for client-side configuration)
-app.get('/api/config', (req, res) => {
-  res.json({
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-    // Don't expose the Airtable API key
-    API_BASE_URL: ''  // Empty string means use relative URLs
-  });
-});
+// Note: The /api/config endpoint has been moved earlier in the file
+// to consolidate all frontend configuration in one place
 
 // Shift response endpoint - handles magic link clicks from SMS
 app.get('/api/shift-response', async (req, res) => {

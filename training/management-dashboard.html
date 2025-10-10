@@ -1599,6 +1599,30 @@
             margin-top: auto;
             background: white;
         }
+        
+        /* Add-on indicator badge */
+        .addon-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff9800;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            z-index: 15;
+        }
+        
+        /* Ensure calendar events are positioned for absolute children */
+        .calendar-event {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -1634,6 +1658,10 @@
                     <li class="nav-item" onclick="window.location.href='vessel-maintenance.html'">
                         <i class="fas fa-ship"></i>
                         <span>Vessel Maintenance</span>
+                    </li>
+                    <li class="nav-item" onclick="window.location.href='ice-cream-sales.html'">
+                        <i class="fas fa-ice-cream"></i>
+                        <span>Ice Cream Boat</span>
                     </li>
                     <li class="nav-item" onclick="switchTab('announcements', event)">
                         <i class="fas fa-bullhorn"></i>
@@ -2211,16 +2239,20 @@
             }
         }
         
-        // Calendar variables - Set to 2025 context
+        // Calendar variables - Use actual current date
         let currentWeekStart = new Date();
-        currentWeekStart.setFullYear(2025); // Ensure 2025 context
-        currentWeekStart.setMonth(8); // September (0-indexed)
-        currentWeekStart.setDate(24); // Current date is September 24, 2025
         currentWeekStart.setHours(0, 0, 0, 0);
         const dayOfWeek = currentWeekStart.getDay();
         const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Adjust for Monday start
         currentWeekStart.setDate(currentWeekStart.getDate() + diff);
         
+        // Helper function to format date as YYYY-MM-DD in local timezone
+        function formatLocalDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
         
         // Initialize calendar
         async function initCalendar() {
@@ -2265,8 +2297,8 @@
                 endDate.setDate(endDate.getDate() + 6);
                 
                 // Format dates for Airtable
-                const startStr = startDate.toISOString().split('T')[0];
-                const endStr = endDate.toISOString().split('T')[0];
+                const startStr = formatLocalDate(startDate);
+                const endStr = formatLocalDate(endDate);
                 
                 // Fetch bookings via API proxy - get all non-cancelled bookings and filter client-side
                 const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
@@ -2275,7 +2307,7 @@
                     `filterByFormula=${encodeURIComponent(`OR({Status}='PAID',{Status}='PART',{Status}='Confirmed',{Status}='Pending')`)}` +
                     `&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time` +
                     `&fields[]=Boat&fields[]=Booked Boat Type&fields[]=Status&fields[]=Total Amount` +
-                    `&fields[]=Onboarding Employee&fields[]=Deloading Employee` +
+                    `&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Add-ons` +
                     `&pageSize=100`,
                     {
                         method: 'GET'
@@ -2291,22 +2323,30 @@
                     
                 // Filter bookings by date on client side
                 const bookings = allBookings.filter(record => {
-                        const bookingDate = record.fields['Booking Date'];
-                    return bookingDate >= startStr && bookingDate <= endStr;
+                    const bookingDate = record.fields['Booking Date'];
+                    if (!bookingDate) return false;
+                    
+                    // Parse date properly to avoid timezone issues
+                    const date = new Date(bookingDate + 'T00:00:00');
+                    const dateStr = formatLocalDate(date);
+                    
+                    // Compare dates as strings to avoid timezone issues
+                    return dateStr >= startStr && dateStr <= endStr;
                 });
                 
                 // Debug: Log fetched bookings
                 console.log(`Fetched ${allBookings.length} total bookings, ${bookings.length} for week ${startStr} to ${endStr}`);
                 bookings.forEach(record => {
-                    console.log(`Booking: ${record.fields['Customer Name']} on ${record.fields['Booking Date']} at ${record.fields['Start Time']} - Status: ${record.fields['Status']}`);
+                    const addOns = record.fields['Add-ons'] || 'None';
+                    console.log(`Booking: ${record.fields['Customer Name']} on ${record.fields['Booking Date']} at ${record.fields['Start Time']} - Status: ${record.fields['Status']} - Add-ons: ${addOns}`);
                 });
                 
                 // Group bookings by date and time
                 const bookingsByDateAndTime = {};
                 bookings.forEach(record => {
                     const fields = record.fields;
-                    const bookingDate = new Date(fields['Booking Date']);
-                    const dateKey = bookingDate.toISOString().split('T')[0];
+                    const bookingDate = new Date(fields['Booking Date'] + 'T00:00:00');
+                    const dateKey = formatLocalDate(bookingDate);
                     
                     // Parse start time
                     const startTime = parseTimeToSlot(fields['Start Time']);
@@ -2320,7 +2360,8 @@
                             boat: fields['Booked Boat Type'] || 'Boat',
                             status: fields['Status'],
                             amount: fields['Total Amount'],
-                            hasStaff: !!(fields['Onboarding Employee']?.[0] || fields['Deloading Employee']?.[0])
+                            hasStaff: !!(fields['Onboarding Employee']?.[0] || fields['Deloading Employee']?.[0]),
+                            addOns: fields['Add-ons'] || ''
                         });
                     } else {
                         console.warn(`Could not parse time for booking: ${fields['Customer Name']} with time: ${fields['Start Time']}`);
@@ -2352,7 +2393,7 @@
                     const date = new Date(currentWeekStart);
                         date.setDate(date.getDate() + day);
                         const isToday = isDateToday(date);
-                        const dateKey = date.toISOString().split('T')[0];
+                        const dateKey = formatLocalDate(date);
                         const cellKey = `${dateKey}-${time}`;
                         const cellBookings = bookingsByDateAndTime[cellKey] || [];
                         
@@ -2362,8 +2403,11 @@
                         cellBookings.forEach((booking, index) => {
                             if (index < 2) { // Show max 2 bookings per cell
                                 const staffClass = booking.hasStaff ? 'staffed' : 'unstaffed';
+                                const hasAddOns = booking.addOns && booking.addOns.trim() !== '' && booking.addOns !== 'None';
+                                const addOnIndicator = hasAddOns ? '<span class="addon-indicator" title="This booking includes add-ons">+</span>' : '';
                     html += `
-                                    <div class="calendar-event ${staffClass}" title="${booking.customer} - ${booking.boat}">
+                                    <div class="calendar-event ${staffClass}" title="${booking.customer} - ${booking.boat}${hasAddOns ? ' (includes add-ons)' : ''}">
+                                        ${addOnIndicator}
                                         <div class="event-time">${booking.boat}</div>
                                         <div class="event-details">${booking.customer}</div>
                         </div>
@@ -2448,9 +2492,6 @@
         // Check if date is today
         function isDateToday(date) {
             const today = new Date();
-            today.setFullYear(2025); // Ensure 2025 context
-            today.setMonth(8); // September
-            today.setDate(24); // Current date is September 24, 2025
             return date.getDate() === today.getDate() &&
                    date.getMonth() === today.getMonth() &&
                    date.getFullYear() === today.getFullYear();
@@ -2467,9 +2508,6 @@
         async function goToToday() {
             // Reset to current week
             currentWeekStart = new Date();
-            currentWeekStart.setFullYear(2025); // Ensure 2025 context
-            currentWeekStart.setMonth(8); // September (0-indexed)
-            currentWeekStart.setDate(24); // Current date is September 24, 2025
             currentWeekStart.setHours(0, 0, 0, 0);
             const dayOfWeek = currentWeekStart.getDay();
             const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Adjust for Monday start
@@ -2479,12 +2517,36 @@
             await buildCalendarGrid();
         }
         
-        // Add vessel card interactivity
+        // Add vessel card interactivity to link with map markers
         function initializeVesselInteractivity() {
             document.querySelectorAll('.vessel-card').forEach(card => {
                 card.addEventListener('click', function() {
-                    // Card click behavior if needed
-                    console.log('Vessel clicked:', this.querySelector('.vessel-name').textContent);
+                    const vesselName = this.getAttribute('data-vessel-name');
+                    
+                    // Find the corresponding marker
+                    const marker = fleetMarkers.find(m => m.vesselName === vesselName);
+                    
+                    if (marker) {
+                        // Close any open info windows
+                        fleetMarkers.forEach(m => {
+                            if (m.infoWindow) m.infoWindow.close();
+                        });
+                        
+                        // Open the info window for the clicked vessel
+                        marker.infoWindow.open(fleetMap, marker);
+                        
+                        // Center and zoom the map on the marker
+                        fleetMap.setCenter(marker.getPosition());
+                        fleetMap.setZoom(15);
+                        
+                        // Smooth scroll to map if not in view
+                        const mapContainer = document.getElementById('fleetMap');
+                        if (mapContainer) {
+                            mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    } else {
+                        console.warn(`No marker found for vessel: ${vesselName}`);
+                    }
                 });
             });
         }
@@ -2610,6 +2672,23 @@
                     
                     // Extract suburb from location
                     let locationText = vessel.currentStatus?.location?.address || vessel.location || 'Unknown Location';
+                    
+                    // Check if using fixed location
+                    const fixedLocations = {
+                        'Work Boat': 'Fergusons Marina',
+                        'Ice Cream Boat': 'Dalbora The Spit',
+                        'Sandstone': 'Balmoral Mooring',
+                        'Pumice Stone': 'Little Manly Commercial Mooring',
+                        'Junior': 'Seaforth Mooring',
+                        'Polycraft Yam': 'Manly Boat Hire Base',
+                        'Polycraft Merc': 'Manly Boat Hire Base'
+                    };
+                    
+                    const isFixedLocation = !vessel.currentStatus?.location?.latitude && fixedLocations[vessel.name];
+                    if (isFixedLocation) {
+                        locationText = fixedLocations[vessel.name];
+                    }
+                    
                     const suburb = extractSuburb(locationText);
                     
                     // Determine status badge based on condition
@@ -2627,7 +2706,7 @@
                     }
                     
                     return `
-                        <div class="vessel-card">
+                        <div class="vessel-card" data-vessel-name="${vessel.name}" style="cursor: pointer;">
                 <div class="vessel-header">
                                 <div class="vessel-name">
                                     <i class="fas fa-ship"></i> ${vessel.name || 'Unknown'}
@@ -2637,8 +2716,8 @@
                 </div>
                             </div>
                     <div class="vessel-location">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>Location: ${suburb}</span>
+                                <i class="fas ${isFixedLocation ? 'fa-anchor' : 'fa-map-marker-alt'}"></i>
+                                <span>Location: ${suburb}${isFixedLocation ? ' (Storage)' : ''}</span>
                             </div>
                             <div class="resource-gauges">
                                 ${renderGauge('Fuel', fuelPercentage)}
@@ -2733,21 +2812,17 @@
             try {
                 // Get today's date and calculate recent bookings (last 7 days)
                 const today = new Date();
-                today.setFullYear(2025); // Ensure 2025 context
-                today.setMonth(8); // September
-                today.setDate(24); // Current date is September 24, 2025
                 const sevenDaysAgo = new Date(today);
                 sevenDaysAgo.setDate(today.getDate() - 7);
                 
-                // Format dates for Airtable
-                const todayStr = today.toISOString().split('T')[0];
-                const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+                // Format dates for Airtable datetime comparison
+                const sevenDaysAgoISO = sevenDaysAgo.toISOString();
                 
                 // Fetch recent bookings via API proxy
                 const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Correct Bookings Dashboard table ID
                 const response = await fetch(
                     `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
-                    `filterByFormula=${encodeURIComponent(`AND({Created Date}>='${sevenDaysAgoStr}',{Status}!='CANC')`)}` +
+                    `filterByFormula=${encodeURIComponent(`AND({Created Time}>='${sevenDaysAgoISO}',{Status}!='CANC')`)}` +
                     `&sort[0][field]=Created Time&sort[0][direction]=desc` +
                     `&maxRecords=5` +
                     `&fields[]=Customer Name&fields[]=Booking Date&fields[]=Total Amount` +
@@ -2777,9 +2852,17 @@
                 // Generate booking items HTML
                 bookingsList.innerHTML = bookings.map(record => {
                     const fields = record.fields;
-                    const createdTime = new Date(fields['Created Time']);
+                    
+                    // Handle Created Time field
+                    let timeAgo = 'recently';
+                    if (fields['Created Time']) {
+                        const createdTime = new Date(fields['Created Time']);
+                        if (!isNaN(createdTime.getTime())) {
+                            timeAgo = getTimeAgo(createdTime);
+                        }
+                    }
+                    
                     const bookingDate = new Date(fields['Booking Date']);
-                    const timeAgo = getTimeAgo(createdTime);
                     
                     // Extract boat type from fields
                     const boatType = fields['Booked Boat Type'] || 
@@ -2814,11 +2897,7 @@
         
         // Helper function to calculate time ago
         function getTimeAgo(date) {
-            const now = new Date();
-            now.setFullYear(2025); // Ensure 2025 context
-            now.setMonth(8); // September
-            now.setDate(24); // Current date is September 24, 2025
-            now.setHours(9, 47, 0, 0); // Current time context: 9:47 AM
+            const now = new Date(); // Use actual current date/time
             
             const diffMs = now - date;
             const diffMins = Math.floor(diffMs / 60000);
@@ -2876,7 +2955,7 @@
                     date.setDate(weekStart.getDate() + i);
                     weekDates.push({
                         date: date,
-                        dateStr: date.toISOString().split('T')[0],
+                        dateStr: formatLocalDate(date),
                         dayName: dayNames[i] // Use index directly since we're starting from Monday
                     });
                 }
@@ -2978,12 +3057,9 @@
                 
                 // Build the grid HTML
                 let gridHTML = '';
-                // Get today's date in 2025 context
+                // Get today's date
                 const today = new Date();
-                today.setFullYear(2025);
-                today.setMonth(8); // September
-                today.setDate(24); // September 24, 2025
-                const todayStr = today.toISOString().split('T')[0];
+                const todayStr = formatLocalDate(today);
                 
                 weekDates.forEach(wd => {
                     const staff = rosterByDate[wd.dateStr] || [];
@@ -3023,8 +3099,8 @@
         let fleetMap;
         let fleetMarkers = [];
         
-        // Google Maps API key (should match the one used in vessel-locations-map.html)
-        const GOOGLE_MAPS_API_KEY = 'AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw';
+        // Google Maps API key is now loaded from server configuration
+        let GOOGLE_MAPS_API_KEY = null;
         // NOTE: If you see "RefererNotAllowedMapError", the API key needs to be authorized for your domain
         // in Google Cloud Console: https://console.cloud.google.com/apis/credentials
         
@@ -3087,10 +3163,69 @@
                 fleetMarkers.forEach(marker => marker.setMap(null));
                 fleetMarkers = [];
                 
+                // Fixed locations for vessels without GPS data
+                const fixedLocations = {
+                    'Work Boat': {
+                        latitude: -33.8126,
+                        longitude: 151.2738,
+                        address: 'Fergusons Marina',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Ice Cream Boat': {
+                        latitude: -33.8058,
+                        longitude: 151.2485,
+                        address: 'Dalbora The Spit',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Sandstone': {
+                        latitude: -33.8028,
+                        longitude: 151.2659,
+                        address: 'Balmoral Mooring',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Pumice Stone': {
+                        latitude: -33.8074,
+                        longitude: 151.2723,
+                        address: 'Little Manly Commercial Mooring',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Junior': {
+                        latitude: -33.7974,
+                        longitude: 151.2508,
+                        address: 'Seaforth Mooring',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Polycraft Yam': {
+                        latitude: -33.8085,
+                        longitude: 151.2735,
+                        address: 'Manly Boat Hire Base',
+                        captured: true,
+                        isFixed: true
+                    },
+                    'Polycraft Merc': {
+                        latitude: -33.8085,
+                        longitude: 151.2735,
+                        address: 'Manly Boat Hire Base',
+                        captured: true,
+                        isFixed: true
+                    }
+                };
+                
                 // Add marker for each vessel with location
                 vessels.forEach(vessel => {
-                    if (vessel.currentStatus?.location?.latitude) {
-                        const location = vessel.currentStatus.location;
+                    let location = vessel.currentStatus?.location;
+                    
+                    // Use fixed location if vessel doesn't have GPS data
+                    if (!location?.latitude && fixedLocations[vessel.name]) {
+                        location = fixedLocations[vessel.name];
+                    }
+                    
+                    if (location?.latitude) {
                         const position = { 
                             lat: location.latitude, 
                             lng: location.longitude 
@@ -3120,13 +3255,18 @@
                             }
                         });
                         
+                        // Store vessel name with the marker for later lookup
+                        marker.vesselName = vessel.name;
+                        
                         // Create info window content
+                        const locationType = location.isFixed ? 'Storage Location' : 'Last Known Location';
                         const infoContent = `
                             <div style="padding: 10px;">
                                 <h4 style="margin: 0 0 10px 0;">${vessel.name}</h4>
                                 <p style="margin: 5px 0;"><strong>Status:</strong> ${condition}</p>
-                                <p style="margin: 5px 0;"><strong>Location:</strong> ${location.address || 'Unknown'}</p>
+                                <p style="margin: 5px 0;"><strong>${locationType}:</strong> ${location.address || 'Unknown'}</p>
                                 ${location.lastModified ? `<p style="margin: 5px 0;"><small>Updated: ${new Date(location.lastModified).toLocaleString('en-AU')}</small></p>` : ''}
+                                ${location.isFixed ? `<p style="margin: 5px 0; font-style: italic; color: #666;"><small>📍 Default storage location</small></p>` : ''}
                                 <div style="margin-top: 10px;">
                                     <span style="margin-right: 10px;">⛽ ${vessel.currentStatus?.fuel?.level || 'N/A'}</span>
                                     <span>💧 ${vessel.currentStatus?.water?.level || 'N/A'}</span>
@@ -3171,7 +3311,24 @@
         }
         
         // Load Google Maps script
-        function loadGoogleMapsAndInitFleet() {
+        async function loadGoogleMapsAndInitFleet() {
+            // First, load the API key from server config
+            if (!GOOGLE_MAPS_API_KEY) {
+                try {
+                    const response = await fetch('/api/config');
+                    const config = await response.json();
+                    GOOGLE_MAPS_API_KEY = config.googleMapsApiKey;
+                    
+                    if (!GOOGLE_MAPS_API_KEY) {
+                        throw new Error('Google Maps API key not configured on server');
+                    }
+                } catch (error) {
+                    console.error('Failed to load configuration:', error);
+                    document.getElementById('fleetMap').innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">Map configuration error</div>';
+                    return;
+                }
+            }
+            
             if (window.google && window.google.maps) {
                 // Google Maps already loaded
                 initFleetMap();

@@ -2578,6 +2578,34 @@
     </script>
     
     <!-- Google Maps API for vessel location display -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbjgKhMV5I1nwWa8pCf7m-_7G1dz8EDbw"></script>
+    <script>
+        // Load Google Maps API from server configuration
+        async function loadGoogleMapsWithConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                const GOOGLE_MAPS_API_KEY = config.googleMapsApiKey;
+                
+                if (!GOOGLE_MAPS_API_KEY) {
+                    throw new Error('Google Maps API key not configured on server');
+                }
+                
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
+                script.async = true;
+                script.defer = true;
+                script.onerror = function() {
+                    console.log('Google Maps failed to load. Maps will not be available.');
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+                console.log('Maps will not be available.');
+            }
+        }
+        
+        // Initialize loading
+        loadGoogleMapsWithConfig();
+    </script>
 </body>
 </html>
