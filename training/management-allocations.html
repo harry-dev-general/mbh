@@ -2375,12 +2375,28 @@
 
         // Transform allocations data to FullCalendar events
         function transformAllocationsToEvents(allocationsData) {
-            return allocationsData.map(record => {
+            console.log('Transforming allocations to events:', allocationsData.length);
+            console.log('Staff data available:', staffData.length);
+            
+            const events = allocationsData.map(record => {
                 const allocation = record.fields;
+                console.log('Processing allocation:', allocation['Name'], {
+                    hasDate: !!allocation['Shift Date'],
+                    hasStartTime: !!allocation['Start Time'],
+                    employeeId: allocation['Employee']?.[0],
+                    responseStatus: allocation['Response Status']
+                });
+                
                 if (!allocation['Shift Date'] || !allocation['Start Time']) return null;
                 
                 const employee = staffData.find(s => s.id === allocation['Employee']?.[0]);
                 const responseStatus = allocation['Response Status'] || 'Pending';
+                
+                console.log('Found employee for allocation:', {
+                    allocationName: allocation['Name'],
+                    employeeFound: !!employee,
+                    employeeName: employee?.fields?.Name
+                });
                 
                 
                 // Determine status class
@@ -2393,7 +2409,7 @@
                     statusClass = 'allocation-unassigned';
                 }
                 
-                return {
+                const event = {
                     id: `allocation-${record.id}`,
                     title: employee?.fields.Name || 'Unassigned',
                     start: `${allocation['Shift Date']}T${allocation['Start Time']}`,
@@ -2411,7 +2427,21 @@
                         notes: allocation['Notes']
                     }
                 };
+                
+                console.log('Created event for allocation:', {
+                    allocationName: allocation['Name'],
+                    eventId: event.id,
+                    title: event.title,
+                    start: event.start,
+                    end: event.end,
+                    classNames: event.classNames
+                });
+                
+                return event;
             }).filter(event => event !== null);
+            
+            console.log('Created allocation events:', events.length);
+            return events;
         }
 
         // Transform bookings data to FullCalendar events
@@ -2564,8 +2594,21 @@
             
             // Add all events to calendar
             const allEvents = [...allocationEvents, ...bookingEvents];
-            allEvents.forEach(event => {
-                calendar.addEvent(event);
+            console.log('Adding events to calendar:', {
+                totalEvents: allEvents.length,
+                allocationEvents: allocationEvents.length,
+                bookingEvents: bookingEvents.length
+            });
+            
+            allEvents.forEach((event, index) => {
+                try {
+                    calendar.addEvent(event);
+                    if (event.title && event.title.includes('Test Staff')) {
+                        console.log(`Successfully added Test Staff event ${index}:`, event);
+                    }
+                } catch (error) {
+                    console.error(`Error adding event ${index}:`, error, event);
+                }
             });
         }
 
