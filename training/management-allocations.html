@@ -2128,28 +2128,13 @@
                 const weekEnd = new Date(currentWeekStart);
                 weekEnd.setDate(weekEnd.getDate() + 6);
                 
-                // Create dates for simpler filtering
-                const prevDay = new Date(currentWeekStart);
-                prevDay.setDate(prevDay.getDate() - 1);
-                const nextDay = new Date(weekEnd);
-                nextDay.setDate(nextDay.getDate() + 1);
-                
                 const startStr = formatLocalDate(currentWeekStart);
                 const endStr = formatLocalDate(weekEnd);
-                const prevDayStr = formatLocalDate(prevDay);
-                const nextDayStr = formatLocalDate(nextDay);
                 
                 console.log('Loading allocations for week:', startStr, 'to', endStr);
-                console.log('Filter date range:', prevDayStr, 'to', nextDayStr);
                 
-                // Simplified filter based on Airtable docs
-                // Using >= and <= to include the boundary dates
-                const filter = encodeURIComponent(
-                    `AND(NOT({Shift Date} < '${startStr}'),` +
-                    `NOT({Shift Date} > '${endStr}')` +
-                    `)`);
-                
-                // Specify fields to reduce payload (including Response Status for color coding)
+                // Fetch ALL allocations without date filter (like bookings implementation)
+                // We'll filter client-side to avoid Airtable filterByFormula issues
                 const fields = ['Name', 'Employee', 'Shift Date', 'Start Time', 'End Time',
                                'Shift Type', 'Shift Status', 'Role', 'Booking', 'Duration',
                                'Response Status', 'Response Date', 'Response Method', 'Notes'];
@@ -2157,7 +2142,7 @@
                 
                 const response = await fetchWithRetry(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=${filter}&${fieldsParam}&_t=${Date.now()}&pageSize=100`,
+                    `${fieldsParam}&_t=${Date.now()}&pageSize=100`,
                     {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
@@ -2171,8 +2156,29 @@
                 }
 
                 const data = await response.json();
-                allocationsData = data.records || [];
-                console.log('Found allocations:', allocationsData.length);
+                const allAllocations = data.records || [];
+                console.log('Total allocations fetched:', allAllocations.length);
+                
+                // Filter client-side for the current week
+                allocationsData = allAllocations.filter(record => {
+                    const shiftDate = record.fields['Shift Date'];
+                    
+                    if (!shiftDate) {
+                        return false;
+                    }
+                    
+                    const date = new Date(shiftDate + 'T00:00:00');  // Ensure proper date parsing
+                    const dateStr = formatLocalDate(date);
+                    const weekStartStr = formatLocalDate(currentWeekStart); 
+                    const weekEndStr = formatLocalDate(weekEnd);
+                    
+                    // Check if date is within the current week
+                    const isInRange = dateStr >= weekStartStr && dateStr <= weekEndStr;
+                    
+                    return isInRange;
+                });
+                
+                console.log('Found allocations for current week:', allocationsData.length);
                 
                 // Log allocation dates for debugging
                 if (allocationsData.length > 0) {
@@ -2184,9 +2190,8 @@
                 }
                 
                 // Update the calendar to show allocations
-                if (allocationsData.length > 0) {
-                    updateCalendarEvents();
-                }
+                updateCalendarEvents();
+                
             } catch (error) {
                 console.error('Error loading allocations:', error);
                 allocationsData = [];
