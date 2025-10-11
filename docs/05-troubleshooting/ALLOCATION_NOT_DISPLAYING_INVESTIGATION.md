@@ -206,3 +206,11 @@ The issue was a combination of:
 3. Invalid time entry causing negative duration
 
 The key lesson: **When development and production behave differently, always investigate what patterns production is using.** In this case, production had already moved away from Airtable's unreliable filterByFormula to client-side filtering.
+
+## Important Note
+
+During debugging, the Test Staff allocation for Oct 12 was modified:
+- End time was changed from "11:12" to "23:00" 
+- This fixed the negative duration issue
+- This was done to test if invalid data was preventing display
+- In production, proper time validation should prevent such invalid entries
