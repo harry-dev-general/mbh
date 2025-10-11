@@ -2140,23 +2140,33 @@
                                'Response Status', 'Response Date', 'Response Method', 'Notes'];
                 const fieldsParam = fields.map(f => `fields[]=${encodeURIComponent(f)}`).join('&');
                 
-                const response = await fetchWithRetry(
-                    `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `${fieldsParam}&_t=${Date.now()}&pageSize=100`,
-                    {
+                // Handle pagination to get ALL records
+                let allAllocations = [];
+                let offset = null;
+                
+                do {
+                    let url = `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
+                              `${fieldsParam}&_t=${Date.now()}&pageSize=100`;
+                    if (offset) {
+                        url += `&offset=${offset}`;
+                    }
+                    
+                    const response = await fetchWithRetry(url, {
                         headers: {
                             'Authorization': `Bearer ${AIRTABLE_API_KEY}`
                         }
+                    });
+
+                    if (!response.ok) {
+                        console.error('Error fetching allocations:', response.status, response.statusText);
+                        throw new Error(`Failed to fetch allocations: ${response.status}`);
                     }
-                );
 
-                if (!response.ok) {
-                    console.error('Error fetching allocations:', response.status, response.statusText);
-                    throw new Error(`Failed to fetch allocations: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const allAllocations = data.records || [];
+                    const data = await response.json();
+                    allAllocations = allAllocations.concat(data.records || []);
+                    offset = data.offset; // Will be undefined when no more pages
+                    
+                } while (offset);
                 console.log('Total allocations fetched:', allAllocations.length);
                 
                 // Debug: Show all allocation dates
