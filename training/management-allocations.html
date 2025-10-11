@@ -2179,14 +2179,35 @@
                 });
                 
                 console.log('Found allocations for current week:', allocationsData.length);
+                console.log('Week range:', formatLocalDate(currentWeekStart), 'to', formatLocalDate(weekEnd));
                 
-                // Log allocation dates for debugging
+                // Log allocation dates for debugging - more detailed
                 if (allocationsData.length > 0) {
-                    console.log('Allocation dates:', allocationsData.map(a => ({
-                        name: a.fields['Name'],
-                        date: a.fields['Shift Date'],
-                        employee: a.fields['Employee']?.[0]
-                    })));
+                    allocationsData.forEach(a => {
+                        console.log(`- Allocation: ${a.fields['Name']} on ${a.fields['Shift Date']} (Employee: ${a.fields['Employee']?.[0] || 'none'})`);
+                    });
+                }
+                
+                // Also log any allocations that were filtered out
+                const filteredOut = allAllocations.filter(record => {
+                    const shiftDate = record.fields['Shift Date'];
+                    if (!shiftDate) return false;
+                    
+                    const date = new Date(shiftDate + 'T00:00:00');
+                    const dateStr = formatLocalDate(date);
+                    const weekStartStr = formatLocalDate(currentWeekStart); 
+                    const weekEndStr = formatLocalDate(weekEnd);
+                    
+                    const isInRange = dateStr >= weekStartStr && dateStr <= weekEndStr;
+                    return !isInRange; // Return ones NOT in range
+                });
+                
+                if (filteredOut.length > 0) {
+                    console.log('Allocations filtered out (not in current week):');
+                    filteredOut.forEach(a => {
+                        const shiftDate = a.fields['Shift Date'];
+                        console.log(`- ${a.fields['Name']} on ${shiftDate} (outside ${formatLocalDate(currentWeekStart)} to ${formatLocalDate(weekEnd)})`);
+                    });
                 }
                 
                 // Update the calendar to show allocations
