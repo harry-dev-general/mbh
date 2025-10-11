@@ -5,6 +5,11 @@
 **Status**: Fixed  
 **Key Finding**: Production uses client-side filtering, not Airtable's filterByFormula
 
+> **Note**: For comprehensive investigation details and lessons learned, see:
+> - [Full Investigation](/docs/05-troubleshooting/ALLOCATION_NOT_DISPLAYING_INVESTIGATION.md)
+> - [Lessons Learned](/docs/02-features/calendar/ALLOCATION_DISPLAY_LESSONS_LEARNED.md)
+> - [Airtable Filtering Patterns](/docs/04-technical/AIRTABLE_FILTERING_PATTERNS.md)
+
 ## The Problem
 
 When creating a new shift allocation:
