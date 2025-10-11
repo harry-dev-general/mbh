@@ -37,14 +37,12 @@ The 1-second delay might not have been enough for Airtable to fully process the 
 ### 1. Fixed Date Filter
 Changed to inclusive comparisons that properly include the start and end dates of the week.
 
-### 2. Added Cache Busting
+### 2. Cache Busting via Timestamp
+Added timestamp parameter to URL instead of headers due to CORS restrictions:
 ```javascript
-headers: {
-    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
-    'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache'
-}
+`&_t=${Date.now()}`
 ```
+**Note**: Don't use `Cache-Control` or `Pragma` headers with Airtable API - they cause CORS errors!
 
 ### 3. Increased Processing Delay
 Increased from 1 to 2 seconds to ensure Airtable has processed the record:
@@ -99,6 +97,26 @@ This function:
 2. Reloads from Airtable with no-cache headers
 3. Forces calendar update
 4. Logs the process for debugging
+
+## Common Pitfalls
+
+### CORS Headers with Airtable API
+**Problem**: Adding cache-control headers causes CORS errors:
+```
+Request header field cache-control is not allowed by Access-Control-Allow-Headers
+```
+
+**Solution**: Use URL parameters for cache busting, not headers:
+```javascript
+// ❌ DON'T DO THIS
+headers: {
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache'
+}
+
+// ✅ DO THIS INSTEAD
+`?_t=${Date.now()}`
+```
 
 ## Future Improvements
 
