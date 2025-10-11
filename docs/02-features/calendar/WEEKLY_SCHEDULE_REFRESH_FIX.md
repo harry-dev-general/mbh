@@ -3,6 +3,7 @@
 **Date**: October 11, 2025  
 **Issue**: New allocations not appearing in Weekly Schedule after creation  
 **Status**: Fixed  
+**Key Finding**: Production uses client-side filtering, not Airtable's filterByFormula
 
 ## The Problem
 
@@ -16,14 +17,26 @@ Console showed only 2 allocations when there should have been 3.
 
 ## Root Causes
 
-### 1. Date Filter Issue
-The original filter used `IS_AFTER` and `IS_BEFORE` which excluded boundary dates:
-```javascript
-// OLD - excluded Sunday if it was the last day of the week
-`AND(IS_AFTER({Shift Date}, '${prevDayStr}'),IS_BEFORE({Shift Date}, '${nextDayStr}'))`
+### 1. Airtable filterByFormula Date Issues
+Airtable's filterByFormula has known reliability issues with date fields. The production system switched to client-side filtering for this reason.
 
-// NEW - includes all dates in the week
+**Development was using**:
+```javascript
+// Problematic server-side date filtering
 `AND(NOT({Shift Date} < '${startStr}'),NOT({Shift Date} > '${endStr}'))`
+```
+
+**Production approach (now implemented)**:
+```javascript
+// Fetch all allocations
+const allAllocations = data.records || [];
+
+// Filter client-side
+allocationsData = allAllocations.filter(record => {
+    const shiftDate = record.fields['Shift Date'];
+    const isInRange = dateStr >= weekStartStr && dateStr <= weekEndStr;
+    return isInRange;
+});
 ```
 
 ### 2. Caching Issues
@@ -34,8 +47,8 @@ The 1-second delay might not have been enough for Airtable to fully process the 
 
 ## Solutions Implemented
 
-### 1. Fixed Date Filter
-Changed to inclusive comparisons that properly include the start and end dates of the week.
+### 1. Switched to Client-Side Filtering (Final Fix)
+Matched the production approach by fetching all allocations and filtering client-side. This avoids Airtable's unreliable filterByFormula date handling.
 
 ### 2. Cache Busting via Timestamp
 Added timestamp parameter to URL instead of headers due to CORS restrictions:
