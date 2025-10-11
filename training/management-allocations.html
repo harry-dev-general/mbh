@@ -282,6 +282,9 @@
         }
         
         .schedule-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             background: #f8f9fa;
             padding: 1rem 1.5rem;
             border-bottom: 2px solid #e0e0e0;
@@ -1269,6 +1272,9 @@
             <div class="schedule-grid">
                 <div class="schedule-header">
                     <h2>Weekly Schedule</h2>
+                    <button onclick="manualRefreshSchedule()" class="btn btn-secondary" style="margin-left: auto;">
+                        🔄 Refresh
+                    </button>
                 </div>
                 <div class="schedule-body">
                     <div id="calendar">
@@ -2134,11 +2140,13 @@
                 const nextDayStr = formatLocalDate(nextDay);
                 
                 console.log('Loading allocations for week:', startStr, 'to', endStr);
+                console.log('Filter date range:', prevDayStr, 'to', nextDayStr);
                 
                 // Simplified filter based on Airtable docs
+                // Using >= and <= to include the boundary dates
                 const filter = encodeURIComponent(
-                    `AND(IS_AFTER({Shift Date}, '${prevDayStr}'),` +
-                    `IS_BEFORE({Shift Date}, '${nextDayStr}')` +
+                    `AND(NOT({Shift Date} < '${startStr}'),` +
+                    `NOT({Shift Date} > '${endStr}')` +
                     `)`);
                 
                 // Specify fields to reduce payload (including Response Status for color coding)
@@ -2149,10 +2157,12 @@
                 
                 const response = await fetchWithRetry(
                     `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?` +
-                    `filterByFormula=${filter}&${fieldsParam}&_t=${Date.now()}`,
+                    `filterByFormula=${filter}&${fieldsParam}&_t=${Date.now()}&pageSize=100`,
                     {
                         headers: {
-                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
                         }
                     }
                 );
@@ -2164,7 +2174,16 @@
 
                 const data = await response.json();
                 allocationsData = data.records || [];
-                console.log('Found allocations:', allocationsData.length, allocationsData);
+                console.log('Found allocations:', allocationsData.length);
+                
+                // Log allocation dates for debugging
+                if (allocationsData.length > 0) {
+                    console.log('Allocation dates:', allocationsData.map(a => ({
+                        name: a.fields['Name'],
+                        date: a.fields['Shift Date'],
+                        employee: a.fields['Employee']?.[0]
+                    })));
+                }
                 
                 // Update the calendar to show allocations
                 if (allocationsData.length > 0) {
@@ -4310,11 +4329,21 @@
                     closeAllocationModal();
                     // Small delay to ensure Airtable has processed the update
                     setTimeout(async () => {
+                        console.log('Reloading data after allocation creation...');
+                        // Clear existing data first to force a fresh load
+                        allocationsData = [];
+                        
                         // Reload allocations for general shifts
                         await loadAllocations();
-                        updateCalendarEvents();
+                        
+                        // Force calendar refresh
+                        if (calendar) {
+                            console.log('Forcing calendar refresh with', allocationsData.length, 'allocations');
+                            updateCalendarEvents();
+                        }
+                        
                         alert('Shift allocated successfully!');
-                    }, 1000); // 1 second delay for Airtable to process
+                    }, 2000); // 2 second delay for Airtable to process
                 } else {
                     const error = await response.json();
                     console.error('Error creating allocation:', error);
@@ -4346,6 +4375,33 @@
             } catch (error) {
                 console.error('Error refreshing staff data:', error);
                 staffList.innerHTML = '<div style="color: red; padding: 10px;">Error loading staff data</div>';
+            }
+        };
+        
+        // Manual refresh for schedule
+        window.manualRefreshSchedule = async function() {
+            console.log('Manual refresh triggered for schedule...');
+            
+            try {
+                // Clear existing data
+                allocationsData = [];
+                
+                // Reload all data
+                await loadAllocations();
+                
+                // Force calendar update
+                if (calendar) {
+                    console.log('Refreshing calendar with', allocationsData.length, 'allocations');
+                    updateCalendarEvents();
+                } else {
+                    console.log('Calendar not initialized, loading all data...');
+                    await loadAllData();
+                }
+                
+                console.log('Schedule refreshed successfully');
+            } catch (error) {
+                console.error('Error refreshing schedule:', error);
+                alert('Error refreshing schedule. Please check the console.');
             }
         };
 
