@@ -2131,7 +2131,6 @@
                 const startStr = formatLocalDate(currentWeekStart);
                 const endStr = formatLocalDate(weekEnd);
                 
-                console.log('Loading allocations for week:', startStr, 'to', endStr);
                 
                 // Fetch ALL allocations without date filter (like bookings implementation)
                 // We'll filter client-side to avoid Airtable filterByFormula issues
@@ -2167,15 +2166,7 @@
                     offset = data.offset; // Will be undefined when no more pages
                     
                 } while (offset);
-                console.log('Total allocations fetched:', allAllocations.length);
                 
-                // Debug: Show all allocation dates
-                console.log('All allocation dates:');
-                allAllocations.forEach(record => {
-                    if (record.fields['Shift Date']) {
-                        console.log(`- ${record.fields['Shift Date']}: ${record.fields['Name']}`);
-                    }
-                });
                 
                 // Filter client-side for the current week
                 allocationsData = allAllocations.filter(record => {
@@ -2185,15 +2176,6 @@
                         return false;
                     }
                     
-                    // Debug: Log the raw shift date
-                    if (record.fields['Name'] && record.fields['Name'].includes('Test Staff')) {
-                        console.log(`Debug Test Staff allocation:`, {
-                            name: record.fields['Name'],
-                            rawShiftDate: shiftDate,
-                            parsedDate: new Date(shiftDate + 'T00:00:00'),
-                            formatted: formatLocalDate(new Date(shiftDate + 'T00:00:00'))
-                        });
-                    }
                     
                     const date = new Date(shiftDate + 'T00:00:00');  // Ensure proper date parsing
                     const dateStr = formatLocalDate(date);
@@ -2203,51 +2185,12 @@
                     // Check if date is within the current week
                     const isInRange = dateStr >= weekStartStr && dateStr <= weekEndStr;
                     
-                    // Debug: Log comparison for Test Staff
-                    if (record.fields['Name'] && record.fields['Name'].includes('Test Staff')) {
-                        console.log(`Test Staff date comparison:`, {
-                            dateStr,
-                            weekStartStr,
-                            weekEndStr,
-                            isInRange,
-                            comparison: `${dateStr} >= ${weekStartStr} && ${dateStr} <= ${weekEndStr}`
-                        });
-                    }
                     
                     return isInRange;
                 });
                 
-                console.log('Found allocations for current week:', allocationsData.length);
-                console.log('Week range:', formatLocalDate(currentWeekStart), 'to', formatLocalDate(weekEnd));
+                console.log(`Found ${allocationsData.length} allocations for week ${formatLocalDate(currentWeekStart)} to ${formatLocalDate(weekEnd)}`);
                 
-                // Log allocation dates for debugging - more detailed
-                if (allocationsData.length > 0) {
-                    allocationsData.forEach(a => {
-                        console.log(`- Allocation: ${a.fields['Name']} on ${a.fields['Shift Date']} (Employee: ${a.fields['Employee']?.[0] || 'none'})`);
-                    });
-                }
-                
-                // Also log any allocations that were filtered out
-                const filteredOut = allAllocations.filter(record => {
-                    const shiftDate = record.fields['Shift Date'];
-                    if (!shiftDate) return false;
-                    
-                    const date = new Date(shiftDate + 'T00:00:00');
-                    const dateStr = formatLocalDate(date);
-                    const weekStartStr = formatLocalDate(currentWeekStart); 
-                    const weekEndStr = formatLocalDate(weekEnd);
-                    
-                    const isInRange = dateStr >= weekStartStr && dateStr <= weekEndStr;
-                    return !isInRange; // Return ones NOT in range
-                });
-                
-                if (filteredOut.length > 0) {
-                    console.log('Allocations filtered out (not in current week):');
-                    filteredOut.forEach(a => {
-                        const shiftDate = a.fields['Shift Date'];
-                        console.log(`- ${a.fields['Name']} on ${shiftDate} (outside ${formatLocalDate(currentWeekStart)} to ${formatLocalDate(weekEnd)})`);
-                    });
-                }
                 
                 // Update the calendar to show allocations
                 updateCalendarEvents();
@@ -2280,6 +2223,11 @@
                     center: 'title',
                     right: 'timeGridWeek,todayDayView'
                 },
+                
+                // Date Formatting for Australian locale (DD/MM)
+                locale: 'en-AU',
+                dayHeaderFormat: { weekday: 'short', day: 'numeric', month: 'numeric' },
+                titleFormat: { day: 'numeric', month: 'short', year: 'numeric' },
                 
                 // Time Configuration
                 slotMinTime: '06:00:00',
@@ -2433,6 +2381,7 @@
                 
                 const employee = staffData.find(s => s.id === allocation['Employee']?.[0]);
                 const responseStatus = allocation['Response Status'] || 'Pending';
+                
                 
                 // Determine status class
                 let statusClass = 'allocation-pending';
@@ -2600,6 +2549,7 @@
         // Update calendar events
         function updateCalendarEvents() {
             if (!calendar) {
+                console.log('Calendar not initialized yet');
                 return;
             }
             
@@ -3963,6 +3913,20 @@
                     const shiftType = document.getElementById('allocationType').value;
                     const newNotes = document.getElementById('notes').value || '';
                     
+                    // Validate time entries
+                    const startDateTime = new Date(`${shiftDate}T${startTime}`);
+                    const endDateTime = new Date(`${shiftDate}T${endTime}`);
+                    
+                    if (endDateTime <= startDateTime) {
+                        alert('End time must be after start time. Please check your time entries.');
+                        isSubmitting = false;
+                        if (submitBtn) {
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                        }
+                        return;
+                    }
+                    
                     // Get stored values from dataset
                     const originalNotes = e.target.dataset.originalNotes || '';
                     const responseStatus = e.target.dataset.responseStatus || 'Pending';
@@ -4318,12 +4282,32 @@
                     return;
                 }
                 
+                // Validate time entries
+                const startTime = document.getElementById('startTime').value;
+                const endTime = document.getElementById('endTime').value;
+                const shiftDate = document.getElementById('allocationDate').value;
+                
+                // Convert times to comparable format
+                const startDateTime = new Date(`${shiftDate}T${startTime}`);
+                const endDateTime = new Date(`${shiftDate}T${endTime}`);
+                
+                // Check if end time is before or equal to start time
+                if (endDateTime <= startDateTime) {
+                    alert('End time must be after start time. Please check your time entries.');
+                    isSubmitting = false;
+                    if (submitBtn) {
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    }
+                    return;
+                }
+                
                 const fields = {
-                    'Name': `${document.getElementById('allocationDate').value} - ${document.getElementById('employeeSelect').options[document.getElementById('employeeSelect').selectedIndex].text}`,
+                    'Name': `${shiftDate} - ${document.getElementById('employeeSelect').options[document.getElementById('employeeSelect').selectedIndex].text}`,
                     'Employee': [employeeId],
-                    'Shift Date': document.getElementById('allocationDate').value,
-                    'Start Time': document.getElementById('startTime').value,
-                    'End Time': document.getElementById('endTime').value,
+                    'Shift Date': shiftDate,
+                    'Start Time': startTime,
+                    'End Time': endTime,
                     'Shift Type': allocationType,
                     'Shift Status': 'Scheduled',
                     'Notes': document.getElementById('notes').value || ''
@@ -4399,9 +4383,13 @@
                         // Reload allocations for general shifts
                         await loadAllocations();
                         
-                        // Force calendar refresh
+                        // Force calendar refresh and re-render
                         if (calendar) {
                             console.log('Forcing calendar refresh with', allocationsData.length, 'allocations');
+                            // Force a complete re-render by changing view and changing back
+                            const currentView = calendar.view.type;
+                            calendar.changeView('timeGridDay');
+                            calendar.changeView(currentView);
                             updateCalendarEvents();
                         }
                         
@@ -4442,29 +4430,62 @@
         };
         
         // Manual refresh for schedule
-        window.manualRefreshSchedule = async function() {
+        window.manualRefreshSchedule = async function(event) {
             console.log('Manual refresh triggered for schedule...');
             
             try {
+                // Show loading state
+                const refreshBtn = event ? event.target : document.querySelector('button[onclick*="manualRefreshSchedule"]');
+                const originalText = refreshBtn ? refreshBtn.innerHTML : '🔄 Refresh';
+                if (refreshBtn) {
+                    refreshBtn.innerHTML = '⏳ Refreshing...';
+                    refreshBtn.disabled = true;
+                }
+                
                 // Clear existing data
                 allocationsData = [];
+                bookingsData = [];
                 
                 // Reload all data
                 await loadAllocations();
+                await loadBookings();
                 
-                // Force calendar update
+                // Force calendar update with complete re-render
                 if (calendar) {
-                    console.log('Refreshing calendar with', allocationsData.length, 'allocations');
-                    updateCalendarEvents();
+                    console.log('Refreshing calendar with', allocationsData.length, 'allocations and', bookingsData.length, 'bookings');
+                    
+                    // Force a complete re-render by switching views
+                    const currentView = calendar.view.type;
+                    calendar.changeView('timeGridDay');
+                    setTimeout(() => {
+                        calendar.changeView(currentView);
+                        updateCalendarEvents();
+                        
+                        // Restore button
+                        if (refreshBtn) {
+                            refreshBtn.innerHTML = originalText;
+                            refreshBtn.disabled = false;
+                        }
+                        
+                        console.log('Schedule refreshed successfully');
+                    }, 100);
                 } else {
                     console.log('Calendar not initialized, loading all data...');
                     await loadAllData();
+                    
+                    // Restore button
+                    refreshBtn.innerHTML = originalText;
+                    refreshBtn.disabled = false;
                 }
-                
-                console.log('Schedule refreshed successfully');
             } catch (error) {
                 console.error('Error refreshing schedule:', error);
                 alert('Error refreshing schedule. Please check the console.');
+                
+                // Restore button
+                if (refreshBtn) {
+                    refreshBtn.innerHTML = originalText;
+                    refreshBtn.disabled = false;
+                }
             }
         };
 
