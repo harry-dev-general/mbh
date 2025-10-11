@@ -2159,12 +2159,30 @@
                 const allAllocations = data.records || [];
                 console.log('Total allocations fetched:', allAllocations.length);
                 
+                // Debug: Show all allocation dates
+                console.log('All allocation dates:');
+                allAllocations.forEach(record => {
+                    if (record.fields['Shift Date']) {
+                        console.log(`- ${record.fields['Shift Date']}: ${record.fields['Name']}`);
+                    }
+                });
+                
                 // Filter client-side for the current week
                 allocationsData = allAllocations.filter(record => {
                     const shiftDate = record.fields['Shift Date'];
                     
                     if (!shiftDate) {
                         return false;
+                    }
+                    
+                    // Debug: Log the raw shift date
+                    if (record.fields['Name'] && record.fields['Name'].includes('Test Staff')) {
+                        console.log(`Debug Test Staff allocation:`, {
+                            name: record.fields['Name'],
+                            rawShiftDate: shiftDate,
+                            parsedDate: new Date(shiftDate + 'T00:00:00'),
+                            formatted: formatLocalDate(new Date(shiftDate + 'T00:00:00'))
+                        });
                     }
                     
                     const date = new Date(shiftDate + 'T00:00:00');  // Ensure proper date parsing
@@ -2174,6 +2192,17 @@
                     
                     // Check if date is within the current week
                     const isInRange = dateStr >= weekStartStr && dateStr <= weekEndStr;
+                    
+                    // Debug: Log comparison for Test Staff
+                    if (record.fields['Name'] && record.fields['Name'].includes('Test Staff')) {
+                        console.log(`Test Staff date comparison:`, {
+                            dateStr,
+                            weekStartStr,
+                            weekEndStr,
+                            isInRange,
+                            comparison: `${dateStr} >= ${weekStartStr} && ${dateStr} <= ${weekEndStr}`
+                        });
+                    }
                     
                     return isInRange;
                 });
