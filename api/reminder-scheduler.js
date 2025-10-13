@@ -3,6 +3,7 @@
 
 const axios = require('axios');
 const notifications = require('./notifications');
+const PersistentReminderTracker = require('./reminder-tracker-persistent');
 
 // Airtable configuration
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
@@ -16,8 +17,9 @@ const REMINDER_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 const CHECK_INTERVAL_MS = 30 * 60 * 1000; // Check every 30 minutes
 const MAX_REMINDER_AGE_MS = 72 * 60 * 60 * 1000; // Stop after 72 hours
 
-// Track reminders sent (in production, store in Airtable)
-const reminderTracker = new Map();
+// Use persistent tracker if in production, otherwise use in-memory for local dev
+const isPersistentStorageAvailable = process.env.REMINDER_TRACKER_TABLE_ID || process.env.NODE_ENV === 'production';
+const reminderTracker = isPersistentStorageAvailable ? new PersistentReminderTracker() : new Map();
 
 /**
  * Get a unique key for tracking reminders
@@ -29,7 +31,7 @@ function getReminderKey(type, id, role = null) {
 /**
  * Check if a reminder should be sent
  */
-function shouldSendReminder(key, createdAt) {
+async function shouldSendReminder(key, createdAt) {
     const now = Date.now();
     const age = now - new Date(createdAt).getTime();
     
@@ -39,7 +41,7 @@ function shouldSendReminder(key, createdAt) {
     }
     
     // Check last reminder time
-    const lastReminder = reminderTracker.get(key);
+    const lastReminder = isPersistentStorageAvailable ? await reminderTracker.get(key) : reminderTracker.get(key);
     if (!lastReminder) {
         // First reminder - wait at least 6 hours after initial allocation
         return age >= REMINDER_INTERVAL_MS;
@@ -102,9 +104,13 @@ async function processPendingAllocations() {
             const key = getReminderKey('allocation', allocation.id);
             const created = allocation.fields['Created'] || allocation.createdTime;
             
-            if (shouldSendReminder(key, created)) {
+            if (await shouldSendReminder(key, created)) {
                 await sendAllocationReminder(allocation);
-                reminderTracker.set(key, Date.now());
+                if (isPersistentStorageAvailable) {
+                    await reminderTracker.set(key, Date.now());
+                } else {
+                    reminderTracker.set(key, Date.now());
+                }
             }
         }
         
@@ -179,9 +185,13 @@ async function processPendingBookings() {
                 (!fields['Onboarding Response'] || fields['Onboarding Response'] === 'Pending')) {
                 
                 const key = getReminderKey('booking', booking.id, 'Onboarding');
-                if (shouldSendReminder(key, created)) {
+                if (await shouldSendReminder(key, created)) {
                     await sendBookingReminder(booking, 'Onboarding');
-                    reminderTracker.set(key, Date.now());
+                    if (isPersistentStorageAvailable) {
+                        await reminderTracker.set(key, Date.now());
+                    } else {
+                        reminderTracker.set(key, Date.now());
+                    }
                 }
             }
             
@@ -190,9 +200,13 @@ async function processPendingBookings() {
                 (!fields['Deloading Response'] || fields['Deloading Response'] === 'Pending')) {
                 
                 const key = getReminderKey('booking', booking.id, 'Deloading');
-                if (shouldSendReminder(key, created)) {
+                if (await shouldSendReminder(key, created)) {
                     await sendBookingReminder(booking, 'Deloading');
-                    reminderTracker.set(key, Date.now());
+                    if (isPersistentStorageAvailable) {
+                        await reminderTracker.set(key, Date.now());
+                    } else {
+                        reminderTracker.set(key, Date.now());
+                    }
                 }
             }
         }
@@ -325,14 +339,19 @@ async function checkAndSendReminders() {
         await processPendingBookings();
         
         // Clean up old entries from tracker
-        const now = Date.now();
-        for (const [key, timestamp] of reminderTracker.entries()) {
-            if (now - timestamp > MAX_REMINDER_AGE_MS) {
-                reminderTracker.delete(key);
+        if (isPersistentStorageAvailable) {
+            await reminderTracker.cleanup(MAX_REMINDER_AGE_MS);
+            const allTracked = await reminderTracker.getAll();
+            console.log(`✅ Reminder check complete. Tracker size: ${allTracked.length}`);
+        } else {
+            const now = Date.now();
+            for (const [key, timestamp] of reminderTracker.entries()) {
+                if (now - timestamp > MAX_REMINDER_AGE_MS) {
+                    reminderTracker.delete(key);
+                }
             }
+            console.log(`✅ Reminder check complete. Tracker size: ${reminderTracker.size}`);
         }
-        
-        console.log(`✅ Reminder check complete. Tracker size: ${reminderTracker.size}`);
         
     } catch (error) {
         console.error('Error in reminder check:', error);
@@ -342,6 +361,8 @@ async function checkAndSendReminders() {
 /**
  * Start the reminder scheduler
  */
+let reminderInterval = null;
+
 function startReminderScheduler() {
     console.log('🚀 Starting reminder scheduler...');
     console.log(`   - Checking every ${CHECK_INTERVAL_MS / 1000 / 60} minutes`);
@@ -352,15 +373,16 @@ function startReminderScheduler() {
     checkAndSendReminders();
     
     // Schedule regular checks
-    setInterval(checkAndSendReminders, CHECK_INTERVAL_MS);
+    reminderInterval = setInterval(checkAndSendReminders, CHECK_INTERVAL_MS);
 }
 
 /**
  * Stop the reminder scheduler (for testing)
  */
 function stopReminderScheduler() {
-    if (global.reminderInterval) {
-        clearInterval(global.reminderInterval);
+    if (reminderInterval) {
+        clearInterval(reminderInterval);
+        reminderInterval = null;
         console.log('🛑 Reminder scheduler stopped');
     }
 }
@@ -371,5 +393,6 @@ module.exports = {
     checkAndSendReminders,
     // Export for testing
     shouldSendReminder,
-    reminderTracker
+    reminderTracker,
+    isPersistentStorageAvailable
 };

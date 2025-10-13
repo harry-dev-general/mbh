@@ -780,17 +780,47 @@ app.post('/api/admin/trigger-reminders', adminAuth, async (req, res) => {
 });
 
 // Admin endpoint to view reminder status
-app.get('/api/admin/reminder-status', adminAuth, (req, res) => {
-  const status = {
-    schedulerActive: true,
-    trackerSize: reminderScheduler.reminderTracker.size,
-    reminders: Array.from(reminderScheduler.reminderTracker.entries()).map(([key, timestamp]) => ({
-      key,
-      lastSent: new Date(timestamp).toLocaleString('en-AU'),
-      minutesAgo: Math.floor((Date.now() - timestamp) / 1000 / 60)
-    }))
-  };
-  res.json(status);
+app.get('/api/admin/reminder-status', adminAuth, async (req, res) => {
+  try {
+    const isPersistent = reminderScheduler.isPersistentStorageAvailable || false;
+    
+    if (isPersistent && reminderScheduler.reminderTracker.getAll) {
+      // Using persistent storage
+      const reminders = await reminderScheduler.reminderTracker.getAll();
+      const status = {
+        schedulerActive: true,
+        storageType: 'persistent (Airtable)',
+        trackerSize: reminders.length,
+        reminders: reminders.map(reminder => ({
+          key: reminder.key,
+          lastSent: reminder.lastSent,
+          hoursSince: ((Date.now() - new Date(reminder.lastSent).getTime()) / 1000 / 60 / 60).toFixed(2),
+          createdAt: reminder.createdAt,
+          updatedAt: reminder.updatedAt
+        }))
+      };
+      res.json(status);
+    } else {
+      // Using in-memory storage
+      const status = {
+        schedulerActive: true,
+        storageType: 'in-memory (WARNING: Duplicates possible with multiple instances)',
+        trackerSize: reminderScheduler.reminderTracker.size,
+        reminders: Array.from(reminderScheduler.reminderTracker.entries()).map(([key, timestamp]) => ({
+          key,
+          lastSent: new Date(timestamp).toLocaleString('en-AU'),
+          minutesAgo: Math.floor((Date.now() - timestamp) / 1000 / 60)
+        }))
+      };
+      res.json(status);
+    }
+  } catch (error) {
+    console.error('Error fetching reminder status:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch reminder status',
+      message: error.message 
+    });
+  }
 });
 
 // Catch-all route for HTML5 client-side routing
