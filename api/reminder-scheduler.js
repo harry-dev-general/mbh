@@ -146,7 +146,7 @@ async function processPendingAllocations() {
                 
                 // Update Airtable to mark reminder as sent
                 await updateReminderStatus(ALLOCATIONS_TABLE_ID, allocation.id, {
-                    'Reminder Sent': true,
+                    'Reminder Sent': 1,  // Airtable checkbox expects 1, not true
                     'Reminder Sent Date': new Date().toISOString()
                 });
             }
@@ -223,7 +223,7 @@ async function processPendingBookings() {
                     
                     // Update Airtable to mark reminder as sent
                     await updateReminderStatus(BOOKINGS_TABLE_ID, booking.id, {
-                        'Onboarding Reminder Sent': true,
+                        'Onboarding Reminder Sent': 1,  // Airtable checkbox expects 1, not true
                         'Onboarding Reminder Sent Date': new Date().toISOString()
                     });
                 }
@@ -238,7 +238,7 @@ async function processPendingBookings() {
                     
                     // Update Airtable to mark reminder as sent
                     await updateReminderStatus(BOOKINGS_TABLE_ID, booking.id, {
-                        'Deloading Reminder Sent': true,
+                        'Deloading Reminder Sent': 1,  // Airtable checkbox expects 1, not true
                         'Deloading Reminder Sent Date': new Date().toISOString()
                     });
                 }
