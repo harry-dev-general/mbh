@@ -1121,33 +1121,179 @@
 
         /* Mobile responsive for FullCalendar */
         @media (max-width: 768px) {
-            .fc-timegrid-slot {
-                height: 40px !important;
+            /* Calendar container adjustments */
+            #calendar {
+                padding: 0.5rem;
+                max-height: calc(100vh - 200px);
+                overflow-y: auto;
             }
             
+            /* Time axis optimization */
+            .fc-timegrid-axis {
+                width: 50px !important;
+            }
+            
+            .fc-timegrid-slot-label {
+                font-size: 11px;
+                padding: 0 2px;
+            }
+            
+            /* Slot height */
+            .fc-timegrid-slot {
+                height: 45px !important;
+            }
+            
+            /* Event styling */
             .fc-event {
                 font-size: 10px;
-                padding: 1px 2px;
+                padding: 2px 3px;
+                overflow: hidden;
+            }
+            
+            /* Hide less critical elements */
+            .fc-event-time {
+                display: none;
+            }
+            
+            /* Simplified event content */
+            .fc-event-title {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
+            /* Header toolbar adjustments */
             .fc-toolbar {
                 flex-direction: column;
                 gap: 0.5rem;
+                margin-bottom: 0.5rem;
             }
 
             .fc-toolbar-chunk {
                 display: flex;
                 justify-content: center;
+                width: 100%;
             }
 
             .fc-toolbar-title {
                 font-size: 1.1rem;
+                text-align: center;
             }
 
+            .fc-button-group {
+                margin: 0 !important;
+            }
+
+            .fc-button {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.85rem;
+            }
+
+            /* Day headers */
+            .fc-col-header-cell {
+                font-size: 0.85rem;
+                padding: 0.5rem 0;
+            }
+
+            /* Add-on indicator adjustment */
             .addon-indicator {
-                width: 14px;
-                height: 14px;
+                width: 12px;
+                height: 12px;
+                font-size: 8px;
+                top: -2px;
+                right: -2px;
+            }
+            
+            /* Mobile event styles */
+            .fc-event-mobile {
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                width: 100%;
+                overflow: hidden;
+            }
+            
+            .fc-event-title-mobile {
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
+            .fc-event-boat-mobile {
                 font-size: 9px;
+                opacity: 0.8;
+                flex-shrink: 0;
+            }
+            
+            .fc-event-icon {
+                font-size: 10px;
+                flex-shrink: 0;
+            }
+            
+            /* Status dots for mobile */
+            .fc-event-status.status-success {
+                background-color: #22c55e;
+            }
+            
+            .fc-event-status.status-warning {
+                background-color: #f59e0b;
+            }
+            
+            .fc-event-status.status-danger {
+                background-color: #ef4444;
+            }
+        }
+        
+        /* Ultra-mobile responsive (small phones) */
+        @media (max-width: 480px) {
+            /* Further reduce time column */
+            .fc-timegrid-axis {
+                width: 40px !important;
+            }
+            
+            /* Abbreviated time labels */
+            .fc-timegrid-slot-label {
+                font-size: 10px;
+                letter-spacing: -0.5px;
+            }
+            
+            /* Even more compact slots */
+            .fc-timegrid-slot {
+                height: 40px !important;
+            }
+            
+            /* Minimal event display */
+            .fc-event {
+                font-size: 9px;
+                padding: 1px 2px;
+            }
+            
+            /* Show only essential info */
+            .fc-event-title-wrap {
+                display: flex;
+                align-items: center;
+                gap: 2px;
+            }
+            
+            /* Status indicators as dots */
+            .fc-event-status {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                display: inline-block;
+                flex-shrink: 0;
+            }
+            
+            /* Hide toolbar text, show icons only on very small screens */
+            .fc-button-group .fc-button {
+                font-size: 0.75rem;
+                padding: 0.4rem;
+            }
+            
+            /* Day header abbreviations */
+            .fc-col-header-cell {
+                font-size: 0.75rem;
             }
         }
 
@@ -2214,25 +2360,44 @@
             // Clear any existing loading message
             calendarEl.innerHTML = '';
             
+            // Detect mobile
+            const isMobile = window.innerWidth <= 768;
+            const isUltraMobile = window.innerWidth <= 480;
+            
             // Initialize FullCalendar with configuration
             calendar = new FullCalendar.Calendar(calendarEl, {
-                // View Configuration
-                initialView: 'timeGridWeek',
+                // View Configuration - mobile optimized
+                initialView: isMobile ? 'timeGridDay' : 'timeGridWeek',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'timeGridWeek,todayDayView'
+                    right: isMobile ? 'timeGridDay,listWeek' : 'timeGridWeek,todayDayView'
                 },
                 
                 // Date Formatting for Australian locale (DD/MM)
                 locale: 'en-AU',
-                dayHeaderFormat: { weekday: 'short', day: 'numeric', month: 'numeric' },
+                dayHeaderFormat: isMobile ? 
+                    { weekday: 'short', day: 'numeric' } : 
+                    { weekday: 'short', day: 'numeric', month: 'numeric' },
                 titleFormat: { day: 'numeric', month: 'short', year: 'numeric' },
                 
-                // Time Configuration
+                // Time Configuration with mobile-optimized labels
                 slotMinTime: '06:00:00',
                 slotMaxTime: '24:00:00', // Extended to show late evening shifts
                 slotDuration: '00:30:00',
+                slotLabelFormat: isMobile ? {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                    meridiem: function(hour) {
+                        // Ultra-compact format for mobile
+                        return hour < 12 ? 'a' : 'p';
+                    }
+                } : {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                },
                 firstDay: 1, // Monday
                 
                 // Event Display
@@ -2244,11 +2409,13 @@
                 // Timezone
                 timeZone: 'Australia/Sydney',
                 
-                // Styling
-                height: 'auto',
-                expandRows: true,
-                eventMinHeight: 30,
-                displayEventTime: true,
+                // Styling - mobile optimized
+                height: isMobile ? '70vh' : 'auto',
+                contentHeight: isMobile ? 'auto' : undefined,
+                expandRows: !isMobile, // Don't expand on mobile to save space
+                stickyHeaderDates: isMobile, // Keep headers visible while scrolling on mobile
+                eventMinHeight: isMobile ? 25 : 30,
+                displayEventTime: !isMobile, // Hide time on mobile to save space
                 displayEventEnd: false,
                 
                 // Set initial date to current week start
@@ -2283,12 +2450,46 @@
                     document.getElementById('startTime').value = timeStr;
                 },
                 
-                // Custom event rendering
+                // Custom event rendering - mobile optimized
                 eventContent: function(arg) {
                     const event = arg.event;
                     const props = event.extendedProps;
                     
-                    // Add-on indicator
+                    // Mobile rendering - simplified
+                    if (isMobile) {
+                        // Use compact status indicators for mobile
+                        let statusDot = '';
+                        if (props.recordType === 'booking') {
+                            const statusClass = !props.hasStaff ? 'status-danger' :
+                                              props.responseStatus === 'Accepted' ? 'status-success' :
+                                              props.responseStatus === 'Declined' ? 'status-danger' :
+                                              'status-warning';
+                            statusDot = `<span class="fc-event-status ${statusClass}"></span>`;
+                        }
+                        
+                        // Abbreviated title for mobile
+                        const shortTitle = event.title.split(' ').map(word => 
+                            word.length > 10 ? word.substring(0, 8) + '…' : word
+                        ).join(' ');
+                        
+                        // Critical info only
+                        const mobileInfo = props.boatName && isUltraMobile ? '' : 
+                                         props.boatName ? `<span class="fc-event-boat-mobile">⚓${props.boatName.substring(0, 10)}</span>` : '';
+                        
+                        return {
+                            html: `
+                                <div class="fc-event-mobile">
+                                    ${statusDot}
+                                    <span class="fc-event-title-mobile">${shortTitle}</span>
+                                    ${props.notes ? '<span class="fc-event-icon">📝</span>' : ''}
+                                    ${props.hasAddOns ? '<span class="fc-event-icon">+</span>' : ''}
+                                    ${mobileInfo}
+                                </div>
+                            `
+                        };
+                    }
+                    
+                    // Desktop rendering - full details
                     const addOnIndicator = props.hasAddOns ? 
                         '<span class="addon-indicator" title="This booking includes add-ons">+</span>' : '';
                     
@@ -4804,11 +5005,32 @@
         
         // Handle window resize
         let resizeTimer;
+        let previousIsMobile = window.innerWidth <= 768;
+        
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
+                const currentIsMobile = window.innerWidth <= 768;
+                
+                // Handle user menu
                 if (window.innerWidth > 768) {
                     document.getElementById('userMenu').classList.remove('show-mobile');
+                }
+                
+                // Recreate calendar if switching between mobile/desktop
+                if (previousIsMobile !== currentIsMobile && calendar) {
+                    previousIsMobile = currentIsMobile;
+                    
+                    // Destroy and recreate calendar with new configuration
+                    const currentDate = calendar.getDate();
+                    calendar.destroy();
+                    calendar = null;
+                    
+                    // Recreate with new mobile/desktop configuration
+                    renderScheduleGrid();
+                    
+                    // Restore the date
+                    calendar.gotoDate(currentDate);
                 }
             }, 250);
         });
