@@ -1388,8 +1388,33 @@
             </div>
         </div>
     </div>
+    
+    <div class="legend-container" style="padding: 10px 20px; background: #f5f5f5; border-bottom: 1px solid #ddd;">
+        <div style="display: flex; gap: 20px; align-items: center; font-size: 12px; flex-wrap: wrap;">
+            <span><strong>Legend:</strong></span>
+            <span style="display: flex; align-items: center; gap: 5px;">
+                <span style="display: inline-block; width: 20px; height: 20px; background: #4caf50; border: 2px solid #2e7d32; border-radius: 3px;"></span>
+                Complete Allocation (Staff + Boat)
+            </span>
+            <span style="display: flex; align-items: center; gap: 5px;">
+                <span style="display: inline-block; width: 20px; height: 20px; background: #f44336; border: 2px solid #c62828; border-radius: 3px;"></span>
+                Incomplete (Missing Staff/Boat)
+            </span>
+            <span style="display: flex; align-items: center; gap: 5px;">
+                <span style="display: inline-block; width: 20px; height: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 3px;"></span>
+                Staff Allocation
+            </span>
+            <span>|</span>
+            <span>🚢 = Onboarding | 🏁 = Deloading | ✓ = Staffed | ✗ = Needs Staff</span>
+        </div>
+    </div>
 
     <div class="container">
+        <div class="date-selector">
+            <button class="btn btn-success" onclick="openAllocationModal()">
+                <i class="fas fa-plus"></i> New Allocation
+            </button>
+        </div>
 
         <div class="main-grid">
             <div class="sidebar">
@@ -1458,6 +1483,97 @@
         </div>
     </div>
 
+    <!-- Allocation Modal -->
+    <div id="allocationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Staff Allocation</h3>
+            </div>
+            <form id="allocationForm">
+                <div class="form-group">
+                    <label for="allocationType">Allocation Type</label>
+                    <select id="allocationType" onchange="toggleBookingField()">
+                        <option value="General Operations">General Operations</option>
+                        <option value="Boat Hire">Boat Hire (Booking Specific)</option>
+                        <option value="Ice Cream Boat Operations">Ice Cream Boat Operations</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Training">Training</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="employeeSelect">
+                        Staff Member 
+                        <span id="staffOptionalLabel" class="text-muted" style="font-size: 0.85rem; display: none;">(Optional)</span>
+                    </label>
+                    <select id="employeeSelect">
+                        <option value="">Select Staff Member</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="allocationDate">Date</label>
+                    <input type="date" id="allocationDate" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startTime">Start Time</label>
+                        <input type="time" id="startTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime">End Time</label>
+                        <input type="time" id="endTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group" id="bookingGroup" style="display: none;">
+                    <label for="bookingSelect">Booking</label>
+                    <select id="bookingSelect">
+                        <option value="">Select Booking</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="roleGroup" style="display: none;">
+                    <label for="roleSelect">Role</label>
+                    <select id="roleSelect">
+                        <option value="">Select Role</option>
+                        <option value="Onboarding">Onboarding</option>
+                        <option value="Deloading">Deloading</option>
+                        <option value="Support Staff">Support Staff</option>
+                        <option value="Ice Cream Boat">Ice Cream Boat</option>
+                        <option value="Administration">Administration</option>
+                        <option value="Maintenance">Maintenance</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="boatGroup" style="display: none;">
+                    <label for="boatSelect">
+                        <i class="fas fa-ship"></i> Assign Boat
+                        <span class="text-muted" style="font-size: 0.85rem;">(Optional)</span>
+                    </label>
+                    <select id="boatSelect" class="form-control">
+                        <option value="">Select Boat</option>
+                        <!-- Populated dynamically -->
+                    </select>
+                    <small class="form-text text-muted">
+                        Current boat: <span id="currentBoat">None assigned</span>
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes (Optional)</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteAllocationBtn" style="display: none; margin-right: auto;" onclick="deleteShiftAllocation()">Delete Shift</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeAllocationModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success">Create Allocation</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Booking Allocation Modal (Simplified) -->
     <div id="bookingAllocationModal" class="modal">
@@ -2358,13 +2474,49 @@
                     if (props.recordType === 'booking') {
                         openBookingAllocationModal(props.record, props.allocationType);
                     } else if (props.recordType === 'allocation') {
-                        // Allocation editing removed - no action
+                        const employee = {
+                            id: props.employeeId,
+                            fields: { Name: props.employeeName }
+                        };
+                        openAllocationEditModal(props.record, employee);
                     }
                 },
                 
-                // Date click handler disabled as allocation creation is removed
+                // Date click handler for empty cells
                 dateClick: function(info) {
-                    // Feature removed - no action on date click
+                    // Extract date and time from the clicked slot
+                    const clickedDate = formatLocalDate(info.date);
+                    
+                    // FullCalendar v6 dateClick provides the exact clicked time
+                    // Use info.dateStr for reliable time extraction (ISO format)
+                    let hour, minutes;
+                    
+                    if (info.dateStr && info.dateStr.includes('T')) {
+                        // Extract time from ISO string (more reliable)
+                        const timePart = info.dateStr.split('T')[1];
+                        const timeMatch = timePart.match(/(\d{2}):(\d{2})/);
+                        if (timeMatch) {
+                            hour = parseInt(timeMatch[1], 10);
+                            minutes = parseInt(timeMatch[2], 10);
+                        }
+                    }
+                    
+                    // Fallback to date object if ISO parsing fails
+                    if (hour === undefined) {
+                        const clickedTime = new Date(info.date);
+                        hour = clickedTime.getHours();
+                        minutes = clickedTime.getMinutes();
+                    }
+                    
+                    // Format time for HTML5 time input (HH:MM in 24-hour format)
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                    
+                    // Log for debugging
+                    console.log('Date clicked:', info.dateStr, 'Parsed time:', timeStr, 'Hour:', hour, 'Full info:', info);
+                    
+                    openAllocationModal();
+                    document.getElementById('allocationDate').value = clickedDate;
+                    document.getElementById('startTime').value = timeStr;
                 },
                 
                 // Custom event rendering - mobile optimized
@@ -2790,9 +2942,13 @@
                         ${allocation['Notes'] ? `<div style="font-size: 9px; margin-top: 2px; font-style: italic; opacity: 0.85;">📝 ${allocation['Notes']}</div>` : ''}
                     `;
                     
-                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours\nStatus: ${responseStatus}${allocation['Notes'] ? '\n\nNotes: ' + allocation['Notes'] : ''}`;
+                    allocationBlock.title = `${allocation['Name'] || 'Allocation'}\n${shiftType}\n${startTime} - ${endTime}\nDuration: ${allocation['Duration'] || durationHours} hours\nStatus: ${responseStatus}${allocation['Notes'] ? '\n\nNotes: ' + allocation['Notes'] : ''}\n\nClick to edit allocation times`;
                     
-                    // Click handler removed - allocation editing disabled
+                    // Add click handler to edit allocation
+                    allocationBlock.onclick = (e) => {
+                        e.stopPropagation();
+                        openAllocationEditModal(record, employee);
+                    };
                     
                     // Make the parent cell position relative for absolute positioning
                     startCell.style.position = 'relative';
@@ -3679,127 +3835,503 @@
             }
         }
         
-        // Refresh staff data function
-        window.refreshStaffData = async function() {
-            console.log('Refreshing staff data...');
-            const staffList = document.getElementById('staffList');
-            staffList.innerHTML = '<div class="loading"><div class="spinner"></div><p>Refreshing...</p></div>';
+        // Handle cell click for quick allocation
+        function handleCellClick(cell) {
+            const date = cell.dataset.date;
+            const hour = cell.dataset.hour;
             
-            try {
-                await loadStaffAvailability();
-                renderStaffList();
-                console.log('Staff data refreshed successfully');
-            } catch (error) {
-                console.error('Error refreshing staff data:', error);
-                staffList.innerHTML = '<div style="color: red; padding: 10px;">Error loading staff data</div>';
-            }
-        };
-        
-        // Show staff availability modal
-        window.showStaffAvailability = function(staffId, staffName) {
-            const modal = document.getElementById('staffAvailabilityModal');
-            const modalTitle = modal.querySelector('.modal-title');
-            modalTitle.textContent = `${staffName} - Weekly Availability`;
+            document.getElementById('allocationDate').value = date;
+            document.getElementById('startTime').value = `${hour.padStart(2, '0')}:00`;
+            document.getElementById('endTime').value = `${(parseInt(hour) + 1).toString().padStart(2, '0')}:00`;
             
-            // Build availability calendar
-            buildAvailabilityCalendar(staffId);
+            // Reset allocation type to default and trigger field visibility
+            document.getElementById('allocationType').value = 'General Operations';
+            toggleBookingField();
             
-            // Show modal
+            // Clear notes field for new allocation
+            document.getElementById('notes').value = '';
+            
+            // Populate staff for the selected date
+            populateStaffForDate(date);
+            
+            openAllocationModal();
+        }
+
+        // Modal functions
+        function openAllocationModal() {
+            const modal = document.getElementById('allocationModal');
             modal.classList.add('show');
             modal.style.display = 'block';
-        };
+        }
 
-        // Close staff availability modal
-        function closeStaffAvailabilityModal() {
-            const modal = document.getElementById('staffAvailabilityModal');
+        function closeAllocationModal() {
+            const modal = document.getElementById('allocationModal');
             modal.classList.remove('show');
             modal.style.display = 'none';
+            document.getElementById('allocationForm').reset();
+            
+            // Reset modal title
+            const modalTitle = document.querySelector('.modal-title');
+            if (modalTitle) {
+                modalTitle.textContent = 'Create Staff Allocation';
+            }
+            
+            // Reset form flags
+            const form = document.getElementById('allocationForm');
+            delete form.dataset.isReassignment;
+            delete form.dataset.isEdit;
+            delete form.dataset.allocationId;
+            delete form.dataset.responseStatus;
+            delete form.dataset.originalNotes;
+            
+            // Re-enable all fields
+            document.getElementById('allocationType').disabled = false;
+            document.getElementById('allocationDate').disabled = false;
+            document.getElementById('startTime').disabled = false;
+            document.getElementById('endTime').disabled = false;
+            
+            // Reset submit button text
+            const submitBtn = document.querySelector('#allocationForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'Create Allocation';
+            }
+            
+            // Remove any assignment notes
+            const noteDiv = document.querySelector('#employeeSelect').parentElement.querySelector('div[style*="background"]');
+            if (noteDiv) {
+                noteDiv.remove();
+            }
+            
+            // Hide delete button
+            const deleteBtn = document.getElementById('deleteAllocationBtn');
+            if (deleteBtn) {
+                deleteBtn.style.display = 'none';
+            }
+            
+            // Show all field groups (they might be hidden from edit mode)
+            const bookingGroup = document.getElementById('bookingGroup');
+            const roleGroup = document.getElementById('roleGroup');
+            const notesGroup = document.getElementById('notes')?.parentElement;
+            
+            if (bookingGroup) bookingGroup.style.display = 'block';
+            if (roleGroup) roleGroup.style.display = 'block';
+            if (notesGroup) notesGroup.style.display = 'block';
         }
         
-        // Build availability calendar for a staff member
-        async function buildAvailabilityCalendar(staffId) {
-            const calendarDiv = document.getElementById('availabilityCalendar');
+        // Delete shift allocation
+        async function deleteShiftAllocation() {
+            const form = document.getElementById('allocationForm');
+            const allocationId = form.dataset.allocationId;
             
-            // Get availability data for this staff member
-            const availability = staffAvailability[staffId] || [];
+            if (!allocationId) {
+                alert('Error: No allocation selected for deletion');
+                return;
+            }
             
-            // Create simple availability display
-            let html = '<div style="padding: 20px;">';
+            // Confirm deletion
+            const confirmMessage = 'Are you sure you want to delete this shift allocation?\n\nThis action cannot be undone.';
+            if (!confirm(confirmMessage)) {
+                return;
+            }
             
-            if (availability.length === 0) {
-                html += '<p>No availability recorded for this week.</p>';
-            } else {
-                html += '<h4>Available Days:</h4>';
-                html += '<ul>';
-                availability.forEach(day => {
-                    const date = day['Date'] || day['Day'];
-                    html += `<li>${date}</li>`;
+            try {
+                // Delete the allocation from Airtable
+                const deleteResponse = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                    }
                 });
-                html += '</ul>';
-            }
-            
-            html += '</div>';
-            
-            calendarDiv.innerHTML = html;
-        }
-        
-        // Logout function
-        async function logout() {
-            await supabase.auth.signOut();
-            window.location.href = 'auth.html';
-        }
-        
-        // Toggle mobile menu
-        function toggleMobileMenu() {
-            const userMenu = document.getElementById('userMenu');
-            userMenu.classList.toggle('show-mobile');
-        }
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const userMenu = document.getElementById('userMenu');
-            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-            if (!userMenu.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
-                userMenu.classList.remove('show-mobile');
-            }
-        });
-        
-        // Handle window resize
-        let resizeTimer;
-        let previousIsMobile = window.innerWidth <= 768;
-        
-        window.addEventListener('resize', function() {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(function() {
-                const currentIsMobile = window.innerWidth <= 768;
                 
-                // Handle user menu
-                if (window.innerWidth > 768) {
-                    document.getElementById('userMenu').classList.remove('show-mobile');
+                if (!deleteResponse.ok) {
+                    const error = await deleteResponse.json();
+                    console.error('Failed to delete allocation:', error);
+                    throw new Error('Failed to delete shift allocation');
                 }
                 
-                // If switched between mobile and desktop, recreate calendar
-                if (currentIsMobile !== previousIsMobile && calendar) {
-                    previousIsMobile = currentIsMobile;
-                    const currentDate = calendar.getDate();
-                    
-                    // Destroy current calendar
-                    calendar.destroy();
-                    
-                    // Recreate with new configuration
-                    renderScheduleGrid();
-                    
-                    // Restore the date
-                    calendar.gotoDate(currentDate);
+                console.log('Successfully deleted shift allocation:', allocationId);
+                alert('Shift allocation deleted successfully!');
+                
+                // Close modal and refresh
+                closeAllocationModal();
+                
+                // Reload the page data
+                await loadWeekData();
+                
+            } catch (error) {
+                console.error('Error deleting shift allocation:', error);
+                alert('Error deleting shift allocation: ' + error.message);
+            }
+        }
+        
+        // Open allocation edit modal
+        function openAllocationEditModal(allocationRecord, currentEmployee) {
+            const allocation = allocationRecord.fields;
+            const allocationId = allocationRecord.id;
+            
+            // Set modal title to indicate editing
+            const modalTitle = document.querySelector('.modal-title');
+            modalTitle.textContent = `Edit Allocation: ${allocation['Name'] || 'Shift'}`;
+            
+            // Pre-fill form with existing allocation data
+            document.getElementById('allocationType').value = allocation['Shift Type'] || 'General Operations';
+            document.getElementById('allocationDate').value = allocation['Shift Date'];
+            document.getElementById('startTime').value = allocation['Start Time'] || '09:00';
+            document.getElementById('endTime').value = allocation['End Time'] || '17:00';
+            document.getElementById('notes').value = allocation['Notes'] || '';
+            
+            // Populate staff dropdown for the shift date
+            populateStaffForDate(allocation['Shift Date']);
+            
+            // Pre-select current employee if exists
+            setTimeout(() => {
+                const employeeSelect = document.getElementById('employeeSelect');
+                if (allocation['Employee'] && allocation['Employee'][0]) {
+                    employeeSelect.value = allocation['Employee'][0];
                 }
-            }, 250);
-        });
+            }, 100);
+            
+            // Store the allocation ID, response status, and original notes for update
+            document.getElementById('allocationForm').dataset.allocationId = allocationId;
+            document.getElementById('allocationForm').dataset.isEdit = 'true';
+            document.getElementById('allocationForm').dataset.responseStatus = allocation['Response Status'] || 'Pending';
+            document.getElementById('allocationForm').dataset.originalNotes = allocation['Notes'] || '';
+            
+            // Enable all fields for editing
+            document.getElementById('allocationType').disabled = false;
+            document.getElementById('allocationDate').disabled = false;
+            document.getElementById('startTime').disabled = false;
+            document.getElementById('endTime').disabled = false;
+            
+            // Hide booking-specific fields
+            document.getElementById('bookingGroup').style.display = 'none';
+            document.getElementById('roleGroup').style.display = 'none';
+            
+            // Show notes field for shift allocations
+            const notesGroup = document.getElementById('notes')?.parentElement;
+            if (notesGroup) {
+                notesGroup.style.display = 'block';
+            }
+            
+            // Update submit button text
+            const submitBtn = document.querySelector('#allocationForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'Update Allocation';
+            }
+            
+            // Show delete button for editing
+            const deleteBtn = document.getElementById('deleteAllocationBtn');
+            if (deleteBtn) {
+                deleteBtn.style.display = 'block';
+            }
+            
+            // Open the modal
+            openAllocationModal();
+        }
+        
+        // Open shift reassignment modal for general allocations
+        function openShiftReassignmentModal(allocationRecord, currentEmployee) {
+            const allocation = allocationRecord.fields;
+            const allocationId = allocationRecord.id;
+            
+            // Set modal title to indicate reassignment
+            const modalTitle = document.querySelector('.modal-title');
+            const currentEmployeeName = currentEmployee?.fields?.['First Name'] || 
+                                       currentEmployee?.fields?.['Name'] || 
+                                       'Unknown';
+            const responseStatus = allocation['Response Status'] || 'Pending';
+            
+            // Add status indicator to title
+            let statusText = '';
+            if (responseStatus === 'Declined') {
+                statusText = ' (⚠️ Declined - Needs Reassignment)';
+            } else if (responseStatus === 'Pending') {
+                statusText = ' (⏳ Pending Response)';
+            } else if (responseStatus === 'Accepted') {
+                statusText = ' (✅ Accepted)';
+            }
+            
+            modalTitle.textContent = `Reassign Shift: ${allocation['Name'] || 'Shift'}${statusText}`;
+            
+            // Pre-fill form with existing allocation data
+            document.getElementById('allocationType').value = allocation['Shift Type'] || 'General Operations';
+            document.getElementById('allocationDate').value = allocation['Shift Date'];
+            document.getElementById('startTime').value = allocation['Start Time'] || '09:00';
+            document.getElementById('endTime').value = allocation['End Time'] || '17:00';
+            
+            // Populate staff dropdown for the shift date
+            populateStaffForDate(allocation['Shift Date']);
+            
+            // Pre-select current employee if exists
+            setTimeout(() => {
+                const employeeSelect = document.getElementById('employeeSelect');
+                if (allocation['Employee'] && allocation['Employee'][0]) {
+                    employeeSelect.value = allocation['Employee'][0];
+                }
+                
+                // Add note about current assignment
+                const noteDiv = document.createElement('div');
+                noteDiv.style.cssText = 'margin-top: 0.5rem; padding: 0.5rem; background: #f0f4f8; border-radius: 4px; font-size: 0.9rem;';
+                noteDiv.innerHTML = `
+                    <strong>Current Assignment:</strong> ${currentEmployeeName}<br>
+                    <strong>Response Status:</strong> <span style="color: ${
+                        responseStatus === 'Declined' ? '#e74c3c' : 
+                        responseStatus === 'Accepted' ? '#27ae60' : 
+                        '#f39c12'
+                    };">${responseStatus}</span>
+                    ${responseStatus === 'Declined' ? '<br><em style="color: #e74c3c;">Staff member declined this shift. Please select a replacement.</em>' : ''}
+                `;
+                
+                const employeeGroup = employeeSelect.parentElement;
+                const existingNote = employeeGroup.querySelector('div[style*="background"]');
+                if (existingNote) existingNote.remove();
+                employeeGroup.appendChild(noteDiv);
+            }, 100);
+            
+            // Store the allocation ID for update
+            document.getElementById('allocationForm').dataset.allocationId = allocationId;
+            document.getElementById('allocationForm').dataset.isReassignment = 'true';
+            
+            // Disable fields that shouldn't be changed during reassignment
+            document.getElementById('allocationType').disabled = true;
+            document.getElementById('allocationDate').disabled = true;
+            document.getElementById('startTime').disabled = true;
+            document.getElementById('endTime').disabled = true;
+            
+            // Hide booking-specific fields
+            document.getElementById('bookingGroup').style.display = 'none';
+            document.getElementById('roleGroup').style.display = 'none';
+            
+            // Update submit button text
+            const submitBtn = document.querySelector('#allocationForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'Reassign Shift';
+            }
+            
+            // Show delete button for reassignment
+            const deleteBtn = document.getElementById('deleteAllocationBtn');
+            if (deleteBtn) {
+                deleteBtn.style.display = 'block';
+            }
+            
+            openAllocationModal();
+        }
 
-        // Initialize on page load
-        checkAuth();
-    </script>
-</body>
-</html>
+        function toggleBookingField() {
+            const type = document.getElementById('allocationType').value;
+            const bookingGroup = document.getElementById('bookingGroup');
+            const roleGroup = document.getElementById('roleGroup');
+            const boatGroup = document.getElementById('boatGroup');
+            const staffOptionalLabel = document.getElementById('staffOptionalLabel');
+            const notesGroup = document.getElementById('notes')?.parentElement;
+            
+            // Show booking selection for Boat Hire or Ice Cream Boat Operations
+            if (type === 'Boat Hire' || type === 'Ice Cream Boat Operations') {
+                bookingGroup.style.display = 'block';
+                roleGroup.style.display = 'block';
+                boatGroup.style.display = 'block';
+                // Staff is optional for booking allocations
+                staffOptionalLabel.style.display = 'inline';
+            } else {
+                bookingGroup.style.display = 'none';
+                roleGroup.style.display = 'none';
+                boatGroup.style.display = 'none';
+                // Staff is required for general allocations
+                staffOptionalLabel.style.display = 'none';
+            }
+            
+            // Always show notes field for all allocation types
+            if (notesGroup) {
+                notesGroup.style.display = 'block';
+            }
+        }
+
+        // Handle allocation form submission
+        let isSubmitting = false;
+        document.getElementById('allocationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Prevent duplicate submissions
+            if (isSubmitting) {
+                console.log('Already submitting, please wait...');
+                return;
+            }
+            isSubmitting = true;
+            
+            // Check if this is a reassignment or edit
+            const isReassignment = e.target.dataset.isReassignment === 'true';
+            const isEdit = e.target.dataset.isEdit === 'true';
+            const allocationId = e.target.dataset.allocationId;
+            
+            // Show loading state on button
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn ? submitBtn.textContent : (isReassignment ? 'Reassign Shift' : (isEdit ? 'Update Allocation' : 'Create Allocation'));
+            if (submitBtn) {
+                submitBtn.textContent = isReassignment ? 'Reassigning...' : (isEdit ? 'Updating...' : 'Creating...');
+                submitBtn.disabled = true;
+            }
+            
+            const allocationType = document.getElementById('allocationType').value;
+            const bookingId = document.getElementById('bookingSelect').value;
+            const roleValue = document.getElementById('roleSelect').value;
+            const employeeId = document.getElementById('employeeSelect').value;
+            
+            try {
+                // Handle editing of existing shift
+                if (isEdit && allocationId) {
+                    console.log('Editing shift allocation:', allocationId);
+                    
+                    const shiftDate = document.getElementById('allocationDate').value;
+                    const startTime = document.getElementById('startTime').value;
+                    const endTime = document.getElementById('endTime').value;
+                    const shiftType = document.getElementById('allocationType').value;
+                    const newNotes = document.getElementById('notes').value || '';
+                    
+                    // Validate time entries
+                    const startDateTime = new Date(`${shiftDate}T${startTime}`);
+                    const endDateTime = new Date(`${shiftDate}T${endTime}`);
+                    
+                    if (endDateTime <= startDateTime) {
+                        alert('End time must be after start time. Please check your time entries.');
+                        isSubmitting = false;
+                        if (submitBtn) {
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                        }
+                        return;
+                    }
+                    
+                    // Get stored values from dataset
+                    const originalNotes = e.target.dataset.originalNotes || '';
+                    const responseStatus = e.target.dataset.responseStatus || 'Pending';
+                    const notesChanged = originalNotes !== newNotes;
+                    const isAccepted = responseStatus === 'Accepted';
+                    
+                    console.log('Update check:', {
+                        originalNotes,
+                        newNotes,
+                        notesChanged,
+                        responseStatus,
+                        isAccepted
+                    });
+                    
+                    // Update the existing allocation record
+                    const updateResponse = await fetchWithRetry(
+                        `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`,
+                        {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                fields: {
+                                    'Employee': [employeeId],
+                                    'Shift Date': shiftDate,
+                                    'Start Time': startTime,
+                                    'End Time': endTime,
+                                    'Shift Type': shiftType,
+                                    'Notes': newNotes,
+                                    'Response Date': new Date().toISOString(),
+                                    'Response Method': 'Portal'
+                                }
+                            })
+                        }
+                    );
+                    
+                    if (!updateResponse.ok) {
+                        const errorText = await updateResponse.text();
+                        throw new Error(`Failed to update allocation: ${errorText}`);
+                    }
+                    
+                    // If notes changed and shift is accepted, send update SMS
+                    if (notesChanged && isAccepted && newNotes) {
+                        console.log('Notes changed on accepted shift, sending update SMS...');
+                        
+                        try {
+                            const notificationData = {
+                                employeeId: employeeId,
+                                allocationId: allocationId,
+                                shiftType: shiftType,
+                                shiftDate: shiftDate,
+                                startTime: startTime,
+                                endTime: endTime,
+                                notes: newNotes,
+                                isUpdate: true,  // New flag to indicate this is an update
+                                originalNotes: originalNotes
+                            };
+                            
+                            const notifyResponse = await fetch('/api/send-shift-notification', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(notificationData)
+                            });
+                            
+                            if (notifyResponse.ok) {
+                                const result = await notifyResponse.json();
+                                console.log('Update SMS sent successfully:', result);
+                                alert('Allocation updated successfully! Update SMS sent to staff member.');
+                            } else {
+                                console.error('Failed to send update SMS');
+                                alert('Allocation updated successfully! (SMS notification failed)');
+                            }
+                        } catch (notifyError) {
+                            console.error('Error sending update SMS:', notifyError);
+                            alert('Allocation updated successfully! (SMS notification failed)');
+                        }
+                    } else {
+                        alert('Allocation updated successfully!');
+                    }
+                    
+                    // Close modal and refresh
+                    closeAllocationModal();
+                    
+                    // Clear edit flags
+                    delete e.target.dataset.isEdit;
+                    delete e.target.dataset.allocationId;
+                    
+                    // Reload allocations to show updated data
+                    await loadWeekData();
+                    
+                    isSubmitting = false;
+                    return;
+                }
+                
+                // Handle reassignment of existing shift
+                if (isReassignment && allocationId) {
+                    console.log('Reassigning shift allocation:', allocationId, 'to employee:', employeeId);
+                    
+                    // Update the existing allocation record
+                    const updateResponse = await fetchWithRetry(
+                        `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}/${allocationId}`,
+                        {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                fields: {
+                                    'Employee': [employeeId],
+                                    'Response Status': 'Pending',  // Reset status for new employee
+                                    'Response Date': null,  // Clear previous response (use null for date fields)
+                                    'Response Method': null  // Clear previous method (use null to clear)
+                                }
+                            })
+                        }
+                    );
+                    
+                    if (!updateResponse.ok) {
+                        const error = await updateResponse.json();
+                        console.error('Error reassigning shift:', error);
+                        console.error('Error details:', {
+                            status: updateResponse.status,
+                            message: error.error?.message || error.message,
+                            type: error.error?.type
+                        });
+                        const errorMsg = error.error?.message || 'Failed to reassign shift';
+                        throw new Error(errorMsg);
+                    }
                     
                     console.log('Successfully reassigned shift');
                     
@@ -4574,6 +5106,22 @@
 
         // Initialize on page load
         checkAuth();
+        
+        // Add event listener for date changes in allocation modal
+        document.getElementById('allocationDate').addEventListener('change', (e) => {
+            const selectedDate = e.target.value;
+            if (selectedDate) {
+                populateStaffForDate(selectedDate);
+            }
+        });
+        
+        // Ensure booking allocation form event listener is attached
+        const bookingForm = document.getElementById('bookingAllocationForm');
+        if (bookingForm) {
+            console.log('Booking allocation form found, attaching submit handler');
+        } else {
+            console.error('Booking allocation form not found!');
+        }
     </script>
 </body>
 </html>
