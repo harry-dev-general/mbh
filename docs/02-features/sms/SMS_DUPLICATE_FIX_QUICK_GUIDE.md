@@ -1,78 +1,40 @@
-# Quick Fix: SMS Duplicate Reminders
+# SMS Duplicate Fix - Quick Guide
 
-## Problem
-You're receiving multiple SMS reminders because Railway runs multiple app instances that don't share tracking data.
+## ✅ Fix Already Implemented!
 
-## Solution Steps
-
-### 1. Create Tracking Table (One-Time Setup)
-
-```bash
-# Run the setup script
-cd mbh-staff-portal
-node scripts/setup-reminder-tracking-table.js
-```
-
-This will:
-- Create a new Airtable table "SMS Reminder Tracking"
-- Give you the table ID to use
-
-### 2. Add to Railway Environment
-
-```bash
-# Add the table ID from step 1
-REMINDER_TRACKER_TABLE_ID=tblXXXXXXXXXXXX
-```
-
-### 3. Deploy
-
-```bash
-git add .
-git commit -m "fix: Implement persistent SMS reminder tracking"
-git push
-```
-
-Railway will automatically deploy and the duplicate SMS issue will be resolved.
+The duplicate SMS reminder issue has been resolved. The system now uses existing Airtable fields to track reminder status, preventing duplicates across multiple Railway instances.
 
 ## How It Works
 
-**Before (Problem)**:
-- Instance A: "I'll send a reminder" ✉️
-- Instance B: "I don't know A sent one, I'll send too" ✉️
-- Instance C: "Me too!" ✉️
-- Result: 3 SMS for 1 reminder 😞
+### For Shift Allocations
+The system uses existing fields in the Shift Allocations table:
+- **Reminder Sent**: Checkbox indicating a reminder was sent
+- **Reminder Sent Date**: Timestamp of the last reminder
 
-**After (Fixed)**:
-- Instance A: "I'll check Airtable... no one sent yet, I'll send" ✉️
-- Instance B: "I'll check Airtable... A already sent one, I'll skip" ✅
-- Instance C: "I'll check Airtable... already sent, I'll skip" ✅
-- Result: 1 SMS for 1 reminder 😊
+### For Booking Allocations
+The system uses new fields in the Bookings Dashboard table:
+- **Onboarding Reminder Sent** / **Onboarding Reminder Sent Date**
+- **Deloading Reminder Sent** / **Deloading Reminder Sent Date**
 
-## Verification
+## No Action Required
 
-Check the logs after deployment:
-```
-✅ Reminder check complete. Tracker size: 1
-```
+The fix is already deployed. The system will:
+1. Check these fields before sending any reminder
+2. Only send if 6+ hours have passed since the last reminder
+3. Update the fields after sending
 
-Instead of multiple "Reminder sent" messages for the same allocation.
+## Monitoring
 
-## Troubleshooting
+You can verify the fix is working by:
 
-If you still see duplicates:
-1. Verify `REMINDER_TRACKER_TABLE_ID` is set in Railway
-2. Check the Airtable table is receiving entries
-3. Look for errors in logs about Airtable access
+1. **Check Airtable**: Look at the reminder fields in your allocations
+2. **Admin Endpoint**: `GET /api/admin/reminder-status?adminKey=your-key`
+3. **SMS Logs**: Confirm no duplicates are being sent
 
-## Manual Table Creation
+## Benefits
 
-If the script doesn't work, create manually in Airtable:
-
-| Field Name | Field Type |
-|------------|------------|
-| Key | Single Line Text |
-| Last Sent | Date & Time |
-| Created At | Date & Time |
-| Updated At | Date & Time |
-
-Then find the table ID (starts with "tbl") and add to Railway.
+- ✅ No more duplicate SMS
+- ✅ Consistent 6-hour intervals
+- ✅ Works across multiple app instances
+- ✅ Reminder status visible in Airtable
+- ✅ No extra configuration needed

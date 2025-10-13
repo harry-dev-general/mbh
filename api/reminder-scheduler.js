@@ -1,15 +1,15 @@
 // Reminder Scheduler Module
 // Sends automatic reminder SMS every 6 hours for pending shift allocations
+// Uses Airtable fields to track reminder status and prevent duplicates
 
 const axios = require('axios');
 const notifications = require('./notifications');
-const PersistentReminderTracker = require('./reminder-tracker-persistent');
 
 // Airtable configuration
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const BASE_ID = 'applkAFOn2qxtu7tx';
 const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX';
-const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I';
+const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
 const EMPLOYEES_TABLE_ID = 'tbltAE4NlNePvnkpY';
 
 // Reminder intervals
@@ -17,38 +17,78 @@ const REMINDER_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 const CHECK_INTERVAL_MS = 30 * 60 * 1000; // Check every 30 minutes
 const MAX_REMINDER_AGE_MS = 72 * 60 * 60 * 1000; // Stop after 72 hours
 
-// Use persistent tracker if in production, otherwise use in-memory for local dev
-const isPersistentStorageAvailable = process.env.REMINDER_TRACKER_TABLE_ID || process.env.NODE_ENV === 'production';
-const reminderTracker = isPersistentStorageAvailable ? new PersistentReminderTracker() : new Map();
-
 /**
- * Get a unique key for tracking reminders
+ * Check if a reminder should be sent for a shift allocation
  */
-function getReminderKey(type, id, role = null) {
-    return role ? `${type}-${id}-${role}` : `${type}-${id}`;
-}
-
-/**
- * Check if a reminder should be sent
- */
-async function shouldSendReminder(key, createdAt) {
-    const now = Date.now();
-    const age = now - new Date(createdAt).getTime();
+function shouldSendShiftReminder(allocation) {
+    const fields = allocation.fields;
+    const created = new Date(fields['Created'] || allocation.createdTime);
+    const now = new Date();
+    const age = now - created;
     
     // Don't send reminders for allocations older than 72 hours
     if (age > MAX_REMINDER_AGE_MS) {
         return false;
     }
     
-    // Check last reminder time
-    const lastReminder = isPersistentStorageAvailable ? await reminderTracker.get(key) : reminderTracker.get(key);
-    if (!lastReminder) {
+    // Check if reminder was already sent
+    const reminderSentDate = fields['Reminder Sent Date'];
+    if (!reminderSentDate) {
         // First reminder - wait at least 6 hours after initial allocation
         return age >= REMINDER_INTERVAL_MS;
     }
     
-    // Subsequent reminders - check if 6 hours have passed
-    return (now - lastReminder) >= REMINDER_INTERVAL_MS;
+    // Subsequent reminders - check if 6 hours have passed since last reminder
+    const lastReminderTime = new Date(reminderSentDate);
+    return (now - lastReminderTime) >= REMINDER_INTERVAL_MS;
+}
+
+/**
+ * Check if a reminder should be sent for a booking allocation
+ */
+function shouldSendBookingReminder(booking, role) {
+    const fields = booking.fields;
+    const created = new Date(fields['Created'] || booking.createdTime);
+    const now = new Date();
+    const age = now - created;
+    
+    // Don't send reminders for allocations older than 72 hours
+    if (age > MAX_REMINDER_AGE_MS) {
+        return false;
+    }
+    
+    // Check the appropriate reminder field based on role
+    const reminderSentField = role === 'Onboarding' ? 'Onboarding Reminder Sent Date' : 'Deloading Reminder Sent Date';
+    const reminderSentDate = fields[reminderSentField];
+    
+    if (!reminderSentDate) {
+        // First reminder - wait at least 6 hours after initial allocation
+        return age >= REMINDER_INTERVAL_MS;
+    }
+    
+    // Subsequent reminders - check if 6 hours have passed since last reminder
+    const lastReminderTime = new Date(reminderSentDate);
+    return (now - lastReminderTime) >= REMINDER_INTERVAL_MS;
+}
+
+/**
+ * Update Airtable record to mark reminder as sent
+ */
+async function updateReminderStatus(tableId, recordId, fields) {
+    try {
+        await axios.patch(
+            `https://api.airtable.com/v0/${BASE_ID}/${tableId}/${recordId}`,
+            { fields },
+            {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+    } catch (error) {
+        console.error('Error updating reminder status:', error);
+    }
 }
 
 /**
@@ -97,20 +137,18 @@ async function processPendingAllocations() {
             return createdDate > cutoffDate;
         });
         
-        console.log(`Found ${pendingAllocations.length} pending shift allocations from last 72 hours (out of ${allAllocations.length} total pending)`);
+        console.log(`Found ${pendingAllocations.length} pending shift allocations from last 72 hours (out of ${allAllocations.length} total allocations)`);
         
         // Process each pending allocation
         for (const allocation of pendingAllocations) {
-            const key = getReminderKey('allocation', allocation.id);
-            const created = allocation.fields['Created'] || allocation.createdTime;
-            
-            if (await shouldSendReminder(key, created)) {
+            if (shouldSendShiftReminder(allocation)) {
                 await sendAllocationReminder(allocation);
-                if (isPersistentStorageAvailable) {
-                    await reminderTracker.set(key, Date.now());
-                } else {
-                    reminderTracker.set(key, Date.now());
-                }
+                
+                // Update Airtable to mark reminder as sent
+                await updateReminderStatus(ALLOCATIONS_TABLE_ID, allocation.id, {
+                    'Reminder Sent': true,
+                    'Reminder Sent Date': new Date().toISOString()
+                });
             }
         }
         
@@ -128,7 +166,7 @@ async function processPendingBookings() {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        // Fetch ALL paid bookings and filter client-side (more reliable than filterByFormula)
+        // Fetch ALL bookings and filter client-side (more reliable than filterByFormula)
         let allBookings = [];
         let offset = null;
         
@@ -149,12 +187,9 @@ async function processPendingBookings() {
             
         } while (offset);
         
-        // Filter client-side for PAID bookings with pending assignments and future dates
+        // Filter client-side for bookings with pending assignments and future dates
         const pendingBookings = allBookings.filter(record => {
             const fields = record.fields;
-            
-            // Check booking status
-            if (fields['Booking Status'] !== 'PAID') return false;
             
             // Check if booking date is in the future
             const bookingDate = fields['Booking Date'];
@@ -178,20 +213,19 @@ async function processPendingBookings() {
         // Process each booking
         for (const booking of pendingBookings) {
             const fields = booking.fields;
-            const created = fields['Created'] || booking.createdTime;
             
             // Check onboarding
             if (fields['Onboarding Employee']?.length && 
                 (!fields['Onboarding Response'] || fields['Onboarding Response'] === 'Pending')) {
                 
-                const key = getReminderKey('booking', booking.id, 'Onboarding');
-                if (await shouldSendReminder(key, created)) {
+                if (shouldSendBookingReminder(booking, 'Onboarding')) {
                     await sendBookingReminder(booking, 'Onboarding');
-                    if (isPersistentStorageAvailable) {
-                        await reminderTracker.set(key, Date.now());
-                    } else {
-                        reminderTracker.set(key, Date.now());
-                    }
+                    
+                    // Update Airtable to mark reminder as sent
+                    await updateReminderStatus(BOOKINGS_TABLE_ID, booking.id, {
+                        'Onboarding Reminder Sent': true,
+                        'Onboarding Reminder Sent Date': new Date().toISOString()
+                    });
                 }
             }
             
@@ -199,14 +233,14 @@ async function processPendingBookings() {
             if (fields['Deloading Employee']?.length && 
                 (!fields['Deloading Response'] || fields['Deloading Response'] === 'Pending')) {
                 
-                const key = getReminderKey('booking', booking.id, 'Deloading');
-                if (await shouldSendReminder(key, created)) {
+                if (shouldSendBookingReminder(booking, 'Deloading')) {
                     await sendBookingReminder(booking, 'Deloading');
-                    if (isPersistentStorageAvailable) {
-                        await reminderTracker.set(key, Date.now());
-                    } else {
-                        reminderTracker.set(key, Date.now());
-                    }
+                    
+                    // Update Airtable to mark reminder as sent
+                    await updateReminderStatus(BOOKINGS_TABLE_ID, booking.id, {
+                        'Deloading Reminder Sent': true,
+                        'Deloading Reminder Sent Date': new Date().toISOString()
+                    });
                 }
             }
         }
@@ -338,20 +372,7 @@ async function checkAndSendReminders() {
         await processPendingAllocations();
         await processPendingBookings();
         
-        // Clean up old entries from tracker
-        if (isPersistentStorageAvailable) {
-            await reminderTracker.cleanup(MAX_REMINDER_AGE_MS);
-            const allTracked = await reminderTracker.getAll();
-            console.log(`✅ Reminder check complete. Tracker size: ${allTracked.length}`);
-        } else {
-            const now = Date.now();
-            for (const [key, timestamp] of reminderTracker.entries()) {
-                if (now - timestamp > MAX_REMINDER_AGE_MS) {
-                    reminderTracker.delete(key);
-                }
-            }
-            console.log(`✅ Reminder check complete. Tracker size: ${reminderTracker.size}`);
-        }
+        console.log(`✅ Reminder check complete.`);
         
     } catch (error) {
         console.error('Error in reminder check:', error);
@@ -368,6 +389,7 @@ function startReminderScheduler() {
     console.log(`   - Checking every ${CHECK_INTERVAL_MS / 1000 / 60} minutes`);
     console.log(`   - Sending reminders every ${REMINDER_INTERVAL_MS / 1000 / 60 / 60} hours for pending allocations`);
     console.log(`   - Stopping reminders after ${MAX_REMINDER_AGE_MS / 1000 / 60 / 60} hours`);
+    console.log('   - Using Airtable fields to track reminder status');
     
     // Run initial check
     checkAndSendReminders();
@@ -392,7 +414,6 @@ module.exports = {
     stopReminderScheduler,
     checkAndSendReminders,
     // Export for testing
-    shouldSendReminder,
-    reminderTracker,
-    isPersistentStorageAvailable
+    shouldSendShiftReminder,
+    shouldSendBookingReminder
 };
