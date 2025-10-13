@@ -497,6 +497,7 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            cursor: pointer; /* Show that clicking outside will close */
         }
         
         .modal.show {
@@ -511,6 +512,7 @@
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
+            cursor: default; /* Reset cursor for modal content */
         }
         
         .modal-header {
@@ -5188,6 +5190,69 @@
         } else {
             console.error('Booking allocation form not found!');
         }
+        
+        // Add click/tap outside to close modal functionality
+        function setupModalCloseOnOutsideClick() {
+            const modals = [
+                { id: 'allocationModal', closeFunc: closeAllocationModal },
+                { id: 'bookingAllocationModal', closeFunc: closeBookingAllocationModal },
+                { id: 'staffAvailabilityModal', closeFunc: window.closeStaffAvailabilityModal }
+            ];
+            
+            modals.forEach(modalConfig => {
+                const modal = document.getElementById(modalConfig.id);
+                if (!modal) return;
+                
+                // Add event listener for clicks/taps on the modal backdrop
+                modal.addEventListener('click', function(event) {
+                    // Check if the click was on the modal backdrop itself, not on the modal content
+                    if (event.target === modal) {
+                        modalConfig.closeFunc();
+                    }
+                });
+                
+                // Also handle touch events for better mobile support
+                modal.addEventListener('touchstart', function(event) {
+                    // Store the touch start target
+                    modal.dataset.touchStartTarget = event.target === modal ? 'backdrop' : 'content';
+                });
+                
+                modal.addEventListener('touchend', function(event) {
+                    // Only close if both touchstart and touchend were on the backdrop
+                    if (modal.dataset.touchStartTarget === 'backdrop' && event.target === modal) {
+                        event.preventDefault(); // Prevent any default touch behavior
+                        modalConfig.closeFunc();
+                    }
+                    delete modal.dataset.touchStartTarget;
+                });
+            });
+            
+            console.log('Modal close-on-outside-click functionality initialized');
+        }
+        
+        // Initialize the modal close functionality
+        setupModalCloseOnOutsideClick();
+        
+        // Also handle ESC key to close modals
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' || event.keyCode === 27) {
+                // Close any open modal
+                const openModal = document.querySelector('.modal.show');
+                if (openModal) {
+                    switch(openModal.id) {
+                        case 'allocationModal':
+                            closeAllocationModal();
+                            break;
+                        case 'bookingAllocationModal':
+                            closeBookingAllocationModal();
+                            break;
+                        case 'staffAvailabilityModal':
+                            window.closeStaffAvailabilityModal();
+                            break;
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
