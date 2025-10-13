@@ -708,6 +708,12 @@ app.get('/api/shift-status/:allocationId', async (req, res) => {
   }
 });
 
+// Quick allocation status update (for mobile quick actions)
+app.post('/api/allocations/update-status', async (req, res) => {
+  const updateStatusHandler = require('./api/allocations/update-status');
+  updateStatusHandler(req, res);
+});
+
 // Default route - serve the dashboard
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
@@ -795,10 +801,59 @@ app.get('*', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+// Create HTTP server for both Express and WebSocket
+const http = require('http');
+const server = http.createServer(app);
+
+// Initialize WebSocket handler
+const CalendarWebSocketHandler = require('./api/websocket-handler');
+const wsHandler = new CalendarWebSocketHandler(server);
+
+// Make WebSocket handler available to other modules
+app.set('wsHandler', wsHandler);
+
+server.listen(PORT, () => {
   console.log(`MBH Staff Portal running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`WebSocket server ready at ws://localhost:${PORT}/ws`);
   
   // Start the reminder scheduler
   reminderScheduler.startReminderScheduler();
 });
+
+// Graceful shutdown handling
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+function gracefulShutdown() {
+  console.log('\n🛑 Shutting down gracefully...');
+  
+  // Stop the reminder scheduler
+  if (reminderScheduler && reminderScheduler.stopReminderScheduler) {
+    reminderScheduler.stopReminderScheduler();
+  }
+  
+  // Close the HTTP server
+  server.close(() => {
+    console.log('HTTP server closed');
+    
+    // Close WebSocket connections
+    if (wsHandler && wsHandler.wss) {
+      wsHandler.wss.clients.forEach(client => {
+        client.close();
+      });
+      wsHandler.wss.close(() => {
+        console.log('WebSocket server closed');
+        process.exit(0);
+      });
+    } else {
+      process.exit(0);
+    }
+  });
+  
+  // Force close after 10 seconds
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+}

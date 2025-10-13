@@ -13,7 +13,8 @@
     "cors": "^2.8.5",
     "axios": "^1.6.2",
     "helmet": "^7.1.0",
-    "square": "^39.1.0"
+    "square": "^39.1.0",
+    "ws": "^8.14.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
