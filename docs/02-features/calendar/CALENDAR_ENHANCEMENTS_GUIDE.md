@@ -143,6 +143,7 @@ window.calendarEnhancements.init(calendar, {
 1. **Swipe**: Place finger on calendar, swipe left/right
 2. **Long press**: Hold finger on allocation for 0.5 seconds
 3. **Quick actions**: Tap action from popup menu
+4. **Close modals**: Tap outside the modal content to close
 
 ### Real-Time Updates
 - Updates appear automatically
@@ -153,6 +154,10 @@ window.calendarEnhancements.init(calendar, {
 - Calendar remains functional offline
 - Cached data displayed with indicator
 - Updates sync when connection restored
+
+### Keyboard Shortcuts
+- **ESC**: Close any open modal
+- **Arrow Keys**: Navigate calendar (when focused)
 
 ## Browser Support
 
