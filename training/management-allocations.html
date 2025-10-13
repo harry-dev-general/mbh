@@ -1243,6 +1243,37 @@
             .fc-event-status.status-danger {
                 background-color: #ef4444;
             }
+            
+            /* Mobile button and text fixes */
+            .fc-button {
+                font-size: 13px !important;
+                padding: 5px 8px !important;
+                white-space: nowrap;
+            }
+            
+            /* Today button specific */
+            .fc-today-button {
+                font-size: 13px !important;
+                padding: 5px 10px !important;
+            }
+            
+            /* View buttons */
+            .fc-button-group .fc-button {
+                font-size: 12px !important;
+                padding: 4px 6px !important;
+            }
+            
+            /* "All day" text */
+            .fc-timegrid-axis-cushion {
+                font-size: 11px !important;
+                padding: 2px !important;
+            }
+            
+            /* Day headers */
+            .fc-col-header-cell {
+                font-size: 12px !important;
+                padding: 4px 2px !important;
+            }
         }
         
         /* Ultra-mobile responsive (small phones) */
@@ -2441,9 +2472,33 @@
                 dateClick: function(info) {
                     // Extract date and time from the clicked slot
                     const clickedDate = formatLocalDate(info.date);
-                    const hour = info.date.getHours();
-                    const minutes = info.date.getMinutes();
+                    
+                    // FullCalendar v6 dateClick provides the exact clicked time
+                    // Use info.dateStr for reliable time extraction (ISO format)
+                    let hour, minutes;
+                    
+                    if (info.dateStr && info.dateStr.includes('T')) {
+                        // Extract time from ISO string (more reliable)
+                        const timePart = info.dateStr.split('T')[1];
+                        const timeMatch = timePart.match(/(\d{2}):(\d{2})/);
+                        if (timeMatch) {
+                            hour = parseInt(timeMatch[1], 10);
+                            minutes = parseInt(timeMatch[2], 10);
+                        }
+                    }
+                    
+                    // Fallback to date object if ISO parsing fails
+                    if (hour === undefined) {
+                        const clickedTime = new Date(info.date);
+                        hour = clickedTime.getHours();
+                        minutes = clickedTime.getMinutes();
+                    }
+                    
+                    // Format time for HTML5 time input (HH:MM in 24-hour format)
                     const timeStr = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                    
+                    // Log for debugging
+                    console.log('Date clicked:', info.dateStr, 'Parsed time:', timeStr, 'Hour:', hour, 'Full info:', info);
                     
                     openAllocationModal();
                     document.getElementById('allocationDate').value = clickedDate;

@@ -3,11 +3,12 @@
 **Date**: October 13, 2025  
 **Author**: Development Team  
 **Component**: Weekly Schedule Calendar  
-**Status**: Phase 1 COMPLETED ✅
+**Status**: Phase 1 COMPLETED ✅  
+**Last Updated**: October 13, 2025 - Added text sizing fixes and AM/PM time detection improvements
 
 ## Overview
 
-This document details the mobile optimization implementation for the Weekly Schedule calendar component in the MBH Staff Portal. The optimization addresses issues with event truncation and improves usability on mobile devices.
+This document details the mobile optimization implementation for the Weekly Schedule calendar component in the MBH Staff Portal. The optimization addresses issues with event truncation, text visibility, and time detection accuracy on mobile devices.
 
 ## Issues Addressed
 
@@ -15,6 +16,8 @@ This document details the mobile optimization implementation for the Weekly Sche
 2. **Events getting truncated** - Limited space causing text to be cut off
 3. **Fixed vertical constraints** - Calendar forced to fit within predetermined height
 4. **Poor mobile UX** - Difficult to read and interact with on small screens
+5. **Text too small** - UI buttons and labels (Today, Day/List, All day) were hard to read
+6. **AM/PM detection errors** - Time slots were incorrectly defaulting to PM when clicking AM slots
 
 ## Implementation Details
 
@@ -115,6 +118,36 @@ if (isMobile) {
 - [x] Resize between mobile/desktop works correctly
 - [x] Status indicators clearly visible
 - [x] Calendar maintains state on resize
+- [x] UI text elements properly sized and readable
+- [x] AM/PM time detection works accurately
+
+## Additional Fixes (October 13, 2025)
+
+### Text Sizing Improvements
+
+Fixed small text issues on mobile devices:
+- **Buttons**: Font size increased to 13px with 5-8px padding
+- **Today button**: Specific styling with 13px font and 5-10px padding  
+- **View buttons**: 12px font with 4-6px padding for better touch targets
+- **"All day" text**: 11px font with 2px padding for readability
+- **Day headers**: 12px font with appropriate padding
+
+### Time Detection Fix
+
+Resolved AM/PM detection errors in dateClick handler:
+```javascript
+// Enhanced time extraction using ISO string
+if (info.dateStr && info.dateStr.includes('T')) {
+    const timePart = info.dateStr.split('T')[1];
+    const timeMatch = timePart.match(/(\d{2}):(\d{2})/);
+    if (timeMatch) {
+        hour = parseInt(timeMatch[1], 10);
+        minutes = parseInt(timeMatch[2], 10);
+    }
+}
+```
+
+Added debug logging to track click events and ensure accurate time slot detection.
 
 ## Future Enhancements (Phase 2)
 
