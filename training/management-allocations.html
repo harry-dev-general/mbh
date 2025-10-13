@@ -970,19 +970,45 @@
             color: #333;
         }
 
-        /* Booking event colors */
-        .fc-event.booking-onboarding {
-            background: #2196f3;
+        /* Booking event colors - matching allocation color scheme */
+        /* Unallocated (no staff assigned) - Red */
+        .fc-event.booking-unallocated {
+            background: #f44336;
+            border-color: #d32f2f;
             color: white;
         }
 
-        .fc-event.booking-deloading {
-            background: #1976d2;
+        /* Pending (staff assigned but not responded) - Yellow */
+        .fc-event.booking-pending {
+            background: #ffeb3b;
+            border-color: #fbc02d;
+            color: #333;
+        }
+
+        /* Accepted - Green */
+        .fc-event.booking-accepted {
+            background: #4caf50;
+            border-color: #388e3c;
             color: white;
+        }
+
+        /* Declined - Red (same as unallocated) */
+        .fc-event.booking-declined {
+            background: #f44336;
+            border-color: #d32f2f;
+            color: white;
+        }
+
+        /* Legacy classes for backwards compatibility */
+        .fc-event.booking-onboarding,
+        .fc-event.booking-deloading {
+            /* Will be overridden by status classes above */
         }
 
         .fc-event.booking-needs-staff {
-            background: #ff5252;
+            /* Deprecated - use booking-unallocated instead */
+            background: #f44336;
+            border-color: #d32f2f;
             color: white;
         }
 
@@ -2681,10 +2707,16 @@
                     const hasStaff = !!booking['Onboarding Employee']?.length;
                     const responseStatus = booking['Onboarding Response'] || (hasStaff ? 'Pending' : '');
                     
-                    // Determine status class
+                    // Determine status class based on staff allocation and response
                     let statusClass = 'booking-onboarding';
                     if (!hasStaff) {
-                        statusClass += ' booking-needs-staff';
+                        statusClass += ' booking-unallocated';
+                    } else if (responseStatus === 'Accepted') {
+                        statusClass += ' booking-accepted';
+                    } else if (responseStatus === 'Declined') {
+                        statusClass += ' booking-declined';
+                    } else {
+                        statusClass += ' booking-pending';
                     }
                     
                     events.push({
@@ -2715,10 +2747,16 @@
                     const hasStaff = !!booking['Deloading Employee']?.length;
                     const responseStatus = booking['Deloading Response'] || (hasStaff ? 'Pending' : '');
                     
-                    // Determine status class
+                    // Determine status class based on staff allocation and response
                     let statusClass = 'booking-deloading';
                     if (!hasStaff) {
-                        statusClass += ' booking-needs-staff';
+                        statusClass += ' booking-unallocated';
+                    } else if (responseStatus === 'Accepted') {
+                        statusClass += ' booking-accepted';
+                    } else if (responseStatus === 'Declined') {
+                        statusClass += ' booking-declined';
+                    } else {
+                        statusClass += ' booking-pending';
                     }
                     
                     events.push({
