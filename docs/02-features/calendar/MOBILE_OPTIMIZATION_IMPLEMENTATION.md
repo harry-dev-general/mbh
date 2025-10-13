@@ -149,6 +149,22 @@ if (info.dateStr && info.dateStr.includes('T')) {
 
 Added debug logging to track click events and ensure accurate time slot detection.
 
+### Button Text Capitalization
+
+Fixed improper capitalization of UI elements:
+```javascript
+buttonText: {
+    today: 'Today',
+    week: 'Week', 
+    day: 'Day',
+    list: 'List',
+    timeGridWeek: 'Week',
+    timeGridDay: 'Day',
+    listWeek: 'List'
+},
+allDayText: 'All-day'
+```
+
 ## Future Enhancements (Phase 2)
 
 1. **Swipe Gestures**: Add touch swipe for navigation
