@@ -57,27 +57,45 @@ async function processPendingAllocations() {
         console.log('🔍 Checking for pending allocations needing reminders...');
         
         // Get allocations from the last 72 hours that are still pending
-        const cutoffDate = new Date(Date.now() - MAX_REMINDER_AGE_MS).toISOString();
+        const cutoffDate = new Date(Date.now() - MAX_REMINDER_AGE_MS);
         
-        // Fetch pending shift allocations
-        const allocationsResponse = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}`,
-            {
-                params: {
-                    filterByFormula: `AND(
-                        OR({Response Status} = 'Pending', {Response Status} = ''),
-                        IS_AFTER({Created}, '${cutoffDate}')
-                    )`,
-                    fields: ['Employee', 'Shift Date', 'Start Time', 'End Time', 'Shift Type', 'Created']
-                },
+        // Fetch ALL allocations and filter client-side (more reliable than filterByFormula)
+        let allAllocations = [];
+        let offset = null;
+        
+        do {
+            let url = `https://api.airtable.com/v0/${BASE_ID}/${ALLOCATIONS_TABLE_ID}?pageSize=100`;
+            if (offset) {
+                url += `&offset=${offset}`;
+            }
+            
+            const response = await axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${AIRTABLE_API_KEY}`
                 }
-            }
-        );
+            });
+            
+            allAllocations = allAllocations.concat(response.data.records || []);
+            offset = response.data.offset;
+            
+        } while (offset);
         
-        const pendingAllocations = allocationsResponse.data.records || [];
-        console.log(`Found ${pendingAllocations.length} pending shift allocations`);
+        // Filter client-side for pending status and creation date
+        const pendingAllocations = allAllocations.filter(record => {
+            // Check response status
+            const responseStatus = record.fields['Response Status'];
+            const isPending = !responseStatus || responseStatus === '' || responseStatus === 'Pending';
+            if (!isPending) return false;
+            
+            // Check creation date
+            const created = record.fields['Created'] || record.createdTime;
+            if (!created) return false;
+            
+            const createdDate = new Date(created);
+            return createdDate > cutoffDate;
+        });
+        
+        console.log(`Found ${pendingAllocations.length} pending shift allocations from last 72 hours (out of ${allAllocations.length} total pending)`);
         
         // Process each pending allocation
         for (const allocation of pendingAllocations) {
@@ -100,35 +118,56 @@ async function processPendingAllocations() {
  */
 async function processPendingBookings() {
     try {
-        // Get bookings with pending staff assignments
-        const bookingsResponse = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}`,
-            {
-                params: {
-                    filterByFormula: `AND(
-                        OR(
-                            AND({Onboarding Employee}, OR({Onboarding Response} = 'Pending', {Onboarding Response} = '')),
-                            AND({Deloading Employee}, OR({Deloading Response} = 'Pending', {Deloading Response} = ''))
-                        ),
-                        {Booking Status} = 'PAID',
-                        IS_AFTER({Booking Date}, TODAY())
-                    )`,
-                    fields: [
-                        'Customer Name', 'Booking Date', 
-                        'Onboarding Time', 'Start Time', 'Finish Time', 'Deloading Time',
-                        'Onboarding Employee', 'Onboarding Response',
-                        'Deloading Employee', 'Deloading Response',
-                        'Created'
-                    ]
-                },
+        // Get today's date for comparison
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Fetch ALL paid bookings and filter client-side (more reliable than filterByFormula)
+        let allBookings = [];
+        let offset = null;
+        
+        do {
+            let url = `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?pageSize=100`;
+            if (offset) {
+                url += `&offset=${offset}`;
+            }
+            
+            const response = await axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${AIRTABLE_API_KEY}`
                 }
-            }
-        );
+            });
+            
+            allBookings = allBookings.concat(response.data.records || []);
+            offset = response.data.offset;
+            
+        } while (offset);
         
-        const pendingBookings = bookingsResponse.data.records || [];
-        console.log(`Found ${pendingBookings.length} bookings with pending staff responses`);
+        // Filter client-side for PAID bookings with pending assignments and future dates
+        const pendingBookings = allBookings.filter(record => {
+            const fields = record.fields;
+            
+            // Check booking status
+            if (fields['Booking Status'] !== 'PAID') return false;
+            
+            // Check if booking date is in the future
+            const bookingDate = fields['Booking Date'];
+            if (!bookingDate) return false;
+            
+            const bookingDateObj = new Date(bookingDate + 'T00:00:00');
+            if (bookingDateObj <= today) return false;
+            
+            // Check if there are pending staff assignments
+            const hasOnboardingPending = fields['Onboarding Employee']?.length && 
+                (!fields['Onboarding Response'] || fields['Onboarding Response'] === 'Pending');
+            
+            const hasDeloadingPending = fields['Deloading Employee']?.length && 
+                (!fields['Deloading Response'] || fields['Deloading Response'] === 'Pending');
+            
+            return hasOnboardingPending || hasDeloadingPending;
+        });
+        
+        console.log(`Found ${pendingBookings.length} bookings with pending staff responses (out of ${allBookings.length} total bookings)`);
         
         // Process each booking
         for (const booking of pendingBookings) {

@@ -140,44 +140,66 @@ async function getVesselMaintenanceStatus() {
         // 2. Fetch recent checklists (last 30 days)
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const dateFilter = thirtyDaysAgo.toISOString().split('T')[0];
         
-        // Get pre-departure checklists
-        const preDepResponse = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${PRE_DEP_TABLE_ID}`,
-            {
-                headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` },
-                params: {
-                    filterByFormula: `IS_AFTER({Created time}, '${dateFilter}')`,
-                    fields: ['Vessel', 'Fuel Level Check', 'Gas Bottle Check', 'Water Tank Level', 
-                            'Overall Vessel Condition', 'Created time', 'Staff Member', 'Completed by', 'Checklist ID'],
-                    sort: [{ field: 'Created time', direction: 'desc' }]
-                }
+        // Get ALL pre-departure checklists and filter client-side (more reliable than filterByFormula)
+        let allPreDepChecklists = [];
+        let offset = null;
+        
+        do {
+            let url = `https://api.airtable.com/v0/${BASE_ID}/${PRE_DEP_TABLE_ID}?pageSize=100`;
+            if (offset) {
+                url += `&offset=${offset}`;
             }
-        );
+            url += `&sort[0][field]=Created%20time&sort[0][direction]=desc`;
+            
+            const response = await axios.get(url, {
+                headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` }
+            });
+            
+            allPreDepChecklists = allPreDepChecklists.concat(response.data.records || []);
+            offset = response.data.offset;
+            
+        } while (offset);
         
-        // Get post-departure checklists
-        const postDepResponse = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
-            {
-                headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` },
-                params: {
-                    filterByFormula: `IS_AFTER({Created time}, '${dateFilter}')`,
-                    fields: ['Vessel', 'Fuel Level After Use', 'Gas Bottle Level After Use', 
-                            'Water Tank Level After Use', 'Overall Vessel Condition After Use', 
-                            'Created time', 'Last modified time', 'Staff Member', 'Completed by', 'Checklist ID',
-                            // Location tracking fields
-                            'GPS Latitude', 'GPS Longitude', 'Location Address', 
-                            'Location Accuracy', 'Location Captured'],
-                    sort: [{ field: 'Created time', direction: 'desc' }]
-                }
+        // Filter client-side for records from last 30 days
+        const preDepChecklists = allPreDepChecklists.filter(record => {
+            const createdTime = record.fields['Created time'] || record.createdTime;
+            if (!createdTime) return false;
+            
+            const createdDate = new Date(createdTime);
+            return createdDate > thirtyDaysAgo;
+        });
+        
+        // Get ALL post-departure checklists and filter client-side
+        let allPostDepChecklists = [];
+        offset = null;
+        
+        do {
+            let url = `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}?pageSize=100`;
+            if (offset) {
+                url += `&offset=${offset}`;
             }
-        );
+            url += `&sort[0][field]=Created%20time&sort[0][direction]=desc`;
+            
+            const response = await axios.get(url, {
+                headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` }
+            });
+            
+            allPostDepChecklists = allPostDepChecklists.concat(response.data.records || []);
+            offset = response.data.offset;
+            
+        } while (offset);
         
-        const preDepChecklists = preDepResponse.data.records;
-        const postDepChecklists = postDepResponse.data.records;
+        // Filter client-side for records from last 30 days
+        const postDepChecklists = allPostDepChecklists.filter(record => {
+            const createdTime = record.fields['Created time'] || record.createdTime;
+            if (!createdTime) return false;
+            
+            const createdDate = new Date(createdTime);
+            return createdDate > thirtyDaysAgo;
+        });
         
-        console.log(`Found ${preDepChecklists.length} pre-departure and ${postDepChecklists.length} post-departure checklists`);
+        console.log(`Found ${preDepChecklists.length} pre-departure (out of ${allPreDepChecklists.length} total) and ${postDepChecklists.length} post-departure (out of ${allPostDepChecklists.length} total) checklists from last 30 days`);
         
         // 3. Build vessel status for each boat
         const vesselStatuses = boats.map(boat => {

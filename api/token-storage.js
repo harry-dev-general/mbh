@@ -285,26 +285,40 @@ async function cleanupExpiredTokens() {
     }
     
     try {
-        // Find expired tokens
-        const now = new Date().toISOString();
-        const searchFormula = `IS_BEFORE({Expires At}, '${now}')`;
+        // Fetch ALL tokens using client-side filtering (more reliable than filterByFormula)
+        let allTokens = [];
+        let offset = null;
         
-        const response = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${TOKENS_TABLE_ID}`,
-            {
-                params: {
-                    filterByFormula: searchFormula,
-                    fields: ['Token']
-                },
+        do {
+            let url = `https://api.airtable.com/v0/${BASE_ID}/${TOKENS_TABLE_ID}?pageSize=100`;
+            if (offset) {
+                url += `&offset=${offset}`;
+            }
+            
+            const response = await axios.get(url, {
                 headers: {
                     'Authorization': `Bearer ${AIRTABLE_API_KEY}`
                 }
-            }
-        );
+            });
+            
+            allTokens = allTokens.concat(response.data.records || []);
+            offset = response.data.offset;
+            
+        } while (offset);
         
-        if (response.data.records && response.data.records.length > 0) {
+        // Filter expired tokens client-side
+        const now = new Date();
+        const expiredTokens = allTokens.filter(record => {
+            const expiresAt = record.fields['Expires At'];
+            if (!expiresAt) return false;
+            
+            const expiryDate = new Date(expiresAt);
+            return expiryDate < now;
+        });
+        
+        if (expiredTokens.length > 0) {
             // Delete expired tokens in batches of 10
-            const recordIds = response.data.records.map(r => r.id);
+            const recordIds = expiredTokens.map(r => r.id);
             
             for (let i = 0; i < recordIds.length; i += 10) {
                 const batch = recordIds.slice(i, i + 10);
@@ -322,7 +336,9 @@ async function cleanupExpiredTokens() {
                 );
             }
             
-            console.log(`🧹 Cleaned up ${recordIds.length} expired tokens`);
+            console.log(`🧹 Cleaned up ${recordIds.length} expired tokens out of ${allTokens.length} total tokens`);
+        } else {
+            console.log(`✅ No expired tokens found (checked ${allTokens.length} total tokens)`);
         }
         
     } catch (error) {

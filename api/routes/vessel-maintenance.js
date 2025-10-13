@@ -344,35 +344,51 @@ router.post('/update-location', async (req, res) => {
         // Get recent Post-Departure checklists and find the one for this vessel
         const ninetyDaysAgo = new Date();
         ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-        const dateFilter = ninetyDaysAgo.toISOString().split('T')[0];
-        console.log(`Searching for checklists after: ${dateFilter}`);
+        console.log(`Searching for checklists after: ${ninetyDaysAgo.toISOString()}`);
         
-        const postDepResponse = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}`,
-            {
-                headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` },
-                params: {
-                    filterByFormula: `IS_AFTER({Created time}, '${dateFilter}')`,
-                    sort: [{ field: 'Created time', direction: 'desc' }],
-                    maxRecords: 100,
-                    fields: ['Vessel', 'Created time']
-                }
+        // Fetch ALL Post-Departure checklists and filter client-side (more reliable than filterByFormula)
+        let allPostDepRecords = [];
+        let offset = null;
+        
+        do {
+            let url = `https://api.airtable.com/v0/${BASE_ID}/${POST_DEP_TABLE_ID}?pageSize=100`;
+            if (offset) {
+                url += `&offset=${offset}`;
             }
-        );
+            url += `&sort[0][field]=Created%20time&sort[0][direction]=desc`;
+            url += `&fields[]=Vessel&fields[]=Created%20time`;
+            
+            const response = await axios.get(url, {
+                headers: { 'Authorization': `Bearer ${AIRTABLE_API_KEY}` }
+            });
+            
+            allPostDepRecords = allPostDepRecords.concat(response.data.records || []);
+            offset = response.data.offset;
+            
+        } while (offset);
+        
+        // Filter client-side for records created in the last 90 days
+        const recentRecords = allPostDepRecords.filter(record => {
+            const createdTime = record.fields['Created time'] || record.createdTime;
+            if (!createdTime) return false;
+            
+            const createdDate = new Date(createdTime);
+            return createdDate > ninetyDaysAgo;
+        });
         
         // Find the most recent checklist for this specific vessel
         let latestPostDep = null;
-        if (postDepResponse.data.records && postDepResponse.data.records.length > 0) {
-            console.log(`Found ${postDepResponse.data.records.length} Post-Departure records from last 30 days`);
+        if (recentRecords.length > 0) {
+            console.log(`Found ${recentRecords.length} Post-Departure records from last 90 days (out of ${allPostDepRecords.length} total)`);
             console.log('First 3 records for debugging:');
-            postDepResponse.data.records.slice(0, 3).forEach(record => {
+            recentRecords.slice(0, 3).forEach(record => {
                 console.log(`- Record ${record.id}:`, {
                     vessel: record.fields['Vessel'],
                     createdTime: record.fields['Created time']
                 });
             });
             
-            for (const record of postDepResponse.data.records) {
+            for (const record of recentRecords) {
                 if (record.fields['Vessel'] && Array.isArray(record.fields['Vessel']) && record.fields['Vessel'].includes(vesselId)) {
                     latestPostDep = record;
                     console.log(`✓ Found matching Post-Departure checklist: ${record.id}`);
@@ -380,7 +396,7 @@ router.post('/update-location', async (req, res) => {
                 }
             }
         } else {
-            console.log('No Post-Departure records found in the last 30 days');
+            console.log('No Post-Departure records found in the last 90 days');
         }
         
         console.log(`Post-Departure search for vessel ${vesselId} found:`, latestPostDep ? 'checklist' : 'no checklist');
