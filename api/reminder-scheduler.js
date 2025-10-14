@@ -1,6 +1,7 @@
 // Reminder Scheduler Module
 // Sends automatic reminder SMS every 6 hours for pending shift allocations
 // Uses Airtable fields to track reminder status and prevent duplicates
+// Version: 2.1 - Fixed checkbox value format (using 1 instead of true)
 
 const axios = require('axios');
 const notifications = require('./notifications');
@@ -385,11 +386,12 @@ async function checkAndSendReminders() {
 let reminderInterval = null;
 
 function startReminderScheduler() {
-    console.log('🚀 Starting reminder scheduler...');
+    console.log('🚀 Starting reminder scheduler v2.1...');
     console.log(`   - Checking every ${CHECK_INTERVAL_MS / 1000 / 60} minutes`);
     console.log(`   - Sending reminders every ${REMINDER_INTERVAL_MS / 1000 / 60 / 60} hours for pending allocations`);
     console.log(`   - Stopping reminders after ${MAX_REMINDER_AGE_MS / 1000 / 60 / 60} hours`);
     console.log('   - Using Airtable fields to track reminder status');
+    console.log('   - Checkbox format: Using numeric 1 (not boolean)');
     
     // Run initial check
     checkAndSendReminders();
