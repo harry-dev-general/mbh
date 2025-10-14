@@ -23,6 +23,11 @@ const dailyRunSheet = require('./api/daily-run-sheet');
 // Import dashboard overview module
 const dashboardOverview = require('./api/dashboard-overview');
 
+// Import role management and auth middleware
+const roleManager = require('./api/role-manager');
+const { authenticate, optionalAuthenticate } = require('./api/auth-middleware');
+const authHooks = require('./api/auth-hooks');
+
 // Import webhook logger for debugging
 const webhookLogger = require('./api/webhook-logger');
 
@@ -415,6 +420,85 @@ app.get('/api/airtable/*', async (req, res) => {
 
 // Note: The /api/config endpoint has been moved earlier in the file
 // to consolidate all frontend configuration in one place
+
+// Role Management API endpoints
+// Get current user role and permissions
+app.get('/api/user/role', authenticate, roleManager.getCurrentUserRole);
+
+// Sync roles from Airtable (admin only)
+app.post('/api/admin/sync-roles', adminAuth, async (req, res) => {
+  try {
+    const results = await roleManager.syncAllEmployeeRoles();
+    res.json({
+      success: true,
+      results,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error syncing roles:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Sync single user role (admin only)
+app.post('/api/admin/sync-user-role', adminAuth, async (req, res) => {
+  try {
+    const { airtableEmployeeId, email } = req.body;
+    
+    if (!airtableEmployeeId || !email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: airtableEmployeeId and email'
+      });
+    }
+    
+    const result = await roleManager.syncEmployeeRole(airtableEmployeeId, email);
+    res.json({
+      success: result.success,
+      result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error syncing user role:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Check user permissions (for client-side feature flags)
+app.get('/api/user/permissions', authenticate, async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const role = await roleManager.getUserRole(userEmail);
+    
+    res.json({
+      success: true,
+      email: userEmail,
+      role: role || 'staff',
+      permissions: {
+        canViewAllStaff: await roleManager.hasRole(userEmail, ['admin', 'manager']),
+        canManageAllocations: await roleManager.hasRole(userEmail, ['admin', 'manager']),
+        canViewReports: await roleManager.hasRole(userEmail, ['admin', 'manager']),
+        canManageSettings: await roleManager.hasRole(userEmail, ['admin']),
+        canAccessManagementDashboard: await roleManager.hasRole(userEmail, ['admin', 'manager'])
+      }
+    });
+  } catch (error) {
+    console.error('Error checking permissions:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Login hook - sync user profile and role on login
+app.post('/api/auth/login-hook', authHooks.loginHookHandler);
 
 // Shift response endpoint - handles magic link clicks from SMS
 app.get('/api/shift-response', async (req, res) => {

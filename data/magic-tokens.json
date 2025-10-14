@@ -85178,5 +85178,25 @@
     "role": null,
     "used": false,
     "createdAt": "2025-10-14T00:10:48.168Z"
+  },
+  "22875e2bdf60b3da7c571105cd5d68707307622e11c93e6c6a22cd6c33a95dc2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T06:15:23.444Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T06:15:23.444Z"
+  },
+  "1f4193c65ac600a8aaefa9e8cfd7e4db441da370c0d5f4da8cb4ec8bb9cc7238": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T06:15:23.477Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T06:15:23.477Z"
   }
 }

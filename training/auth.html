@@ -246,7 +246,28 @@
 
                 if (error) throw error;
 
-                showMessage('Login successful! Redirecting...', 'success');
+                showMessage('Login successful! Syncing profile...', 'success');
+                
+                // Sync user role and profile from Airtable
+                try {
+                    const response = await fetch('/api/auth/login-hook', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${data.session.access_token}`
+                        },
+                        body: JSON.stringify({ user: data.user })
+                    });
+
+                    const syncResult = await response.json();
+                    if (!syncResult.success) {
+                        console.error('Role sync failed:', syncResult.error);
+                    } else {
+                        console.log('User role synced:', syncResult.role);
+                    }
+                } catch (syncError) {
+                    console.error('Error syncing user role:', syncError);
+                }
                 
                 // Get return URL from query parameters
                 const urlParams = new URLSearchParams(window.location.search);

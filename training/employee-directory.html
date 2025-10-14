@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Directory - MBH Staff Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/role-helper.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -738,21 +739,18 @@
                 return;
             }
 
-            // Check if user is management
-            const managementEmails = [
-                'harry@priceoffice.com.au',
-                'mmckelvey03@gmail.com',
-                'manager@mbh.com',
-                'admin@mbh.com',
-                'operations@mbh.com'
-            ];
-
-            if (!managementEmails.includes(user.email.toLowerCase()) && 
-                !user.email.includes('@mbh.com')) {
-                // Not a management user, redirect to regular dashboard
+            // Check if user has permission to view all staff
+            const canViewAllStaff = await RoleHelper.hasPermission('canViewAllStaff');
+            
+            if (!canViewAllStaff) {
+                // User doesn't have permission to view employee directory
+                console.log('User not authorized for employee directory, redirecting to dashboard');
                 window.location.href = 'dashboard.html';
                 return;
             }
+            
+            // Apply permission-based visibility to UI elements
+            await RoleHelper.applyPermissionVisibility();
 
             // Initialize data
             initializeWeek();

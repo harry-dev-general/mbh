@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Management Dashboard - MBH Staff Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/role-helper.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Google Maps API will be loaded dynamically -->
     <style>
@@ -1929,17 +1930,10 @@
             
             const user = session.user;
 
-            // Check if user is management - must match dashboard.html
-            const managementEmails = [
-                'harry@priceoffice.com.au',
-                'mmckelvey03@gmail.com',
-                'manager@mbh.com',
-                'admin@mbh.com',
-                'operations@mbh.com'
-            ];
-
-            if (!managementEmails.includes(user.email.toLowerCase()) && 
-                !user.email.includes('@mbh.com')) {
+            // Check if user has management access using role-based system
+            const canAccessManagement = await RoleHelper.hasPermission('canAccessManagementDashboard');
+            
+            if (!canAccessManagement) {
                 // Not a management user, redirect to regular dashboard
                 console.log('User not authorized for management view, redirecting to dashboard');
                 window.location.href = 'dashboard.html';
@@ -1947,6 +1941,9 @@
             }
             
             console.log('Management user authorized:', user.email);
+            
+            // Apply permission-based visibility to UI elements
+            await RoleHelper.applyPermissionVisibility();
             
             // Store user email for announcements
             currentUserEmail = user.email;

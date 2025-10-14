@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - MBH Staff Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/role-helper.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -987,21 +988,14 @@
                 document.getElementById('userEmail').textContent = user.email;
                 
                 // Check if user is management (add your management emails here)
-                const managementEmails = [
-                    'harry@priceoffice.com.au',
-                    'mmckelvey03@gmail.com',
-                    'manager@mbh.com',
-                    'admin@mbh.com',
-                    'operations@mbh.com'
-                ];
-                
                 // Check if management user wants to view regular dashboard
                 const urlParams = new URLSearchParams(window.location.search);
                 const viewMode = urlParams.get('view');
                 
-                // Check if user is management
-                if (managementEmails.includes(user.email.toLowerCase()) || 
-                    user.email.includes('@mbh.com')) {
+                // Check if user has management permissions using role-based system
+                const canAccessManagement = await RoleHelper.hasPermission('canAccessManagementDashboard');
+                
+                if (canAccessManagement) {
                     isManagement = true;
                     
                     console.log('Management user detected, viewMode:', viewMode);

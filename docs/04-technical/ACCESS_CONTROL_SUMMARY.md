@@ -1,6 +1,10 @@
 # Access Control Summary - MBH Staff Portal
 
-## Dashboard Access Levels
+> **⚠️ IMPORTANT**: This document describes the **OLD hardcoded email-based system** which has been replaced. 
+> 
+> For the current role-based access control system, see [ROLE_BASED_ACCESS_CONTROL.md](./ROLE_BASED_ACCESS_CONTROL.md).
+
+## Legacy Dashboard Access Levels (Deprecated)
 
 ### Regular Employees
 When regular staff members log in, they see:
