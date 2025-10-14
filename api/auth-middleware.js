@@ -24,17 +24,26 @@ async function verifyToken(req) {
         return null;
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-
     try {
-        // Verify token with Supabase
-        const { data: { user }, error } = await supabase.auth.getUser(token);
+        // Create a new Supabase client with the Authorization header
+        // This is the proper way to verify tokens server-side
+        const authSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            global: {
+                headers: {
+                    Authorization: authHeader
+                }
+            }
+        });
+        
+        // Now get the user - this will verify the JWT
+        const { data: { user }, error } = await authSupabase.auth.getUser();
         
         if (error || !user) {
             console.error('Token verification failed:', error);
             return null;
         }
 
+        console.log('Successfully verified token for user:', user.email);
         return user;
     } catch (error) {
         console.error('Error verifying token:', error);

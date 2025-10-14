@@ -488,19 +488,26 @@ app.post('/api/admin/sync-user-role', adminAuth, async (req, res) => {
 app.get('/api/user/permissions', authenticate, async (req, res) => {
   try {
     const userEmail = req.user.email;
+    console.log('Checking permissions for user:', userEmail);
+    
     const role = await roleManager.getUserRole(userEmail);
+    console.log('User role:', role);
+    
+    const permissions = {
+      canViewAllStaff: await roleManager.hasRole(userEmail, ['admin', 'manager']),
+      canManageAllocations: await roleManager.hasRole(userEmail, ['admin', 'manager']),
+      canViewReports: await roleManager.hasRole(userEmail, ['admin', 'manager']),
+      canManageSettings: await roleManager.hasRole(userEmail, ['admin']),
+      canAccessManagementDashboard: await roleManager.hasRole(userEmail, ['admin', 'manager'])
+    };
+    
+    console.log('User permissions:', permissions);
     
     res.json({
       success: true,
       email: userEmail,
       role: role || 'staff',
-      permissions: {
-        canViewAllStaff: await roleManager.hasRole(userEmail, ['admin', 'manager']),
-        canManageAllocations: await roleManager.hasRole(userEmail, ['admin', 'manager']),
-        canViewReports: await roleManager.hasRole(userEmail, ['admin', 'manager']),
-        canManageSettings: await roleManager.hasRole(userEmail, ['admin']),
-        canAccessManagementDashboard: await roleManager.hasRole(userEmail, ['admin', 'manager'])
-      }
+      permissions
     });
   } catch (error) {
     console.error('Error checking permissions:', error);
