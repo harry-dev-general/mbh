@@ -12,12 +12,13 @@ const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const BASE_ID = 'applkAFOn2qxtu7tx';
 const EMPLOYEES_TABLE_ID = 'tbltAE4NlNePvnkpY';
 
-// Supabase configuration
-const SUPABASE_URL = process.env.SUPABASE_URL;
+// Supabase configuration with fallback to default values
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://etkugeooigiwahikrmzr.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 // Initialize Supabase client with service key (bypasses RLS)
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+// Note: Service key is required for role management operations
+const supabase = SUPABASE_SERVICE_KEY ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY) : null;
 
 /**
  * Map Airtable Staff Type to Supabase role
@@ -38,6 +39,11 @@ function mapStaffTypeToRole(staffType) {
  * @returns {Promise<Object>} - Result of the sync operation
  */
 async function syncEmployeeRole(airtableEmployeeId, email) {
+    if (!supabase) {
+        console.warn('Supabase service key not configured, role sync disabled');
+        return { success: false, error: 'Service key not configured' };
+    }
+    
     try {
         // Fetch employee from Airtable
         const response = await axios.get(
@@ -91,6 +97,11 @@ async function syncEmployeeRole(airtableEmployeeId, email) {
  * @returns {Promise<Object>} - Summary of sync operation
  */
 async function syncAllEmployeeRoles() {
+    if (!supabase) {
+        console.warn('Supabase service key not configured, role sync disabled');
+        return { success: false, error: 'Service key not configured', synced: 0, failed: 0 };
+    }
+    
     console.log('🔄 Starting role sync from Airtable to Supabase...');
     
     try {
@@ -146,22 +157,45 @@ async function syncAllEmployeeRoles() {
  * @returns {Promise<string|null>} - User role or null if not found
  */
 async function getUserRole(email) {
-    try {
-        const { data, error } = await supabase
-            .from('staff_profiles')
-            .select('role')
-            .eq('email', email.toLowerCase())
-            .single();
+    // First, try to get from Supabase if service key is available
+    if (supabase) {
+        try {
+            const { data, error } = await supabase
+                .from('staff_profiles')
+                .select('role')
+                .eq('email', email.toLowerCase())
+                .single();
 
-        if (error) {
-            console.error(`Error fetching role for ${email}:`, error);
-            return null;
+            if (!error && data?.role) {
+                return data.role;
+            }
+        } catch (error) {
+            console.error(`Error fetching role from Supabase for ${email}:`, error);
         }
-
-        return data?.role || 'staff';
+    }
+    
+    // Fall back to checking Airtable directly
+    try {
+        const response = await axios.get(
+            `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEES_TABLE_ID}?filterByFormula={Email}='${email}'`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                }
+            }
+        );
+        
+        if (response.data.records && response.data.records.length > 0) {
+            const staffType = response.data.records[0].fields['Staff Type'];
+            console.log(`Found staff type for ${email}: ${staffType}`);
+            return mapStaffTypeToRole(staffType);
+        }
+        
+        console.log(`No Airtable record found for ${email}, using default role`);
+        return 'staff'; // Default role if not found
     } catch (error) {
-        console.error(`Error in getUserRole:`, error);
-        return null;
+        console.error(`Error fetching user role from Airtable:`, error);
+        return 'staff'; // Default role on error
     }
 }
 

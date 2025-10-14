@@ -12,12 +12,12 @@ const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const BASE_ID = 'applkAFOn2qxtu7tx';
 const EMPLOYEES_TABLE_ID = 'tbltAE4NlNePvnkpY';
 
-// Supabase configuration
-const SUPABASE_URL = process.env.SUPABASE_URL;
+// Supabase configuration with fallback to default values
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://etkugeooigiwahikrmzr.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 // Initialize Supabase client with service key
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+const supabase = SUPABASE_SERVICE_KEY ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY) : null;
 
 /**
  * Handle user login - sync role and profile from Airtable
@@ -25,6 +25,15 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
  * @returns {Promise<Object>} - Login result with profile and role
  */
 async function handleUserLogin(user) {
+    if (!supabase) {
+        console.warn('Supabase service key not configured, role sync disabled');
+        return { 
+            success: true, 
+            profile: { email: user.email }, 
+            role: 'staff' // Default role when service key not available
+        };
+    }
+    
     try {
         console.log(`Processing login for user: ${user.email}`);
         
