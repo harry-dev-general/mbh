@@ -3,7 +3,6 @@
 // To: Assigned staff + all Full Time staff (Max & Joshua)
 
 const axios = require('axios');
-const notifications = require('./notifications');
 
 // Airtable configuration
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
@@ -191,23 +190,42 @@ ${checklistLink}
 Please ensure vessel is ready before customer arrival.`;
     
     try {
-        // Send SMS using the existing notification system
-        await notifications.sendShiftNotification({
-            employeePhone: phone,
-            employeeName: recipientStaff.fields['Name'],
-            allocationId: booking.id,
-            employeeId: recipientStaff.id,
-            shiftType: 'Onboarding',
-            shiftDate: fields['Booking Date'],
-            startTime: fields['Onboarding Time'],
-            endTime: fields['Start Time'],
-            customerName: fields['Customer Name'],
-            role: 'Onboarding',
-            isBookingAllocation: true,
-            notes: message // Pass the formatted message as notes
+        // Send SMS directly using Twilio
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const fromNumber = process.env.TWILIO_FROM_NUMBER;
+        
+        if (!accountSid || !authToken || !fromNumber) {
+            console.error('Missing Twilio credentials');
+            return;
+        }
+        
+        // Use fetch to send SMS via Twilio API
+        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+        const authString = `${accountSid}:${authToken}`;
+        const encodedAuth = Buffer.from(authString).toString('base64');
+        
+        const response = await fetch(twilioUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${encodedAuth}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'To': phone,
+                'From': fromNumber,
+                'Body': message
+            })
         });
         
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`Twilio API error: ${error}`);
+        }
+        
+        const result = await response.json();
         console.log(`📤 Sent onboarding reminder to ${recipientStaff.fields['Name']} for ${fields['Customer Name']}`);
+        console.log(`   Message SID: ${result.sid}`);
         
     } catch (error) {
         console.error('Error sending onboarding reminder:', error);
@@ -248,23 +266,42 @@ ${checklistLink}
 Please prepare for customer return and complete vessel check.`;
     
     try {
-        // Send SMS using the existing notification system
-        await notifications.sendShiftNotification({
-            employeePhone: phone,
-            employeeName: recipientStaff.fields['Name'],
-            allocationId: booking.id,
-            employeeId: recipientStaff.id,
-            shiftType: 'Deloading',
-            shiftDate: fields['Booking Date'],
-            startTime: fields['Deloading Time'],
-            endTime: fields['Finish Time'],
-            customerName: fields['Customer Name'],
-            role: 'Deloading',
-            isBookingAllocation: true,
-            notes: message // Pass the formatted message as notes
+        // Send SMS directly using Twilio
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const fromNumber = process.env.TWILIO_FROM_NUMBER;
+        
+        if (!accountSid || !authToken || !fromNumber) {
+            console.error('Missing Twilio credentials');
+            return;
+        }
+        
+        // Use fetch to send SMS via Twilio API
+        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+        const authString = `${accountSid}:${authToken}`;
+        const encodedAuth = Buffer.from(authString).toString('base64');
+        
+        const response = await fetch(twilioUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${encodedAuth}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'To': phone,
+                'From': fromNumber,
+                'Body': message
+            })
         });
         
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`Twilio API error: ${error}`);
+        }
+        
+        const result = await response.json();
         console.log(`📤 Sent deloading reminder to ${recipientStaff.fields['Name']} for ${fields['Customer Name']}`);
+        console.log(`   Message SID: ${result.sid}`);
         
     } catch (error) {
         console.error('Error sending deloading reminder:', error);
