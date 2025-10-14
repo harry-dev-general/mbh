@@ -80038,5 +80038,5145 @@
     "role": null,
     "used": false,
     "createdAt": "2025-10-14T00:02:56.238Z"
+  },
+  "d3afd89ec3901a1b2401e084f46b15453d91ccaaaf88a74d46e1a96ceedafc33": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:02:57.983Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:02:57.983Z"
+  },
+  "5690756aee93666f296fe7e4b6451f3b55eb19a8a6ea8baf2c8396b0ac6e72dd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:02:58.007Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:02:58.007Z"
+  },
+  "877c1c59e4825087cc830bcf7979a6c850ec7c354eda491208eb5b8ec9df553b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:02:59.755Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:02:59.755Z"
+  },
+  "7800661d7d33e8e6c8117edbf383624e926adafc10c02318f65d0d5512d60e05": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:02:59.770Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:02:59.770Z"
+  },
+  "f5b8c01170c4f4b6802b6f81500ee87ab07663c1b9ee74340bb400a42eb55621": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:01.467Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:01.467Z"
+  },
+  "26fa82c4c549a9b7d89708f4b7027bef3a4dc44cac306dae9ab8e94fa425f0e6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:01.491Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:01.491Z"
+  },
+  "d29256c85af3031c7ddcfde76250d71ccb57d3ba78f7ed7eef3338aea1f72218": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:03.236Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:03.236Z"
+  },
+  "e015c773248edc9930ea50958d8f3dbf80b00057662bae44cd4e8a81543679b2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:03.261Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:03.261Z"
+  },
+  "aaf9428c1ef7956dce90151bc31d97bd7df7314e92678750f3205a5b301060f6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:04.997Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:04.997Z"
+  },
+  "2c37a071a4494cfe8e559ec9c44eae890de2020c230e76ae6d7064a45944ecd5": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:05.024Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:05.024Z"
+  },
+  "4c0dc5641b3f70c6c184efbacf3b5e7fed53c4ffbb22aef4df4df5f88f825c1b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:06.865Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:06.865Z"
+  },
+  "694fb037e48f241be92aa19e91843beb0878b7dfd01624416886f520a1b99e97": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:06.891Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:06.891Z"
+  },
+  "bbce10cf744445e96e56a023e7010a777c53a8a91b6f3bf802edaf9125702fbd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:08.668Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:08.668Z"
+  },
+  "94cea08c9dc68ecc4c67496721d0c4ce877784516bbba5f826fa61627031fbf8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:08.691Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:08.691Z"
+  },
+  "452ebfe91b1ef960ee12eff360170f1125ee5302ebab766be84404713526671d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:10.480Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:10.480Z"
+  },
+  "366eb24801ca55d8bf6ed2dacd2394075440bbebb53c66b3e8035e1fd225cd80": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:10.503Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:10.503Z"
+  },
+  "5a87e35479d5ae1039a7f82014f5dddc25f55c547d13f02a9f55827290b76910": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:12.224Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:12.224Z"
+  },
+  "c8bf3c6e579f32034c457df93e2f42066b26f2c61149a58afc84e19986032c70": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:12.249Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:12.249Z"
+  },
+  "b94f8a2bad272031f1a99927b3066f547dc03740055c3ace5f1c5bc000d8dfd4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:13.926Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:13.926Z"
+  },
+  "966300504c81f06d2d7d1173da1dc8acfb5c300579d86e3b04084c877b91937a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:13.942Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:13.942Z"
+  },
+  "77b0176d2a556b32a223c1d27ced00e1204c3ed940395a7ef107f5f24c78b787": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:15.681Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:15.681Z"
+  },
+  "97aa61f547639350ee2ef03ddf05a2514545b2fdde71731a56d899430aa5a994": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:15.695Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:15.695Z"
+  },
+  "8626acb7c7c7bee1fcbceb8f24b9c562a93e367b2f3d34ae353bb9d702170e24": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:17.531Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:17.531Z"
+  },
+  "d96ed3b0df1e6513288683f08aee544f7d59bd5e2846989741b7af84227b57f7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:17.546Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:17.546Z"
+  },
+  "7782c607028f3d010ecf7dc9e19f251369edc71dce52a28d530b63d1e41da99a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:19.339Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:19.339Z"
+  },
+  "78fd787c1517bb389ba740e0209138aa9fbfbac9bb21218d400e0864e97c6c31": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:19.355Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:19.355Z"
+  },
+  "20d147c80d3e4637b5c87685bbf36f66a45c9f42d532c9c36a4370f3f346a5a8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:21.069Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:21.069Z"
+  },
+  "fe1541c23ce3d840ebf37ae85934ef334ba0aeacb7970ecc02446206ab77d810": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:21.086Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:21.086Z"
+  },
+  "08c77bed48ac0859f25b3a005b8bfbf57d516f30462e7bcc59a24a09f6031a8f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:22.902Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:22.902Z"
+  },
+  "e9dce1a63739c96b3fc6d8f891cb65c3d65c33f089adf271e9171adcf12a6963": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:22.916Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:22.916Z"
+  },
+  "3447e3955b9409e319975689f30d7734eea0258b3250789b8ad6724aab8ac3e3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:24.728Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:24.728Z"
+  },
+  "f8c9aabf021748942e4abe618a1c78ab038aeea5af1253d3bd86654b246f5fa0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:24.755Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:24.755Z"
+  },
+  "08744f02ab618fa8bfa838b4688a4bfe4a4f00dd08abae9363cfb14fc92c1812": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:26.497Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:26.497Z"
+  },
+  "b9ee5d5f1894e533d7c37e2f26583cac343bac34646edd5441a39c813312ce4b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:26.518Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:26.518Z"
+  },
+  "615f98d1df06335fba67c655ba4fb71ee423046edfe44c7cf4f80effb984a6d1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:28.233Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:28.233Z"
+  },
+  "8080dc83a327163106b530b5266bf758e87c0d4977b6305a1be8f1cde46f1c18": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:28.258Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:28.258Z"
+  },
+  "417dc1c7564019737a9f1a11c6144472b80983e40aee563a0a8c45210ad9c85b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:30.170Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:30.170Z"
+  },
+  "a8789e07b306694e58af2338f1bc6abab9581955b0902a083b2e9e8eb6a0b6a4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:30.195Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:30.195Z"
+  },
+  "ed357927dfcafa41ef9171cfe118fe9cbb0ad401a88d25d8df83a0731628ba9d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:31.841Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:31.841Z"
+  },
+  "b8ba4e297eac602313ecc2f7c12a8e6a0d0a3c4799055184b9bc57147ffc6dd3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:31.866Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:31.866Z"
+  },
+  "bd05c3efc0a88805a32f67cb511f287a3272719c0887cd62ce3495d7ade9536c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:33.666Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:33.666Z"
+  },
+  "5cf0bbe0ca15ba4792394e12a4acff6c63674785e8a952810e0cb1757dcdb801": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:33.696Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:33.696Z"
+  },
+  "b860bf1e921acaa9b6018bffda7964acf8c888304f1d43d24bdd12e9305a5780": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:35.439Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:35.439Z"
+  },
+  "6a00200e0b52f664cffa78af6ff8c4b985e46273d520320200835009bba16c49": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:35.467Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:35.467Z"
+  },
+  "75d290dc00117a2538f63126d7a0519f5f619c6ed9731fca587a109e0624a2b1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:37.278Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:37.278Z"
+  },
+  "2cdeef62ab16df4a6d4e0d4e957b848b1ae071384de81b06db367477a4deb1fb": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:37.297Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:37.297Z"
+  },
+  "c25b99f231dc44d11ff4486fb47dbece6c3ef93cd43f7e9137f7c8267ac6ce11": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:39.093Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:39.093Z"
+  },
+  "805ad730efc79b3e7263f83b040090d562d453e0b4db93db6fdac18418db68d3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:39.120Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:39.120Z"
+  },
+  "91ccef4e77b33a6b84d44a5d728b2bb27de94a148b4bd60a1ddec84a84c100e2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:40.969Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:40.969Z"
+  },
+  "98f52baed1cebeaad48b0a41b574a5ac599c0a686eab73dc1885f7e5d3ad629d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:40.991Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:40.991Z"
+  },
+  "bf0d1cab55aed3d6b057788eeaf53116361f5161f668eed00597c12c7608fc74": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:42.685Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:42.685Z"
+  },
+  "39d9118ec7d977f768885d6451e35f380c12c6c9ff57a77435aeb1b9a1398a7d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:42.708Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:42.708Z"
+  },
+  "ae14a5f09ce9768a3f4319657e34582b74450f709255a149a2589f875e2f43f5": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:44.395Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:44.395Z"
+  },
+  "a13d04109f65b24f434f3df3e78b224146c654b7bb6957ea34431abdb8a2e90a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:44.419Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:44.419Z"
+  },
+  "2a2fbf41b2a4471aee773a07adb7de18f8efead81a4601aca441d1d479f3d232": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:46.092Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:46.092Z"
+  },
+  "c57906d210a7470cf21da419f3923e7fcadf62d9ac2e7f78ffdd886a9c07abfa": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:46.121Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:46.121Z"
+  },
+  "34c1cef25266390b83ffe34f109ec5112a61747957da7f7e1266df07c008b2ba": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:47.863Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:47.863Z"
+  },
+  "ed246c6976e99a05564399784ee4c03dd8064ddd0461a51cb477dcd13659bc53": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:47.889Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:47.889Z"
+  },
+  "671e2a9ca0c1656406142b5c2ede92a28707cc267db114f9c0db0edbaac48da6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:49.605Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:49.605Z"
+  },
+  "e43a4519fc84ef3314f02d1d7d26b4e46965c190195edb571c4d5e375eb20075": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:49.619Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:49.619Z"
+  },
+  "9c727070d2d8e85c12be7829949e2a68965eb20ef9d727fa5b0600bf9316d708": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:51.254Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:51.254Z"
+  },
+  "c4b61bbe449d57d6b37c84232af10d6d7b49482bc2cb729467d8f04a54e7d7f0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:51.273Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:51.273Z"
+  },
+  "fabf0e96eb1eb8bc36fb651ad470d42270ea3276a3b7a57dbefc3496b5065b9e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:53.015Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:53.015Z"
+  },
+  "8eeb335762e1601df2e7509aceb010d0747740f91e309b6e52da2df780346a67": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:53.038Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:53.038Z"
+  },
+  "0911c4031b6ef7e2a0e8b98a17c9dea031ff253dcf902000005df3f9da5105fe": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:54.736Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:54.736Z"
+  },
+  "3b367537886e9c7e5cc1dadd6809944e565f6dd8e4a21d66c6f8337b7e905061": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:54.766Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:54.766Z"
+  },
+  "02e97337c1c5a12d80e3aa99273fb4325644b14f23ef288347e21b9e2c5cb7a8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:56.602Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:56.602Z"
+  },
+  "f2008e99d08ccb25882dd225c708c2495294525044732cab9721e79d9a9b1a13": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:56.618Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:56.618Z"
+  },
+  "c3f76eb93e18ae2e59ffb3b7022edf9899d953ac4f58f6404360471f25057b78": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:03:58.425Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:58.425Z"
+  },
+  "0a772f7cd2401ba4e102cde585d5a80ee4e502d470c26c8a5ffa8a550d7a871a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:03:58.449Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:03:58.449Z"
+  },
+  "140e414d3e62849abe94497e27fa8f7b8250697ed0260b4b0bf62cb479146189": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:00.206Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:00.206Z"
+  },
+  "b019fa8a0f2f388d7a9cc3c42ba99128034bbb7c6a330b808a6db139662cacde": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:00.232Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:00.232Z"
+  },
+  "bbe0d5b29db55632a09988775965939dff56b4bb5fd09a8d92f8cf08fb8d7007": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:01.982Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:01.982Z"
+  },
+  "12866a679032583298fe4addb7e942fbf35344b009c48e57967e7dcea082b2fa": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:02.007Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:02.007Z"
+  },
+  "db50380007b39cdc2653fabda7baa46efd072712c8bd6c89d86bf8d1e22a5e19": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:03.693Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:03.693Z"
+  },
+  "01ee21cf63037b6bf0c777531fa74dbc87ea191b950747d26ed3ed71d8ad312b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:03.714Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:03.714Z"
+  },
+  "faa72e5ac2ffa9291dbb21d373186d16bf72380eaef03f87621969dbb1eca386": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:05.452Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:05.452Z"
+  },
+  "dd68bd5d519e6caa14122702481234dfa164f442c1e513d2de76822c657b2afb": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:05.467Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:05.467Z"
+  },
+  "49081a03642baf3151061d6f18e8e3b6b619f80c90d24b4307409942b92c1aff": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:07.311Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:07.311Z"
+  },
+  "79cb159aa239138da03068a922f6c7d30178ca46aba6db307b01f4888813d1bc": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:07.343Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:07.343Z"
+  },
+  "47b0ea068f7baf6336e36be7b1b4b24dc2d89ad4d826a9db239bef61a89de316": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:09.117Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:09.117Z"
+  },
+  "ee925e2bcc78efc82a8069e7e85059b78508cffba1f18f70c30de8670920ab19": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:09.147Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:09.147Z"
+  },
+  "7b665baf0c4a904be9c909451dfbf58be6000a19707a0ed17f948b577aa5bc3d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:10.871Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:10.871Z"
+  },
+  "7062dc3a817d3beb2f36a16de6b67e82f970a7c971e364847a4d4a30e77f1f93": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:10.894Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:10.894Z"
+  },
+  "015d711a93d1e23d87a5fc4349b78d1ec27c7a3b3fe52496922c160b8b10a6aa": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:12.720Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:12.720Z"
+  },
+  "38f068020fd8445967048577456f44ef7597bf2fc364845ae041778f2172019a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:12.750Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:12.750Z"
+  },
+  "78ce45fa0b711f1ac907ed032f6cec386e411e4fb4102c5796bc6741ea83f6fe": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:14.478Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:14.478Z"
+  },
+  "aa1421b4a8b9f222188fe81ad7c83ea5cdf9dea996d23a619d413bddb3f0bfc9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:14.509Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:14.509Z"
+  },
+  "7758a84c8739ef8d612c66a02884b55709e58b1930fea6b69f2b79867bef2341": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:16.266Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:16.266Z"
+  },
+  "0de35feb1810aac174f5472e1e42fecb66a4e381c551dd2369eaea3ca9922cff": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:16.283Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:16.283Z"
+  },
+  "41b2fdfe331b999d1a50be8e776c23aa8d8ad9d371ddd3aeb68d4adf1c24e1cf": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:18.008Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:18.008Z"
+  },
+  "d167ed66bf003ced58290d46e8e0de6b15a5e3e2b345133574d2e533de222ba7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:18.036Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:18.036Z"
+  },
+  "f3bbc4c3fb0bff7f580e354fff82ea20596a555ed8e979d9ad25643d4e1a16ce": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:19.779Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:19.779Z"
+  },
+  "a5c4423bd0542cd0caa144660cdca35412e76d433f6edac8701da610004d628f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:19.812Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:19.812Z"
+  },
+  "ebb400b4080ce6f6b862bd71ce4bf36138f5b4413089499b0e952f768660f626": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:21.551Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:21.551Z"
+  },
+  "0c42a257b10ab143a56f92389de588b60db964d2e41db568ed8193fd7bfd5b71": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:21.578Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:21.578Z"
+  },
+  "2c40f51857b3080c23b14f7a661c6f776431b012fbe7b7fa684d418228726197": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:23.313Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:23.313Z"
+  },
+  "10bbabfcf433e9cba007de9c2cbb1a3a46a3f853c20ba4427268ee448edb1d8a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:23.345Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:23.345Z"
+  },
+  "cb603d6e582cf21487d5e334db6dfdf6546ca7f57f1874df33b824690d79ce9b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:25.100Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:25.100Z"
+  },
+  "690ddcc4d0a3bc3d8d7a071ce4770c31e4305267f9d9b325d22c541329826d73": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:25.131Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:25.131Z"
+  },
+  "877af74536f95f1d16b32777912eae2d07ec0057990363f55724c645c408dd50": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:26.849Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:26.849Z"
+  },
+  "e5b76772862d491dfd6906fcfa214a836468797c4e07dedeb097f2c0d6661dcc": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:26.874Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:26.874Z"
+  },
+  "9cd63efb9b1e3e5f2784685abf4fe58d71be51b1ef6d69b501b408b20cdbdc77": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:28.683Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:28.683Z"
+  },
+  "a1018ef20cafb48a8b8a1ba247a179ab6e20b84830340cabfb8319dcb583a8b2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:28.711Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:28.711Z"
+  },
+  "ba8099985e1c491e74138103e08e2faf98d7f01f4041c6c1cd12b2d555cbd14d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:30.416Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:30.416Z"
+  },
+  "f5b47d2603a28f411b8feee1f5a63d1be7c6cdf0dc6e42e7fe359fa0380118d0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:30.445Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:30.445Z"
+  },
+  "9aa9df810194064162b1ad3a3de5a1f85f16aedeb2aecfbfcf048d88bc562cf0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:32.209Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:32.209Z"
+  },
+  "5c166a99a7fdf6e13ae63a5e3c7a4c8cd33c6d69af4c3599bdf30fbe040f4b10": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:32.236Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:32.236Z"
+  },
+  "47c4bb0d15668bf7a9293e7dcd0c4102d6cda45f0efbd0bbb1ba42719b3ec5b4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:33.976Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:33.976Z"
+  },
+  "1a743adf4a395be3c2c7553557b57ab79b5121eaa205fb22bbe2730fbc8bd1ed": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:34.004Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:34.004Z"
+  },
+  "e4c7a783cab604f9d29ca74816b3c728c30a63cc5606f0a015d88e4315e1b613": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:35.839Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:35.839Z"
+  },
+  "639047220130523d63cde3c212363936cfd15a8a0c016829f04dbae36f62883e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:35.869Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:35.869Z"
+  },
+  "64ce3bf53fb5d7a8e67ed9617736c2ad8f5e88d11aef9d16fd282e485fd651dd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:37.510Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:37.510Z"
+  },
+  "288a6b8bf882049f50edf122c60a185faea66694c883e982c205410eda054343": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:37.541Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:37.541Z"
+  },
+  "58141711eeb79e461fbbdbe9fdba67593f52ef564129bd19fdee2d8c85c7dcbd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:39.227Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:39.227Z"
+  },
+  "d15ac8c28abfda51baa15dbbeacb010dafcfd89a6834ec3b1d972fb570bf6408": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:39.257Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:39.257Z"
+  },
+  "3d56d861b26fa65c48b3d1a7de5dbca4a3bfac0718eee525172f78a611f53b0a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:41.011Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:41.011Z"
+  },
+  "fbc32b09e1b9ca5d607a76fb84477879c49fc252e107797d85b0bab55d12276f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:41.041Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:41.041Z"
+  },
+  "ef0c50989a1f6fd6d36d26df3088cd806d605fd4495c9513ffbe56ad5558cefc": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:42.689Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:42.689Z"
+  },
+  "b08592d6f91c47783d5bd4c328ac623efe368f5be508832d608d207f0c5f210a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:42.719Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:42.719Z"
+  },
+  "6b746a3262735d946edd7b0584d8b72ea871d415fc6030a4a8a9477ad454c657": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:44.471Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:44.471Z"
+  },
+  "0dcbe2872ba9a25761840ad718f846971b93f5b33260a1023ba15cafbcd89139": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:44.500Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:44.500Z"
+  },
+  "12be1969b54980248b1610635865c7e1fc01ee31957a6297fe650c8e6fd3e6bb": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:46.198Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:46.198Z"
+  },
+  "0cb772ba8d36273b028ee6ec23519a7908ebd0e04cf016442ddc6bad0a165ce7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:46.217Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:46.217Z"
+  },
+  "65ecc78465935713fbf196e93759b5d536e5d79c7627b9e674cbce9b9ee9ad75": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:47.941Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:47.941Z"
+  },
+  "ab49a62186008375cab3566ffb186ce716e9c7e3712a79a5385b4087e729a520": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:47.961Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:47.961Z"
+  },
+  "e7568701c2a7f565f321ecff22cb53d7a4a54ed553332e3f1d1b177a38684242": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:49.663Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:49.663Z"
+  },
+  "3a60e23430e88d2a2a1c72bdf04a408992efd33af31a1b434c76082a75007ae8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:49.691Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:49.691Z"
+  },
+  "3a179b0b7186e155666e89549045d2a3e56d2b7081852511ddcb7cc3a6a34578": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:51.415Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:51.415Z"
+  },
+  "260382c2a4e82e28a419ff8f78dc51d2d6b80d7fe44b59000a598d86cd72efb0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:51.441Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:51.441Z"
+  },
+  "b1dfda85e8ad0c4f385f7f28346443fcea01223b32f4acdfad294e9979e8732d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:53.149Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:53.149Z"
+  },
+  "75c9fdb8958c3f394121ad3b6b20c4f0fb43208d02f2f20602f9262d92314116": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:53.169Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:53.169Z"
+  },
+  "6490c8bb52ccc1e3afaa846df0bb9fad89de550389a562f9463e7287aafe0e87": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:54.894Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:54.894Z"
+  },
+  "6ffdfd48a642e2e2dd2cb37e7667af314e3a83e4dbfdaaae8a75e044d07e0c13": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:54.923Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:54.923Z"
+  },
+  "5b4f6d7cf41b40f40ed039c3310c758053608ff9dc6f5f5dbbf18126366a063f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:56.757Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:56.757Z"
+  },
+  "c0477f6bda6dea86676acf8b7d2b0bb7fcd29654180fee026e157875ce6e236d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:56.780Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:56.780Z"
+  },
+  "43d264875040c06c4465ad2e47d2e278e124c633f81425b52c822837855326f8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:04:58.573Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:58.573Z"
+  },
+  "b8786b1480a2f2a5f36b7431caa35730cfa6e78ee5188f9a88867da6ad4296f1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:04:58.600Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:04:58.600Z"
+  },
+  "a9fe45e71382add4ffafcf15381821ef399fff2573df97930b7eab3b4f352d8e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:00.372Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:00.372Z"
+  },
+  "407bc6effaa1ccbba7267f5dec87d7289320f4c261b3128af48fa0402212e965": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:00.402Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:00.402Z"
+  },
+  "00555db65ae83e119509bc1d0b2a033be4c86f24e084fa1c891517c1ddcbe630": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:02.354Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:02.354Z"
+  },
+  "9d872937c02da06dff2e23c4fbed65505ea3eb29d5601b01ce6d665eaf9e8b2e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:02.388Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:02.388Z"
+  },
+  "700bce61e0c6effaf7458c8601a484100ceec6a42d5cf80b8c52cd9b6a36119f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:04.167Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:04.167Z"
+  },
+  "3daeb2773c102fb4fac08f54f0bd574ffa847ad074ed3c5eafd5738ecd110803": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:04.197Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:04.197Z"
+  },
+  "c50e2ace26f3ac2794800b497253e5b3ae824f7aed0eee938967761eec6b80f8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:05.948Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:05.948Z"
+  },
+  "a99d8124b6a60d3bbdf5113af583b33ceb2ff54778daccfaf4df2437075fc2ce": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:05.978Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:05.978Z"
+  },
+  "83b854ad8141a10f0fb58ec5a71c45d9e1ac97f837b22ae8d6641cc7b18addd9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:08.025Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:08.025Z"
+  },
+  "c5116043b5553bca76d877348149a835730036da8f34a7dbe9755e767b149e2f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:08.039Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:08.039Z"
+  },
+  "75092ff07bec77b123d16bb241182e6b542ed7fa57b640cb7a5249d2ac04577e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:09.725Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:09.725Z"
+  },
+  "c6dba2151c1c02b55cdf516f8b46b4c874f1d16f30c68a82e832f6935797c7a5": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:09.751Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:09.751Z"
+  },
+  "60d3a02e72e680fa41ba0daef855844c71bcce640829851807755ced8eec3cc3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:11.527Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:11.527Z"
+  },
+  "e30064a2cbf7740c9483467ae4091b9c0adb46402df96ef89a035a8a7df74b07": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:11.557Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:11.557Z"
+  },
+  "c82ccee2c6d0d1067bfc1ec832356f9b70dae840bafe58cc475c017b2a76e206": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:13.408Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:13.408Z"
+  },
+  "901c2f9f6b93c4ee8931cbda5d2845feb9eb8f76746f86bb6193adab5dc6f3ff": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:13.438Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:13.438Z"
+  },
+  "8dfb8878906ac9055e1750f2ab646ee4740ab889e6df10e04dccab4135643848": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:15.224Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:15.224Z"
+  },
+  "05ff5a3eebe33f9d71d4023dd9a1ffc47b5e41c4284cf9343111993744204e2b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:15.247Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:15.247Z"
+  },
+  "7a7d9f826a92ab3a55ea1af4ccd284b73300b419528b43726acc6eeb08e7df4d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:16.957Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:16.957Z"
+  },
+  "d1f880f59d4b457ca3cb4d2d4e5c726b949a5d9a89085f6137cbc515d34d9504": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:16.980Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:16.980Z"
+  },
+  "1b9603fc98b388b88279817c81bd2529f9b8ee18b679063bbfe8f22ad90be1da": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:18.766Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:18.766Z"
+  },
+  "fb1d5914832a784dbb7904b787a1f94453acb706df60cdc72b625ac7b47e9e3d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:18.798Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:18.798Z"
+  },
+  "2b9ae7496d2c71fd147ffb8f6b5638afa852ba69765b401fc384f5ba9e872eff": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:20.482Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:20.482Z"
+  },
+  "f51a45de0a5c9ccfe0c10e028d47d9bace610b8f38db4aae2f4b581a700fc9f0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:20.512Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:20.512Z"
+  },
+  "d1a14ac6d99f387ed9781b412bc548082fa350ef970b286cbb2651b7be49add7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:22.347Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:22.347Z"
+  },
+  "0871de25bf8e29bf59a84279ee81a57b7d1cbebf00277dae32bfc30686e055e7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:22.375Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:22.375Z"
+  },
+  "7f1d8bc82a1b846013fbe20c929a59ef01998527b378abe127f0a7b78f0aa901": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:24.387Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:24.387Z"
+  },
+  "31cde7d95274c6d8d2eeeaf51f070a13ab4fa582224a9cff5891b90e3495c2c8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:24.413Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:24.413Z"
+  },
+  "b12a9a47ecf5492c6530b9373b4cb83775fba114265a8b7daa95c93c5e10679d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:26.058Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:26.058Z"
+  },
+  "f8399d13787f2fc2e51edfe2cb13a16a12f0e15a7b77a6d7b42d249c92e7b47d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:26.078Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:26.078Z"
+  },
+  "705e8728e8f89de87ac031f857024192fb75ca98e14c981588ef12db383246c7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:27.788Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:27.788Z"
+  },
+  "915fc13893157c0d63be01d5a72d5db623a5e96cd4aaaa99888acae7629ecdc8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:27.819Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:27.819Z"
+  },
+  "e477cb7336378e05cf06447e6e8f0d5c2d93d495cd96d8e61a385ded7f3f8f9f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:29.592Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:29.592Z"
+  },
+  "c64858692db065580e9889f27208f25bb9364849f11b27b88593fc930fe05882": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:29.614Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:29.614Z"
+  },
+  "2ac98514cb88f3e1de999ef12d3076053f5340db90cf11eaef290ebe37ebdd9a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:31.376Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:31.376Z"
+  },
+  "0c23fdd946c4dfccbb812e8a8b4cb3b8770bbefd6d2e99c767df285102a0c320": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:31.407Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:31.407Z"
+  },
+  "b41e0b8fcdfc7a1a1fb52bf59f0b4b05b36b4d3f798ae9adcabe5971f7d1b584": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:33.175Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:33.175Z"
+  },
+  "fc65375ae009924365085b1b174f7edba3b2b36a8c0b99681759eede7c8c6b67": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:33.204Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:33.204Z"
+  },
+  "bda1c7731884c3f5d23b56e226dc0504158571386e61e0369a74cd1babc37f03": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:35.048Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:35.048Z"
+  },
+  "48711c83a1b9f3de5810908a1e7f4329edd73c047a1b2ce83299fab568e5c560": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:35.076Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:35.076Z"
+  },
+  "1379f28be46f8e857dd06cf2a747425e423d23017e4e06a29afc95815477025a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:36.726Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:36.726Z"
+  },
+  "c59030341241138245c0c89ae2ebbb42b4bf9851e31a3b06bdc3327e881bc457": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:36.754Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:36.754Z"
+  },
+  "5e72e355d6b91b45b692d254f03d374ec908c447c76483da4f4a871d5f4a8839": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:38.438Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:38.438Z"
+  },
+  "e82faa7ad0d580983b36771665ebc7b712d7a069acb2c52923f1727503248039": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:38.458Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:38.458Z"
+  },
+  "9b101140f36b749855df027233daa49f9b9bbc54da1b63d6f258006b668dc3af": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:40.161Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:40.161Z"
+  },
+  "e12840ab6bd53336734136cc72bd22a70ff4e9746de95e4c83e9f364d37e217f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:40.190Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:40.190Z"
+  },
+  "8fd7478b4b4c84f05169d94a52f9264837100affd1caf71a801d6a1a95f8d2b5": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:41.864Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:41.864Z"
+  },
+  "a8534c9a30361349ddc63c45d0816c002823bf07e159a84337eb915453693c67": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:41.889Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:41.889Z"
+  },
+  "ce012a56f8dfaa96dd671abf929b099c74f6f27b4e345c2376bb0770806175bf": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:43.592Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:43.592Z"
+  },
+  "97ea1c634c88d2aadfe4e90732235c39643d07bdb16dbe05846d7d3e4eac32e6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:43.619Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:43.619Z"
+  },
+  "2ba72397796300e86c3751f761d2cb2ac82314bb8d4e5385bf8ccfa571d7c063": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:45.346Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:45.346Z"
+  },
+  "1cbab5cdf237ce8a3c3e540a3b3795f6143717255ac5e4f3682bfbae6e2d9f35": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:45.371Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:45.371Z"
+  },
+  "51613d3aa8edd85c7270e4bbab9523a46488a0ede774c205e9f8426302579ee8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:47.159Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:47.159Z"
+  },
+  "5306f9df17b558cede7ca33cb65e0ef98caca02899d50a1e91fe109d526d6936": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:47.184Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:47.184Z"
+  },
+  "9bcad34714a346f008db851f22c3e84e9417b44007876e8b81a29edc1e6261ea": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:48.979Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:48.979Z"
+  },
+  "a49c86c6045722162bfa60ab7d7fbccf87ef7fb9e24f462835d0a2617183f495": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:49.006Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:49.006Z"
+  },
+  "3efa15c6f722dbffab33964706883ff678b082ee71c9229cfe5d1c4e6065eb7c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:50.718Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:50.718Z"
+  },
+  "6e7f7a7ee40b568bd465734c7df9e95afc4b66d86688ee27acc9cfa7a2d3fc3b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:50.747Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:50.747Z"
+  },
+  "4412b939d07e209dd6fe17ca9a6be644ca0e74a27c777f450482665435bdc95d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:52.454Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:52.454Z"
+  },
+  "7db6269fd020c61c3af7e3baeb8610c37e2ddda5f9148ac3f8dc6711fd8e2066": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:52.486Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:52.486Z"
+  },
+  "732304a501ac72c5e674dbcacd2bb2a155c69dd99facfbcdbcfbb6e916fa8aaf": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:54.233Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:54.233Z"
+  },
+  "6f67c2647111eae3f06d5372fb310a62185eb6f078341003942acba15ae73938": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:54.263Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:54.263Z"
+  },
+  "6f098490a2f70360cd020369439d80e88e79c4c9f5bac0c464f6827991b5277c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:56.009Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:56.009Z"
+  },
+  "229943886b9c08d8ededc86583a22ee68e44a7a8078248f5203205008e1b0df7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:56.038Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:56.038Z"
+  },
+  "b18693dcdcd03db4408541df7e19dacbcbeb165c0e872484e60d9181325d7113": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:57.691Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:57.691Z"
+  },
+  "cbfb5b20830fdc7243c5227117f91d86c66637a6cf878b1466e2b934da33a390": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:57.722Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:57.722Z"
+  },
+  "7a3d961b6c3cfeff0980e8a9c967ae4ee1ad2899325f3d8d0fb0af573d14bbc1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:05:59.453Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:59.453Z"
+  },
+  "643a578c37220ee2470340270117e770163d80c1e406409c25d8700bfcba0258": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:05:59.469Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:05:59.469Z"
+  },
+  "938f065e30e645e32a364629d980a967f040f94026d69b5f8b21a34a092832a5": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:01.182Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:01.182Z"
+  },
+  "96e1b02c50e5abe61440853ac40be979f736e1141a23ffd4087e16afa205cac7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:01.211Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:01.211Z"
+  },
+  "368834262c8ea68b174dea559f981b72474fb87539b43b76244dd07dd701e0f6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:03.016Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:03.016Z"
+  },
+  "b16311fc8a732e3c32bfbce873e1e14213328707fe60e392fd20063e6aaa6906": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:03.040Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:03.040Z"
+  },
+  "52c020bf8ce843dd5190bb4031ddf935519e2e31a50c18b5fd9e6f8ec8f638d3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:04.782Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:04.782Z"
+  },
+  "d7f13fc6dee2d8a043b8ba42f70ed61439524c369075ef3ee468b6a80490a044": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:04.808Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:04.808Z"
+  },
+  "65e7e1527fc3606dd88340dad92638847ef23000191968261b4afe48ec47f532": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:06.465Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:06.465Z"
+  },
+  "3bbcb141e1542bf5558810b34a92a85790d7910c6db1ab30bcc8f2ab592bfa46": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:06.491Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:06.491Z"
+  },
+  "945d1e33c74dc3a2e34ecb4fe6be60dd0db8b3051216e81a48f70b08ff629125": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:08.171Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:08.171Z"
+  },
+  "4cc45a0ec487b9f8fd22dadeebdfc7671b13559eb3d03c15b498e0a02a0f914c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:08.196Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:08.196Z"
+  },
+  "2a3d97c90a25eaf3c40af26e6b5e707c96410db218a61d13b8d4031c222d7433": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:09.934Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:09.934Z"
+  },
+  "f928eaf5f6fdef0e76e0d2e340fac88af70f6de20311835f706477f337f2b59b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:09.959Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:09.959Z"
+  },
+  "9218cef5b4d6a046e3fe24012f5c822515f8b5fe10be402d8791e9387550b5f2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:11.726Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:11.726Z"
+  },
+  "1641f312d16944ee1999689d5ef607b7515da66231802875773c1927782e64ee": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:11.756Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:11.756Z"
+  },
+  "c43c4bc0f6bdfdc11320f72e2007f27467544432d88d17ff8100f3a24c33a231": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:13.450Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:13.450Z"
+  },
+  "7c15d9186e25234609e77c4b345b5da01f772ce9e2c7e16506b52dab07b63c53": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:13.479Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:13.479Z"
+  },
+  "3c4b9019dfdca135d6adf7d230b2446ef303f464b4eed8b8eff1396f1d66502f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:15.177Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:15.177Z"
+  },
+  "1c0c206831bf9e4187e98dcbf33fad583bcc71d19ac64abbc967352fdc5203b0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:15.204Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:15.204Z"
+  },
+  "3c034d1b15e04bdcfc392f20be4305c16c83e712c7d69d872f593dcb71c7d3ef": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:16.924Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:16.924Z"
+  },
+  "67ce950a73ce0b6ecf7610b9ed27b09a69ee03361337b0ec5ec040e322e523ac": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:16.954Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:16.954Z"
+  },
+  "d3fa9161c8d7a8dfee5951c287d233592b78d35eadaa37d40e6bda89c093239b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:18.682Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:18.682Z"
+  },
+  "c9b3fa1e522039ae5951be6e99b118114cbfe5e25a4f5a59bf855dad97ef8b05": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:18.702Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:18.702Z"
+  },
+  "ae3f96cf1268a362da6b3d2f0732b7b27fdd5bea37499cac51d13d160093a681": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:20.445Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:20.445Z"
+  },
+  "b700f67a95b9bf8686d3bc061be868d1e0e5f7f421c81e628eb5d814cd3516f9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:20.467Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:20.467Z"
+  },
+  "e99744030447f5bdfe3a4c78793a7308287a4b695a78c9dcde5239ab4a97a16c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:22.209Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:22.209Z"
+  },
+  "fbe95c13d92210f595775eba528f0389142cb07e115d9f32c538b9b64bd74d8a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:22.238Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:22.238Z"
+  },
+  "c62fd1d2ebe11b68c3e69fd97b1d6e4a1a473abaa103fe503d3c41b3f112f77c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:23.935Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:23.935Z"
+  },
+  "9f37eed23e220784fc0fe8c913ed24b6ed712cb152f77ae16c2e70bea34a19e4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:23.965Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:23.965Z"
+  },
+  "5d670e896a395fba2e79f9cf1f89faab2ab6bb75ecf12a313fa0c2f4025989ec": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:25.667Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:25.667Z"
+  },
+  "4a3b7fbfefd10fc0986ecb42326ae7b8ebc93601f33110491ecd29e2f1fd5a43": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:25.693Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:25.693Z"
+  },
+  "3f14cca11c17ce5c943f91644fb442697c4363d041964fd66d4a57ac52c1f110": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:27.389Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:27.389Z"
+  },
+  "fbd6434fe447834520678da8c28a55af19bb874c7987303ca1cc3a648c65e525": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:27.414Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:27.414Z"
+  },
+  "0d748c4081be185c619035d52a9da4ff8cb0486a886cf008239a80fb56a58975": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:29.172Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:29.172Z"
+  },
+  "2f858e029fd265fc9c41fe8bae0e9eca9d364dd734cddcdbe66fdddc933be3bf": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:29.186Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:29.186Z"
+  },
+  "a1d92b3ff57294ec1eb0783bb011d9140b3fe70e963d3ae3cbb02cdcc0a44419": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:30.897Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:30.897Z"
+  },
+  "c5ad0045165ceb090c776679662ce9039e3ab03572f1c05527783cc766287f08": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:30.924Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:30.924Z"
+  },
+  "e763775a63f3bec492a936917a6b1a07a16e7471967346cc0404f152cb563896": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:32.611Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:32.611Z"
+  },
+  "875fca13b2cf364576c90481920f2b6962923ab2a2c9d73cdb625d2cc20333c1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:32.631Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:32.631Z"
+  },
+  "e3da6788c120e9753a117500434fd7a271e7dd90d1fe16b4bbe340a6189c85b7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:34.390Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:34.390Z"
+  },
+  "60c912f86bc2f608b243588a99c71eb49b5c9e80b26faccf835b1715a606cd15": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:34.410Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:34.410Z"
+  },
+  "37e02e334bd3ff3bb58c1d25a95b1444242b37ed0670f34dfc25d9751fd1bb89": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:36.124Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:36.124Z"
+  },
+  "eb1d49a9347201671bfd7ffb2051e39a664e947d783035fa9bf7b638d2c992f9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:36.137Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:36.137Z"
+  },
+  "2330b429397b789ab8ba7b89753ac81a8c7e89ee0a2a3660aecf0e5f35bacab3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:37.810Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:37.810Z"
+  },
+  "fef3ca66f279978f8cfd6cdf8255935cfa0adbfb967f56d34e7a45be270f42dd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:37.830Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:37.830Z"
+  },
+  "9eeab802b08bad2836068671686db4fa06423469fc750a37fffba543c385ce3e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:39.548Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:39.548Z"
+  },
+  "98943715018e6fa594a3236520d336def48d0d4625d9bd193f6f0402c41ae9f0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:39.566Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:39.566Z"
+  },
+  "b7d74c54b19306cf164a63b015ed2253cbb45590d911e97d9198a32d0c57b4fd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:42.171Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:42.171Z"
+  },
+  "8618009c7d8d637daf05d661fa0ef5d17ac33914196eb33c531a546e9fbb5997": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:42.190Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:42.190Z"
+  },
+  "ebce2cd0e1fb27ec9e6d597f1896190bed7706e94c27d480c89d4ad3b438984b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:44.023Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:44.023Z"
+  },
+  "584b38e16c31818c63562a1af426236641025e672409165b7eb196bbd4367ee6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:44.043Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:44.043Z"
+  },
+  "91d25917f9aa328f24b29dddf0d34c3924ebcf939265c2167e99b65fb72b0cfe": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:45.753Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:45.753Z"
+  },
+  "4767245b0f87d90513d77140a49a86800d0b5ce13425dcf53b27a6b0593c1734": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:45.775Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:45.775Z"
+  },
+  "6647cc9d9aab4f007ad514e1881806de1d96b45bb3413d3fb60fd8aab18d32f4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:47.511Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:47.511Z"
+  },
+  "ff42aa8a607bc17ebb81c63e8cb2a7af46cef12a997917cf24d25ab67eab52da": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:47.527Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:47.527Z"
+  },
+  "635e4282f11e1d93f27fa97f04ed19bd4b8349adc4a9ba0296236fa7776d2532": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:49.232Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:49.232Z"
+  },
+  "cfeb7d5ebf719a091cf9217d9878c8ac80fa7bacf0b7169ca9fdc6e4ecf200d3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:49.249Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:49.249Z"
+  },
+  "0532911a529bc4ae9eec799b962258513930dd9b01c32c14cf146c2cedc2f4a0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:50.967Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:50.967Z"
+  },
+  "a6ad352d561804b584c096ac264dd976a0aa18e709616b8f3530423d6451e75d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:50.987Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:50.987Z"
+  },
+  "939103de16bc8fb989b231045b716278a5f8c5c87decb7c37ae22385282453e6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:52.744Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:52.744Z"
+  },
+  "ed619272a5e84a171c01ff91835a84a290701c464f59c4973969d5d29e36abe4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:52.771Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:52.771Z"
+  },
+  "5e1ee0d1472cc34dc2f866ca97f86c3065e36a2b8b70aeeba470bd458168f092": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:54.526Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:54.526Z"
+  },
+  "e4462644ce2fe4433f709d60c19a90b62e5c2c097ec77105549f783a1d07eacd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:54.553Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:54.553Z"
+  },
+  "65d2e04fc505a3813f2df1818c72b10c12e89e800365cc282c3c4b6557de0ac7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:56.256Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:56.256Z"
+  },
+  "7c206769ceb6a7ca4f6a1efd921eec71fd3685971c32ef7d3b4257ab21095407": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:56.280Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:56.280Z"
+  },
+  "cddd720d6f5c709140b0210b75db7b84c53704d4da0c31d9e1d7aea10d521806": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:57.989Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:57.989Z"
+  },
+  "6900298ae668cb27a7b187981ae7ad173df84d50f14ea61021b90ace6169be0a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:58.015Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:58.015Z"
+  },
+  "a1b8c494541d603edb8d3bcaf2e23878bd0789c9e55c77b38c2898b93e6b6759": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:06:59.725Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:59.725Z"
+  },
+  "7aee72fdd845c2bf89593635506768f1dac4a0a12afbe9574ff7220d11046da0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:06:59.750Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:06:59.750Z"
+  },
+  "271291a0c7c82d0b25521c84745bfe8465309b5e1e3ac339859ce9981f9f50d9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:01.578Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:01.578Z"
+  },
+  "d007266d95529460af1c148f6680f71d8f6ed3d817bc0e1bc063c296908055d3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:01.601Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:01.601Z"
+  },
+  "cfbe516edb3991be58732765764f82217ed13db1a958fcd7bf9f1eb650bf1ad0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:03.294Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:03.294Z"
+  },
+  "82573a87a45eed574ce3ca036556ff1846102a2d5965c3d6f7b2897c4d8fff10": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:03.317Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:03.317Z"
+  },
+  "6b376d69da31b024fc78d583661453df8c569e34969c0a7e4f13e7b9bb57ee1e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:05.131Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:05.131Z"
+  },
+  "2ae01f5507841fea3f56613e22405983acfb9a9ae30dcbec83ca13ef4814e282": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:05.159Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:05.159Z"
+  },
+  "9c09b8b65e46cfc766bac8a14a3793f5d2e4c90834bb290eb25f8aac0c65f1d3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:06.847Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:06.847Z"
+  },
+  "1445d06c850fecb3ee0dd2691bbf3c04e43e6121df30b612a79199a61d5364f7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:06.869Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:06.869Z"
+  },
+  "bdc2edb9dbcdc17c04af0d59792b862f717c1ff909280de1bdf600b85df1d6ce": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:08.521Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:08.521Z"
+  },
+  "7eab59d239be264531a1918987a4e9a92fdfa574a6c4af5292b61ee0e7e9be8d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:08.543Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:08.543Z"
+  },
+  "ac55ffa159deb90ca5835c1140af8a0c29af0549a09fee8677948033da020bde": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:10.165Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:10.165Z"
+  },
+  "d677014c70bb5a849813012c52cda2f62c794c657c5b816e57686199befcd696": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:10.190Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:10.190Z"
+  },
+  "77fe4b326d9c9c45a4521d757e102a8457e3a89a57456c590daf758baac19434": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:11.898Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:11.898Z"
+  },
+  "4a33b38aecf2d8e7fb378189f6f2aaf1dc8d042b79b169943f83ebccb8cf8023": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:11.930Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:11.930Z"
+  },
+  "2fcf5bb9f9ff19e3dedecdab5432afd75191aea4db52fb5052b44e168d6fc9c8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:13.686Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:13.686Z"
+  },
+  "9019fc0958a466df4d3c7097a15b3fd4d545966c8ea4f9ed7f95a70c8c6714db": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:13.710Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:13.710Z"
+  },
+  "213269f2275b4df7774325d30ca66b92e428ab11e3d39f0e5c63c98c5b34c7f1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:15.489Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:15.489Z"
+  },
+  "df046e6e56edec1e6a3bef405095fce544e6befb2e2f1eddd5f77ae4c113cb60": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:15.516Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:15.516Z"
+  },
+  "ce64346a1ffeb26e25b192cbf6e6e2214be56d48a354ba52534425ae9eb8cab3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:17.358Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:17.358Z"
+  },
+  "0c1a376c565344fa7b0783b62a049468b6626a09ee82eb3528645b7991cd66ff": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:17.384Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:17.384Z"
+  },
+  "457d2c4bd340775cb91b9547a7992e18b0bfde3edee3cc2a0de452eb64ed7575": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:19.093Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:19.093Z"
+  },
+  "85e70c527930364c4bd01b4689562ec25910f356d13f0b3fe20cdafca8f448f9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:19.105Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:19.105Z"
+  },
+  "ce541794df767c6f4db3acc2eb5410da00e0ad89e5dac3fa364bb3cb32a617aa": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:20.941Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:20.941Z"
+  },
+  "f66d72276e2c0d8864029e97969bf64d122fe5f97c1c015d8b7750c5a316870f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:20.968Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:20.968Z"
+  },
+  "497b165b7137ac0da1f594815c34a258a8ac897d953b8109e2b17cc5d64fdf22": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:22.658Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:22.658Z"
+  },
+  "31a58e9d213507a13719519f5c441d8db7e33db0dc9367a0d9835a69b6c38861": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:22.684Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:22.684Z"
+  },
+  "3c67977a58bc46eb131dcde4ae4ef874be51af14c807283f63be1280265a3714": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:24.399Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:24.399Z"
+  },
+  "604fb8e468fbe1912731144af9106a038660da28fc920dcbb9c9fe658717b007": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:24.423Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:24.423Z"
+  },
+  "c5c1991fa8b06a3bcbb35840ca1c82972927c67aa26227377db323cbbb9add4e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:26.065Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:26.065Z"
+  },
+  "277407e8352cbb20721444ba877a8231e045db4e9126fd9bb8422dfe954d459c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:26.088Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:26.088Z"
+  },
+  "df05bf36c818ebdcfde256d4e2eea86cd9d7b7e06953cc6daa78849629d4c3e9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:27.830Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:27.830Z"
+  },
+  "b56693a52ff4f71ab7cab05d45dc4f2632e077c941bce429fbb1711ae30c1ba0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:27.858Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:27.858Z"
+  },
+  "12395456e303cfcddf322e26b15d5f7be230696abacfffcc86b92c8b3a95173a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:29.571Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:29.571Z"
+  },
+  "ba999e666bff4c8655d29544adb2e72933973f4ccb454cd0bd9277efc0c7efe3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:29.597Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:29.597Z"
+  },
+  "d3bf29f64282961ef51c0954e36ed8b1c00c580ce5331fd8104607085e33d256": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:31.260Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:31.260Z"
+  },
+  "b95b693be814930466d6b8c8808d4d564374a9d1b6ae58a625420a43870fe8fd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:31.288Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:31.288Z"
+  },
+  "931f2415ff6cbb1544197640c62947f28310def5762777f103854812173895d8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:33.007Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:33.007Z"
+  },
+  "702d0415eab290f31b5658432e86aedc358492dea62b52ec255162cc74563596": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:33.029Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:33.029Z"
+  },
+  "c624198b2be6a595dc4236f0a95341d594a40f4c139f94ca6312176eb27ce728": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:34.631Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:34.631Z"
+  },
+  "9d19b050fcbb2cb2855b2622c394b02c26752cb833874c5b825a14fdef9435ce": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:34.655Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:34.655Z"
+  },
+  "e8e8fdea37e14d5aa54ce61ac66a3ba9a865e8a7987a3876d624d6725b6b4489": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:36.360Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:36.360Z"
+  },
+  "7bd9d551b63d8b29894d38623eb534a5db7209f61cef284d5da4a985e2f785a0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:36.390Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:36.390Z"
+  },
+  "2eac8876691d432103c694b13907c1e1464e16f89de4bf015452a8310f2cdfe2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:38.076Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:38.076Z"
+  },
+  "dcdc81ecdd82f969d55583f7ec3b87d281737a010b07ff75c2d4c73957c5dba0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:38.097Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:38.097Z"
+  },
+  "ed420bebb334970874eb18c41b9f22db4fa53c07798ea68a5893e695eb734a7d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:39.883Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:39.883Z"
+  },
+  "9741cc9696d786f619f030d333c1c356b89d19b8ba2603218eaed783f848a0ed": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:39.907Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:39.907Z"
+  },
+  "92b1cf9e1925042a618c01e6aca09a83915be69e3b1b7c8bde78b0ef90855e3f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:41.673Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:41.673Z"
+  },
+  "c6aa25ab699c5314591d33bd2f7fcef57750f19aa06cb25e674069f94dec1a6e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:41.703Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:41.703Z"
+  },
+  "3c69f25c630c9d89faceecf1d842f5db81a0ed72490a4cc057bc0e4d7661ed92": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:43.418Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:43.418Z"
+  },
+  "a32d80a92aa36c117c618f3e43aa522581e4d5d92665336e845aa66ad46e6420": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:43.447Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:43.447Z"
+  },
+  "30464bab3b50070b120c632648ac4118fd9a84e7a16601d8189c56e34850cfbc": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:45.171Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:45.171Z"
+  },
+  "65527957abd5590e2f70dbd295f5e46d2f177a0fd4a0696f196116042940d8b6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:45.200Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:45.200Z"
+  },
+  "533198c9aa1970ed0e46e65a5c82a8df6d6d3bc026c70d78287d564733adf0fa": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:46.897Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:46.897Z"
+  },
+  "a81689a0a02c27fdf61414e4ef3c941c2376b27c6659456dc599d43ca11c4a8a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:46.917Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:46.917Z"
+  },
+  "2bf4f0f322feffe890d1fbab48f8a82a664c14fa0bfe788e8d7a3956363ea8b0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:48.678Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:48.678Z"
+  },
+  "490585bd68046204173b6460046de79dab7fdbcda24b2c6ea09747ba3a1a28f6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:48.697Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:48.697Z"
+  },
+  "f7956bcc9a0a51d39d9b14bb3457c34668a43313bfe21084d941b373cfde83b5": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:50.446Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:50.446Z"
+  },
+  "eb9e9a06ade196e3b7c6c68427514ec7e9ee5473c8769ab55149235d0c04e560": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:50.474Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:50.474Z"
+  },
+  "586663437ee3499dcc92c66c240f7a2b4147b02ff0100ac2ec3aaad666806eef": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:52.307Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:52.307Z"
+  },
+  "263b1a1bf37efb10e9a31357689f58c13a3cdcb6c392736386c1dc100d014692": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:52.331Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:52.331Z"
+  },
+  "028bec9c07fe66e237038d1f9c1b6473b5ae270b863457001453215bf419a545": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:54.046Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:54.046Z"
+  },
+  "b2a9181a1963ff3aa359d38b117ade72d4d52e51727de072ddd5f5ea3ba1504d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:54.075Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:54.075Z"
+  },
+  "c09a01845ad7f251f14e435f46ab1fe5b6f85a8f222c6170edfa553346b410ea": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:55.769Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:55.769Z"
+  },
+  "a70480983b9fa46d624befa3bd2605ae2d559122f337c6d4f181cd7fa2b89f8c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:55.798Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:55.798Z"
+  },
+  "07a9822f51e47b1ad694d627bf8d2c76563dd59ec9ff3fa15a24e70c2cfe0927": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:57.561Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:57.561Z"
+  },
+  "a421a2ec6b77de36bdc9a8ce8218cb87b002b07defe2a4ca3c83d9c605531940": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:57.589Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:57.589Z"
+  },
+  "0801941e3973b33910d10b933f32ed01590f830747bb0f1ceb3345882ae4604c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:07:59.322Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:59.322Z"
+  },
+  "a936e7731ae37b49d6d050f32cd7eb571bbbad5b504f37c527ecf5a4f7dd3a34": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:07:59.350Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:07:59.350Z"
+  },
+  "4c03d9ce61d16a2a6895234f2c85fed260ff18f7aacecc631b2ec898f6a30ed8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:01.095Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:01.095Z"
+  },
+  "5d6b804bf944aa551bbaf5a8573a78dd11bfa1a8d175f280eea9c21805668a07": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:01.125Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:01.125Z"
+  },
+  "d8a24f9e02223797b44c0893f79192a4ab594a7a7ca284ee5fedaf3ba3f315ee": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:02.827Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:02.827Z"
+  },
+  "23883272c591a58cf8b927af42d9acc1cfb73c0b1d050e78ca609868e71c4b0c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:02.847Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:02.847Z"
+  },
+  "9001b97019cab99a80224023e787f7f1a338eaa0a983e80c2b3c0977dd2e6934": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:04.619Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:04.619Z"
+  },
+  "c4d19980ba028dbcdd6fb81e13382bb8f2f6ece8b839ee49d362141812c8dbca": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:04.650Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:04.650Z"
+  },
+  "ca1da4642732a76066da1eaef406a16ca159c41fad41a8bf452651d49a4820d8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:06.394Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:06.394Z"
+  },
+  "34e61ac33355f53e9da7d36da3032dc35e27faf6574a5e172573e8369a7c91af": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:06.426Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:06.426Z"
+  },
+  "a37fe6de2f642a1cecc3c6ddcc3cafc7ab08a349b0e4516a0e24624d2922db72": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:08.262Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:08.262Z"
+  },
+  "1b34aeb2d88af3cec3b8eafd13ac4f196e049f5acccde4b839fa2f0bb2c44012": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:08.294Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:08.294Z"
+  },
+  "49fdb2072f9c2fa2d796df86782744335ff983f719f7a863de471e2887e056de": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:09.999Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:09.999Z"
+  },
+  "9a71b3bfaa967f25da277b017a59290947d139fe0c87a372f27c655c1a27f583": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:10.013Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:10.013Z"
+  },
+  "481f167d0652be303f64711550002938e54a2867d8c996aa3e9c35f2947bd977": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:11.904Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:11.904Z"
+  },
+  "091180f4fb2ebecc9f40f91344edce0f6bb9bf25894ca7a34e382c563bc13213": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:11.924Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:11.924Z"
+  },
+  "f5f1f42964a037cc0b79349d0b321130d5d228823129e0c6854e6e04992ce9fd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:13.670Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:13.670Z"
+  },
+  "62fd0bbccf50bf6bc49a9b5ae8097a362e374a0309f41364d143d83d5da18a99": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:13.699Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:13.699Z"
+  },
+  "938dbecdf67838563689dc142a70b67de53409a89e0df307745038d95861d888": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:15.456Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:15.456Z"
+  },
+  "311cbcdf8ae447b18a04204b8f528b941897671151ea944264ec423ec3a0d8d6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:15.474Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:15.474Z"
+  },
+  "bae49a05b16399836db7e2adf1cd29f189418ec1304a6438170cac0eb2fd2042": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:17.286Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:17.286Z"
+  },
+  "57b2f98b82132a336236d6b038dab2d2295b90dc4cd05abc0f64bf0b7035c16d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:17.316Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:17.316Z"
+  },
+  "03dc78e37f7e185e111889c223429bfa5c7bce32bb4bb5bda8fbe8bb2fef5c43": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:19.084Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:19.084Z"
+  },
+  "4ba8e43034297767b6c7f8e368484450055855805c56f68bc2a243fc03001001": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:19.102Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:19.102Z"
+  },
+  "6cc974841cf7f21cc3fc7b5300f332f13534867dbce339edda2e003c44dcadfa": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:21.001Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:21.001Z"
+  },
+  "ab27fda8ea61b07773f1b5263db9c401772633b1c81e7ad675531df425e8b94b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:21.033Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:21.033Z"
+  },
+  "d4324fc9e32856cd0e81dc3ed8e8ba6445f0f582201bd4b5bea06cc7e4bc4729": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:22.812Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:22.812Z"
+  },
+  "2467c1fd17a066762c49c86fda13ccc6699633e5476b378fb5bb69d4c4cfb99a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:22.842Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:22.842Z"
+  },
+  "c84d279fa7c79d0502703cd289290f929733e9c7582b14b709e33ff57290048e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:24.635Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:24.635Z"
+  },
+  "eb42000e10588f01cd8aaf290462a9965b3447cded37fb48aaea5965430abd89": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:24.664Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:24.664Z"
+  },
+  "a236af37bf2160c6c8d9d8452eb9d0e4888f6db4633aef2816361b2d5cb28748": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:26.413Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:26.413Z"
+  },
+  "35aea1989735ca7d9ceb129ff0d6c004ecef1409d40f77cce0352c0123d7afc9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:26.442Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:26.442Z"
+  },
+  "9b03e302cc58313566ef7d56980b1272e08031b5c37a913aa9c12da887a5d3e5": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:28.137Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:28.137Z"
+  },
+  "be8139fa7dea3605a748d2ce73a41ff44e7383fb81f9508e1d2fd58e33c6e089": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:28.160Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:28.160Z"
+  },
+  "f4c8d8f052d645b13db63d816eb4b99499ca07476f4d6c6e06085afc427af976": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:30.002Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:30.002Z"
+  },
+  "52fa90febbb44efe0d5c2eb7705f267af892eb296245d1adb074798ac4064608": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:30.033Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:30.033Z"
+  },
+  "accc217fb914eea3ff01ffb67ab334e9c29393dbf59e45f4f0679a79251b44b2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:31.790Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:31.790Z"
+  },
+  "33d49791735c07565c0152946409236cdbfda08534797316af209c15da3a5425": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:31.820Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:31.820Z"
+  },
+  "6227dd7ab078a75b59f541ba4439ccf47f1f2f487afe51b44ca0beb40d95ff5d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:33.499Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:33.499Z"
+  },
+  "4dd93439ed80668929aecc781c30f2d69a027f0e280a94c1a343eec3b84e0447": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:33.525Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:33.525Z"
+  },
+  "2b9f75c6e67aaaf8d911d3cf92b8873e1fab5c99b53e0b3407c1160bbd1398ea": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:35.254Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:35.254Z"
+  },
+  "1b00d35dd6a2568b0b31ea1a3d8547245a8d2af2c8c6f76df500a7286a3012d1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:35.284Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:35.284Z"
+  },
+  "3b5940bc8d552d4de19f359383d356cffb31f5e66d69e91f78b01d6b1e839bc2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:36.995Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:36.995Z"
+  },
+  "0362ab347ec1bff9ae9e040123760e5e0649efa26b26b502365fdc64e04642aa": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:37.025Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:37.025Z"
+  },
+  "9d38a7aca4cb29f4a16e2692af428e14a201b33a1a3a81edb30581047e13dc36": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:38.765Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:38.765Z"
+  },
+  "c08da1e5c6f91461a788087d6564a34985de9fda51f5b647fc92bda8771f2cf8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:38.791Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:38.791Z"
+  },
+  "49b58792f6953fb4b018c8b218e340a6149bfee8d2b1f75cb5ccafb5113af717": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:40.534Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:40.534Z"
+  },
+  "5fb7fb39516a2667f08725b472d28f8a9269a0cf30f74f6511e18841b82aeec2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:40.564Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:40.564Z"
+  },
+  "122121559e64aa2638d3ce99bd0a14614cdf4e03eceb1bfd33cb2b9f2fb97527": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:42.395Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:42.395Z"
+  },
+  "12bf8fb9357be8d2128ad95aed6265d29b1cf1bc6abe30ac2d22d56030c64d90": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:42.422Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:42.422Z"
+  },
+  "29f90444c5be6d40383f680b1cf17f5fd958d15e13604c628437d26e7a1cdd19": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:44.226Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:44.226Z"
+  },
+  "cf5058b50be91f656c8848349498232e99fbea952ef80d06eaaad3317107bb77": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:44.257Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:44.257Z"
+  },
+  "04b857d7d9fb4a09f3d9299475e878b28f1bffb10553631f21658c9a1e465481": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:45.973Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:45.973Z"
+  },
+  "1df843eb07a9473e68ffe364e9172e9736446f01b15adf37b799786fcc1756a9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:46.003Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:46.003Z"
+  },
+  "194a5938d682d14ef465f92c6366c0caed188247ae85c172de75aac2c54e4d20": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:47.750Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:47.750Z"
+  },
+  "103b6ca6eb0b8ef6273df6542c814219c8831d0a1f91fe922cc6f0bf9095cf51": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:47.777Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:47.777Z"
+  },
+  "11a30bf9d56684a49af8c5c6b968fd1a0279c5927da54b27e57b07d55b8a6bf9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:49.486Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:49.486Z"
+  },
+  "70d55cf8b42646148db71f78da7c0fc9d09717de50e8a53fc1602378342e00ed": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:49.514Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:49.514Z"
+  },
+  "53f3a8bba3b0b5f12727b1b180aea69c6c820d960f78fbfda0bdf7800154f1b4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:51.228Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:51.228Z"
+  },
+  "96b1c0a1eb277379c5eaa79c5f8d73cb972d8ba142616420c372b2a58a77cc5e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:51.256Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:51.256Z"
+  },
+  "16816d0c2ff56ceca092e216acb34f445a8f082f3c31d48c3a06cf15e46c1a13": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:52.943Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:52.943Z"
+  },
+  "74bb21e955a3d6f5198892ca8d51823ab0e195c7109280d5d550454913dc7397": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:52.973Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:52.973Z"
+  },
+  "67f3c167d850c3b6a0e09292ccb1de25cd5f6f38c9e004b75ba8e4bbee0d7985": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:54.676Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:54.676Z"
+  },
+  "5a1279fcf4f4760df282d3ff8e26476c986199ffe51a1c5795d1e86e418c5a24": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:54.705Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:54.705Z"
+  },
+  "0ad74931fa148730f5a725a388684cc14b987bc99274fb1b740783c02eb97f15": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:56.471Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:56.471Z"
+  },
+  "1cfe13d93518364804988ec33171d3bb380d64d7bf92e3795c4790283e16de4f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:56.497Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:56.497Z"
+  },
+  "c54a1da1194bfefd49d38cb25e97d902b21082414ee35eb0d29890993a293bdf": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:58.255Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:58.255Z"
+  },
+  "fa5518fe4ea84e944dc6d97c184310af8a49192649af9ce7a60d35c82b16390d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:08:58.277Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:58.277Z"
+  },
+  "4bddddb31f1a8835f3810abab4c3067209d69b497bc8cda80746f26e48c05c07": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:08:59.978Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:08:59.978Z"
+  },
+  "f0899c86d0010d4acbeb05f911781f6fbfd5f18f555c9b1af1ea7d4e3768f74a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:00.003Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:00.003Z"
+  },
+  "e94ded980eb1f3dcc81e478d72c361411754a2c86a618a6c1ffd45ddf932c8a4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:01.684Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:01.684Z"
+  },
+  "3f5ec1cabfaca509ea738e9e8f5a12adaf72640a8963ca7b98b0c648ec892dfd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:01.713Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:01.713Z"
+  },
+  "2b9e0b4ce733bd793d5d526f0cebd5a377576f921685d02ed94e8090fb51216d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:03.365Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:03.365Z"
+  },
+  "4e80ec65c79df9d20ac32f7f2d205cb2c5cb444ed41b0e577216ede08b195e02": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:03.388Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:03.388Z"
+  },
+  "96703642bab311dbb42ca6885b823e61b25e5c5396b1f063e6d86a3ddce9807b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:05.102Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:05.102Z"
+  },
+  "134ac2017d6f709d73ebcbcb1d939a1a942c433a485b20798366925c47321e5f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:05.128Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:05.128Z"
+  },
+  "1e6ed3e2d522818bd4c87365b79c71c314b0d16fb17a6da6b57bf8f9d9af3f9c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:06.829Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:06.829Z"
+  },
+  "32167d107bc8bc7b6fac8d6a25e65569e68da4f666bfb80ac918f7dbf74d9a3b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:06.854Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:06.854Z"
+  },
+  "865e65282db42d3350c32a2b509bfd21be0a4ba3f6b11baa013ca31f4ed6458a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:08.536Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:08.536Z"
+  },
+  "e53708290f92d4ee24b1b176bc6f15bc6060b7efe61741f6da3c9458187391fe": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:08.562Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:08.562Z"
+  },
+  "f90e96a43ec9f437c8a866437a0dbf3870f3fdc40f6861a04f7dc89dd896ed6b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:10.263Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:10.263Z"
+  },
+  "bfcdca29911f88abe3ce246b623a1f6f6aabb41007c3391269789b31efcd5742": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:10.286Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:10.286Z"
+  },
+  "7829b7739a44bf71b5e014f685c7880b8a72c04135b18c8de88af87b706f4a03": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:12.005Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:12.005Z"
+  },
+  "9978bdfc80d385d4ed6c2b1581104853987e886c531a6f546b4f0f639d37d081": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:12.030Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:12.030Z"
+  },
+  "101c8a8aa6facbcaf0f1ec560c4c70161efabfcaa5e200a9734e6244004470dd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:13.737Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:13.737Z"
+  },
+  "30fd492a5262810d18270a81d2d98708353231ffec96bf4e7a8b10a33c411e02": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:13.758Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:13.758Z"
+  },
+  "5ef8fffce588d0717867e65bfb9d238a35c560fe128a34459b6f8316b7c157a1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:15.464Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:15.464Z"
+  },
+  "a4feb2cc993c1f84d3577aad4f5c0aed8a1f8f1e2d7b01eb4976c952f4f82b66": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:15.490Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:15.490Z"
+  },
+  "bd6b5ab568fc69759a8ad515d75b16d969f2d787fdeb2fb6554bcf890625aef4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:17.301Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:17.301Z"
+  },
+  "9f708874b31b27cb37bd628b2b42b06c3f92ead6ccb7b4eb19503b78f665b7a5": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:17.323Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:17.323Z"
+  },
+  "fb037d7cee74a3ba5bd8ca1b37eac0e37d7f4dc1966b71172ae683d4fca503cb": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:18.994Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:18.994Z"
+  },
+  "85088d6185ebd9f2d2d742d119d4c4b9d0f1adf0378ef0e86a9091f55b363423": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:19.015Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:19.015Z"
+  },
+  "396afef7d9a4a40bbe762925592090d0c8d3a34b2a3ecb5fca23f0d950777349": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:20.806Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:20.806Z"
+  },
+  "8639599c04519ff6090db1443a18ed458400905e8e98cef3859a78a283f2912e": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:20.831Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:20.831Z"
+  },
+  "b66933d8295a3066be3cc9a9d3d9c783afb72e3b4cb81bd57dee4d00848d49d2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:22.585Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:22.585Z"
+  },
+  "44f12f4cef4e396696ecfa281551776fd8cb4c24a79811b1e24ed00288681c4f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:22.606Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:22.606Z"
+  },
+  "dc2350b0798b09e28553cfdf0fa08ec0002981baaceee6683a82cc60ed5137ce": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:24.326Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:24.326Z"
+  },
+  "81f08d11e3bcd380f3a7ff8efde80f0fffcee0bc5c40940810048d4252c9795d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:24.352Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:24.352Z"
+  },
+  "cb3aaa6cd0f1a6080346d5fe6db35c22f262141bc737552ce482a8f1cf6bc80c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:26.014Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:26.014Z"
+  },
+  "0623eab24c07989086c6b8b3c4bb5ff9470bd3a3b03b515e31c5fa420c57044b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:26.034Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:26.034Z"
+  },
+  "c290ab144632fd31b369f069baee24d8617cca813c6b46f779b6d4f236600e8b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:27.778Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:27.778Z"
+  },
+  "064413f1d67a378c3f84fbcb932d5707a932c36581dc269672cf517001598615": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:27.803Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:27.803Z"
+  },
+  "068ca42338e87132653145caa846ad6032e47420177fa54baa6826585498de1b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:29.564Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:29.564Z"
+  },
+  "866a7164dfe0e20cba43c8fa085381cf04269e6fc17c03140d7e542004a7f44b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:29.591Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:29.591Z"
+  },
+  "3ca5cfda4675f7e236685d078bc9867de15ef785d60246a4a64fe0f0509b4b32": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:31.300Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:31.300Z"
+  },
+  "5b08917767d1ce08bf3f962db3ba23a13fa6d1dd1b6be2e1ec913ff067a496c3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:31.327Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:31.327Z"
+  },
+  "d9830254cec4238e4157740663f081f87207b3a53b2970c3cd3f7c05230630b4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:33.054Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:33.054Z"
+  },
+  "6740e9a2b3af0a7df8efc1c13bb7ab58d935c4c7ba4a61926ea5c0bb6dd60040": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:33.080Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:33.080Z"
+  },
+  "4e0573424c9b436d92536d77f5d44752c26b6faa2634d0209da1e0cec06e044b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:34.777Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:34.777Z"
+  },
+  "ea0adf1a4ec5df1966bbef2277a6df42143b56e27653558b979c976786c012d1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:34.799Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:34.799Z"
+  },
+  "16ca2df69f35774d3d737512f52dd0709fdc4ed4b5ed50b33dca0f5fa692c2a8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:36.554Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:36.554Z"
+  },
+  "0d4d24254824482c23298207f503e3b8641dd0a409df45864b472a152a9e8b2f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:36.578Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:36.578Z"
+  },
+  "b915a8336b68f25873ec2c5ab6f90ca14e12ae084e099df2e0350d2df9606cf5": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:38.239Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:38.239Z"
+  },
+  "3847b2a53e9f269d9f7cdea11d10ca7282fe2f9516d44b7cc94c35d939e1a9af": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:38.263Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:38.263Z"
+  },
+  "9a27f66ccf410f2f500185b3d16cda08367426e2e7ecdfee08087f0f56c73d9b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:40.016Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:40.016Z"
+  },
+  "b06516399fff160d05d73e4a5ca1091aeeee4268fc1b88b3230987fc21ff5dc1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:40.031Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:40.031Z"
+  },
+  "740d2dd8c8f8d9440fc6eaac6432765494edfe70c41ad41e6fde2243bedbc86c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:41.620Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:41.620Z"
+  },
+  "c75f7b5b8f3eae53bda064fdf59e4ba8f9ed0f7fa854c06cf19e27c07a390278": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:41.638Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:41.638Z"
+  },
+  "bd1a2d79d6dc06e34f1539aacdee7b09c1ae920dfe5e92ed0e7dba90af21f535": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:43.376Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:43.376Z"
+  },
+  "b31405185bc6f2854e659a04e300ae0a296a1257dceb69ff656c878dfc6a5822": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:43.402Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:43.402Z"
+  },
+  "46058c9557e976856f9471a8e522f665a619e39e61519e67925c78b6c39ba61c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:45.166Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:45.166Z"
+  },
+  "4334f827339dd1c0deda97609d96cd7f161e9c22e92b8e845ba10bcdf2b130b3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:45.193Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:45.193Z"
+  },
+  "c569d079469b3309c8f97869f989f147dbe9832d97985dd685d57066a8062663": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:46.870Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:46.870Z"
+  },
+  "c1286ae75aba44d01bf25c665b2bb26099aaf27a71b0137dbf3c3ac43f41eee9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:46.889Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:46.889Z"
+  },
+  "2dacaced82c39d816608ee197ea13813863ffcaa5da6e8dca028b2990b95bf3b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:48.633Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:48.633Z"
+  },
+  "7447785dfa2c43e1d67357bc5da657ca00a2e232a485b5cd397e8f07cad991bc": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:48.654Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:48.654Z"
+  },
+  "d3a905979b55748e2101b80abf3a3f9e64a3c360a6c5c3ba660053fa844e8633": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:50.352Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:50.352Z"
+  },
+  "67dff2dff97eab4c78911e5338df47cd588395f29522676f6ae5ba791eca4672": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:50.379Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:50.379Z"
+  },
+  "12150ed33c8cce5e2397825f27addcf6324a04af5fe863ce836d43c123915971": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:52.087Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:52.087Z"
+  },
+  "3c6c8d7bacad9a14ded41560cbdde351f7433c673cb2d5df65d6577e84bbb242": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:52.115Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:52.115Z"
+  },
+  "f466433e63050a69e15984b275f4182c41e95b098e42630df2cd804fa634a03b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:53.826Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:53.826Z"
+  },
+  "99b1ca1fbf1bb1e067cc9de0c2bebd9a4ff59d1cc10fc7e1a975c9f7034d3a12": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:53.858Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:53.858Z"
+  },
+  "47c4f4bb7014aa7321483c144a8947791921c3852fdc3e216eb58d19541dc118": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:55.612Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:55.612Z"
+  },
+  "5eeaf2286c89d9e78b424f88caf793e14b5dedc59c727c6fce47cbaa6701e156": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:55.638Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:55.638Z"
+  },
+  "b7cb5f781290496f6611927ac61c76710142f3a78e067022279b6a7ada94012f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:57.314Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:57.314Z"
+  },
+  "146368ef7302edaeb06fda27686f78dd606ca499dc3b9060641543c43f629012": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:57.330Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:57.330Z"
+  },
+  "1ec1f18f545f04ed831316191d7ea052813e2bae53eb2a87f2ca69fb0090fe8c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:09:58.986Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:58.986Z"
+  },
+  "478f5de3aa861ab6af2fb5c3380e786a23b2bdd0bdcade76837155c8bfd33366": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:09:59.013Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:09:59.013Z"
+  },
+  "4308d39a63a8192de253e82f2384648d41de720d2d16998f86a3a8c2a9f1d1ff": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:00.676Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:00.676Z"
+  },
+  "3c96787bdb2f99709041c9d74552d29957748fdf6110144d562f0d56e33cde53": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:00.696Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:00.696Z"
+  },
+  "298c6d3792043711bff9405795927aeaa15d769a22574f25b03b453836971da3": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:02.430Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:02.430Z"
+  },
+  "14421c768bf262b04a738c6029059301e4e743c5f965174fefe082eea5f78133": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:02.455Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:02.455Z"
+  },
+  "1bf71be4aab35d0e1e1ef120f78272b85d703fe304b2469afb065de6a697dc2f": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:04.184Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:04.184Z"
+  },
+  "afa321916d32520e0ffb3e95bddf4840d75b781a027ac6199ddbf2e6785b64cd": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:04.205Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:04.205Z"
+  },
+  "4cf24f54e7db12111f54572133595527295b895c0edccc536e47e6fd3d73ccc6": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:05.927Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:05.927Z"
+  },
+  "1cc38fa31f9baf1cfd3750aae5c2f0725be05f0470242d29c079d6a0e5dc4784": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:05.958Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:05.958Z"
+  },
+  "0269a6587ae48ecacd5e97bf7db36c15b942ea1f35764f32cb3415920f4f69d0": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:07.683Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:07.683Z"
+  },
+  "d2217019cf4bb4eb35a8f2c78f53bc8ecb0a366ccf2e76421b1e97dba0cb2e1c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:07.706Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:07.706Z"
+  },
+  "991a7fd9520fe7edf65df749e976c6e20f5d893483678d6ccee3f9a739e024bf": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:09.370Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:09.370Z"
+  },
+  "7ee163a7eeb379e7249197464ee7be4c1e3373c18383f42e36b899479b392a04": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:09.395Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:09.395Z"
+  },
+  "0b5669d3ce57ef653cbfcf40e92beb75adb404d52eb12ef5f4fef91083b0c6b4": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:11.188Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:11.188Z"
+  },
+  "83a8eee0129bac51c6b9cfbb106b7031615deadbd0f2e9aaa1edf8a1d879d38c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:11.213Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:11.213Z"
+  },
+  "e6cca97e7c31bcb7dfcb7a67d2b3451347f9e3afe86444773f7b3635adc98838": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:12.929Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:12.929Z"
+  },
+  "8335f5256d9b868dd1c4b2717945c7ff3544a81449b1ec524dc126badacf2f55": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:12.957Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:12.957Z"
+  },
+  "0093f736a81e458c05175e73fa64dd7ae9775088ccf3b11178087efac57b3685": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:14.714Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:14.714Z"
+  },
+  "932c389145ba7e6f7f558c84a6ab937abe6c671000f147759630b79b56841c65": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:14.737Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:14.737Z"
+  },
+  "f67a6120909320a55122b66691c79f9851c51d5c5a728e659e0b51da79965b7b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:17.631Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:17.631Z"
+  },
+  "d18c7045837f086e4b6919ebbed25ca6f537b73705f94c057dc4cc256ab8aa18": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:17.658Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:17.658Z"
+  },
+  "db91b8ef48967538958f3cf19f6a8335ded4839b9cf0934b04ced8057bb96df1": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:19.441Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:19.441Z"
+  },
+  "c6147b9f694f3e66061fbbd29486040d48f7f2e5bdbeb6151d239f5dc8082e6b": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:19.465Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:19.465Z"
+  },
+  "26842d734b40ec40412c0c3ac1dd72c65389657a6fb77f5cdfc1dcda0def8a36": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:21.227Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:21.228Z"
+  },
+  "fc7de009cae5a29ad8cd8c7acbb916f29e88281cdaea9ed77a5231bbdbb1f325": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:21.247Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:21.247Z"
+  },
+  "e9c2ef383af05ce0f6bbf8b599c364a43a4a307eae0dc9e7ec0174c6a0cf6e5d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:23.009Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:23.009Z"
+  },
+  "9df6d194518f58851d8f583d2b0e0232574886c8ecccfa16ff69401b3d06e82d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:23.038Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:23.038Z"
+  },
+  "25adccb8efae714f2938a05154a4025c265756304189527f7c5ecf6b21224396": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:24.760Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:24.760Z"
+  },
+  "9bb926060670f0e87e845a0f25431e24b467e1bbbd519a37fee814206e6e68b7": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:24.789Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:24.789Z"
+  },
+  "ed187c559e61aad8703ac6d1f88904a3d3bc1a3d196eec0bf545f7c54cf05065": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:26.516Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:26.516Z"
+  },
+  "9ff5ca6a7c95e6cab9a4d3684b2461a5d9c77f20b3e4b4e30486a614cb5534d2": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:26.539Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:26.539Z"
+  },
+  "b73ae0d1f6f0ee6c3f2ab47f988176186418f5edb50d28f3b7e8b56593401df8": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:28.228Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:28.228Z"
+  },
+  "771c53718b51d7c70a71b5db205a2083071e89f18e0355206af96e466748e22c": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:28.252Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:28.252Z"
+  },
+  "d8224da70e9ff271bd5c46fb23245b1e85e6159567aacb1d7acc4c2b15ae30e9": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:30.002Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:30.002Z"
+  },
+  "b3219fe51edfacbbfa51517cf00a995011939f9e436282683bce96d4fb3e1b7d": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:30.024Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:30.024Z"
+  },
+  "a9f436226d27b56ca8fa2e2c72c9b2ddf093534d9c06920050c1c7acf97b636a": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "accept",
+    "expiresAt": "2025-10-17T00:10:48.142Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:48.142Z"
+  },
+  "980dc5d5a9dccecde57b717dd91e6306186d0ac986a3780f50f01ec1a1f63afc": {
+    "allocationId": "reclcHD2t4ITdRSXF",
+    "employeeId": "recU2yfUOIGFsIuZV",
+    "action": "deny",
+    "expiresAt": "2025-10-17T00:10:48.168Z",
+    "isBookingAllocation": false,
+    "role": null,
+    "used": false,
+    "createdAt": "2025-10-14T00:10:48.168Z"
   }
 }

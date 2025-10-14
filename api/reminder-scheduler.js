@@ -89,6 +89,10 @@ async function updateReminderStatus(tableId, recordId, fields) {
         );
     } catch (error) {
         console.error('Error updating reminder status:', error);
+        if (error.response) {
+            console.error('Airtable error response:', error.response.data);
+        }
+        throw error; // Re-throw to prevent sending SMS if update fails
     }
 }
 
@@ -143,13 +147,19 @@ async function processPendingAllocations() {
         // Process each pending allocation
         for (const allocation of pendingAllocations) {
             if (shouldSendShiftReminder(allocation)) {
-                await sendAllocationReminder(allocation);
-                
-                // Update Airtable to mark reminder as sent
-                await updateReminderStatus(ALLOCATIONS_TABLE_ID, allocation.id, {
-                    'Reminder Sent': 1,  // Airtable checkbox expects 1, not true
-                    'Reminder Sent Date': new Date().toISOString()
-                });
+                try {
+                    // First try to update the reminder status - if this fails, don't send SMS
+                    await updateReminderStatus(ALLOCATIONS_TABLE_ID, allocation.id, {
+                        'Reminder Sent': true,  // Testing if Airtable expects boolean true
+                        'Reminder Sent Date': new Date().toISOString()
+                    });
+                    
+                    // Only send SMS if update was successful
+                    await sendAllocationReminder(allocation);
+                } catch (error) {
+                    console.error(`Failed to process reminder for allocation ${allocation.id}:`, error);
+                    // Continue to next allocation
+                }
             }
         }
         
@@ -220,13 +230,19 @@ async function processPendingBookings() {
                 (!fields['Onboarding Response'] || fields['Onboarding Response'] === 'Pending')) {
                 
                 if (shouldSendBookingReminder(booking, 'Onboarding')) {
-                    await sendBookingReminder(booking, 'Onboarding');
-                    
-                    // Update Airtable to mark reminder as sent
-                    await updateReminderStatus(BOOKINGS_TABLE_ID, booking.id, {
-                        'Onboarding Reminder Sent': 1,  // Airtable checkbox expects 1, not true
-                        'Onboarding Reminder Sent Date': new Date().toISOString()
-                    });
+                    try {
+                        // First try to update the reminder status - if this fails, don't send SMS
+                        await updateReminderStatus(BOOKINGS_TABLE_ID, booking.id, {
+                            'Onboarding Reminder Sent': true,  // Testing if Airtable expects boolean true
+                            'Onboarding Reminder Sent Date': new Date().toISOString()
+                        });
+                        
+                        // Only send SMS if update was successful
+                        await sendBookingReminder(booking, 'Onboarding');
+                    } catch (error) {
+                        console.error(`Failed to process onboarding reminder for booking ${booking.id}:`, error);
+                        // Continue to next booking
+                    }
                 }
             }
             
@@ -235,13 +251,19 @@ async function processPendingBookings() {
                 (!fields['Deloading Response'] || fields['Deloading Response'] === 'Pending')) {
                 
                 if (shouldSendBookingReminder(booking, 'Deloading')) {
-                    await sendBookingReminder(booking, 'Deloading');
-                    
-                    // Update Airtable to mark reminder as sent
-                    await updateReminderStatus(BOOKINGS_TABLE_ID, booking.id, {
-                        'Deloading Reminder Sent': 1,  // Airtable checkbox expects 1, not true
-                        'Deloading Reminder Sent Date': new Date().toISOString()
-                    });
+                    try {
+                        // First try to update the reminder status - if this fails, don't send SMS
+                        await updateReminderStatus(BOOKINGS_TABLE_ID, booking.id, {
+                            'Deloading Reminder Sent': true,  // Testing if Airtable expects boolean true
+                            'Deloading Reminder Sent Date': new Date().toISOString()
+                        });
+                        
+                        // Only send SMS if update was successful
+                        await sendBookingReminder(booking, 'Deloading');
+                    } catch (error) {
+                        console.error(`Failed to process deloading reminder for booking ${booking.id}:`, error);
+                        // Continue to next booking
+                    }
                 }
             }
         }
@@ -386,12 +408,13 @@ async function checkAndSendReminders() {
 let reminderInterval = null;
 
 function startReminderScheduler() {
-    console.log('🚀 Starting reminder scheduler v2.1...');
+    console.log('🚀 Starting reminder scheduler v2.2...');
     console.log(`   - Checking every ${CHECK_INTERVAL_MS / 1000 / 60} minutes`);
     console.log(`   - Sending reminders every ${REMINDER_INTERVAL_MS / 1000 / 60 / 60} hours for pending allocations`);
     console.log(`   - Stopping reminders after ${MAX_REMINDER_AGE_MS / 1000 / 60 / 60} hours`);
     console.log('   - Using Airtable fields to track reminder status');
-    console.log('   - Checkbox format: Using numeric 1 (not boolean)');
+    console.log('   - Checkbox format: Using boolean true');
+    console.log('   - Update-first approach: Prevents SMS if tracking fails');
     
     // Run initial check
     checkAndSendReminders();
