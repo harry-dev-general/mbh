@@ -317,8 +317,9 @@ Please prepare for customer return and complete vessel check.`;
 
 /**
  * Process bookings and send reminders
+ * @param {boolean} forceImmediate - Force send all reminders immediately for testing
  */
-async function processBookingReminders() {
+async function processBookingReminders(forceImmediate = false) {
     try {
         const bookings = await getTodaysBookings();
         const fullTimeStaff = await getFullTimeStaff();
@@ -330,6 +331,10 @@ async function processBookingReminders() {
         const sydneyTime = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
         console.log(`Current Sydney time: ${sydneyTime.toLocaleTimeString('en-AU')}`);
         
+        if (forceImmediate) {
+            console.log('⚡ FORCE IMMEDIATE MODE - Sending all reminders regardless of time');
+        }
+        
         for (const booking of bookings) {
             const fields = booking.fields;
             const bookingDate = fields['Booking Date'];
@@ -340,7 +345,7 @@ async function processBookingReminders() {
             console.log(`   Deloading Time: ${fields['Deloading Time']}`);
             
             if (fields['Onboarding Time'] && 
-                shouldSendReminder(fields['Onboarding Time'], booking.id, 'onboarding', bookingDate)) {
+                (forceImmediate || shouldSendReminder(fields['Onboarding Time'], booking.id, 'onboarding', bookingDate))) {
                 
                 const recipients = new Set();
                 
@@ -366,7 +371,7 @@ async function processBookingReminders() {
             
             // Check deloading reminders
             if (fields['Deloading Time'] && 
-                shouldSendReminder(fields['Deloading Time'], booking.id, 'deloading', bookingDate)) {
+                (forceImmediate || shouldSendReminder(fields['Deloading Time'], booking.id, 'deloading', bookingDate))) {
                 
                 const recipients = new Set();
                 

@@ -838,11 +838,15 @@ app.get('/api/admin/booking-reminder-status', adminAuth, (req, res) => {
 // Admin endpoint to manually trigger booking reminder check
 app.post('/api/admin/trigger-booking-reminders', adminAuth, async (req, res) => {
   try {
-    await bookingReminderScheduler.processBookingReminders();
+    const forceImmediate = req.body?.force === true || req.query?.force === 'true';
+    await bookingReminderScheduler.processBookingReminders(forceImmediate);
     res.json({ 
       success: true, 
-      message: 'Booking reminder check triggered successfully',
-      timestamp: new Date().toISOString()
+      message: forceImmediate 
+        ? 'Booking reminders force-sent immediately' 
+        : 'Booking reminder check triggered successfully',
+      timestamp: new Date().toISOString(),
+      forceImmediate
     });
   } catch (error) {
     console.error('Error triggering booking reminders:', error);
