@@ -82,8 +82,15 @@ function shouldSendReminder(targetTime, bookingId, type, bookingDate) {
         }
     }
     
-    // Check if current time matches target time (within 1 minute window)
-    return Math.abs(currentMinutes - targetMinutes) <= 1;
+    // Check if current time matches target time (within 2 minute window)
+    const timeDiff = Math.abs(currentMinutes - targetMinutes);
+    console.log(`⏰ Time check for ${type} reminder:`);
+    console.log(`   Target time: ${targetTime} (${targetMinutes} minutes)`);  
+    console.log(`   Current time: ${Math.floor(currentMinutes/60)}:${String(currentMinutes%60).padStart(2,'0')} (${currentMinutes} minutes)`);
+    console.log(`   Time difference: ${timeDiff} minutes`);
+    console.log(`   Will send: ${timeDiff <= 2}`);
+    
+    return timeDiff <= 2;
 }
 
 /**
@@ -318,11 +325,20 @@ async function processBookingReminders() {
         
         console.log(`Found ${bookings.length} bookings today, ${fullTimeStaff.length} full-time staff`);
         
+        // Log current Sydney time for debugging
+        const now = new Date();
+        const sydneyTime = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+        console.log(`Current Sydney time: ${sydneyTime.toLocaleTimeString('en-AU')}`);
+        
         for (const booking of bookings) {
             const fields = booking.fields;
             const bookingDate = fields['Booking Date'];
             
             // Check onboarding reminders
+            console.log(`\n📋 Checking booking ${fields['Customer Name']}:`);
+            console.log(`   Onboarding Time: ${fields['Onboarding Time']}`);
+            console.log(`   Deloading Time: ${fields['Deloading Time']}`);
+            
             if (fields['Onboarding Time'] && 
                 shouldSendReminder(fields['Onboarding Time'], booking.id, 'onboarding', bookingDate)) {
                 
