@@ -13,6 +13,7 @@ const notifications = require('./api/notifications');
 const shiftResponseHandler = require('./api/shift-response-handler');
 const announcements = require('./api/announcements');
 const reminderScheduler = require('./api/reminder-scheduler');
+const bookingReminderScheduler = require('./api/booking-reminder-scheduler');
 
 // Import vessel maintenance routes
 const vesselRoutes = require('./api/routes/vessel-maintenance');
@@ -800,6 +801,11 @@ app.get('/api/admin/reminder-status', adminAuth, async (req, res) => {
           ]
         }
       },
+      bookingTimeReminders: {
+        active: true,
+        checkInterval: '1 minute',
+        recipients: 'Assigned staff + Full-Time staff'
+      },
       message: 'Reminder tracking is now handled directly through Airtable fields to prevent duplicates across multiple instances.'
     };
     res.json(status);
@@ -808,6 +814,42 @@ app.get('/api/admin/reminder-status', adminAuth, async (req, res) => {
     res.status(500).json({ 
       error: 'Failed to fetch reminder status',
       message: error.message 
+    });
+  }
+});
+
+// Admin endpoint to check booking reminder status
+app.get('/api/admin/booking-reminder-status', adminAuth, (req, res) => {
+  res.json({
+    active: true,
+    checkInterval: '1 minute',
+    reminderTypes: ['Onboarding Time', 'Deloading Time'],
+    recipients: 'Assigned staff + All Full-Time staff',
+    features: [
+      'SMS at exact Onboarding/Deloading times',
+      'Includes vessel details and add-ons',
+      'Direct links to checklists',
+      'Duplicate prevention within 20 hours'
+    ],
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Admin endpoint to manually trigger booking reminder check
+app.post('/api/admin/trigger-booking-reminders', adminAuth, async (req, res) => {
+  try {
+    await bookingReminderScheduler.processBookingReminders();
+    res.json({ 
+      success: true, 
+      message: 'Booking reminder check triggered successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error triggering booking reminders:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to trigger booking reminder check',
+      details: error.message 
     });
   }
 });
@@ -836,8 +878,9 @@ server.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`WebSocket server ready at ws://localhost:${PORT}/ws`);
   
-  // Start the reminder scheduler
+  // Start the reminder schedulers
   reminderScheduler.startReminderScheduler();
+  bookingReminderScheduler.startBookingReminderScheduler();
 });
 
 // Graceful shutdown handling
@@ -847,9 +890,12 @@ process.on('SIGINT', gracefulShutdown);
 function gracefulShutdown() {
   console.log('\n🛑 Shutting down gracefully...');
   
-  // Stop the reminder scheduler
+  // Stop the reminder schedulers
   if (reminderScheduler && reminderScheduler.stopReminderScheduler) {
     reminderScheduler.stopReminderScheduler();
+  }
+  if (bookingReminderScheduler && bookingReminderScheduler.stopBookingReminderScheduler) {
+    bookingReminderScheduler.stopBookingReminderScheduler();
   }
   
   // Close the HTTP server
