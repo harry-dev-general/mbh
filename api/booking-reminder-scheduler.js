@@ -191,22 +191,20 @@ ${checklistLink}
 Please ensure vessel is ready before customer arrival.`;
     
     try {
-        // Send using Twilio
-        const accountSid = process.env.TWILIO_ACCOUNT_SID;
-        const authToken = process.env.TWILIO_AUTH_TOKEN;
-        const fromNumber = process.env.TWILIO_FROM_NUMBER;
-        
-        if (!accountSid || !authToken || !fromNumber) {
-            console.error('Missing Twilio credentials');
-            return;
-        }
-        
-        const client = require('twilio')(accountSid, authToken);
-        
-        const result = await client.messages.create({
-            body: message,
-            from: fromNumber,
-            to: phone
+        // Send SMS using the existing notification system
+        await notifications.sendShiftNotification({
+            employeePhone: phone,
+            employeeName: recipientStaff.fields['Name'],
+            allocationId: booking.id,
+            employeeId: recipientStaff.id,
+            shiftType: 'Onboarding',
+            shiftDate: fields['Booking Date'],
+            startTime: fields['Onboarding Time'],
+            endTime: fields['Start Time'],
+            customerName: fields['Customer Name'],
+            role: 'Onboarding',
+            isBookingAllocation: true,
+            notes: message // Pass the formatted message as notes
         });
         
         console.log(`📤 Sent onboarding reminder to ${recipientStaff.fields['Name']} for ${fields['Customer Name']}`);
@@ -250,22 +248,20 @@ ${checklistLink}
 Please prepare for customer return and complete vessel check.`;
     
     try {
-        // Send using Twilio
-        const accountSid = process.env.TWILIO_ACCOUNT_SID;
-        const authToken = process.env.TWILIO_AUTH_TOKEN;
-        const fromNumber = process.env.TWILIO_FROM_NUMBER;
-        
-        if (!accountSid || !authToken || !fromNumber) {
-            console.error('Missing Twilio credentials');
-            return;
-        }
-        
-        const client = require('twilio')(accountSid, authToken);
-        
-        const result = await client.messages.create({
-            body: message,
-            from: fromNumber,
-            to: phone
+        // Send SMS using the existing notification system
+        await notifications.sendShiftNotification({
+            employeePhone: phone,
+            employeeName: recipientStaff.fields['Name'],
+            allocationId: booking.id,
+            employeeId: recipientStaff.id,
+            shiftType: 'Deloading',
+            shiftDate: fields['Booking Date'],
+            startTime: fields['Deloading Time'],
+            endTime: fields['Finish Time'],
+            customerName: fields['Customer Name'],
+            role: 'Deloading',
+            isBookingAllocation: true,
+            notes: message // Pass the formatted message as notes
         });
         
         console.log(`📤 Sent deloading reminder to ${recipientStaff.fields['Name']} for ${fields['Customer Name']}`);
