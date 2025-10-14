@@ -98,6 +98,20 @@ app.use(express.static(path.join(__dirname, 'training')));
 // Add vessel maintenance routes
 app.use('/api/vessels', vesselRoutes);
 
+// Simple admin authentication middleware
+const adminAuth = (req, res, next) => {
+  const adminKey = req.headers['x-admin-key'] || req.query.adminKey;
+  const expectedKey = process.env.ADMIN_API_KEY || 'mbh-admin-2025';
+  
+  if (adminKey !== expectedKey) {
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Unauthorized - Invalid admin key' 
+    });
+  }
+  next();
+};
+
 // Config endpoint for frontend configuration
 app.get('/api/config', (req, res) => {
     res.json({
@@ -830,20 +844,6 @@ app.get('/dashboard.html', (req, res) => {
 app.get('/training/dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
 });
-
-// Simple admin authentication middleware
-const adminAuth = (req, res, next) => {
-  const adminKey = req.headers['x-admin-key'] || req.query.adminKey;
-  const expectedKey = process.env.ADMIN_API_KEY || 'mbh-admin-2025';
-  
-  if (adminKey !== expectedKey) {
-    return res.status(401).json({ 
-      success: false, 
-      error: 'Unauthorized - Invalid admin key' 
-    });
-  }
-  next();
-};
 
 // Admin endpoint to manually trigger reminder check
 app.post('/api/admin/trigger-reminders', adminAuth, async (req, res) => {
