@@ -12,7 +12,7 @@
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/config.js"></script>
+    <script src="js/supabase-init-fix.js"></script>
     <script src="js/role-helper.js"></script>
     <style>
         body {
@@ -61,133 +61,84 @@
     <script>
         console.log('index.html: Main script block starting...');
         
-        // Check if dependencies are loaded
-        let checkCount = 0;
-        const maxChecks = 20; // 10 seconds max
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.message, e.filename, e.lineno);
+        });
         
-        function checkDependencies() {
-            checkCount++;
-            console.log(`Dependency check ${checkCount}:`);
-            console.log('- window.supabase:', typeof window.supabase);
-            console.log('- window.MBHConfig:', typeof window.MBHConfig);
-            console.log('- window.RoleHelper:', typeof window.RoleHelper);
-            
-            if (window.supabase && window.MBHConfig && window.RoleHelper) {
-                console.log('All dependencies loaded, starting init...');
-                document.getElementById('status-text').textContent = 'Initializing...';
-                init();
-            } else if (checkCount < maxChecks) {
-                setTimeout(checkDependencies, 500);
-            } else {
-                console.error('Dependencies failed to load after 10 seconds');
-                showError('Failed to load required scripts. Please refresh the page.');
-            }
-        }
-        
-        let supabase;
-        
-        async function init() {
-            console.log('Starting initialization...');
+        async function checkAuth() {
             try {
-                // Initialize Supabase
-                console.log('Initializing Supabase client...');
-                try {
-                    supabase = await window.MBHConfig.initializeSupabase();
-                    console.log('Supabase client initialized successfully');
-                } catch (configError) {
-                    console.error('Failed to initialize Supabase:', configError);
-                    showError('Configuration error. The server is not properly configured. Please contact support.');
-                    // Don't redirect, just show the error
-                    return;
-                }
+                updateStatus('Initializing Supabase...');
                 
-                // Check authentication with timeout
-                console.log('Checking authentication...');
-                let sessionResult;
-                try {
-                    // Add a 10-second timeout to prevent indefinite hanging
-                    sessionResult = await Promise.race([
-                        supabase.auth.getSession(),
-                        new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error('Authentication check timed out after 10 seconds')), 10000)
-                        )
-                    ]);
-                } catch (timeoutError) {
-                    console.error('Session check timed out:', timeoutError);
-                    showError('Authentication service is not responding. Please check your connection and try again.');
-                    // Show debugging info
-                    const debugInfo = document.createElement('div');
-                    debugInfo.style.marginTop = '10px';
-                    debugInfo.style.fontSize = '12px';
-                    debugInfo.innerHTML = `
-                        <p>Debug Info:</p>
-                        <p>- Try visiting: <a href="/training/auth-debug.html" style="color: #007bff;">Authentication Debug Page</a></p>
-                        <p>- Or go directly to: <a href="/training/auth.html" style="color: #007bff;">Login Page</a></p>
-                    `;
-                    document.getElementById('error-message').appendChild(debugInfo);
-                    return;
-                }
+                // Use our fixed initialization
+                const client = await window.SupabaseInit.getClient();
                 
-                const { data: { session }, error } = sessionResult;
+                updateStatus('Checking authentication...');
+                
+                // Get session with our retry logic
+                const { session, error } = await window.SupabaseInit.getSession();
                 
                 if (error) {
-                    console.error('Auth error:', error);
-                    showError('Authentication error. Please try again.');
-                    setTimeout(() => {
-                        window.location.href = '/training/auth.html';
-                    }, 2000);
-                    return;
+                    console.error('Session error:', error.message);
                 }
                 
                 if (!session) {
-                    // Not authenticated - redirect to login
-                    window.location.href = '/training/auth.html';
+                    updateStatus('No session found, redirecting to login...');
+                    setTimeout(() => {
+                        window.location.href = '/auth.html';
+                    }, 1000);
                     return;
                 }
                 
-                // User is authenticated - check their role
-                console.log('User authenticated:', session.user.email);
+                updateStatus('Authenticated! Checking permissions...');
+                console.log('User:', session.user.email);
                 
                 // Initialize role helper
+                updateStatus('Initializing role system...');
                 await RoleHelper.initializeRoleHelper();
                 
-                // Check if user has management permissions
+                // Check permissions
                 let canAccessManagement = false;
                 try {
                     canAccessManagement = await RoleHelper.hasPermission('canAccessManagementDashboard');
-                    console.log('Can access management:', canAccessManagement);
+                    console.log('Management access:', canAccessManagement);
                 } catch (permError) {
-                    console.error('Permission check failed:', permError);
-                    // If permission check fails, redirect to auth
-                    showError('Authentication error. Redirecting to login...');
-                    setTimeout(() => {
-                        window.location.href = '/training/auth.html';
-                    }, 2000);
-                    return;
+                    console.error('Permission check error:', permError.message);
+                    // Continue anyway - default to regular dashboard
                 }
                 
                 // Check URL parameters
                 const urlParams = new URLSearchParams(window.location.search);
                 const viewMode = urlParams.get('view');
                 
+                updateStatus('Redirecting to dashboard...');
+                
                 if (canAccessManagement && viewMode !== 'regular') {
-                    // Admin user - redirect to management dashboard
-                    console.log('Redirecting to management dashboard');
-                    window.location.href = '/training/management-dashboard.html';
+                    window.location.href = '/management-dashboard.html';
                 } else {
-                    // Regular user or admin viewing regular dashboard
-                    console.log('Redirecting to regular dashboard');
-                    const dashboardUrl = viewMode === 'regular' 
-                        ? '/training/dashboard.html?view=regular'
-                        : '/training/dashboard.html';
-                    window.location.href = dashboardUrl;
+                    window.location.href = '/dashboard.html';
                 }
                 
             } catch (error) {
-                console.error('Initialization error:', error);
-                showError('Failed to initialize: ' + error.message);
-                // Don't redirect on config errors
+                console.error('Auth check error:', error);
+                showError(`Initialization failed: ${error.message}`);
+                
+                // Show debugging links
+                const debugInfo = document.createElement('div');
+                debugInfo.style.marginTop = '10px';
+                debugInfo.style.fontSize = '12px';
+                debugInfo.innerHTML = `
+                    <p>Debug Info:</p>
+                    <p>- Try visiting: <a href="/auth-debug.html" style="color: #007bff;">Authentication Debug Page</a></p>
+                    <p>- Or go directly to: <a href="/auth.html" style="color: #007bff;">Login Page</a></p>
+                `;
+                document.getElementById('error-message').appendChild(debugInfo);
             }
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status-text').textContent = message;
+            console.log('[Status]', message);
         }
         
         function showError(message) {
@@ -196,11 +147,12 @@
             errorDiv.style.display = 'block';
         }
         
-        // Initialize on load
-        window.addEventListener('DOMContentLoaded', function() {
-            console.log('DOMContentLoaded fired, starting dependency check...');
-            checkDependencies();
-        });
+        // Start when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkAuth);
+        } else {
+            checkAuth();
+        }
     </script>
 </body>
 </html>
