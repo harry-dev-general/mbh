@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug - MBH Staff Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Authentication Debug Page</h1>
+    
+    <div id="test1" class="test info">
+        <h3>1. Script Loading Test</h3>
+        <p>Checking if required scripts are loaded...<span class="spinner"></span></p>
+    </div>
+
+    <div id="test2" class="test info">
+        <h3>2. Configuration Test</h3>
+        <p>Loading configuration from /api/config...<span class="spinner"></span></p>
+    </div>
+
+    <div id="test3" class="test info">
+        <h3>3. Supabase Client Test</h3>
+        <p>Initializing Supabase client...<span class="spinner"></span></p>
+    </div>
+
+    <div id="test4" class="test info">
+        <h3>4. Auth Session Test (with timeout)</h3>
+        <p>Getting auth session...<span class="spinner"></span></p>
+    </div>
+
+    <div id="test5" class="test info">
+        <h3>5. Direct Supabase API Test</h3>
+        <p>Testing direct API connection...<span class="spinner"></span></p>
+    </div>
+
+    <script>
+        // Helper function to update test status
+        function updateTest(testId, status, message, details = null) {
+            const test = document.getElementById(testId);
+            test.className = `test ${status}`;
+            test.querySelector('p').innerHTML = message;
+            if (details) {
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(details, null, 2);
+                test.appendChild(pre);
+            }
+        }
+
+        // Helper function to add timeout to promises
+        function withTimeout(promise, timeoutMs, timeoutMessage) {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs)
+                )
+            ]);
+        }
+
+        async function runTests() {
+            console.log('Starting authentication debug tests...');
+
+            // Test 1: Script Loading
+            try {
+                const scriptsLoaded = {
+                    supabase: typeof window.supabase !== 'undefined',
+                    MBHConfig: typeof window.MBHConfig !== 'undefined',
+                    createClient: typeof window.supabase?.createClient === 'function'
+                };
+                
+                if (scriptsLoaded.supabase && scriptsLoaded.MBHConfig && scriptsLoaded.createClient) {
+                    updateTest('test1', 'success', '✅ All scripts loaded successfully', scriptsLoaded);
+                } else {
+                    updateTest('test1', 'error', '❌ Some scripts failed to load', scriptsLoaded);
+                    return;
+                }
+            } catch (error) {
+                updateTest('test1', 'error', '❌ Script loading error: ' + error.message);
+                return;
+            }
+
+            // Test 2: Configuration
+            let config;
+            try {
+                config = await withTimeout(
+                    window.MBHConfig.loadConfig(),
+                    5000,
+                    'Configuration loading timed out after 5 seconds'
+                );
+                updateTest('test2', 'success', '✅ Configuration loaded successfully', {
+                    SUPABASE_URL: config.SUPABASE_URL,
+                    SUPABASE_ANON_KEY: config.SUPABASE_ANON_KEY ? '***' + config.SUPABASE_ANON_KEY.slice(-10) : 'NOT SET',
+                    API_BASE_URL: config.API_BASE_URL
+                });
+            } catch (error) {
+                updateTest('test2', 'error', '❌ Configuration failed: ' + error.message);
+                return;
+            }
+
+            // Test 3: Supabase Client Initialization
+            let supabaseClient;
+            try {
+                supabaseClient = await withTimeout(
+                    window.MBHConfig.initializeSupabase(),
+                    5000,
+                    'Supabase initialization timed out after 5 seconds'
+                );
+                
+                // Check if client was created properly
+                if (supabaseClient && typeof supabaseClient.auth?.getSession === 'function') {
+                    updateTest('test3', 'success', '✅ Supabase client initialized successfully', {
+                        hasAuth: !!supabaseClient.auth,
+                        hasGetSession: typeof supabaseClient.auth?.getSession === 'function'
+                    });
+                } else {
+                    updateTest('test3', 'error', '❌ Supabase client initialization failed - invalid client object');
+                    return;
+                }
+            } catch (error) {
+                updateTest('test3', 'error', '❌ Supabase initialization error: ' + error.message);
+                return;
+            }
+
+            // Test 4: Auth Session (with timeout)
+            try {
+                console.log('Attempting to get session...');
+                const sessionResult = await withTimeout(
+                    supabaseClient.auth.getSession(),
+                    10000,
+                    'getSession timed out after 10 seconds - possible network issue or invalid Supabase configuration'
+                );
+                
+                if (sessionResult.error) {
+                    updateTest('test4', 'warning', '⚠️ Auth error: ' + sessionResult.error.message, sessionResult.error);
+                } else if (sessionResult.data?.session) {
+                    updateTest('test4', 'success', '✅ Session retrieved successfully', {
+                        user: sessionResult.data.session.user?.email,
+                        expires: sessionResult.data.session.expires_at
+                    });
+                } else {
+                    updateTest('test4', 'info', 'ℹ️ No active session (user not logged in)');
+                }
+            } catch (error) {
+                updateTest('test4', 'error', '❌ Session check failed: ' + error.message);
+            }
+
+            // Test 5: Direct API Test
+            try {
+                const healthCheck = await withTimeout(
+                    fetch(config.SUPABASE_URL + '/rest/v1/', {
+                        headers: {
+                            'apikey': config.SUPABASE_ANON_KEY
+                        }
+                    }),
+                    5000,
+                    'Direct API test timed out after 5 seconds'
+                );
+                
+                if (healthCheck.ok) {
+                    updateTest('test5', 'success', '✅ Direct Supabase API connection successful', {
+                        status: healthCheck.status,
+                        statusText: healthCheck.statusText
+                    });
+                } else {
+                    updateTest('test5', 'error', '❌ Direct API connection failed', {
+                        status: healthCheck.status,
+                        statusText: healthCheck.statusText
+                    });
+                }
+            } catch (error) {
+                updateTest('test5', 'error', '❌ Direct API test failed: ' + error.message);
+            }
+        }
+
+        // Run tests when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runTests, 100);
+        });
+    </script>
+</body>
+</html>

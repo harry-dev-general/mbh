@@ -101,9 +101,34 @@
                     return;
                 }
                 
-                // Check authentication
+                // Check authentication with timeout
                 console.log('Checking authentication...');
-                const { data: { session }, error } = await supabase.auth.getSession();
+                let sessionResult;
+                try {
+                    // Add a 10-second timeout to prevent indefinite hanging
+                    sessionResult = await Promise.race([
+                        supabase.auth.getSession(),
+                        new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Authentication check timed out after 10 seconds')), 10000)
+                        )
+                    ]);
+                } catch (timeoutError) {
+                    console.error('Session check timed out:', timeoutError);
+                    showError('Authentication service is not responding. Please check your connection and try again.');
+                    // Show debugging info
+                    const debugInfo = document.createElement('div');
+                    debugInfo.style.marginTop = '10px';
+                    debugInfo.style.fontSize = '12px';
+                    debugInfo.innerHTML = `
+                        <p>Debug Info:</p>
+                        <p>- Try visiting: <a href="/training/auth-debug.html" style="color: #007bff;">Authentication Debug Page</a></p>
+                        <p>- Or go directly to: <a href="/training/auth.html" style="color: #007bff;">Login Page</a></p>
+                    `;
+                    document.getElementById('error-message').appendChild(debugInfo);
+                    return;
+                }
+                
+                const { data: { session }, error } = sessionResult;
                 
                 if (error) {
                     console.error('Auth error:', error);

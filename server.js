@@ -76,7 +76,13 @@ app.use((req, res, next) => {
   })(req, res, next);
 });
 
-app.use(cors());
+// Configure CORS to allow Supabase connections
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'apikey']
+}));
 app.use(express.json());
 
 // Specific route for shift confirmation page (before static middleware)

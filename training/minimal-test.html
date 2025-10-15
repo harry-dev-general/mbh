@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Test</title>
+</head>
+<body>
+    <h1>Minimal Supabase Test</h1>
+    <div id="status">Loading...</div>
+    
+    <!-- Use exact same CDN as index.html -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        console.log('Script started');
+        
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('DOM loaded');
+            const status = document.getElementById('status');
+            
+            try {
+                // Check if Supabase loaded
+                if (!window.supabase) {
+                    throw new Error('Supabase library not loaded');
+                }
+                
+                status.textContent = 'Supabase library loaded. Creating client...';
+                console.log('Supabase object:', window.supabase);
+                
+                // Create client with hardcoded values
+                const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+                
+                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                    auth: {
+                        persistSession: false, // Don't persist for this test
+                        autoRefreshToken: false
+                    }
+                });
+                
+                status.textContent = 'Client created. Testing getSession...';
+                console.log('Client created:', supabase);
+                
+                // Test with timeout
+                const timeout = setTimeout(() => {
+                    status.textContent = '❌ getSession timed out after 3 seconds';
+                    status.style.color = 'red';
+                }, 3000);
+                
+                const result = await supabase.auth.getSession();
+                clearTimeout(timeout);
+                
+                console.log('getSession result:', result);
+                status.textContent = '✅ Success! Check console for details.';
+                status.style.color = 'green';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                status.textContent = '❌ Error: ' + error.message;
+                status.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>
