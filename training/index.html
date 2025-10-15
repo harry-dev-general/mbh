@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MBH Staff Portal - Loading...</title>
+    <script>
+        // Immediate debug output
+        console.log('index.html: Scripts starting to load...');
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.message, e.filename, e.lineno, e.colno);
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script src="js/role-helper.js"></script>
@@ -47,11 +54,36 @@
     <div class="loading-container">
         <div class="spinner"></div>
         <h2>MBH Staff Portal</h2>
-        <p>Checking authentication...</p>
+        <p id="status-text">Checking authentication...</p>
         <div id="error-message" class="error" style="display: none;"></div>
     </div>
 
     <script>
+        console.log('index.html: Main script block starting...');
+        
+        // Check if dependencies are loaded
+        let checkCount = 0;
+        const maxChecks = 20; // 10 seconds max
+        
+        function checkDependencies() {
+            checkCount++;
+            console.log(`Dependency check ${checkCount}:`);
+            console.log('- window.supabase:', typeof window.supabase);
+            console.log('- window.MBHConfig:', typeof window.MBHConfig);
+            console.log('- window.RoleHelper:', typeof window.RoleHelper);
+            
+            if (window.supabase && window.MBHConfig && window.RoleHelper) {
+                console.log('All dependencies loaded, starting init...');
+                document.getElementById('status-text').textContent = 'Initializing...';
+                init();
+            } else if (checkCount < maxChecks) {
+                setTimeout(checkDependencies, 500);
+            } else {
+                console.error('Dependencies failed to load after 10 seconds');
+                showError('Failed to load required scripts. Please refresh the page.');
+            }
+        }
+        
         let supabase;
         
         async function init() {
@@ -140,7 +172,10 @@
         }
         
         // Initialize on load
-        window.addEventListener('DOMContentLoaded', init);
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded fired, starting dependency check...');
+            checkDependencies();
+        });
     </script>
 </body>
 </html>

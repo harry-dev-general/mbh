@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBH Staff Portal - Loading...</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .loading-container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            color: #dc3545;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <h2>MBH Staff Portal</h2>
+        <p id="status">Loading scripts...</p>
+        <div id="error-message" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        console.log('Page loaded, starting initialization sequence...');
+        
+        const statusEl = document.getElementById('status');
+        const errorEl = document.getElementById('error-message');
+        
+        function updateStatus(message) {
+            console.log('Status:', message);
+            statusEl.textContent = message;
+        }
+        
+        function showError(message) {
+            console.error('Error:', message);
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+        
+        // Step 1: Load Supabase
+        updateStatus('Loading Supabase library...');
+        const supabaseScript = document.createElement('script');
+        supabaseScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        
+        supabaseScript.onload = async function() {
+            console.log('Supabase library loaded');
+            updateStatus('Loading configuration...');
+            
+            // Step 2: Load configuration
+            try {
+                const configResponse = await fetch('/api/config');
+                if (!configResponse.ok) {
+                    throw new Error(`Config API returned ${configResponse.status}`);
+                }
+                
+                const config = await configResponse.json();
+                console.log('Config loaded:', config);
+                
+                if (!config.SUPABASE_URL || !config.SUPABASE_ANON_KEY) {
+                    throw new Error('Missing Supabase configuration');
+                }
+                
+                // Step 3: Initialize Supabase
+                updateStatus('Initializing Supabase...');
+                const supabase = window.supabase.createClient(
+                    config.SUPABASE_URL,
+                    config.SUPABASE_ANON_KEY
+                );
+                console.log('Supabase initialized');
+                
+                // Step 4: Check session
+                updateStatus('Checking authentication...');
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    console.error('Session error:', error);
+                    showError('Authentication error: ' + error.message);
+                    setTimeout(() => {
+                        window.location.href = '/training/auth.html';
+                    }, 2000);
+                    return;
+                }
+                
+                if (!session) {
+                    console.log('No session found, redirecting to login');
+                    window.location.href = '/training/auth.html';
+                    return;
+                }
+                
+                console.log('User authenticated:', session.user.email);
+                updateStatus('Checking permissions...');
+                
+                // Step 5: Check permissions (simplified)
+                const token = session.access_token;
+                const permResponse = await fetch('/api/user/permissions', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (permResponse.ok) {
+                    const permissions = await permResponse.json();
+                    console.log('Permissions:', permissions);
+                    
+                    if (permissions.canAccessManagementDashboard) {
+                        console.log('Redirecting to management dashboard');
+                        window.location.href = '/training/management-dashboard.html';
+                    } else {
+                        console.log('Redirecting to regular dashboard');
+                        window.location.href = '/training/dashboard.html';
+                    }
+                } else {
+                    console.warn('Permission check failed, defaulting to regular dashboard');
+                    window.location.href = '/training/dashboard.html';
+                }
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showError('Failed to initialize: ' + error.message);
+            }
+        };
+        
+        supabaseScript.onerror = function() {
+            showError('Failed to load Supabase library. Please check your internet connection.');
+        };
+        
+        document.head.appendChild(supabaseScript);
+    </script>
+</body>
+</html>

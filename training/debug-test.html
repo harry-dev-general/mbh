@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test - MBH Staff Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        .info { background-color: #d1ecf1; }
+        pre { 
+            background: #f4f4f4; 
+            padding: 10px; 
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Test Page</h1>
+    
+    <div id="tests"></div>
+
+    <script>
+        const testsDiv = document.getElementById('tests');
+        
+        function addTest(title, status, message) {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `<h3>${title}</h3><pre>${message}</pre>`;
+            testsDiv.appendChild(div);
+        }
+
+        // Test 1: Basic JavaScript
+        try {
+            addTest('JavaScript Execution', 'success', 'JavaScript is running properly');
+        } catch (e) {
+            console.error('Basic JS failed:', e);
+        }
+
+        // Test 2: Console logging
+        console.log('Console test - if you see this, console logging works');
+        addTest('Console Logging', 'info', 'Check browser console for test message');
+
+        // Test 3: Fetch API
+        fetch('/api/config')
+            .then(response => {
+                addTest('Fetch API', 'success', `Fetch works! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                addTest('Config Data', 'success', JSON.stringify(data, null, 2));
+            })
+            .catch(error => {
+                addTest('Fetch API', 'error', `Fetch failed: ${error.message}`);
+            });
+
+        // Test 4: Load external script
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        script.onload = () => {
+            addTest('External Script (Supabase CDN)', 'success', 'Supabase library loaded successfully');
+            
+            // Test 5: Check if window.supabase exists
+            if (window.supabase && window.supabase.createClient) {
+                addTest('Supabase Global', 'success', 'window.supabase.createClient is available');
+            } else {
+                addTest('Supabase Global', 'error', 'window.supabase.createClient is NOT available');
+            }
+        };
+        script.onerror = () => {
+            addTest('External Script (Supabase CDN)', 'error', 'Failed to load Supabase library');
+        };
+        document.head.appendChild(script);
+
+        // Test 6: Load local script
+        const localScript = document.createElement('script');
+        localScript.src = 'js/config.js';
+        localScript.onload = () => {
+            addTest('Local Script (config.js)', 'success', 'config.js loaded successfully');
+            
+            // Check if MBHConfig exists
+            if (window.MBHConfig) {
+                addTest('MBHConfig Global', 'success', 'window.MBHConfig is available');
+            } else {
+                addTest('MBHConfig Global', 'error', 'window.MBHConfig is NOT available');
+            }
+        };
+        localScript.onerror = () => {
+            addTest('Local Script (config.js)', 'error', 'Failed to load config.js');
+        };
+        // Add a delay to ensure Supabase loads first
+        setTimeout(() => {
+            document.head.appendChild(localScript);
+        }, 1000);
+
+        // Test 7: DOM Ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                addTest('DOM Ready', 'success', 'DOMContentLoaded event fired');
+            });
+        } else {
+            addTest('DOM Ready', 'success', 'DOM already loaded');
+        }
+    </script>
+</body>
+</html>
