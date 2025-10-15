@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JWT Debug - MBH Staff Portal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .status-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #fff;
+            border-left: 4px solid #007bff;
+        }
+        input[type="email"], input[type="password"] {
+            width: 300px;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JWT Authentication Debug Tool</h1>
+        
+        <div class="section">
+            <h2>1. Supabase Configuration</h2>
+            <div id="config-status"></div>
+        </div>
+
+        <div class="section">
+            <h2>2. Authentication Status</h2>
+            <div id="auth-status"></div>
+            <button onclick="checkAuthStatus()">Check Auth Status</button>
+            <button onclick="logOut()">Log Out</button>
+        </div>
+
+        <div class="section">
+            <h2>3. Test Login</h2>
+            <div>
+                <input type="email" id="email" placeholder="Email" value="harry@priceoffice.com.au"><br>
+                <input type="password" id="password" placeholder="Password" value="password"><br>
+                <button onclick="testLogin()">Test Login</button>
+            </div>
+            <div id="login-result"></div>
+        </div>
+
+        <div class="section">
+            <h2>4. Test API Endpoints</h2>
+            <button onclick="testSimpleEndpoint()">Test /api/auth/test-jwt (Simple)</button>
+            <button onclick="testPermissionsEndpoint()">Test /api/user/permissions</button>
+            <button onclick="testDebugEndpoint()">Test /api/auth/debug-jwt</button>
+            <button onclick="testRoleEndpoint()">Test /api/user/role</button>
+            <div id="api-result"></div>
+        </div>
+
+        <div class="section">
+            <h2>5. JWT Token Details</h2>
+            <button onclick="decodeCurrentToken()">Decode Current Token</button>
+            <div id="token-details"></div>
+        </div>
+
+        <div class="section">
+            <h2>6. Test Results Summary</h2>
+            <div id="test-summary"></div>
+        </div>
+    </div>
+
+    <script>
+        let supabase;
+        let testResults = [];
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initializeSupabase();
+            await checkAuthStatus();
+        });
+
+        async function initializeSupabase() {
+            const configDiv = document.getElementById('config-status');
+            
+            try {
+                // Try to load config from server
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                configDiv.innerHTML = `
+                    <div class="status-item">
+                        <span class="success">✓ Configuration loaded from server</span><br>
+                        SUPABASE_URL: ${config.SUPABASE_URL}<br>
+                        SUPABASE_ANON_KEY: ${config.SUPABASE_ANON_KEY.substring(0, 50)}...
+                    </div>
+                `;
+                
+                // Initialize Supabase client
+                supabase = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+                
+                addTestResult('Config Load', true, 'Server configuration loaded successfully');
+            } catch (error) {
+                configDiv.innerHTML = `
+                    <div class="status-item">
+                        <span class="error">✗ Failed to load configuration</span><br>
+                        Error: ${error.message}
+                    </div>
+                `;
+                addTestResult('Config Load', false, error.message);
+            }
+        }
+
+        async function checkAuthStatus() {
+            const statusDiv = document.getElementById('auth-status');
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    statusDiv.innerHTML = `
+                        <div class="status-item">
+                            <span class="success">✓ Authenticated</span><br>
+                            User: ${session.user.email}<br>
+                            User ID: ${session.user.id}<br>
+                            Token expires: ${new Date(session.expires_at * 1000).toLocaleString()}<br>
+                            Token age: ${Math.floor((Date.now() - session.user.created_at) / 1000 / 60)} minutes
+                        </div>
+                    `;
+                    addTestResult('Auth Status', true, `Authenticated as ${session.user.email}`);
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="status-item">
+                            <span class="warning">○ Not authenticated</span>
+                        </div>
+                    `;
+                    addTestResult('Auth Status', false, 'No active session');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="status-item">
+                        <span class="error">✗ Error checking auth status</span><br>
+                        ${error.message}
+                    </div>
+                `;
+                addTestResult('Auth Status', false, error.message);
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            resultDiv.innerHTML = '<div class="status-item">Logging in...</div>';
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) throw error;
+                
+                resultDiv.innerHTML = `
+                    <div class="status-item">
+                        <span class="success">✓ Login successful</span><br>
+                        User: ${data.user.email}<br>
+                        Session: ${data.session ? 'Active' : 'None'}
+                    </div>
+                `;
+                
+                addTestResult('Login', true, `Successfully logged in as ${data.user.email}`);
+                
+                // Refresh auth status
+                await checkAuthStatus();
+                
+                // Auto-test endpoints after login
+                setTimeout(() => {
+                    testPermissionsEndpoint();
+                }, 1000);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status-item">
+                        <span class="error">✗ Login failed</span><br>
+                        ${error.message}
+                    </div>
+                `;
+                addTestResult('Login', false, error.message);
+            }
+        }
+
+        async function logOut() {
+            try {
+                await supabase.auth.signOut();
+                await checkAuthStatus();
+                document.getElementById('api-result').innerHTML = '';
+                document.getElementById('token-details').innerHTML = '';
+                addTestResult('Logout', true, 'Successfully logged out');
+            } catch (error) {
+                addTestResult('Logout', false, error.message);
+            }
+        }
+
+        async function testSimpleEndpoint() {
+            await testEndpoint('/api/auth/test-jwt', 'Simple JWT Test');
+        }
+
+        async function testPermissionsEndpoint() {
+            await testEndpoint('/api/user/permissions', 'Permissions Endpoint');
+        }
+
+        async function testDebugEndpoint() {
+            await testEndpoint('/api/auth/debug-jwt', 'Debug JWT Endpoint', 'POST');
+        }
+
+        async function testRoleEndpoint() {
+            await testEndpoint('/api/user/role', 'Role Endpoint');
+        }
+
+        async function testEndpoint(url, name, method = 'GET') {
+            const resultDiv = document.getElementById('api-result');
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    resultDiv.innerHTML = `
+                        <div class="status-item">
+                            <span class="error">✗ No active session</span><br>
+                            Please login first
+                        </div>
+                    `;
+                    addTestResult(name, false, 'No active session');
+                    return;
+                }
+                
+                resultDiv.innerHTML = `<div class="status-item">Testing ${url}...</div>`;
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="status-item">
+                            <span class="success">✓ ${name} - Status: ${response.status}</span>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    addTestResult(name, true, `Status ${response.status}`);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="status-item">
+                            <span class="error">✗ ${name} - Status: ${response.status}</span>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    addTestResult(name, false, `Status ${response.status}: ${data.error || data.message || 'Unknown error'}`);
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status-item">
+                        <span class="error">✗ ${name} - Network Error</span><br>
+                        ${error.message}
+                    </div>
+                `;
+                addTestResult(name, false, `Network error: ${error.message}`);
+            }
+        }
+
+        async function decodeCurrentToken() {
+            const detailsDiv = document.getElementById('token-details');
+            
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    detailsDiv.innerHTML = `
+                        <div class="status-item">
+                            <span class="error">✗ No active session</span>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Decode JWT without verification
+                const parts = session.access_token.split('.');
+                const header = JSON.parse(atob(parts[0]));
+                const payload = JSON.parse(atob(parts[1]));
+                
+                detailsDiv.innerHTML = `
+                    <div class="status-item">
+                        <strong>Token Structure:</strong><br>
+                        Parts: ${parts.length} (header.payload.signature)<br>
+                        Length: ${session.access_token.length} characters<br><br>
+                        
+                        <strong>Header:</strong>
+                        <pre>${JSON.stringify(header, null, 2)}</pre>
+                        
+                        <strong>Payload:</strong>
+                        <pre>${JSON.stringify(payload, null, 2)}</pre>
+                        
+                        <strong>Token Preview:</strong><br>
+                        ${session.access_token.substring(0, 50)}...
+                    </div>
+                `;
+                
+                addTestResult('Token Decode', true, 'Successfully decoded JWT token');
+                
+            } catch (error) {
+                detailsDiv.innerHTML = `
+                    <div class="status-item">
+                        <span class="error">✗ Error decoding token</span><br>
+                        ${error.message}
+                    </div>
+                `;
+                addTestResult('Token Decode', false, error.message);
+            }
+        }
+
+        function addTestResult(test, success, message) {
+            testResults.push({ test, success, message, timestamp: new Date() });
+            updateTestSummary();
+        }
+
+        function updateTestSummary() {
+            const summaryDiv = document.getElementById('test-summary');
+            const passed = testResults.filter(r => r.success).length;
+            const failed = testResults.filter(r => !r.success).length;
+            
+            let html = `
+                <div class="status-item">
+                    <strong>Test Results:</strong> 
+                    <span class="success">${passed} passed</span>, 
+                    <span class="error">${failed} failed</span><br><br>
+            `;
+            
+            testResults.forEach(result => {
+                const icon = result.success ? '✓' : '✗';
+                const className = result.success ? 'success' : 'error';
+                html += `<span class="${className}">${icon}</span> ${result.test}: ${result.message}<br>`;
+            });
+            
+            html += '</div>';
+            summaryDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

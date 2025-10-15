@@ -18,15 +18,35 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  * @returns {Promise<Object|null>} - Decoded token payload or null
  */
 async function verifyToken(req) {
+    console.log('=== JWT Verification Debug ===');
+    console.log('Request URL:', req.url);
+    console.log('Request headers:', JSON.stringify(req.headers, null, 2));
+    
     // Check Authorization header
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader) {
+        console.log('No Authorization header found');
+        return null;
+    }
+    
+    if (!authHeader.startsWith('Bearer ')) {
+        console.log('Authorization header does not start with "Bearer "');
+        console.log('Auth header value:', authHeader);
         return null;
     }
 
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    console.log('Token length:', token.length);
+    console.log('Token preview:', token.substring(0, 50) + '...');
+    console.log('SUPABASE_URL:', SUPABASE_URL);
+    console.log('SUPABASE_ANON_KEY preview:', SUPABASE_ANON_KEY.substring(0, 50) + '...');
+
     try {
-        // Create a new Supabase client with the Authorization header
-        // This is the proper way to verify tokens server-side
+        // Try multiple verification approaches
+        console.log('Attempting JWT verification...');
+        
+        // Approach 1: Create client with auth header (SvelteKit pattern)
+        console.log('Approach 1: Creating Supabase client with auth header...');
         const authSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             global: {
                 headers: {
@@ -35,18 +55,46 @@ async function verifyToken(req) {
             }
         });
         
-        // Now get the user - this will verify the JWT
-        const { data: { user }, error } = await authSupabase.auth.getUser();
+        // First try without passing token (SvelteKit pattern)
+        console.log('Trying getUser() without token parameter...');
+        let result = await authSupabase.auth.getUser();
         
-        if (error || !user) {
-            console.error('Token verification failed:', error);
+        if (result.error) {
+            console.log('Approach 1 failed:', result.error.message);
+            
+            // Approach 2: Try passing token directly (Edge Functions pattern)
+            console.log('Approach 2: Trying getUser() with token parameter...');
+            result = await authSupabase.auth.getUser(token);
+            
+            if (result.error) {
+                console.log('Approach 2 failed:', result.error.message);
+                
+                // Approach 3: Use default client with token
+                console.log('Approach 3: Using default client with token...');
+                result = await supabase.auth.getUser(token);
+                
+                if (result.error) {
+                    console.error('All approaches failed. Final error:', result.error);
+                    console.error('Error details:', JSON.stringify(result.error, null, 2));
+                    return null;
+                }
+            }
+        }
+        
+        const { data: { user } } = result;
+        
+        if (!user) {
+            console.error('Token verification succeeded but no user returned');
             return null;
         }
 
         console.log('Successfully verified token for user:', user.email);
+        console.log('User ID:', user.id);
+        console.log('User metadata:', JSON.stringify(user.user_metadata, null, 2));
         return user;
     } catch (error) {
-        console.error('Error verifying token:', error);
+        console.error('Exception during token verification:', error);
+        console.error('Error stack:', error.stack);
         return null;
     }
 }

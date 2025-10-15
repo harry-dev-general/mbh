@@ -25,7 +25,8 @@ const dashboardOverview = require('./api/dashboard-overview');
 
 // Import role management and auth middleware
 const roleManager = require('./api/role-manager');
-const { authenticate, optionalAuthenticate } = require('./api/auth-middleware');
+// Temporarily using V2 for testing JWT issues
+const { authenticate, optionalAuthenticate } = require('./api/auth-middleware-v2');
 const authHooks = require('./api/auth-hooks');
 
 // Import webhook logger for debugging
@@ -518,6 +519,161 @@ app.get('/api/user/permissions', authenticate, async (req, res) => {
   }
 });
 
+// Simple JWT test endpoint - no middleware
+app.get('/api/auth/test-jwt', async (req, res) => {
+  console.log('=== Simple JWT Test ===');
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing or invalid Authorization header' });
+  }
+  
+  const token = authHeader.substring(7);
+  
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const SUPABASE_URL = process.env.SUPABASE_URL || 'https://etkugeooigiwahikrmzr.supabase.co';
+    const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+    
+    // Create client with auth header
+    const authSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: authHeader
+        }
+      }
+    });
+    
+    const { data: { user }, error } = await authSupabase.auth.getUser();
+    
+    if (error) {
+      return res.status(401).json({ 
+        error: 'JWT verification failed', 
+        details: error.message,
+        code: error.code,
+        status: error.status
+      });
+    }
+    
+    return res.json({ 
+      success: true, 
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ 
+      error: 'Server error', 
+      message: error.message 
+    });
+  }
+});
+
+// JWT Debug endpoint - helps diagnose authentication issues
+app.post('/api/auth/debug-jwt', async (req, res) => {
+  console.log('=== JWT Debug Endpoint Called ===');
+  
+  const authHeader = req.headers.authorization;
+  const result = {
+    timestamp: new Date().toISOString(),
+    headers: {
+      authorization: authHeader ? 'Present' : 'Missing',
+      contentType: req.headers['content-type'],
+      origin: req.headers.origin,
+      referer: req.headers.referer
+    },
+    environment: {
+      SUPABASE_URL: process.env.SUPABASE_URL || 'Using default',
+      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'Set' : 'Using default',
+      NODE_ENV: process.env.NODE_ENV,
+      RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT
+    }
+  };
+
+  if (!authHeader) {
+    result.error = 'No Authorization header found';
+    return res.status(400).json(result);
+  }
+
+  if (!authHeader.startsWith('Bearer ')) {
+    result.error = 'Authorization header does not start with "Bearer "';
+    result.authHeaderValue = authHeader;
+    return res.status(400).json(result);
+  }
+
+  const token = authHeader.substring(7);
+  result.token = {
+    length: token.length,
+    preview: token.substring(0, 50) + '...'
+  };
+
+  // Try to decode the JWT without verification first
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      result.jwtStructure = 'Invalid - expected 3 parts, got ' + parts.length;
+    } else {
+      const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+      result.jwtPayload = {
+        sub: payload.sub,
+        email: payload.email,
+        role: payload.role,
+        iat: new Date(payload.iat * 1000).toISOString(),
+        exp: new Date(payload.exp * 1000).toISOString(),
+        isExpired: Date.now() > payload.exp * 1000
+      };
+    }
+  } catch (decodeError) {
+    result.jwtDecodeError = decodeError.message;
+  }
+
+  // Try to verify with Supabase
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const SUPABASE_URL = process.env.SUPABASE_URL || 'https://etkugeooigiwahikrmzr.supabase.co';
+    const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+    
+    const authSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: authHeader
+        }
+      }
+    });
+    
+    const { data: { user }, error } = await authSupabase.auth.getUser();
+    
+    if (error) {
+      result.supabaseError = {
+        message: error.message,
+        status: error.status,
+        code: error.code,
+        details: error
+      };
+    } else if (user) {
+      result.supabaseUser = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        created_at: user.created_at
+      };
+      result.verificationStatus = 'SUCCESS';
+    } else {
+      result.verificationStatus = 'NO_USER';
+    }
+  } catch (verifyError) {
+    result.verificationError = {
+      message: verifyError.message,
+      stack: verifyError.stack
+    };
+  }
+
+  const statusCode = result.verificationStatus === 'SUCCESS' ? 200 : 401;
+  res.status(statusCode).json(result);
+});
+
 // Login hook - sync user profile and role on login
 app.post('/api/auth/login-hook', authHooks.loginHookHandler);
 
@@ -820,18 +976,18 @@ app.post('/api/allocations/update-status', async (req, res) => {
   updateStatusHandler(req, res);
 });
 
-// Default route - serve the dashboard
+// Default route - serve the index page which handles authentication
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
+  res.sendFile(path.join(__dirname, 'training', 'index.html'));
 });
 
-// Redirect from index.html to dashboard (for legacy links)
+// Legacy redirects - now handled by index.html
 app.get('/index.html', (req, res) => {
-  res.redirect('/dashboard.html');
+  res.redirect('/');
 });
 
 app.get('/training/index.html', (req, res) => {
-  res.redirect('/training/dashboard.html');
+  res.redirect('/');
 });
 
 // Route for training resources (previously index.html)
