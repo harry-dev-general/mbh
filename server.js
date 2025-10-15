@@ -8,6 +8,18 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Check critical environment variables on startup
+const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingVars.length > 0) {
+    console.error('=== CONFIGURATION ERROR ===');
+    console.error('Missing required environment variables:', missingVars.join(', '));
+    console.error('Please set these in Railway dashboard > Variables');
+    console.error('Get values from Supabase Dashboard > Settings > API');
+    console.error('========================');
+}
+
 // Import notification handlers
 const notifications = require('./api/notifications');
 const shiftResponseHandler = require('./api/shift-response-handler');

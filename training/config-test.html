@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Test - MBH Staff Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Configuration Test</h1>
+    <p>This page tests if the server configuration is properly set up.</p>
+
+    <div class="test-section">
+        <h2>1. Server Configuration Test</h2>
+        <button onclick="testConfig()">Test /api/config</button>
+        <div id="config-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Direct API Test</h2>
+        <button onclick="testDirectAPI()">Test Direct API Call</button>
+        <div id="api-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Environment Check</h2>
+        <p>If the configuration test fails, you need to set these environment variables in Railway:</p>
+        <pre>
+SUPABASE_URL=https://etkugeooigiwahikrmzr.supabase.co
+SUPABASE_ANON_KEY=[Get from Supabase Dashboard > Settings > API]
+SUPABASE_SERVICE_KEY=[Get from Supabase Dashboard > Settings > API]
+AIRTABLE_API_KEY=[Your Airtable API key]
+        </pre>
+    </div>
+
+    <script>
+        async function testConfig() {
+            const resultDiv = document.getElementById('config-result');
+            resultDiv.innerHTML = '<p>Testing configuration endpoint...</p>';
+            
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Configuration loaded successfully!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Configuration failed (Status: ${response.status})</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        <p class="warning">⚠️ You need to set the environment variables in Railway!</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Network error:</p>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        async function testDirectAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing direct API access...</p>';
+            
+            try {
+                // Test if we can reach the server at all
+                const response = await fetch('/api/daily-run-sheet?date=2025-10-15');
+                
+                resultDiv.innerHTML = `
+                    <p>Server Response:</p>
+                    <p>Status: ${response.status} ${response.statusText}</p>
+                    <p>This confirms the server is running${response.status === 401 ? ' (authentication required as expected)' : ''}.</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Cannot reach server:</p>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+
+        // Auto-run config test on load
+        window.addEventListener('DOMContentLoaded', () => {
+            testConfig();
+        });
+    </script>
+</body>
+</html>

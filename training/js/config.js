@@ -12,22 +12,26 @@ async function loadConfig() {
     try {
         const response = await fetch('/api/config');
         if (!response.ok) {
-            const errorData = await response.json();
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                errorData = { error: 'Unknown error', message: response.statusText };
+            }
             console.error('Config API error:', errorData);
             
-            // Show user-friendly error
+            // Throw specific error for server configuration issues
             if (errorData.error === 'Server configuration error') {
-                alert('Server configuration error: Supabase keys are not properly configured. Please contact support.');
-                throw new Error(errorData.message);
+                throw new Error('Server configuration error: Supabase keys are not properly configured in Railway environment variables.');
             }
-            throw new Error('Failed to load configuration');
+            throw new Error('Failed to load configuration: ' + (errorData.message || response.statusText));
         }
         appConfig = await response.json();
+        console.log('Configuration loaded successfully');
         return appConfig;
     } catch (error) {
         console.error('Error loading configuration:', error);
-        // Don't provide fallback - force proper configuration
-        alert('Failed to load application configuration. Please ensure the server is properly configured.');
+        // Re-throw the error so calling code can handle it
         throw error;
     }
 }

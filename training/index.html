@@ -55,11 +55,22 @@
         let supabase;
         
         async function init() {
+            console.log('Starting initialization...');
             try {
                 // Initialize Supabase
-                supabase = await window.MBHConfig.initializeSupabase();
+                console.log('Initializing Supabase client...');
+                try {
+                    supabase = await window.MBHConfig.initializeSupabase();
+                    console.log('Supabase client initialized successfully');
+                } catch (configError) {
+                    console.error('Failed to initialize Supabase:', configError);
+                    showError('Configuration error. The server is not properly configured. Please contact support.');
+                    // Don't redirect, just show the error
+                    return;
+                }
                 
                 // Check authentication
+                console.log('Checking authentication...');
                 const { data: { session }, error } = await supabase.auth.getSession();
                 
                 if (error) {
@@ -117,7 +128,8 @@
                 
             } catch (error) {
                 console.error('Initialization error:', error);
-                showError('Failed to initialize. Please refresh the page.');
+                showError('Failed to initialize: ' + error.message);
+                // Don't redirect on config errors
             }
         }
         
