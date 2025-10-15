@@ -115,10 +115,19 @@ const adminAuth = (req, res, next) => {
 
 // Config endpoint for frontend configuration
 app.get('/api/config', (req, res) => {
+    // Ensure environment variables are set
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+        console.error('ERROR: SUPABASE_URL and SUPABASE_ANON_KEY must be set in Railway environment variables');
+        return res.status(500).json({
+            error: 'Server configuration error',
+            message: 'Supabase configuration is missing. Please contact support.'
+        });
+    }
+    
     res.json({
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
-        SUPABASE_URL: process.env.SUPABASE_URL || 'https://etkugeooigiwahikrmzr.supabase.co',
-        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU',
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
         API_BASE_URL: '' // Empty string means use relative URLs
     });
 });

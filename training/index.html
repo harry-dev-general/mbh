@@ -84,9 +84,19 @@
                 await RoleHelper.initializeRoleHelper();
                 
                 // Check if user has management permissions
-                const canAccessManagement = await RoleHelper.hasPermission('canAccessManagementDashboard');
-                
-                console.log('Can access management:', canAccessManagement);
+                let canAccessManagement = false;
+                try {
+                    canAccessManagement = await RoleHelper.hasPermission('canAccessManagementDashboard');
+                    console.log('Can access management:', canAccessManagement);
+                } catch (permError) {
+                    console.error('Permission check failed:', permError);
+                    // If permission check fails, redirect to auth
+                    showError('Authentication error. Redirecting to login...');
+                    setTimeout(() => {
+                        window.location.href = '/training/auth.html';
+                    }, 2000);
+                    return;
+                }
                 
                 // Check URL parameters
                 const urlParams = new URLSearchParams(window.location.search);

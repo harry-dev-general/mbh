@@ -12,19 +12,23 @@ async function loadConfig() {
     try {
         const response = await fetch('/api/config');
         if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Config API error:', errorData);
+            
+            // Show user-friendly error
+            if (errorData.error === 'Server configuration error') {
+                alert('Server configuration error: Supabase keys are not properly configured. Please contact support.');
+                throw new Error(errorData.message);
+            }
             throw new Error('Failed to load configuration');
         }
         appConfig = await response.json();
         return appConfig;
     } catch (error) {
         console.error('Error loading configuration:', error);
-        // Fallback to hardcoded values for local development
-        appConfig = {
-            SUPABASE_URL: 'https://etkugeooigiwahikrmzr.supabase.co',
-            SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU',
-            API_BASE_URL: ''
-        };
-        return appConfig;
+        // Don't provide fallback - force proper configuration
+        alert('Failed to load application configuration. Please ensure the server is properly configured.');
+        throw error;
     }
 }
 
