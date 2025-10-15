@@ -20,6 +20,15 @@ if (missingVars.length > 0) {
     console.error('========================');
 }
 
+// Check recommended environment variables for Railway deployment
+if (!process.env.APP_URL && process.env.NODE_ENV === 'production') {
+    console.warn('=== CONFIGURATION WARNING ===');
+    console.warn('APP_URL environment variable is not set');
+    console.warn('This may cause issues with URL handling on Railway');
+    console.warn('Set APP_URL to your full deployment URL, e.g., https://mbh-development.up.railway.app');
+    console.warn('=============================');
+}
+
 // Import notification handlers
 const notifications = require('./api/notifications');
 const shiftResponseHandler = require('./api/shift-response-handler');
@@ -149,7 +158,8 @@ app.get('/api/config', (req, res) => {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-        API_BASE_URL: '' // Empty string means use relative URLs
+        API_BASE_URL: '', // Empty string means use relative URLs
+        APP_URL: process.env.APP_URL || '' // Add APP_URL for proper URL handling
     });
 });
 

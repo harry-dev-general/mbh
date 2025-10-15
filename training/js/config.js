@@ -67,9 +67,17 @@ async function airtableFetch(path, options = {}) {
     return response.json();
 }
 
+// Helper to get the proper app URL
+async function getAppUrl() {
+    const config = await loadConfig();
+    // Use APP_URL from server if available, otherwise use current origin
+    return config.APP_URL || window.location.origin;
+}
+
 // Export for use in other scripts
 window.MBHConfig = {
     loadConfig,
     initializeSupabase,
-    airtableFetch
+    airtableFetch,
+    getAppUrl
 };
