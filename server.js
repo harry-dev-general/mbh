@@ -1185,10 +1185,12 @@ const wsHandler = new CalendarWebSocketHandler(server);
 // Make WebSocket handler available to other modules
 app.set('wsHandler', wsHandler);
 
-server.listen(PORT, () => {
-  console.log(`MBH Staff Portal running on port ${PORT}`);
+// Railway requires binding to 0.0.0.0
+const HOST = '0.0.0.0';
+server.listen(PORT, HOST, () => {
+  console.log(`MBH Staff Portal running on ${HOST}:${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`WebSocket server ready at ws://localhost:${PORT}/ws`);
+  console.log(`WebSocket server ready at ws://${HOST}:${PORT}/ws`);
   
   // Start the reminder schedulers
   reminderScheduler.startReminderScheduler();
