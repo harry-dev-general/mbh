@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBH Staff Portal</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .loading-container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #status-text {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        #error-message {
+            color: #dc2626;
+            margin-top: 20px;
+            display: none;
+            padding: 10px;
+            background-color: #fee;
+            border-radius: 4px;
+            text-align: left;
+        }
+        
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: left;
+            font-family: monospace;
+            display: none;
+        }
+        
+        .retry-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+        }
+        
+        .retry-button:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <h1>MBH Staff Portal</h1>
+        <div class="spinner" id="spinner"></div>
+        <p id="status-text">Loading application...</p>
+        <div id="error-message"></div>
+        <div id="debug-info" class="debug-info"></div>
+        <button id="retry-button" class="retry-button" onclick="window.location.reload()">Retry</button>
+    </div>
+
+    <!-- Load Supabase first -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Load our fixed initialization module -->
+    <script src="js/supabase-init-fix.js"></script>
+    
+    <!-- Load role helper -->
+    <script src="js/role-helper.js"></script>
+    
+    <script>
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.message, e.filename, e.lineno);
+            addDebugInfo(`Error: ${e.message}`);
+        });
+        
+        // Debug logging
+        function addDebugInfo(message) {
+            const debugDiv = document.getElementById('debug-info');
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML += `[${new Date().toISOString()}] ${message}<br>`;
+            console.log(message);
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status-text').textContent = message;
+            addDebugInfo(message);
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('retry-button').style.display = 'inline-block';
+            addDebugInfo(`ERROR: ${message}`);
+        }
+        
+        async function checkAuth() {
+            try {
+                updateStatus('Initializing Supabase...');
+                
+                // Use our fixed initialization
+                const client = await window.SupabaseInit.getClient();
+                
+                updateStatus('Checking authentication...');
+                
+                // Get session with our retry logic
+                const { session, error } = await window.SupabaseInit.getSession();
+                
+                if (error) {
+                    addDebugInfo(`Session error: ${error.message}`);
+                }
+                
+                if (!session) {
+                    updateStatus('No session found, redirecting to login...');
+                    setTimeout(() => {
+                        window.location.href = '/training/auth.html';
+                    }, 1000);
+                    return;
+                }
+                
+                updateStatus('Authenticated! Checking permissions...');
+                addDebugInfo(`User: ${session.user.email}`);
+                
+                // Initialize role helper
+                updateStatus('Initializing role system...');
+                await RoleHelper.initializeRoleHelper();
+                
+                // Check permissions
+                let canAccessManagement = false;
+                try {
+                    canAccessManagement = await RoleHelper.hasPermission('canAccessManagementDashboard');
+                    addDebugInfo(`Management access: ${canAccessManagement}`);
+                } catch (permError) {
+                    addDebugInfo(`Permission check error: ${permError.message}`);
+                    // Continue anyway - default to regular dashboard
+                }
+                
+                // Check URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const viewMode = urlParams.get('view');
+                
+                updateStatus('Redirecting to dashboard...');
+                
+                if (canAccessManagement && viewMode !== 'regular') {
+                    window.location.href = '/training/management-dashboard.html';
+                } else {
+                    window.location.href = '/training/dashboard.html';
+                }
+                
+            } catch (error) {
+                console.error('Auth check error:', error);
+                showError(`Initialization failed: ${error.message}`);
+            }
+        }
+        
+        // Start when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkAuth);
+        } else {
+            checkAuth();
+        }
+    </script>
+</body>
+</html>
