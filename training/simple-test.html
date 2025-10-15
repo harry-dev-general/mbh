@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test Page</title>
+</head>
+<body>
+    <h1>Simple Test Page</h1>
+    <p>If you can see this, static file serving is working.</p>
+    <p>Current time: <span id="time"></span></p>
+    <p>Test API call: <button onclick="testApi()">Test API</button></p>
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById('time').textContent = new Date().toISOString();
+        
+        function testApi() {
+            fetch('/api/test')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                })
+                .catch(err => {
+                    document.getElementById('result').textContent = 'Error: ' + err.message;
+                });
+        }
+    </script>
+</body>
+</html>

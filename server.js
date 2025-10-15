@@ -65,7 +65,12 @@ app.use((req, res, next) => {
   if (req.path === '/training/shift-confirmation.html' || 
       req.path === '/api/shift-response' ||
       req.path === '/' ||
-      req.path === '/training/index.html') {
+      req.path === '/training/index.html' ||
+      req.path === '/training/index-fixed.html' ||
+      req.path === '/training/supabase-direct-test.html' ||
+      req.path === '/training/index-bypass.html' ||
+      req.path === '/training/auth-no-check.html' ||
+      req.path.startsWith('/training/') && req.path.endsWith('-test.html')) {
     return next();
   }
   
@@ -121,6 +126,12 @@ app.get('/training/shift-confirmation.html', (req, res) => {
       console.log('Successfully served shift-confirmation.html');
     }
   });
+});
+
+// Add request logging to debug issues
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
 });
 
 // Serve static files from the training directory
@@ -557,6 +568,16 @@ app.get('/api/user/permissions', authenticate, async (req, res) => {
       error: error.message
     });
   }
+});
+
+// Simple test endpoint to verify server is responding
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    nodeEnv: process.env.NODE_ENV,
+    railwayEnv: process.env.RAILWAY_ENVIRONMENT
+  });
 });
 
 // Simple JWT test endpoint - no middleware
