@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSP Test - MBH Staff Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>CSP Test Page</h1>
+    
+    <div class="test info">
+        <h3>1. Basic JavaScript Test</h3>
+        <p>Testing if inline JavaScript can execute...</p>
+        <p id="js-test">JavaScript is NOT working</p>
+    </div>
+
+    <div class="test info">
+        <h3>2. External Script Test</h3>
+        <p>Testing if external scripts can load...</p>
+        <p id="external-test">Waiting for external script...</p>
+    </div>
+
+    <div class="test info">
+        <h3>3. Fetch API Test</h3>
+        <p>Testing if we can fetch from /api/config...</p>
+        <p id="fetch-test">Waiting for fetch...</p>
+    </div>
+
+    <div class="test info">
+        <h3>4. Console Output</h3>
+        <p>Check the browser console for any CSP violations or errors.</p>
+    </div>
+
+    <script>
+        // Test 1: Basic JavaScript
+        document.getElementById('js-test').textContent = '✅ JavaScript is working!';
+        document.getElementById('js-test').parentElement.className = 'test success';
+        console.log('CSP Test: Inline JavaScript executed successfully');
+
+        // Test 3: Fetch API
+        fetch('/api/config')
+            .then(response => {
+                if (!response.ok) throw new Error('Fetch failed');
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('fetch-test').textContent = '✅ Fetch successful! Got config with SUPABASE_URL: ' + data.SUPABASE_URL;
+                document.getElementById('fetch-test').parentElement.className = 'test success';
+                console.log('CSP Test: Fetch successful', data);
+            })
+            .catch(error => {
+                document.getElementById('fetch-test').textContent = '❌ Fetch failed: ' + error.message;
+                document.getElementById('fetch-test').parentElement.className = 'test error';
+                console.error('CSP Test: Fetch failed', error);
+            });
+    </script>
+
+    <!-- Test 2: External Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        if (typeof window.supabase !== 'undefined') {
+            document.getElementById('external-test').textContent = '✅ External script loaded (Supabase client available)';
+            document.getElementById('external-test').parentElement.className = 'test success';
+            console.log('CSP Test: External script loaded successfully');
+        } else {
+            document.getElementById('external-test').textContent = '❌ External script failed to load';
+            document.getElementById('external-test').parentElement.className = 'test error';
+            console.error('CSP Test: External script failed to load');
+        }
+    </script>
+</body>
+</html>
