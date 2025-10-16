@@ -73,6 +73,9 @@
                 // Use our fixed initialization
                 const client = await window.SupabaseInit.getClient();
                 
+                // Make supabase globally available for role-helper.js
+                window.supabase = client;
+                
                 updateStatus('Checking authentication...');
                 
                 // Get session with our retry logic

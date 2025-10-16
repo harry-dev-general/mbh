@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Allocation Dashboard - MBH Management</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-init-fix.js"></script>
     <script src="js/role-helper.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- FullCalendar v6 Standard Bundle (using allowed CDN) -->
@@ -1699,10 +1700,8 @@
     </div>
 
     <script>
-        // Initialize Supabase
-        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // We'll initialize Supabase in checkAuth using SupabaseInit module
+        let supabase;
 
         // Airtable configuration
         const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
@@ -1747,39 +1746,55 @@
 
         // Check authentication and permissions
         async function checkAuth() {
-            // Use getSession instead of getUser to avoid race conditions
-            const { data: { session }, error } = await supabase.auth.getSession();
-            
-            if (error) {
-                console.error('Auth error:', error);
-                window.location.href = 'auth.html';
-                return;
-            }
+            try {
+                // Initialize Supabase client
+                const client = await window.SupabaseInit.getClient();
+                
+                // Make supabase globally available for other functions
+                window.supabase = client;
+                supabase = client;
+                
+                // Initialize role helper
+                await RoleHelper.initializeRoleHelper();
+                
+                // Get session with retry logic
+                const { session, error } = await window.SupabaseInit.getSession();
+                
+                if (error) {
+                    console.error('Auth error:', error);
+                    window.location.href = 'auth.html';
+                    return;
+                }
 
-            if (!session || !session.user) {
-                console.log('No active session, redirecting to auth');
-                window.location.href = 'auth.html';
-                return;
-            }
-            
-            const user = session.user;
+                if (!session || !session.user) {
+                    console.log('No active session, redirecting to auth');
+                    window.location.href = 'auth.html';
+                    return;
+                }
+                
+                const user = session.user;
 
-            // Check if user has management access using role-based system
-            const canAccessManagement = await RoleHelper.hasPermission('canAccessManagementDashboard');
-            
-            if (!canAccessManagement) {
-                // Not a management user, redirect to regular dashboard
-                console.log('User not authorized for management allocations view, redirecting to dashboard');
-                alert('Access Denied: You do not have permission to access the management allocation dashboard.');
-                window.location.href = 'dashboard.html';
-                return;
+                // Check if user has management access using role-based system
+                const canAccessManagement = await RoleHelper.hasPermission('canAccessManagementDashboard');
+                
+                if (!canAccessManagement) {
+                    // Not a management user, redirect to regular dashboard
+                    console.log('User not authorized for management allocations view, redirecting to dashboard');
+                    alert('Access Denied: You do not have permission to access the management allocation dashboard.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+                
+                console.log('Management user authorized:', user.email);
+                
+                // User has appropriate permissions
+                document.getElementById('userEmail').textContent = user.email;
+                loadWeekData();
+            } catch (error) {
+                console.error('Error during authentication check:', error);
+                alert('Error checking authentication. Please try logging in again.');
+                window.location.href = 'auth.html';
             }
-            
-            console.log('Management user authorized:', user.email);
-            
-            // User has appropriate permissions
-            document.getElementById('userEmail').textContent = user.email;
-            loadWeekData();
         }
 
         // Change week view
