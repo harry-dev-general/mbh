@@ -20,6 +20,8 @@
             background: #f5f6fa;
             color: #2c3e50;
             line-height: 1.6;
+            overflow-x: hidden;
+            width: 100%;
         }
         
         /* Main Layout */
@@ -1117,20 +1119,50 @@
         }
         
         @media (max-width: 768px) {
+            .dashboard-container {
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+            
             .header {
                 padding: 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .greeting {
+                width: 100%;
             }
             
             .header h1 {
                 font-size: 1.5rem;
+                word-wrap: break-word;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
             }
             
             .user-menu {
-                gap: 0.75rem;
+                gap: 0.5rem;
+                font-size: 0.875rem;
+                flex-wrap: wrap;
+            }
+            
+            #userEmail {
+                max-width: 150px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             
             .main-content {
-                padding: 0.75rem;
+                padding: 1rem;
+                width: 100%;
+                overflow-x: hidden;
             }
             
             .section-header {
@@ -1160,9 +1192,45 @@
             .vessel-status {
                 font-size: 0.75rem;
             }
+            
+            /* Quick Actions Mobile Fix */
+            .quick-actions-section > div {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .quick-action-card {
+                width: 100%;
+                padding: 1rem !important;
+            }
+            
+            .quick-action-card span {
+                font-size: 1rem !important;
+            }
         }
         
         @media (max-width: 480px) {
+            .header {
+                padding: 0.75rem;
+            }
+            
+            .header h1 {
+                font-size: 1.25rem;
+            }
+            
+            .greeting p {
+                font-size: 0.875rem;
+            }
+            
+            .header-actions button,
+            .header-actions a {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            
+            .main-content {
+                padding: 0.75rem;
+            }
+            
             .toggle-switch {
                 transform: scale(0.9);
             }
@@ -1172,7 +1240,7 @@
             }
             
             .time-labels {
-            display: none;
+                display: none;
             }
             
             .booking-slot {
@@ -1211,6 +1279,19 @@
             
             .new-indicator {
                 font-size: 0.75rem;
+            }
+            
+            /* Section spacing on mobile */
+            .quick-actions-section,
+            .calendar-section,
+            .fleet-section {
+                margin-bottom: 1rem !important;
+                border-radius: 12px;
+            }
+            
+            .section-title {
+                font-size: 1.1rem;
+                margin-bottom: 1rem !important;
             }
         }
         
@@ -1342,6 +1423,14 @@
             to { opacity: 1; }
         }
         
+        /* Quick Actions Grid */
+        @media (max-width: 768px) {
+            .quick-actions-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+            }
+        }
+        
         /* Additional Mobile Optimizations */
         @media (max-width: 768px) {
             /* Mobile Header Improvements */
@@ -1447,9 +1536,13 @@
         
         /* Small Mobile Specific */
         @media (max-width: 480px) {
-            /* Compact Quick Actions */
-            .quick-actions {
-                display: none; /* Hide on very small screens */
+            /* Keep Quick Actions visible but make them responsive */
+            .quick-actions-section {
+                margin: 0 -0.25rem;
+            }
+            
+            .quick-actions-section > div {
+                padding: 0 0.25rem;
             }
             
             /* Mobile-first Calendar */
@@ -1708,7 +1801,7 @@
                 <!-- Quick Actions Section -->
                 <section class="quick-actions-section" style="margin-bottom: 2rem;">
                     <h2 class="section-title" style="margin-bottom: 1.5rem;">Quick Actions</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="quick-actions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
                         <div class="quick-action-card" onclick="window.location.href='daily-run-sheet.html'" style="background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%); border-radius: 12px; padding: 1.25rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; color: white;">
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
                                 <i class="fas fa-clipboard-list" style="font-size: 1.5rem;"></i>
