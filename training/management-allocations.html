@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Allocation Dashboard - MBH Management</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/role-helper.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- FullCalendar v6 Standard Bundle (using allowed CDN) -->
     <link href='https://unpkg.com/fullcalendar@6.1.19/index.global.min.css' rel='stylesheet' />
@@ -1744,15 +1745,41 @@
             return `${year}-${month}-${day}`;
         }
 
-        // Check authentication
+        // Check authentication and permissions
         async function checkAuth() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
+            // Use getSession instead of getUser to avoid race conditions
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (error) {
+                console.error('Auth error:', error);
                 window.location.href = 'auth.html';
-            } else {
-                document.getElementById('userEmail').textContent = user.email;
-                loadWeekData();
+                return;
             }
+
+            if (!session || !session.user) {
+                console.log('No active session, redirecting to auth');
+                window.location.href = 'auth.html';
+                return;
+            }
+            
+            const user = session.user;
+
+            // Check if user has management access using role-based system
+            const canAccessManagement = await RoleHelper.hasPermission('canAccessManagementDashboard');
+            
+            if (!canAccessManagement) {
+                // Not a management user, redirect to regular dashboard
+                console.log('User not authorized for management allocations view, redirecting to dashboard');
+                alert('Access Denied: You do not have permission to access the management allocation dashboard.');
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            console.log('Management user authorized:', user.email);
+            
+            // User has appropriate permissions
+            document.getElementById('userEmail').textContent = user.email;
+            loadWeekData();
         }
 
         // Change week view
