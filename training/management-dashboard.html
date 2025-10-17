@@ -349,13 +349,20 @@
             margin-top: 0.25rem;
         }
         
-        .calendar-booking-price {
-            background: #10b981;
-            color: white;
+        .calendar-booking-addon {
+            background: #fbbf24;
+            color: #78350f;
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
             font-size: 0.75rem;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .calendar-booking-addon i {
+            font-size: 0.65rem;
         }
         
         .calendar-no-bookings {
@@ -2794,7 +2801,7 @@
                     `/api/airtable/applkAFOn2qxtu7tx/${BOOKINGS_TABLE_ID}?` +
                     `filterByFormula=${encodeURIComponent(`OR({Status}='PAID',{Status}='PART',{Status}='Confirmed',{Status}='Pending')`)}` +
                     `&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time` +
-                    `&fields[]=Boat&fields[]=Booked Boat Type&fields[]=Status&fields[]=Total Amount` +
+                    `&fields[]=Boat&fields[]=Booked Boat Type&fields[]=Status` +
                     `&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Add-ons` +
                     `&pageSize=100`,
                     {
@@ -2847,7 +2854,6 @@
                             customer: fields['Customer Name'],
                             boat: fields['Booked Boat Type'] || 'Boat',
                             status: fields['Status'],
-                            amount: fields['Total Amount'],
                             hasStaff: !!(fields['Onboarding Employee']?.[0] || fields['Deloading Employee']?.[0]),
                             addOns: fields['Add-ons'] || ''
                         });
@@ -2874,7 +2880,6 @@
                         customer: fields['Customer Name'],
                         boat: fields['Booked Boat Type'] || 'Boat',
                         status: fields['Status'],
-                        amount: fields['Total Amount'],
                         startTime: fields['Start Time'],
                         endTime: fields['Finish Time'],
                         hasStaff: !!(fields['Onboarding Employee']?.[0] || fields['Deloading Employee']?.[0]),
@@ -2911,16 +2916,15 @@
                     } else {
                         dayBookings.forEach(booking => {
                             const hasAddOns = booking.addOns && booking.addOns.trim() !== '' && booking.addOns !== 'None';
-                            const priceDisplay = booking.amount ? `$${booking.amount}` : '';
                             
                             html += `
                                 <div class="calendar-booking-item ${booking.hasStaff ? 'staffed' : ''}" onclick="window.location.href='daily-run-sheet.html?date=${dateKey}'">
                                     <div class="calendar-booking-time">${formatTimeDisplay(booking.startTime)}</div>
                                     <div class="calendar-booking-details">
                                         <div class="calendar-booking-vessel">${booking.boat}</div>
-                                        <div class="calendar-booking-customer">${booking.customer}${hasAddOns ? ' • Add-ons' : ''}</div>
+                                        <div class="calendar-booking-customer">${booking.customer}</div>
                                     </div>
-                                    ${priceDisplay ? `<div class="calendar-booking-price">${priceDisplay}</div>` : ''}
+                                    ${hasAddOns ? `<div class="calendar-booking-addon"><i class="fas fa-plus"></i> Add-ons</div>` : ''}
                                 </div>
                             `;
                         });
