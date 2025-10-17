@@ -46,8 +46,11 @@ const dashboardOverview = require('./api/dashboard-overview');
 
 // Import role management and auth middleware
 const roleManager = require('./api/role-manager');
-// Temporarily using V2 for testing JWT issues
-const { authenticate, optionalAuthenticate } = require('./api/auth-middleware-v2');
+// Use production-specific auth middleware
+const authMiddleware = process.env.RAILWAY_ENVIRONMENT === 'production' 
+    ? require('./api/auth-middleware-production') 
+    : require('./api/auth-middleware-v2');
+const { authenticate, optionalAuthenticate } = authMiddleware;
 const authHooks = require('./api/auth-hooks');
 
 // Import webhook logger for debugging
@@ -633,7 +636,68 @@ app.get('/api/auth/test-jwt', async (req, res) => {
   }
 });
 
-// Production JWT debug endpoint using auth-middleware-v2
+// Production JWT debug endpoint
+app.post('/api/auth/debug-jwt-production', async (req, res) => {
+  console.log('🔍 JWT Debug Production');
+  
+  const authHeader = req.headers.authorization;
+  
+  const result = {
+    timestamp: new Date().toISOString(),
+    hasAuthHeader: !!authHeader,
+    environment: {
+      RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+      NODE_ENV: process.env.NODE_ENV,
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      hasAnonKey: !!process.env.SUPABASE_ANON_KEY,
+      hasServiceKey: !!process.env.SUPABASE_SERVICE_KEY,
+      authMiddleware: process.env.RAILWAY_ENVIRONMENT === 'production' ? 'production' : 'v2'
+    }
+  };
+
+  if (!authHeader) {
+    result.error = 'No authorization header';
+    return res.json(result);
+  }
+
+  try {
+    // Use the same auth middleware that the server is using
+    const user = await authMiddleware.verifyToken(req);
+    
+    result.verifyResult = user ? 'SUCCESS' : 'FAILED';
+    result.user = user ? { id: user.id, email: user.email } : null;
+    
+    // Additional debugging
+    if (!user) {
+      // Try to decode the JWT to see what's in it
+      const token = authHeader.substring(7);
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+          result.tokenPayload = {
+            sub: payload.sub,
+            email: payload.email,
+            exp: new Date(payload.exp * 1000).toISOString(),
+            isExpired: Date.now() > payload.exp * 1000
+          };
+        }
+      } catch (e) {
+        result.tokenDecodeError = e.message;
+      }
+    }
+    
+    console.log('Production debug result:', result);
+    
+    res.json(result);
+  } catch (error) {
+    result.error = error.message;
+    result.stack = error.stack;
+    res.json(result);
+  }
+});
+
+// Keep the old V2 endpoint for comparison
 app.post('/api/auth/debug-jwt-v2', async (req, res) => {
   console.log('🔍 JWT Debug V2 - Using auth-middleware-v2 verifyToken');
   

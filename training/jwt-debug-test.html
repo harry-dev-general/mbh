@@ -63,13 +63,19 @@
     </div>
     
     <div class="section">
-        <h2>3. Debug JWT with auth-middleware-v2</h2>
+        <h2>3. Debug JWT with Production Middleware</h2>
+        <button onclick="debugJWTProduction()">Debug JWT Production</button>
+        <pre id="debugProductionResult">Click button to debug...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>4. Debug JWT with auth-middleware-v2</h2>
         <button onclick="debugJWT()">Debug JWT V2</button>
         <pre id="debugResult">Click button to debug...</pre>
     </div>
     
     <div class="section">
-        <h2>4. Test Role Helper</h2>
+        <h2>5. Test Role Helper</h2>
         <button onclick="testRoleHelper()">Test Role Helper</button>
         <pre id="roleHelperResult">Click button to test...</pre>
     </div>
@@ -119,6 +125,37 @@
                 const data = await response.json();
                 result.innerHTML = `Status: ${response.status}\n\n${JSON.stringify(data, null, 2)}`;
                 result.className = response.ok ? 'success' : 'error';
+                
+            } catch (error) {
+                result.innerHTML = 'Error: ' + error.message;
+                result.className = 'error';
+            }
+        }
+        
+        async function debugJWTProduction() {
+            const result = document.getElementById('debugProductionResult');
+            try {
+                await initializeSupabase();
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    result.innerHTML = 'No session - please log in first';
+                    result.className = 'error';
+                    return;
+                }
+                
+                const response = await fetch('/api/auth/debug-jwt-production', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                result.innerHTML = JSON.stringify(data, null, 2);
+                result.className = data.verifyResult === 'SUCCESS' ? 'success' : 'error';
                 
             } catch (error) {
                 result.innerHTML = 'Error: ' + error.message;
