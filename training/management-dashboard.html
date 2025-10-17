@@ -157,6 +157,9 @@
             margin-left: 0;
             position: relative;
             z-index: 1;
+            width: 100%;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
         
         /* Header */
@@ -191,6 +194,8 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             margin-bottom: 2rem;
             overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .section-header {
@@ -417,6 +422,9 @@
             padding: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             margin-bottom: 2rem;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         
         .fleet-container {
@@ -462,6 +470,9 @@
             box-shadow: 0 1px 4px rgba(0,0,0,0.08);
             transition: all 0.2s;
             margin-bottom: 0.5rem;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         
         .vessel-card:hover {
@@ -1112,11 +1123,19 @@
             }
             
             .calendar-section {
+                overflow: hidden;
+                padding: 1rem;
+            }
+            
+            .calendar-container {
                 overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -1rem;
+                padding: 0 1rem;
             }
             
             .calendar-grid {
-                min-width: 600px;
+                min-width: 500px;
             }
         }
         
@@ -1279,7 +1298,16 @@
             }
             
             .calendar-grid {
-                min-width: 480px;
+                min-width: 400px;
+            }
+            
+            .calendar-section {
+                padding: 0.75rem !important;
+            }
+            
+            .calendar-container {
+                margin: 0 -0.75rem;
+                padding: 0 0.75rem;
             }
             
             .time-labels {
@@ -1514,6 +1542,118 @@
             }
         }
         
+        /* Mobile Section Width Constraints */
+        @media (max-width: 768px) {
+            /* Ensure all sections fit within viewport */
+            .quick-actions-section,
+            .calendar-section,
+            .fleet-section,
+            .sidebar-section {
+                max-width: 100%;
+                width: 100%;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+            
+            /* Calendar responsiveness */
+            .weekly-calendar {
+                width: 100%;
+                overflow: hidden;
+            }
+            
+            .calendar-container {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 0.5rem;
+            }
+            
+            /* Calendar grid adjustments */
+            .calendar-grid {
+                font-size: 0.875rem;
+            }
+            
+            .day-header {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.75rem;
+            }
+            
+            .day-header span {
+                font-size: 0.875rem;
+            }
+            
+            .time-slot {
+                padding: 0.25rem;
+                font-size: 0.7rem;
+            }
+            
+            .hour-cell {
+                min-height: 40px;
+                padding: 0.25rem;
+            }
+            
+            .booking-slot {
+                font-size: 0.65rem;
+                padding: 0.2rem;
+                line-height: 1.2;
+            }
+            
+            /* Fleet responsiveness */
+            .fleet-container {
+                width: 100%;
+                overflow: hidden;
+            }
+            
+            .vessels-list {
+                width: 100%;
+                padding: 0;
+            }
+            
+            /* Vessel card mobile layout */
+            .vessel-card {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .vessel-header {
+                width: 100%;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .vessel-name {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .vessel-name h4 {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
+            .vessel-info {
+                width: 100%;
+            }
+            
+            .info-item {
+                font-size: 0.75rem;
+                gap: 0.25rem;
+            }
+            
+            .resource-gauges {
+                width: 100%;
+                display: flex;
+                gap: 1rem;
+                margin-top: 0.5rem;
+            }
+            
+            .gauge {
+                flex: 1;
+            }
+        }
+        
         /* Additional Mobile Optimizations */
         @media (max-width: 768px) {
             /* Mobile Header Improvements */
@@ -1621,11 +1761,17 @@
         @media (max-width: 480px) {
             /* Keep Quick Actions visible but make them responsive */
             .quick-actions-section {
-                margin: 0 -0.25rem;
+                margin: 0;
+                padding: 0 !important;
             }
             
-            .quick-actions-section > div {
-                padding: 0 0.25rem;
+            .quick-actions-section h2 {
+                padding: 0 0.75rem;
+            }
+            
+            .quick-actions-grid {
+                margin: 0;
+                padding: 0 0.75rem;
             }
             
             /* Mobile-first Calendar */
