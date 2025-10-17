@@ -129,5 +129,6 @@ async function optionalAuthenticate(req, res, next) {
 
 module.exports = {
     authenticate,
-    optionalAuthenticate
+    optionalAuthenticate,
+    verifyToken  // Export for debugging
 };

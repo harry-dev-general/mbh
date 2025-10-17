@@ -540,10 +540,11 @@ app.post('/api/admin/sync-user-role', adminAuth, async (req, res) => {
 app.get('/api/user/permissions', authenticate, async (req, res) => {
   try {
     const userEmail = req.user.email;
-    console.log('Checking permissions for user:', userEmail);
+    console.log('✅ Permission check for user:', userEmail);
+    console.log('User object:', req.user);
     
     const role = await roleManager.getUserRole(userEmail);
-    console.log('User role:', role);
+    console.log('✅ User role from DB:', role);
     
     const permissions = {
       canViewAllStaff: await roleManager.hasRole(userEmail, ['admin', 'manager']),
@@ -629,6 +630,45 @@ app.get('/api/auth/test-jwt', async (req, res) => {
       error: 'Server error', 
       message: error.message 
     });
+  }
+});
+
+// Production JWT debug endpoint using auth-middleware-v2
+app.post('/api/auth/debug-jwt-v2', async (req, res) => {
+  console.log('🔍 JWT Debug V2 - Using auth-middleware-v2 verifyToken');
+  
+  const authHeader = req.headers.authorization;
+  const authMiddlewareV2 = require('./api/auth-middleware-v2');
+  
+  const result = {
+    timestamp: new Date().toISOString(),
+    hasAuthHeader: !!authHeader,
+    environment: {
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      hasAnonKey: !!process.env.SUPABASE_ANON_KEY,
+      hasServiceKey: !!process.env.SUPABASE_SERVICE_KEY
+    }
+  };
+
+  if (!authHeader) {
+    result.error = 'No authorization header';
+    return res.json(result);
+  }
+
+  try {
+    // Use the exact same verifyToken function from auth-middleware-v2
+    const user = await authMiddlewareV2.verifyToken(req);
+    
+    result.verifyResult = user ? 'SUCCESS' : 'FAILED';
+    result.user = user ? { id: user.id, email: user.email } : null;
+    
+    console.log('Verify result:', result);
+    
+    res.json(result);
+  } catch (error) {
+    result.error = error.message;
+    result.stack = error.stack;
+    res.json(result);
   }
 });
 
