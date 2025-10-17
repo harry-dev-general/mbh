@@ -2877,6 +2877,7 @@
                     }
                     
                     bookingsByDate[dateKey].push({
+                        id: record.id,
                         customer: fields['Customer Name'],
                         boat: fields['Booked Boat Type'] || 'Boat',
                         status: fields['Status'],
@@ -2918,7 +2919,7 @@
                             const hasAddOns = booking.addOns && booking.addOns.trim() !== '' && booking.addOns !== 'None';
                             
                             html += `
-                                <div class="calendar-booking-item ${booking.hasStaff ? 'staffed' : ''}" onclick="window.location.href='daily-run-sheet.html?date=${dateKey}'">
+                                <div class="calendar-booking-item ${booking.hasStaff ? 'staffed' : ''}" onclick="window.location.href='management-allocations.html?bookingId=${booking.id}'">
                                     <div class="calendar-booking-time">${formatTimeDisplay(booking.startTime)}</div>
                                     <div class="calendar-booking-details">
                                         <div class="calendar-booking-vessel">${booking.boat}</div>

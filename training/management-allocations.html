@@ -1789,7 +1789,20 @@
                 
                 // User has appropriate permissions
                 document.getElementById('userEmail').textContent = user.email;
-                loadWeekData();
+                
+                // Load the week data first
+                await loadWeekData();
+                
+                // Check if we need to open a specific booking
+                const urlParams = new URLSearchParams(window.location.search);
+                const bookingId = urlParams.get('bookingId');
+                
+                if (bookingId) {
+                    // Wait a bit for the calendar to fully render
+                    setTimeout(() => {
+                        openBookingFromUrl(bookingId);
+                    }, 500);
+                }
             } catch (error) {
                 console.error('Error during authentication check:', error);
                 alert('Error checking authentication. Please try logging in again.');
@@ -1797,6 +1810,71 @@
             }
         }
 
+        // Open booking modal from URL parameter
+        function openBookingFromUrl(bookingId) {
+            // Find the booking in our loaded bookings data
+            const bookingRecord = bookingsData.find(record => record.id === bookingId);
+            
+            if (!bookingRecord) {
+                console.error('Booking not found:', bookingId);
+                // Try to find the booking by navigating to its week
+                navigateToBookingWeek(bookingId);
+                return;
+            }
+            
+            // Determine if the booking needs onboarding or deloading
+            const fields = bookingRecord.fields;
+            const hasOnboarding = fields['Onboarding Time'] || fields['Start Time'];
+            const hasDeloading = fields['Deloading Time'] || fields['Finish Time'];
+            
+            // Default to onboarding if both exist
+            const allocationType = hasOnboarding ? 'onboarding' : (hasDeloading ? 'deloading' : 'onboarding');
+            
+            // Open the booking allocation modal
+            openBookingAllocationModal(bookingRecord, allocationType);
+        }
+        
+        // Navigate to the week containing a specific booking
+        async function navigateToBookingWeek(bookingId) {
+            try {
+                // Fetch the specific booking
+                const response = await fetch(`/api/airtable/${BASE_ID}/${BOOKINGS_TABLE_ID}/${bookingId}`);
+                
+                if (!response.ok) {
+                    console.error('Failed to fetch booking:', response.status);
+                    return;
+                }
+                
+                const data = await response.json();
+                const booking = data.record;
+                
+                if (!booking || !booking.fields['Booking Date']) {
+                    console.error('Invalid booking data');
+                    return;
+                }
+                
+                // Get the booking date and navigate to that week
+                const bookingDate = new Date(booking.fields['Booking Date'] + 'T00:00:00');
+                
+                // Navigate calendar to the booking's week
+                if (calendar) {
+                    calendar.gotoDate(bookingDate);
+                    
+                    // Wait for the new data to load and then try opening the modal again
+                    setTimeout(() => {
+                        const foundBooking = bookingsData.find(record => record.id === bookingId);
+                        if (foundBooking) {
+                            const hasOnboarding = foundBooking.fields['Onboarding Time'] || foundBooking.fields['Start Time'];
+                            const allocationType = hasOnboarding ? 'onboarding' : 'deloading';
+                            openBookingAllocationModal(foundBooking, allocationType);
+                        }
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Error navigating to booking week:', error);
+            }
+        }
+        
         // Change week view
         function changeWeek(direction) {
             if (!calendar) return;
