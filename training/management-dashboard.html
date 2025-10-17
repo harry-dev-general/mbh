@@ -264,34 +264,122 @@
             position: relative;
         }
         
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: 60px repeat(7, 1fr);
-            gap: 0;
-            border: 1px solid #e0e6ed;
+        /* List View Calendar Styles */
+        .calendar-list-view {
+            background: white;
             border-radius: 12px;
             overflow: hidden;
-            max-height: 320px;
+            max-height: 400px;
             overflow-y: auto;
-            overflow-x: hidden;
         }
         
-        /* Custom scrollbar for calendar */
-        .calendar-grid::-webkit-scrollbar {
+        .calendar-day-group {
+            border-bottom: 1px solid #e0e6ed;
+        }
+        
+        .calendar-day-group:last-child {
+            border-bottom: none;
+        }
+        
+        .calendar-day-header {
+            background: #f8f9fa;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .calendar-day-header.today {
+            background: #e6f2f8;
+            color: #1B4F72;
+        }
+        
+        .calendar-day-date {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .calendar-bookings-list {
+            padding: 0.5rem;
+        }
+        
+        .calendar-booking-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .calendar-booking-item:hover {
+            background: #e6f2f8;
+            transform: translateX(4px);
+        }
+        
+        .calendar-booking-time {
+            font-weight: 600;
+            color: #1B4F72;
+            font-size: 0.875rem;
+            min-width: 80px;
+        }
+        
+        .calendar-booking-details {
+            flex: 1;
+            margin-left: 1rem;
+        }
+        
+        .calendar-booking-vessel {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.875rem;
+        }
+        
+        .calendar-booking-customer {
+            color: #64748b;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+        
+        .calendar-booking-price {
+            background: #10b981;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .calendar-no-bookings {
+            padding: 1rem;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+        
+        /* Custom scrollbar for list view */
+        .calendar-list-view::-webkit-scrollbar {
             width: 6px;
         }
         
-        .calendar-grid::-webkit-scrollbar-track {
+        .calendar-list-view::-webkit-scrollbar-track {
             background: #f1f5f9;
-            border-radius: 3px;
         }
         
-        .calendar-grid::-webkit-scrollbar-thumb {
+        .calendar-list-view::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 3px;
         }
         
-        .calendar-grid::-webkit-scrollbar-thumb:hover {
+        .calendar-list-view::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
         
@@ -1136,7 +1224,7 @@
                 padding: 0 1rem;
             }
             
-            .calendar-grid {
+            .calendar-list-view {
                 min-width: 100%;
                 width: 100%;
             }
@@ -1300,12 +1388,18 @@
                 transform: scale(0.9);
             }
             
-            /* Remove minimum width on calendar for mobile */
-            .calendar-grid {
-                min-width: unset !important;
-                width: 100% !important;
-                font-size: 0.75rem !important;
-                grid-template-columns: 40px repeat(7, 1fr) !important;
+            /* List view mobile optimization */
+            .calendar-list-view {
+                max-height: 350px !important;
+            }
+            
+            .calendar-day-header {
+                padding: 0.5rem !important;
+                font-size: 0.875rem !important;
+            }
+            
+            .calendar-booking-item {
+                padding: 0.5rem !important;
             }
             
             .calendar-section {
@@ -1660,34 +1754,30 @@
                 padding-bottom: 0.5rem;
             }
             
-            /* Calendar grid adjustments */
-            .calendar-grid {
+            /* Calendar list view mobile adjustments */
+            .calendar-list-view {
                 font-size: 0.875rem;
             }
             
-            .day-header {
-                padding: 0.5rem 0.25rem;
-                font-size: 0.75rem;
+            .calendar-day-header {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                background: #f8f9fa;
             }
             
-            .day-header span {
-                font-size: 0.875rem;
+            .calendar-day-header.today {
+                background: #e6f2f8;
             }
             
-            .time-slot {
-                padding: 0.25rem;
-                font-size: 0.7rem;
+            .calendar-booking-item {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
             }
             
-            .hour-cell {
-                min-height: 40px;
-                padding: 0.25rem;
-            }
-            
-            .booking-slot {
-                font-size: 0.65rem;
-                padding: 0.2rem;
-                line-height: 1.2;
+            .calendar-booking-item:active {
+                transform: scale(0.98);
+                background: #e6f2f8;
             }
             
             /* Fleet responsiveness */
@@ -2166,15 +2256,12 @@
                     
                     <div class="weekly-calendar">
                         <div class="calendar-container">
-                            <div class="calendar-grid" id="calendarGrid">
+                            <div class="calendar-list-view" id="calendarListView">
                                 <!-- Calendar will be populated by JavaScript -->
-                                <div class="calendar-loading">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <p>Loading schedule...</p>
+                                <div class="calendar-loading" style="padding: 3rem; text-align: center;">
+                                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                                    <p style="color: #64748b;">Loading schedule...</p>
                                 </div>
-                            </div>
-                            <div class="swipe-hint" id="swipeHint" style="display: none;">
-                                <i class="fas fa-arrows-alt-h"></i> Swipe to see all days
                             </div>
                         </div>
                     </div>
@@ -2480,18 +2567,12 @@
             if (Math.abs(diff) > swipeThreshold) {
                 if (diff > 0) {
                     // Swipe left - could trigger next week
-                    const calendarGrid = document.getElementById('calendarGrid');
-                    if (calendarGrid && calendarGrid.scrollWidth > calendarGrid.clientWidth) {
-                        // Calendar is scrollable, don't change week
-                        return;
-                    }
+                    // List view doesn't need horizontal scroll check
+                    // Proceed with week change
                 } else {
                     // Swipe right - could trigger previous week
-                    const calendarGrid = document.getElementById('calendarGrid');
-                    if (calendarGrid && calendarGrid.scrollLeft > 0) {
-                        // Calendar is scrolled, don't change week
-                        return;
-                    }
+                    // List view doesn't need scroll position check
+                    // Proceed with week change
                 }
             }
         }
@@ -2688,18 +2769,14 @@
             return `${date.getDate()} ${months[date.getMonth()]}`;
         }
         
-        // Build calendar grid
+        // Build calendar list view
         async function buildCalendarGrid() {
-            const grid = document.getElementById('calendarGrid');
-            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const timeSlots = ['8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM'];
+            const listView = document.getElementById('calendarListView');
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const dayAbbr = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             
             // Show loading state
-            grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading schedule...</p></div>';
-            
-            // Hide swipe hint during loading
-            const swipeHint = document.getElementById('swipeHint');
-            if (swipeHint) swipeHint.style.display = 'none';
+            listView.innerHTML = '<div class="calendar-loading" style="padding: 3rem; text-align: center;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 1rem;"></i><p style="color: #64748b;">Loading schedule...</p></div>';
             
             try {
                 // Get week start and end dates
@@ -2779,89 +2856,131 @@
                     }
                 });
                 
-                // Build the grid HTML
-            let html = '<div></div>'; // Empty corner cell
-            
-                // Day headers
-            days.forEach((day, index) => {
-                const date = new Date(currentWeekStart);
-                date.setDate(date.getDate() + index);
-                    const isToday = isDateToday(date);
+                // Build the list view HTML
+                let html = '';
                 
-                html += `
-                        <div class="day-header ${isToday ? 'today' : ''}">
-                            <div class="day-name">${day}</div>
-                            <div class="day-date">${date.getDate()}/${(date.getMonth() + 1).toString().padStart(2, '0')}</div>
-                    </div>
-                `;
-            });
-            
-                // Time slots and day cells
-                timeSlots.forEach(time => {
-                    html += `<div class="time-label">${time}</div>`;
+                // Group bookings by date
+                const bookingsByDate = {};
+                bookings.forEach(record => {
+                    const fields = record.fields;
+                    const bookingDate = new Date(fields['Booking Date'] + 'T00:00:00');
+                    const dateKey = formatLocalDate(bookingDate);
                     
-                    for (let day = 0; day < 7; day++) {
+                    if (!bookingsByDate[dateKey]) {
+                        bookingsByDate[dateKey] = [];
+                    }
+                    
+                    bookingsByDate[dateKey].push({
+                        customer: fields['Customer Name'],
+                        boat: fields['Booked Boat Type'] || 'Boat',
+                        status: fields['Status'],
+                        amount: fields['Total Amount'],
+                        startTime: fields['Start Time'],
+                        endTime: fields['Finish Time'],
+                        hasStaff: !!(fields['Onboarding Employee']?.[0] || fields['Deloading Employee']?.[0]),
+                        addOns: fields['Add-ons'] || ''
+                    });
+                });
+                
+                // Create list view for each day
+                for (let i = 0; i < 7; i++) {
                     const date = new Date(currentWeekStart);
-                        date.setDate(date.getDate() + day);
-                        const isToday = isDateToday(date);
-                        const dateKey = formatLocalDate(date);
-                        const cellKey = `${dateKey}-${time}`;
-                        const cellBookings = bookingsByDateAndTime[cellKey] || [];
-                        
-                        html += `<div class="day-cell ${isToday ? 'today' : ''}" data-day="${day}" data-time="${time}">`;
-                        
-                        // Add bookings for this time slot
-                        cellBookings.forEach((booking, index) => {
-                            if (index < 2) { // Show max 2 bookings per cell
-                                const staffClass = booking.hasStaff ? 'staffed' : 'unstaffed';
-                                const hasAddOns = booking.addOns && booking.addOns.trim() !== '' && booking.addOns !== 'None';
-                                const addOnIndicator = hasAddOns ? '<span class="addon-indicator" title="This booking includes add-ons">+</span>' : '';
+                    date.setDate(date.getDate() + i);
+                    const dateKey = formatLocalDate(date);
+                    const isToday = isDateToday(date);
+                    const dayBookings = bookingsByDate[dateKey] || [];
+                    
+                    // Sort bookings by start time
+                    dayBookings.sort((a, b) => {
+                        const timeA = parseTime(a.startTime);
+                        const timeB = parseTime(b.startTime);
+                        return timeA - timeB;
+                    });
+                    
                     html += `
-                                    <div class="calendar-event ${staffClass}" title="${booking.customer} - ${booking.boat}${hasAddOns ? ' (includes add-ons)' : ''}">
-                                        ${addOnIndicator}
-                                        <div class="event-time">${booking.boat}</div>
-                                        <div class="event-details">${booking.customer}</div>
+                        <div class="calendar-day-group">
+                            <div class="calendar-day-header ${isToday ? 'today' : ''}">
+                                <span>${days[i]}</span>
+                                <span class="calendar-day-date">${date.getDate()}/${(date.getMonth() + 1).toString().padStart(2, '0')}</span>
+                            </div>
+                            <div class="calendar-bookings-list">
+                    `;
+                    
+                    if (dayBookings.length === 0) {
+                        html += '<div class="calendar-no-bookings">No bookings</div>';
+                    } else {
+                        dayBookings.forEach(booking => {
+                            const hasAddOns = booking.addOns && booking.addOns.trim() !== '' && booking.addOns !== 'None';
+                            const priceDisplay = booking.amount ? `$${booking.amount}` : '';
+                            
+                            html += `
+                                <div class="calendar-booking-item ${booking.hasStaff ? 'staffed' : ''}" onclick="window.location.href='daily-run-sheet.html?date=${dateKey}'">
+                                    <div class="calendar-booking-time">${formatTimeDisplay(booking.startTime)}</div>
+                                    <div class="calendar-booking-details">
+                                        <div class="calendar-booking-vessel">${booking.boat}</div>
+                                        <div class="calendar-booking-customer">${booking.customer}${hasAddOns ? ' • Add-ons' : ''}</div>
+                                    </div>
+                                    ${priceDisplay ? `<div class="calendar-booking-price">${priceDisplay}</div>` : ''}
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    html += `
+                            </div>
                         </div>
                     `;
-                            }
-                        });
-                        
-                        if (cellBookings.length > 2) {
-                            html += `<div class="booking-more">+${cellBookings.length - 2} more</div>`;
-                        }
-                        
-                        html += '</div>';
-                    }
-            });
-            
-            grid.innerHTML = html;
-            
-            // Show swipe hint on mobile if calendar is scrollable
-            if (window.innerWidth <= 768) {
-                setTimeout(() => {
-                    const calendarContainer = grid.parentElement;
-                    if (grid.scrollWidth > calendarContainer.clientWidth) {
-                        const swipeHint = document.getElementById('swipeHint');
-                        if (swipeHint) {
-                            swipeHint.style.display = 'block';
-                            // Hide hint after first scroll
-                            grid.addEventListener('scroll', () => {
-                                swipeHint.style.display = 'none';
-                            }, { once: true });
-                        }
-                    }
-                }, 100);
-            }
+                }
+                
+                listView.innerHTML = html;
                 
             } catch (error) {
                 console.error('Error loading calendar data:', error);
-                grid.innerHTML = `
-                    <div class="error-state">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <p>Failed to load calendar data</p>
+                listView.innerHTML = `
+                    <div class="error-state" style="padding: 3rem; text-align: center;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                        <p style="color: #64748b;">Failed to load calendar data</p>
                     </div>
                 `;
             }
+        }
+        
+        // Helper function to parse time string to numeric value for sorting
+        function parseTime(timeStr) {
+            if (!timeStr) return 0;
+            
+            // Try parsing 12-hour format like "08:45 am" or "1:30 PM"
+            let timeParts = timeStr.toLowerCase().match(/(\d{1,2}):(\d{2})\s*(am|pm)/);
+            
+            if (timeParts) {
+                let hour = parseInt(timeParts[1]);
+                const minute = parseInt(timeParts[2]);
+                const isPM = timeParts[3] === 'pm';
+                
+                // Convert to 24-hour format
+                if (isPM && hour !== 12) hour += 12;
+                if (!isPM && hour === 12) hour = 0;
+                
+                return hour * 60 + minute;
+            }
+            
+            // Try parsing 24-hour format like "09:00" or "13:30"
+            timeParts = timeStr.match(/(\d{1,2}):(\d{2})/);
+            if (timeParts) {
+                const hour = parseInt(timeParts[1]);
+                const minute = parseInt(timeParts[2]);
+                return hour * 60 + minute;
+            }
+            
+            return 0;
+        }
+        
+        // Helper function to format time for display
+        function formatTimeDisplay(timeStr) {
+            if (!timeStr) return '';
+            
+            // Clean up common formats
+            return timeStr.replace(/\s+/g, ' ').trim();
         }
         
         // Helper function to parse time string to time slot
