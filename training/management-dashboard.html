@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Management Dashboard - MBH Staff Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/role-helper.js"></script>
@@ -22,6 +22,8 @@
             line-height: 1.6;
             overflow-x: hidden;
             width: 100%;
+            margin: 0;
+            padding: 0;
         }
         
         /* Main Layout */
@@ -190,9 +192,9 @@
         .calendar-section {
             background: white;
             border-radius: 16px;
-            padding: 1.5rem;
+            padding: 1rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             overflow: hidden;
             width: 100%;
             box-sizing: border-box;
@@ -1135,7 +1137,8 @@
             }
             
             .calendar-grid {
-                min-width: 500px;
+                min-width: 100%;
+                width: 100%;
             }
         }
         
@@ -1297,17 +1300,40 @@
                 transform: scale(0.9);
             }
             
+            /* Remove minimum width on calendar for mobile */
             .calendar-grid {
-                min-width: 400px;
+                min-width: unset !important;
+                width: 100% !important;
+                font-size: 0.75rem !important;
+                grid-template-columns: 40px repeat(7, 1fr) !important;
             }
             
             .calendar-section {
-                padding: 0.75rem !important;
+                padding: 0.5rem !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             
             .calendar-container {
-                margin: 0 -0.75rem;
-                padding: 0 0.75rem;
+                width: 100% !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
+            
+            /* Make calendar cells smaller on mobile */
+            .hour-cell {
+                min-height: 30px !important;
+                padding: 0.1rem !important;
+            }
+            
+            .time-slot {
+                font-size: 0.6rem !important;
+                padding: 0.1rem !important;
+            }
+            
+            .day-header {
+                padding: 0.25rem !important;
+                font-size: 0.65rem !important;
             }
             
             .time-labels {
@@ -1369,15 +1395,29 @@
             
             /* Quick Actions Mobile Overrides */
             .quick-action-card {
-                padding: 0.75rem !important;
+                padding: 1rem !important;
+                min-height: 60px !important; /* Touch-friendly size */
+                display: flex !important;
+                align-items: center !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            .quick-action-card > div {
+                width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
             
             .quick-action-card i {
                 font-size: 1.25rem !important;
+                margin-right: 0.5rem !important;
             }
             
             .quick-action-card span {
-                font-size: 0.875rem !important;
+                font-size: 0.9rem !important;
+                white-space: nowrap !important;
             }
             
             /* Prevent any horizontal overflow */
@@ -1532,13 +1572,61 @@
             to { opacity: 1; }
         }
         
-        /* Quick Actions Grid */
-        @media (max-width: 768px) {
+        /* Mobile-First Responsive Design */
+        /* Base styles for all screen sizes */
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            width: 100%;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Tablet and up */
+        @media (min-width: 768px) {
             .quick-actions-grid {
-                grid-template-columns: 1fr !important;
-                gap: 0.75rem !important;
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Desktop and up */
+        @media (min-width: 1024px) {
+            .quick-actions-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* Global Mobile Reset and Containment */
+        @media (max-width: 768px) {
+            /* Reset all elements to prevent overflow */
+            * {
+                max-width: 100% !important;
+            }
+            
+            /* Ensure html and body don't overflow */
+            html, body {
+                overflow-x: hidden !important;
                 width: 100% !important;
+                margin: 0 !important;
                 padding: 0 !important;
+            }
+            
+            /* Main container constraints */
+            .dashboard-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: hidden !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            .main-content {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0.5rem !important;
+                margin: 0 !important;
+                overflow-x: hidden !important;
             }
         }
         
@@ -1549,10 +1637,14 @@
             .calendar-section,
             .fleet-section,
             .sidebar-section {
-                max-width: 100%;
-                width: 100%;
-                box-sizing: border-box;
-                overflow: hidden;
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding-left: 0.5rem !important;
+                padding-right: 0.5rem !important;
             }
             
             /* Calendar responsiveness */
@@ -2030,7 +2122,7 @@
                 <!-- Quick Actions Section -->
                 <section class="quick-actions-section" style="margin-bottom: 2rem;">
                     <h2 class="section-title" style="margin-bottom: 1.5rem;">Quick Actions</h2>
-                    <div class="quick-actions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                    <div class="quick-actions-grid">
                         <div class="quick-action-card" onclick="window.location.href='daily-run-sheet.html'" style="background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%); border-radius: 12px; padding: 1.25rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; color: white; overflow: hidden;">
                             <div style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden;">
                                 <i class="fas fa-clipboard-list" style="font-size: 1.5rem; flex-shrink: 0;"></i>
