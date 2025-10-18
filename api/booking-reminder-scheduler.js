@@ -1,6 +1,7 @@
-// Booking Time-Based SMS Reminder Scheduler
+// Booking Time-Based SMS Reminder Scheduler - FIXED VERSION
 // Sends SMS reminders at Onboarding Time and Deloading Time
 // To: Assigned staff + all Full Time staff (Max & Joshua)
+// FIXED: Uses Airtable fields for tracking instead of in-memory storage
 
 const axios = require('axios');
 
@@ -11,12 +12,9 @@ const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
 const EMPLOYEES_TABLE_ID = 'tbltAE4NlNePvnkpY';
 
 // Time windows for sending reminders (in minutes)
-const ONBOARDING_REMINDER_WINDOW = 0; // Send exactly at Onboarding Time
-const DELOADING_REMINDER_WINDOW = 0; // Send exactly at Deloading Time
+const ONBOARDING_REMINDER_WINDOW = 2; // Send within 2 minute window
+const DELOADING_REMINDER_WINDOW = 2; // Send within 2 minute window
 const CHECK_INTERVAL_MS = 60 * 1000; // Check every minute for precision
-
-// Track sent reminders in memory (will reset on restart - consider persistent storage)
-const sentReminders = new Map(); // Key: `${bookingId}-${type}-${date}`, Value: timestamp
 
 /**
  * Parse time string to minutes since midnight
@@ -57,40 +55,101 @@ function getCurrentMinutes() {
 }
 
 /**
- * Check if reminder should be sent for a specific time
- * @param {string} targetTime - Target time string
- * @param {string} bookingId - Booking ID
+ * Check if reminder should be sent based on Airtable fields
+ * @param {Object} booking - Airtable booking record
  * @param {string} type - 'onboarding' or 'deloading'
- * @param {string} bookingDate - Booking date
  * @returns {boolean}
  */
-function shouldSendReminder(targetTime, bookingId, type, bookingDate) {
-    if (!targetTime) return false;
+function shouldSendReminder(booking, type) {
+    const fields = booking.fields;
     
-    const targetMinutes = parseTimeToMinutes(targetTime);
-    if (targetMinutes === null) return false;
-    
-    const currentMinutes = getCurrentMinutes();
-    const reminderKey = `${bookingId}-${type}-${bookingDate}`;
-    
-    // Check if already sent today
-    if (sentReminders.has(reminderKey)) {
-        const sentTime = sentReminders.get(reminderKey);
-        const hoursSinceSent = (Date.now() - sentTime) / (1000 * 60 * 60);
-        if (hoursSinceSent < 20) { // Don't resend within 20 hours
+    // Check if already sent
+    if (type === 'onboarding') {
+        if (fields['Onboarding Reminder Sent']) {
+            console.log(`   Onboarding reminder already sent at ${fields['Onboarding Reminder Sent Date']}`);
             return false;
         }
+        
+        // Check time window
+        const targetTime = fields['Onboarding Time'];
+        if (!targetTime) return false;
+        
+        const targetMinutes = parseTimeToMinutes(targetTime);
+        if (targetMinutes === null) return false;
+        
+        const currentMinutes = getCurrentMinutes();
+        const timeDiff = Math.abs(currentMinutes - targetMinutes);
+        
+        console.log(`⏰ Time check for onboarding reminder:`);
+        console.log(`   Target time: ${targetTime} (${targetMinutes} minutes)`);
+        console.log(`   Current time: ${Math.floor(currentMinutes/60)}:${String(currentMinutes%60).padStart(2,'0')} (${currentMinutes} minutes)`);
+        console.log(`   Time difference: ${timeDiff} minutes`);
+        console.log(`   Will send: ${timeDiff <= ONBOARDING_REMINDER_WINDOW}`);
+        
+        return timeDiff <= ONBOARDING_REMINDER_WINDOW;
+        
+    } else if (type === 'deloading') {
+        if (fields['Deloading Reminder Sent']) {
+            console.log(`   Deloading reminder already sent at ${fields['Deloading Reminder Sent Date']}`);
+            return false;
+        }
+        
+        // Check time window
+        const targetTime = fields['Deloading Time'];
+        if (!targetTime) return false;
+        
+        const targetMinutes = parseTimeToMinutes(targetTime);
+        if (targetMinutes === null) return false;
+        
+        const currentMinutes = getCurrentMinutes();
+        const timeDiff = Math.abs(currentMinutes - targetMinutes);
+        
+        console.log(`⏰ Time check for deloading reminder:`);
+        console.log(`   Target time: ${targetTime} (${targetMinutes} minutes)`);
+        console.log(`   Current time: ${Math.floor(currentMinutes/60)}:${String(currentMinutes%60).padStart(2,'0')} (${currentMinutes} minutes)`);
+        console.log(`   Time difference: ${timeDiff} minutes`);
+        console.log(`   Will send: ${timeDiff <= DELOADING_REMINDER_WINDOW}`);
+        
+        return timeDiff <= DELOADING_REMINDER_WINDOW;
     }
     
-    // Check if current time matches target time (within 2 minute window)
-    const timeDiff = Math.abs(currentMinutes - targetMinutes);
-    console.log(`⏰ Time check for ${type} reminder:`);
-    console.log(`   Target time: ${targetTime} (${targetMinutes} minutes)`);  
-    console.log(`   Current time: ${Math.floor(currentMinutes/60)}:${String(currentMinutes%60).padStart(2,'0')} (${currentMinutes} minutes)`);
-    console.log(`   Time difference: ${timeDiff} minutes`);
-    console.log(`   Will send: ${timeDiff <= 2}`);
-    
-    return timeDiff <= 2;
+    return false;
+}
+
+/**
+ * Mark reminder as sent in Airtable
+ * @param {string} bookingId - Booking record ID
+ * @param {string} type - 'onboarding' or 'deloading'
+ */
+async function markReminderSent(bookingId, type) {
+    try {
+        const fields = {};
+        if (type === 'onboarding') {
+            fields['Onboarding Reminder Sent'] = true;
+            fields['Onboarding Reminder Sent Date'] = new Date().toISOString();
+        } else if (type === 'deloading') {
+            fields['Deloading Reminder Sent'] = true;
+            fields['Deloading Reminder Sent Date'] = new Date().toISOString();
+        }
+        
+        const response = await axios.patch(
+            `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}/${bookingId}`,
+            { fields },
+            {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        console.log(`✅ Marked ${type} reminder as sent for booking ${bookingId}`);
+        return true;
+        
+    } catch (error) {
+        console.error(`Error marking ${type} reminder as sent:`, error.response?.data || error.message);
+        return false;
+    }
 }
 
 /**
@@ -163,6 +222,27 @@ async function getTodaysBookings() {
 }
 
 /**
+ * Get employee by ID
+ */
+async function getEmployeeById(employeeId) {
+    try {
+        const response = await axios.get(
+            `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEES_TABLE_ID}/${employeeId}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                }
+            }
+        );
+        
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching employee:', error);
+        return null;
+    }
+}
+
+/**
  * Send onboarding reminder SMS
  */
 async function sendOnboardingReminder(booking, recipientStaff) {
@@ -200,42 +280,30 @@ Please ensure vessel is ready before customer arrival.`;
         // Send SMS directly using Twilio
         const accountSid = process.env.TWILIO_ACCOUNT_SID;
         const authToken = process.env.TWILIO_AUTH_TOKEN;
-        const fromNumber = process.env.TWILIO_FROM_NUMBER;
+        const fromNumber = process.env.TWILIO_FROM_NUMBER || '+61428396714';
         
-        if (!accountSid || !authToken || !fromNumber) {
-            console.error('Missing Twilio credentials');
-            return;
-        }
+        const auth = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
         
-        // Use fetch to send SMS via Twilio API
-        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-        const authString = `${accountSid}:${authToken}`;
-        const encodedAuth = Buffer.from(authString).toString('base64');
-        
-        const response = await fetch(twilioUrl, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${encodedAuth}`,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
+        const response = await axios.post(
+            `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+            new URLSearchParams({
                 'To': phone,
                 'From': fromNumber,
                 'Body': message
-            })
-        });
+            }),
+            {
+                headers: {
+                    'Authorization': `Basic ${auth}`,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }
+        );
         
-        if (!response.ok) {
-            const error = await response.text();
-            throw new Error(`Twilio API error: ${error}`);
-        }
-        
-        const result = await response.json();
         console.log(`📤 Sent onboarding reminder to ${recipientStaff.fields['Name']} for ${fields['Customer Name']}`);
-        console.log(`   Message SID: ${result.sid}`);
+        console.log(`   Message SID: ${response.data.sid}`);
         
     } catch (error) {
-        console.error('Error sending onboarding reminder:', error);
+        console.error('Error sending onboarding reminder:', error.response?.data || error.message);
     }
 }
 
@@ -273,28 +341,22 @@ ${checklistLink}
 Please prepare for customer return and complete vessel check.`;
     
     try {
-        // Send SMS directly using Twilio
+        // Send SMS using Twilio
         const accountSid = process.env.TWILIO_ACCOUNT_SID;
         const authToken = process.env.TWILIO_AUTH_TOKEN;
-        const fromNumber = process.env.TWILIO_FROM_NUMBER;
+        const fromNumber = process.env.TWILIO_FROM_NUMBER || '+61428396714';
         
-        if (!accountSid || !authToken || !fromNumber) {
-            console.error('Missing Twilio credentials');
-            return;
-        }
-        
-        // Use fetch to send SMS via Twilio API
-        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-        const authString = `${accountSid}:${authToken}`;
-        const encodedAuth = Buffer.from(authString).toString('base64');
-        
-        const response = await fetch(twilioUrl, {
+        const response = await axios({
             method: 'POST',
+            url: `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+            auth: {
+                username: accountSid,
+                password: authToken
+            },
             headers: {
-                'Authorization': `Basic ${encodedAuth}`,
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: new URLSearchParams({
+            data: new URLSearchParams({
                 'To': phone,
                 'From': fromNumber,
                 'Body': message
@@ -337,62 +399,65 @@ async function processBookingReminders(forceImmediate = false) {
         
         for (const booking of bookings) {
             const fields = booking.fields;
-            const bookingDate = fields['Booking Date'];
             
-            // Check onboarding reminders
             console.log(`\n📋 Checking booking ${fields['Customer Name']}:`);
             console.log(`   Onboarding Time: ${fields['Onboarding Time']}`);
             console.log(`   Deloading Time: ${fields['Deloading Time']}`);
             
+            // Check onboarding reminders
             if (fields['Onboarding Time'] && 
-                (forceImmediate || shouldSendReminder(fields['Onboarding Time'], booking.id, 'onboarding', bookingDate))) {
+                (forceImmediate || shouldSendReminder(booking, 'onboarding'))) {
                 
-                const recipients = new Set();
+                // Mark as sent FIRST to prevent duplicates
+                const marked = await markReminderSent(booking.id, 'onboarding');
                 
-                // Add assigned onboarding staff
-                if (fields['Onboarding Employee']?.length) {
-                    for (const employeeId of fields['Onboarding Employee']) {
-                        const employee = await getEmployeeById(employeeId);
-                        if (employee) recipients.add(employee);
+                if (marked) {
+                    const recipients = new Set();
+                    
+                    // Add assigned onboarding staff
+                    if (fields['Onboarding Employee']?.length) {
+                        for (const employeeId of fields['Onboarding Employee']) {
+                            const employee = await getEmployeeById(employeeId);
+                            if (employee) recipients.add(employee);
+                        }
+                    }
+                    
+                    // Add all full-time staff
+                    fullTimeStaff.forEach(staff => recipients.add(staff));
+                    
+                    // Send reminders
+                    for (const recipient of recipients) {
+                        await sendOnboardingReminder(booking, recipient);
                     }
                 }
-                
-                // Add all full-time staff
-                fullTimeStaff.forEach(staff => recipients.add(staff));
-                
-                // Send reminders
-                for (const recipient of recipients) {
-                    await sendOnboardingReminder(booking, recipient);
-                }
-                
-                // Mark as sent
-                sentReminders.set(`${booking.id}-onboarding-${bookingDate}`, Date.now());
             }
             
             // Check deloading reminders
             if (fields['Deloading Time'] && 
-                (forceImmediate || shouldSendReminder(fields['Deloading Time'], booking.id, 'deloading', bookingDate))) {
+                (forceImmediate || shouldSendReminder(booking, 'deloading'))) {
                 
-                const recipients = new Set();
+                // Mark as sent FIRST to prevent duplicates
+                const marked = await markReminderSent(booking.id, 'deloading');
                 
-                // Add assigned deloading staff
-                if (fields['Deloading Employee']?.length) {
-                    for (const employeeId of fields['Deloading Employee']) {
-                        const employee = await getEmployeeById(employeeId);
-                        if (employee) recipients.add(employee);
+                if (marked) {
+                    const recipients = new Set();
+                    
+                    // Add assigned deloading staff
+                    if (fields['Deloading Employee']?.length) {
+                        for (const employeeId of fields['Deloading Employee']) {
+                            const employee = await getEmployeeById(employeeId);
+                            if (employee) recipients.add(employee);
+                        }
+                    }
+                    
+                    // Add all full-time staff
+                    fullTimeStaff.forEach(staff => recipients.add(staff));
+                    
+                    // Send reminders
+                    for (const recipient of recipients) {
+                        await sendDeloadingReminder(booking, recipient);
                     }
                 }
-                
-                // Add all full-time staff
-                fullTimeStaff.forEach(staff => recipients.add(staff));
-                
-                // Send reminders
-                for (const recipient of recipients) {
-                    await sendDeloadingReminder(booking, recipient);
-                }
-                
-                // Mark as sent
-                sentReminders.set(`${booking.id}-deloading-${bookingDate}`, Date.now());
             }
         }
         
@@ -401,76 +466,39 @@ async function processBookingReminders(forceImmediate = false) {
     }
 }
 
-/**
- * Get employee by ID
- */
-async function getEmployeeById(employeeId) {
-    try {
-        const response = await axios.get(
-            `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEES_TABLE_ID}/${employeeId}`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                }
-            }
-        );
-        
-        return response.data;
-    } catch (error) {
-        console.error(`Error fetching employee ${employeeId}:`, error);
-        return null;
-    }
-}
-
-/**
- * Clean up old reminder tracking entries
- */
-function cleanupOldReminders() {
-    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
-    
-    for (const [key, timestamp] of sentReminders.entries()) {
-        if (timestamp < oneDayAgo) {
-            sentReminders.delete(key);
-        }
-    }
-}
+// Scheduler management
+let schedulerInterval = null;
 
 /**
  * Start the booking reminder scheduler
  */
-let reminderInterval = null;
-
 function startBookingReminderScheduler() {
-    console.log('🚀 Starting booking time-based reminder scheduler...');
-    console.log(`   - Checking every ${CHECK_INTERVAL_MS / 1000} seconds`);
-    console.log('   - Sending reminders at Onboarding Time and Deloading Time');
-    console.log('   - Recipients: Assigned staff + all Full Time staff');
+    console.log('🚀 Starting booking reminder scheduler (FIXED VERSION with Airtable tracking)...');
+    console.log('   - Using Airtable fields instead of in-memory tracking');
+    console.log('   - Prevents duplicates across multiple instances');
     
-    // Run initial check
+    // Run immediately on startup
     processBookingReminders();
     
-    // Schedule regular checks
-    reminderInterval = setInterval(() => {
+    // Then run on interval
+    schedulerInterval = setInterval(() => {
+        console.log('\n⏰ Running booking reminder check...');
         processBookingReminders();
-        
-        // Cleanup old entries every hour
-        if (new Date().getMinutes() === 0) {
-            cleanupOldReminders();
-        }
     }, CHECK_INTERVAL_MS);
 }
 
 /**
- * Stop the reminder scheduler
+ * Stop the booking reminder scheduler
  */
 function stopBookingReminderScheduler() {
-    if (reminderInterval) {
-        clearInterval(reminderInterval);
-        reminderInterval = null;
+    if (schedulerInterval) {
+        clearInterval(schedulerInterval);
+        schedulerInterval = null;
         console.log('🛑 Booking reminder scheduler stopped');
     }
 }
 
+// Export functions
 module.exports = {
     startBookingReminderScheduler,
     stopBookingReminderScheduler,
