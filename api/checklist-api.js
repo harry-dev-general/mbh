@@ -79,9 +79,9 @@ router.get('/assigned-bookings', async (req, res) => {
         // Build filter formula
         let filterFormula = "{Status}='PAID'";
         
-        // If a specific booking ID is provided, just get that booking (regardless of status)
+        // If a specific booking ID is provided, just get that booking
         if (bookingId) {
-            filterFormula = `RECORD_ID()='${bookingId}'`;
+            filterFormula = `AND({Status}='PAID',RECORD_ID()='${bookingId}')`;
         } else if (employeeId && !isManagement) {
             // For regular employees, filter by assignment
             const employeeField = type === 'pre-departure' ? 'Onboarding Employee' : 'Deloading Employee';
