@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Service Role Debug Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase-init-fix.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        pre {
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        .info {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>JWT Service Role Debug Test</h1>
+    
+    <div class="info">
+        <strong>Production JWT Fix:</strong> This test page uses the service role key for JWT verification, 
+        which is the proper pattern for server-side authentication in production.
+    </div>
+    
+    <div class="section">
+        <h2>1. Current Session</h2>
+        <button onclick="checkSession()">Check Session</button>
+        <pre id="sessionInfo">Click button to check session...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>2. Test Service Role JWT Verification</h2>
+        <button onclick="debugJWTService()">Debug JWT with Service Role</button>
+        <pre id="debugServiceResult">Click button to debug...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>3. Test /api/user/permissions (Fixed)</h2>
+        <button onclick="testPermissions()">Test Permissions</button>
+        <pre id="permissionsResult">Click button to test...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>4. Compare All Auth Methods</h2>
+        <button onclick="compareAllMethods()">Compare All Methods</button>
+        <div id="comparisonResults"></div>
+    </div>
+
+    <script>
+        let supabase;
+        
+        async function initializeSupabase() {
+            if (!supabase) {
+                const client = await window.SupabaseInit.getClient();
+                window.supabase = client;
+                supabase = client;
+            }
+            return supabase;
+        }
+        
+        async function checkSession() {
+            const result = document.getElementById('sessionInfo');
+            try {
+                await initializeSupabase();
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    result.innerHTML = JSON.stringify({
+                        user: session.user.email,
+                        token_preview: session.access_token.substring(0, 50) + '...',
+                        expires_at: new Date(session.expires_at * 1000).toISOString(),
+                        token_length: session.access_token.length
+                    }, null, 2);
+                    result.className = 'success';
+                } else {
+                    result.innerHTML = 'No active session - please log in';
+                    result.className = 'error';
+                }
+            } catch (error) {
+                result.innerHTML = 'Error: ' + error.message;
+                result.className = 'error';
+            }
+        }
+        
+        async function debugJWTService() {
+            const result = document.getElementById('debugServiceResult');
+            try {
+                await initializeSupabase();
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    result.innerHTML = 'No session - please log in first';
+                    result.className = 'error';
+                    return;
+                }
+                
+                const response = await fetch('/api/auth/debug-jwt-service', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                result.innerHTML = JSON.stringify(data, null, 2);
+                result.className = data.verifyResult === 'SUCCESS' ? 'success' : 'error';
+                
+                if (data.warning) {
+                    result.innerHTML = '<div class="warning">⚠️ ' + data.warning + '</div>' + result.innerHTML;
+                }
+            } catch (error) {
+                result.innerHTML = 'Error: ' + error.message;
+                result.className = 'error';
+            }
+        }
+        
+        async function testPermissions() {
+            const result = document.getElementById('permissionsResult');
+            try {
+                await initializeSupabase();
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    result.innerHTML = 'No session - please log in first';
+                    result.className = 'error';
+                    return;
+                }
+                
+                const response = await fetch('/api/user/permissions', {
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    result.innerHTML = `HTTP ${response.status}: ${JSON.stringify(error, null, 2)}`;
+                    result.className = 'error';
+                    return;
+                }
+                
+                const data = await response.json();
+                result.innerHTML = JSON.stringify(data, null, 2);
+                result.className = 'success';
+            } catch (error) {
+                result.innerHTML = 'Error: ' + error.message;
+                result.className = 'error';
+            }
+        }
+        
+        async function compareAllMethods() {
+            const container = document.getElementById('comparisonResults');
+            container.innerHTML = '<h3>Testing all authentication methods...</h3>';
+            
+            try {
+                await initializeSupabase();
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    container.innerHTML = '<div class="error">No session - please log in first</div>';
+                    return;
+                }
+                
+                const methods = [
+                    { endpoint: '/api/auth/debug-jwt-service', name: 'Service Role (NEW)' },
+                    { endpoint: '/api/auth/debug-jwt-production', name: 'Production Middleware' },
+                    { endpoint: '/api/auth/debug-jwt-v2', name: 'V2 Middleware' },
+                    { endpoint: '/api/auth/debug-jwt', name: 'Original Middleware' }
+                ];
+                
+                for (const method of methods) {
+                    const section = document.createElement('div');
+                    section.className = 'section';
+                    section.innerHTML = `<h4>${method.name}</h4><pre id="${method.endpoint}">Testing...</pre>`;
+                    container.appendChild(section);
+                    
+                    try {
+                        const response = await fetch(method.endpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${session.access_token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        const pre = document.getElementById(method.endpoint);
+                        pre.innerHTML = JSON.stringify(data, null, 2);
+                        pre.className = data.verifyResult === 'SUCCESS' ? 'success' : 'error';
+                    } catch (error) {
+                        const pre = document.getElementById(method.endpoint);
+                        pre.innerHTML = 'Error: ' + error.message;
+                        pre.className = 'error';
+                    }
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="error">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Auto-check session on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkSession();
+        });
+    </script>
+</body>
+</html>

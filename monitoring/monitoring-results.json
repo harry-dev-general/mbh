@@ -1,0 +1,40 @@
+[
+  {
+    "timestamp": "2025-10-21T04:25:00.540Z",
+    "systemHealth": "WARNING",
+    "metrics": {},
+    "warnings": [
+      {
+        "type": "SLOW_API_RESPONSE",
+        "message": "API response time 1551ms exceeds 1000ms",
+        "severity": "MEDIUM"
+      }
+    ],
+    "errors": [],
+    "bookingStats": {
+      "totalBookings": 0,
+      "bookingsWithOnboarding": 0,
+      "bookingsWithDeloading": 0,
+      "onboardingRemindersSent": 0,
+      "deloadingRemindersSent": 0,
+      "pendingOnboarding": 0,
+      "pendingDeloading": 0
+    },
+    "performance": {
+      "apiResponseTime": 1551,
+      "analysisTime": "2025-10-21T04:25:02.470Z",
+      "estimatedMetrics": {
+        "averageAirtableUpdateTime": "N/A - Requires Railway API access",
+        "averageSMSDeliveryTime": "N/A - Requires Railway API access",
+        "errorRate": 0,
+        "uptime": "100%"
+      },
+      "memoryUsageMB": 9
+    },
+    "duplicateCheck": {
+      "checked": true,
+      "duplicatesFound": 0,
+      "lastDuplicateDate": null
+    }
+  }
+]

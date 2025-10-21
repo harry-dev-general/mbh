@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pre-Departure Checklist - MBH Staff Portal</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-init-fix.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -582,6 +580,9 @@
         </div>
     </div>
 
+    <!-- Load scripts in correct order at the end of body -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-init-fix.js"></script>
     <script>
         // Global variables
         let supabase = null;
@@ -862,10 +863,44 @@
             alert(message);
         }
 
-        // Handle select group clicks
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM Content Loaded');
+        // Initialize when all scripts are loaded
+        function initializeApp() {
+            console.log('[App] Starting initialization...');
+            console.log('[App] Window.supabase available:', typeof window.supabase !== 'undefined');
+            console.log('[App] Window.SupabaseInit available:', typeof window.SupabaseInit !== 'undefined');
             
+            // Check if required dependencies are loaded
+            if (typeof window.supabase === 'undefined') {
+                console.error('[App] Supabase library not loaded!');
+                setTimeout(() => {
+                    if (typeof window.supabase !== 'undefined') {
+                        console.log('[App] Supabase loaded after delay, retrying...');
+                        initializeApp();
+                    } else {
+                        showError('Failed to load required libraries. Please refresh the page.');
+                    }
+                }, 1000);
+                return;
+            }
+            
+            if (typeof window.SupabaseInit === 'undefined') {
+                console.error('[App] SupabaseInit module not loaded!');
+                showError('Failed to load initialization module. Please refresh the page.');
+                return;
+            }
+            
+            // Set up UI event handlers
+            setupUIHandlers();
+            
+            // Initialize Supabase
+            initializeSupabase().catch(error => {
+                console.error('[App] Initialization failed:', error);
+                showError('Failed to initialize application: ' + error.message);
+            });
+        }
+        
+        // Set up UI event handlers
+        function setupUIHandlers() {
             // Select group functionality
             document.querySelectorAll('.select-group').forEach(group => {
                 group.addEventListener('click', (e) => {
@@ -894,10 +929,15 @@
 
             // Form submission
             document.getElementById('checklistForm').addEventListener('submit', handleSubmit);
-
-            // Initialize the app
-            initializeSupabase();
-        });
+        }
+        
+        // Wait for DOM and scripts to load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            // DOM already loaded, initialize immediately
+            setTimeout(initializeApp, 100); // Small delay to ensure scripts are parsed
+        }
 
         // Reset select groups
         function resetSelectGroups() {

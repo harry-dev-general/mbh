@@ -65,9 +65,9 @@ const addonsManagement = require('./api/addons-management');
 // Import checklist API
 const checklistApi = require('./api/checklist-api');
 
-// Security middleware with exceptions for shift confirmation
+// Security middleware with exceptions for shift confirmation and checklist pages
 app.use((req, res, next) => {
-  // Skip helmet CSP for shift confirmation page and root auth page to avoid loading issues
+  // Skip helmet CSP for pages that need special script handling
   if (req.path === '/training/shift-confirmation.html' || 
       req.path === '/api/shift-response' ||
       req.path === '/' ||
@@ -76,6 +76,8 @@ app.use((req, res, next) => {
       req.path === '/training/supabase-direct-test.html' ||
       req.path === '/training/index-bypass.html' ||
       req.path === '/training/auth-no-check.html' ||
+      req.path === '/training/pre-departure-checklist.html' ||
+      req.path === '/training/post-departure-checklist.html' ||
       req.path.startsWith('/training/') && req.path.endsWith('-test.html')) {
     return next();
   }
