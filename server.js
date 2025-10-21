@@ -62,6 +62,9 @@ const checkfrontWebhook = require('./api/checkfront-webhook');
 // Import add-ons management
 const addonsManagement = require('./api/addons-management');
 
+// Import checklist API
+const checklistApi = require('./api/checklist-api');
+
 // Security middleware with exceptions for shift confirmation
 app.use((req, res, next) => {
   // Skip helmet CSP for shift confirmation page and root auth page to avoid loading issues
@@ -397,6 +400,9 @@ app.use('/api', squareWebhook);
 
 // Add add-ons management routes
 app.use('/api/addons', addonsManagement);
+
+// Add checklist API routes
+app.use('/api/checklist', checklistApi);
 
 // Announcements API endpoints
 app.get('/api/announcements', async (req, res) => {
