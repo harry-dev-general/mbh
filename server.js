@@ -407,6 +407,16 @@ app.use('/api/addons', addonsManagement);
 // Add checklist API routes
 app.use('/api/checklist', checklistApi);
 
+// Server-side rendered checklist pages
+const checklistRenderer = require('./api/checklist-renderer');
+app.get('/training/pre-departure-checklist-ssr.html', (req, res) => {
+    checklistRenderer.handleChecklistPage(req, res, 'pre-departure');
+});
+app.get('/training/post-departure-checklist-ssr.html', (req, res) => {
+    checklistRenderer.handleChecklistPage(req, res, 'post-departure');
+});
+app.post('/api/checklist/submit-rendered', checklistRenderer.handleChecklistSubmission);
+
 // Announcements API endpoints
 app.get('/api/announcements', async (req, res) => {
   try {

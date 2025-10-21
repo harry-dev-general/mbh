@@ -261,7 +261,7 @@ async function sendOnboardingReminder(booking, recipientStaff) {
                     (process.env.RAILWAY_ENVIRONMENT === 'development' 
                       ? 'https://mbh-development.up.railway.app' 
                       : 'https://mbh-production-f0d1.up.railway.app');
-    const checklistLink = `${baseUrl}/training/pre-departure-checklist.html?bookingId=${booking.id}`;
+    const checklistLink = `${baseUrl}/training/pre-departure-checklist-ssr.html?bookingId=${booking.id}`;
     
     // Format message
     const message = `📅 MBH Onboarding Reminder
@@ -326,7 +326,7 @@ async function sendDeloadingReminder(booking, recipientStaff) {
                     (process.env.RAILWAY_ENVIRONMENT === 'development' 
                       ? 'https://mbh-development.up.railway.app' 
                       : 'https://mbh-production-f0d1.up.railway.app');
-    const checklistLink = `${baseUrl}/training/post-departure-checklist.html?bookingId=${booking.id}`;
+    const checklistLink = `${baseUrl}/training/post-departure-checklist-ssr.html?bookingId=${booking.id}`;
     
     // Format message
     const message = `🏁 MBH Deloading Reminder
