@@ -34,7 +34,7 @@ const notifications = require('./api/notifications');
 const shiftResponseHandler = require('./api/shift-response-handler');
 const announcements = require('./api/announcements');
 const reminderScheduler = require('./api/reminder-scheduler');
-const bookingReminderScheduler = require('./api/booking-reminder-scheduler');
+const bookingReminderScheduler = require('./api/booking-reminder-scheduler-fixed');
 
 // Import vessel maintenance routes
 const vesselRoutes = require('./api/routes/vessel-maintenance');
