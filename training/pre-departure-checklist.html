@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pre-Departure Checklist - MBH Staff Portal</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Inline debugging for SMS link issues -->
+    <script>
+        console.log('[DEBUG] Page loading started at:', new Date().toISOString());
+        console.log('[DEBUG] Current URL:', window.location.href);
+        console.log('[DEBUG] URL Parameters:', window.location.search);
+        
+        // Add error handlers to catch any issues
+        window.addEventListener('error', function(e) {
+            console.error('[DEBUG] Script error:', e.message, e.filename, e.lineno, e.colno);
+        });
+        
+        // Monitor script loading
+        window.scriptLoadStatus = {
+            supabase: false,
+            supabaseInit: false
+        };
+    </script>
     <style>
         * {
             margin: 0;
@@ -581,8 +598,8 @@
     </div>
 
     <!-- Load scripts in correct order at the end of body -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-init-fix.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="window.scriptLoadStatus.supabase = true; console.log('[DEBUG] Supabase CDN loaded');" onerror="console.error('[DEBUG] Failed to load Supabase CDN');"></script>
+    <script src="js/supabase-init-fix.js" onload="window.scriptLoadStatus.supabaseInit = true; console.log('[DEBUG] Supabase init module loaded');" onerror="console.error('[DEBUG] Failed to load Supabase init module');"></script>
     <script>
         // Global variables
         let supabase = null;
@@ -860,6 +877,16 @@
 
         // Show error message
         function showError(message) {
+            console.error('[ERROR]', message);
+            
+            // Try to show error in UI
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger';
+            errorDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; padding: 20px; max-width: 600px;';
+            errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
+            document.body.appendChild(errorDiv);
+            
+            // Also show as alert as fallback
             alert(message);
         }
 
@@ -938,6 +965,24 @@
             // DOM already loaded, initialize immediately
             setTimeout(initializeApp, 100); // Small delay to ensure scripts are parsed
         }
+        
+        // Add a timeout fallback to show error if nothing loads
+        setTimeout(function() {
+            console.log('[DEBUG] Checking initialization status after 5 seconds...');
+            console.log('[DEBUG] Script load status:', window.scriptLoadStatus);
+            
+            // Check if we're still showing the loading message
+            const loadingDiv = document.getElementById('loadingBookings');
+            if (loadingDiv && loadingDiv.style.display !== 'none') {
+                console.error('[DEBUG] Page failed to initialize after 5 seconds');
+                showError('Page failed to load properly. This may be due to script loading issues. Please try refreshing the page or contact support.');
+                
+                // Hide loading and show error state
+                loadingDiv.style.display = 'none';
+                document.getElementById('noBookings').style.display = 'block';
+                document.getElementById('noBookingsMessage').textContent = 'Failed to load checklist. Please refresh the page.';
+            }
+        }, 5000);
 
         // Reset select groups
         function resetSelectGroups() {

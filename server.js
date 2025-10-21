@@ -78,6 +78,7 @@ app.use((req, res, next) => {
       req.path === '/training/auth-no-check.html' ||
       req.path === '/training/pre-departure-checklist.html' ||
       req.path === '/training/post-departure-checklist.html' ||
+      req.path === '/training/js-test.html' ||
       req.path.startsWith('/training/') && req.path.endsWith('-test.html')) {
     return next();
   }

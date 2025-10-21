@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Test Page</title>
+    <script>
+        console.log('[TEST] Head script executing at:', new Date().toISOString());
+        console.log('[TEST] URL:', window.location.href);
+        console.log('[TEST] Query params:', window.location.search);
+    </script>
+</head>
+<body>
+    <h1>JavaScript Test Page</h1>
+    <div id="status">Loading...</div>
+    
+    <script>
+        console.log('[TEST] Inline script executing');
+        document.getElementById('status').innerHTML = 'JavaScript is working! Time: ' + new Date().toISOString();
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" 
+            onload="console.log('[TEST] Supabase CDN loaded successfully');" 
+            onerror="console.error('[TEST] Failed to load Supabase CDN');">
+    </script>
+    
+    <script src="js/supabase-init-fix.js" 
+            onload="console.log('[TEST] Local script loaded successfully');" 
+            onerror="console.error('[TEST] Failed to load local script');">
+    </script>
+    
+    <script>
+        setTimeout(function() {
+            console.log('[TEST] After 2 seconds:');
+            console.log('[TEST] - window.supabase available:', typeof window.supabase !== 'undefined');
+            console.log('[TEST] - window.SupabaseInit available:', typeof window.SupabaseInit !== 'undefined');
+            
+            const result = document.createElement('div');
+            result.innerHTML = '<h2>Test Results:</h2>' +
+                '<p>Supabase CDN: ' + (typeof window.supabase !== 'undefined' ? '✅ Loaded' : '❌ Failed') + '</p>' +
+                '<p>SupabaseInit Module: ' + (typeof window.SupabaseInit !== 'undefined' ? '✅ Loaded' : '❌ Failed') + '</p>';
+            document.body.appendChild(result);
+        }, 2000);
+    </script>
+</body>
+</html>
