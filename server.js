@@ -34,7 +34,7 @@ const notifications = require('./api/notifications');
 const shiftResponseHandler = require('./api/shift-response-handler');
 const announcements = require('./api/announcements');
 const reminderScheduler = require('./api/reminder-scheduler');
-const bookingReminderScheduler = require('./api/booking-reminder-scheduler');
+const bookingReminderScheduler = require('./api/booking-reminder-scheduler-fixed');
 
 // Import vessel maintenance routes
 const vesselRoutes = require('./api/routes/vessel-maintenance');
@@ -46,9 +46,9 @@ const dashboardOverview = require('./api/dashboard-overview');
 
 // Import role management and auth middleware
 const roleManager = require('./api/role-manager');
-// Use production-specific auth middleware
+// Use production-specific auth middleware with service role key
 const authMiddleware = process.env.RAILWAY_ENVIRONMENT === 'production' 
-    ? require('./api/auth-middleware-production') 
+    ? require('./api/auth-middleware-service')  // Use service role key in production
     : require('./api/auth-middleware-v2');
 const { authenticate, optionalAuthenticate } = authMiddleware;
 const authHooks = require('./api/auth-hooks');
@@ -735,6 +735,9 @@ app.post('/api/auth/debug-jwt-v2', async (req, res) => {
     res.json(result);
   }
 });
+
+// Service Role JWT Debug endpoint
+app.post('/api/auth/debug-jwt-service', require('./api/auth/debug-jwt-service'));
 
 // JWT Debug endpoint - helps diagnose authentication issues
 app.post('/api/auth/debug-jwt', async (req, res) => {
