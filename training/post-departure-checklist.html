@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Post-Departure Checklist - MBH Staff Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-init-fix.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -733,23 +734,20 @@
         const urlParams = new URLSearchParams(window.location.search);
         const bookingIdParam = urlParams.get('bookingId');
         
-        // Initialize Supabase after config is loaded
+        // Initialize Supabase using the SupabaseInit module
         async function initializeSupabase() {
             try {
-                const response = await fetch('/api/config');
-                const config = await response.json();
+                console.log('Initializing Supabase...');
                 
-                if (!config.SUPABASE_URL || !config.SUPABASE_ANON_KEY) {
-                    throw new Error('Supabase configuration is missing');
-                }
-                
-                supabase = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+                // Use SupabaseInit module to create client
+                supabase = await window.SupabaseInit.getClient();
+                console.log('Supabase client created');
                 
                 // Now check authentication
                 await checkAuth();
             } catch (error) {
                 console.error('Failed to initialize:', error);
-                showError('Failed to initialize application. Please refresh the page.');
+                showError('Failed to initialize application. Error: ' + error.message);
             }
         }
 
