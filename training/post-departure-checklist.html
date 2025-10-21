@@ -832,7 +832,11 @@
                     console.log(`Found ${assignedBookings.length} bookings`);
                     
                     if (assignedBookings.length === 0) {
-                        showNoBookings();
+                        if (bookingIdParam) {
+                            showNoBookings('The requested booking was not found or is not in PAID status.');
+                        } else {
+                            showNoBookings();
+                        }
                     } else {
                         // Auto-select booking if ID provided in URL
                         if (bookingIdParam) {
@@ -841,6 +845,10 @@
                                 // Hide booking selection, show checklist form
                                 document.getElementById('bookingsSection').style.display = 'none';
                                 await selectBooking(targetBooking);
+                                return;
+                            } else {
+                                // Booking ID was provided but not found in results
+                                showNoBookings('The requested booking was not found or you do not have access to it.');
                                 return;
                             }
                         }
