@@ -78,6 +78,8 @@ app.use((req, res, next) => {
       req.path === '/training/auth-no-check.html' ||
       req.path === '/training/pre-departure-checklist.html' ||
       req.path === '/training/post-departure-checklist.html' ||
+      req.path === '/training/pre-departure-checklist-ssr.html' ||
+      req.path === '/training/post-departure-checklist-ssr.html' ||
       req.path === '/training/js-test.html' ||
       req.path.startsWith('/training/') && req.path.endsWith('-test.html')) {
     return next();
@@ -91,7 +93,7 @@ app.use((req, res, next) => {
         scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
         styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https:", "https://maps.gstatic.com", "https://maps.googleapis.com"],
-        connectSrc: ["'self'", "https://etkugeooigiwahikrmzr.supabase.co", "https://api.airtable.com", "https://maps.googleapis.com", "wss://etkugeooigiwahikrmzr.supabase.co"],
+        connectSrc: ["'self'", "https://etkugeooigiwahikrmzr.supabase.co", "https://api.airtable.com", "https://maps.googleapis.com", "wss://etkugeooigiwahikrmzr.supabase.co", "https://nominatim.openstreetmap.org"],
         fontSrc: ["'self'", "data:", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
         frameSrc: ["'self'", "https://www.google.com"]
       }
