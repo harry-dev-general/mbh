@@ -43,10 +43,45 @@ async function fetchBooking(bookingId) {
 }
 
 /**
+ * Fetch employee details from Airtable
+ */
+async function fetchEmployee(employeeId) {
+    try {
+        const response = await fetch(
+            `https://api.airtable.com/v0/${BOOKINGS_BASE_ID}/${EMPLOYEE_TABLE_ID}/${employeeId}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (!response.ok) {
+            console.error(`Failed to fetch employee: ${response.status}`);
+            return null;
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching employee:', error);
+        return null;
+    }
+}
+
+/**
  * Render pre-departure checklist HTML
  */
 function renderPreDepartureChecklist(booking, employee) {
     const bookingData = booking.fields;
+    
+    // Extract employee data if available
+    const staffName = employee?.fields?.['Name'] || '';
+    const staffPhone = employee?.fields?.['Phone'] || 
+                      employee?.fields?.['Mobile'] || 
+                      employee?.fields?.['Mobile Number'] || '';
+    const isStaffPrefilled = !!(employee && staffName);
     
     return `
 <!DOCTYPE html>
@@ -216,6 +251,7 @@ function renderPreDepartureChecklist(booking, employee) {
             <form id="checklistForm" onsubmit="handleSubmit(event)">
                 <input type="hidden" id="bookingId" value="${booking.id}">
                 <input type="hidden" id="checklistType" value="Pre-Departure">
+                ${employee ? `<input type="hidden" id="employeeId" value="${employee.id}">` : ''}
                 
                 <!-- Staff Identification -->
                 <div class="checklist-section" style="background: #fff3cd; border: 1px solid #ffeaa7; margin-bottom: 20px;">
@@ -225,14 +261,20 @@ function renderPreDepartureChecklist(booking, employee) {
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label for="staffName">Your Name</label>
                         <input type="text" id="staffName" name="staffName" required 
-                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"
+                               value="${staffName}"
+                               ${isStaffPrefilled ? 'readonly' : ''}
+                               style="width: 100%; padding: 10px; border: 1px solid ${isStaffPrefilled ? '#e9ecef' : '#ddd'}; border-radius: 6px; ${isStaffPrefilled ? 'background-color: #f8f9fa; cursor: not-allowed;' : ''}"
                                placeholder="Enter your full name">
+                        ${isStaffPrefilled ? '<small style="color: #6c757d;">Auto-filled from your profile</small>' : ''}
                     </div>
                     <div class="form-group">
                         <label for="staffPhone">Your Phone Number</label>
                         <input type="tel" id="staffPhone" name="staffPhone" required 
-                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"
+                               value="${staffPhone}"
+                               ${isStaffPrefilled ? 'readonly' : ''}
+                               style="width: 100%; padding: 10px; border: 1px solid ${isStaffPrefilled ? '#e9ecef' : '#ddd'}; border-radius: 6px; ${isStaffPrefilled ? 'background-color: #f8f9fa; cursor: not-allowed;' : ''}"
                                placeholder="Enter your mobile number">
+                        ${isStaffPrefilled ? '<small style="color: #6c757d;">Auto-filled from your profile</small>' : ''}
                     </div>
                 </div>
                 
@@ -427,6 +469,7 @@ function renderPreDepartureChecklist(booking, employee) {
                     // Staff Information
                     staffName: document.getElementById('staffName')?.value,
                     staffPhone: document.getElementById('staffPhone')?.value,
+                    employeeId: document.getElementById('employeeId')?.value,
                     
                     // Resource levels
                     fuelLevel: document.getElementById('fuelLevel')?.value,
@@ -505,6 +548,13 @@ function renderPreDepartureChecklist(booking, employee) {
  */
 function renderPostDepartureChecklist(booking, employee) {
     const bookingData = booking.fields;
+    
+    // Extract employee data if available
+    const staffName = employee?.fields?.['Name'] || '';
+    const staffPhone = employee?.fields?.['Phone'] || 
+                      employee?.fields?.['Mobile'] || 
+                      employee?.fields?.['Mobile Number'] || '';
+    const isStaffPrefilled = !!(employee && staffName);
     
     return `
 <!DOCTYPE html>
@@ -680,6 +730,7 @@ function renderPostDepartureChecklist(booking, employee) {
             <form id="checklistForm" onsubmit="handleSubmit(event)">
                 <input type="hidden" id="bookingId" value="${booking.id}">
                 <input type="hidden" id="checklistType" value="Post-Departure">
+                ${employee ? `<input type="hidden" id="employeeId" value="${employee.id}">` : ''}
                 
                 <!-- Staff Identification -->
                 <div class="checklist-section" style="background: #fff3cd; border: 1px solid #ffeaa7; margin-bottom: 20px;">
@@ -689,14 +740,20 @@ function renderPostDepartureChecklist(booking, employee) {
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label for="staffName">Your Name</label>
                         <input type="text" id="staffName" name="staffName" required 
-                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"
+                               value="${staffName}"
+                               ${isStaffPrefilled ? 'readonly' : ''}
+                               style="width: 100%; padding: 10px; border: 1px solid ${isStaffPrefilled ? '#e9ecef' : '#ddd'}; border-radius: 6px; ${isStaffPrefilled ? 'background-color: #f8f9fa; cursor: not-allowed;' : ''}"
                                placeholder="Enter your full name">
+                        ${isStaffPrefilled ? '<small style="color: #6c757d;">Auto-filled from your profile</small>' : ''}
                     </div>
                     <div class="form-group">
                         <label for="staffPhone">Your Phone Number</label>
                         <input type="tel" id="staffPhone" name="staffPhone" required 
-                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"
+                               value="${staffPhone}"
+                               ${isStaffPrefilled ? 'readonly' : ''}
+                               style="width: 100%; padding: 10px; border: 1px solid ${isStaffPrefilled ? '#e9ecef' : '#ddd'}; border-radius: 6px; ${isStaffPrefilled ? 'background-color: #f8f9fa; cursor: not-allowed;' : ''}"
                                placeholder="Enter your mobile number">
+                        ${isStaffPrefilled ? '<small style="color: #6c757d;">Auto-filled from your profile</small>' : ''}
                     </div>
                 </div>
                 
@@ -871,6 +928,7 @@ function renderPostDepartureChecklist(booking, employee) {
                     // Staff Information
                     staffName: document.getElementById('staffName')?.value,
                     staffPhone: document.getElementById('staffPhone')?.value,
+                    employeeId: document.getElementById('employeeId')?.value,
                     
                     // Resource levels after use
                     fuelLevelAfter: document.getElementById('fuelLevelAfter')?.value,
@@ -1046,7 +1104,7 @@ function renderPostDepartureChecklist(booking, employee) {
  */
 async function handleChecklistPage(req, res, checklistType) {
     try {
-        const { bookingId } = req.query;
+        const { bookingId, staffId } = req.query;
         
         if (!bookingId) {
             return res.status(400).send('Missing booking ID');
@@ -1081,9 +1139,16 @@ async function handleChecklistPage(req, res, checklistType) {
             `);
         }
         
-        // For SMS access, we don't have employee context
-        // In a real implementation, you might want to track this differently
-        const employee = null;
+        // Fetch employee data if staffId is provided
+        let employee = null;
+        if (staffId) {
+            employee = await fetchEmployee(staffId);
+            if (employee) {
+                console.log(`Loaded employee data for: ${employee.fields['Name'] || 'Unknown'}`);
+            } else {
+                console.log(`Warning: Could not load employee data for staffId: ${staffId}`);
+            }
+        }
         
         // Render appropriate checklist
         let html;
@@ -1142,6 +1207,9 @@ async function handleChecklistSubmission(req, res) {
                         'Completion Status': 'Completed',
                         'Completion Time': new Date().toISOString(),
                         
+                        // Link staff member if employeeId is provided
+                        ...(data.employeeId ? {'Staff Member': [data.employeeId]} : {}),
+                        
                         // Resource levels
                         'Fuel Level Check': data.fuelLevel || null,
                         'Gas Bottle Check': data.gasLevel || null,
@@ -1175,6 +1243,9 @@ async function handleChecklistSubmission(req, res) {
                         'Checklist Date/Time': new Date().toISOString(),
                         'Completion Status': 'Completed',
                         'Completion Time': new Date().toISOString(),
+                        
+                        // Link staff member if employeeId is provided
+                        ...(data.employeeId ? {'Staff Member': [data.employeeId]} : {}),
                         
                         // Resource levels after use
                         'Fuel Level After Use': data.fuelLevelAfter || null,
