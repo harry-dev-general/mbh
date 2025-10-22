@@ -205,7 +205,7 @@ function renderPreDepartureChecklist(booking, employee) {
                 </div>
                 <div class="info-row">
                     <span><strong>Vessel:</strong></span>
-                    <span>${bookingData['Vessel'] || 'N/A'}</span>
+                    <span>${bookingData['Vessel'] || bookingData['Booked Boat Type'] || (bookingData['Boat'] && bookingData['Boat'].length > 0 ? 'Boat Assigned' : 'N/A')}</span>
                 </div>
                 <div class="info-row">
                     <span><strong>Departure Time:</strong></span>
@@ -216,6 +216,25 @@ function renderPreDepartureChecklist(booking, employee) {
             <form id="checklistForm" onsubmit="handleSubmit(event)">
                 <input type="hidden" id="bookingId" value="${booking.id}">
                 <input type="hidden" id="checklistType" value="Pre-Departure">
+                
+                <!-- Staff Identification -->
+                <div class="checklist-section" style="background: #fff3cd; border: 1px solid #ffeaa7; margin-bottom: 20px;">
+                    <h3 style="color: #856404; margin-bottom: 15px;">
+                        <i class="fas fa-user"></i> Staff Information (Required)
+                    </h3>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="staffName">Your Name</label>
+                        <input type="text" id="staffName" name="staffName" required 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"
+                               placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="staffPhone">Your Phone Number</label>
+                        <input type="tel" id="staffPhone" name="staffPhone" required 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"
+                               placeholder="Enter your mobile number">
+                    </div>
+                </div>
                 
                 <div class="checklist-section">
                     <h3><i class="fas fa-life-ring"></i> Safety Equipment</h3>
@@ -405,6 +424,10 @@ function renderPreDepartureChecklist(booking, employee) {
                 // Collect form data
                 const formData = new FormData(event.target);
                 const checklistData = {
+                    // Staff Information
+                    staffName: document.getElementById('staffName')?.value,
+                    staffPhone: document.getElementById('staffPhone')?.value,
+                    
                     // Resource levels
                     fuelLevel: document.getElementById('fuelLevel')?.value,
                     gasLevel: document.getElementById('gasLevel')?.value,
@@ -646,7 +669,7 @@ function renderPostDepartureChecklist(booking, employee) {
                 </div>
                 <div class="info-row">
                     <span><strong>Vessel:</strong></span>
-                    <span>${bookingData['Vessel'] || 'N/A'}</span>
+                    <span>${bookingData['Vessel'] || bookingData['Booked Boat Type'] || (bookingData['Boat'] && bookingData['Boat'].length > 0 ? 'Boat Assigned' : 'N/A')}</span>
                 </div>
                 <div class="info-row">
                     <span><strong>Return Time:</strong></span>
@@ -657,6 +680,25 @@ function renderPostDepartureChecklist(booking, employee) {
             <form id="checklistForm" onsubmit="handleSubmit(event)">
                 <input type="hidden" id="bookingId" value="${booking.id}">
                 <input type="hidden" id="checklistType" value="Post-Departure">
+                
+                <!-- Staff Identification -->
+                <div class="checklist-section" style="background: #fff3cd; border: 1px solid #ffeaa7; margin-bottom: 20px;">
+                    <h3 style="color: #856404; margin-bottom: 15px;">
+                        <i class="fas fa-user"></i> Staff Information (Required)
+                    </h3>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label for="staffName">Your Name</label>
+                        <input type="text" id="staffName" name="staffName" required 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"
+                               placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="staffPhone">Your Phone Number</label>
+                        <input type="tel" id="staffPhone" name="staffPhone" required 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"
+                               placeholder="Enter your mobile number">
+                    </div>
+                </div>
                 
                 <!-- Resource Levels After Use -->
                 <div class="checklist-section">
@@ -826,6 +868,10 @@ function renderPostDepartureChecklist(booking, employee) {
                 // Collect form data
                 const formData = new FormData(event.target);
                 const checklistData = {
+                    // Staff Information
+                    staffName: document.getElementById('staffName')?.value,
+                    staffPhone: document.getElementById('staffPhone')?.value,
+                    
                     // Resource levels after use
                     fuelLevelAfter: document.getElementById('fuelLevelAfter')?.value,
                     gasLevelAfter: document.getElementById('gasLevelAfter')?.value,
@@ -1121,8 +1167,8 @@ async function handleChecklistSubmission(req, res) {
                         'Gas Bottle Replaced': data.gasReplaced || false,
                         'Water Tank Refilled': data.waterRefilled || false,
                         
-                        // Notes
-                        'Notes': data.notes || ''
+                        // Notes (include staff info)
+                        'Notes': `${data.notes || ''}\n\nCompleted by: ${data.staffName || submittedBy || 'Unknown'} (${data.staffPhone || 'No phone provided'})`
                     } : {
                         // Post-Departure fields with correct field names
                         'Booking': [bookingId],
@@ -1163,8 +1209,8 @@ async function handleChecklistSubmission(req, res) {
                         'Gas Bottle Replaced': data.gasReplaced || false,
                         'Water Tank Refilled': data.waterRefilled || false,
                         
-                        // Damage report and notes
-                        'Damage Report': data.notes || ''
+                        // Damage report and notes (include staff info)
+                        'Damage Report': `${data.notes || ''}\n\nCompleted by: ${data.staffName || submittedBy || 'Unknown'} (${data.staffPhone || 'No phone provided'})`
                     }
                 })
             }
