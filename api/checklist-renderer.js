@@ -21,6 +21,16 @@ const PRE_DEPARTURE_CHECKLIST_TABLE_ID = 'tbl9igu5g1bPG4Ahu';
 const POST_DEPARTURE_CHECKLIST_TABLE_ID = 'tblYkbSQGP6zveYNi';
 
 /**
+ * Generate a unique checklist ID
+ */
+function generateChecklistId(checklistType, bookingId) {
+    const prefix = checklistType === 'Pre-Departure' ? 'PRE' : 'POST';
+    const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+    const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `${prefix}-${timestamp}-${randomStr}`;
+}
+
+/**
  * Fetch booking details from Airtable
  */
 async function fetchBooking(bookingId) {
@@ -1183,6 +1193,9 @@ async function handleChecklistSubmission(req, res) {
     try {
         const { bookingId, checklistType, data, submittedBy } = req.body;
         
+        // Fetch booking data to get vessel information
+        const bookingData = await fetchBooking(bookingId);
+        
         // Determine which table to use based on checklist type
         const tableId = checklistType === 'Pre-Departure' 
             ? PRE_DEPARTURE_CHECKLIST_TABLE_ID 
@@ -1202,10 +1215,15 @@ async function handleChecklistSubmission(req, res) {
                 body: JSON.stringify({
                     fields: checklistType === 'Pre-Departure' ? {
                         // Pre-Departure fields with correct field names
+                        'Checklist ID': generateChecklistId(checklistType, bookingId),
                         'Booking': [bookingId],
                         'Checklist Date/Time': new Date().toISOString(),
                         'Completion Status': 'Completed',
                         'Completion Time': new Date().toISOString(),
+                        
+                        // Link vessel if available from booking
+                        ...(bookingData && bookingData.fields && bookingData.fields['Boat'] && bookingData.fields['Boat'].length > 0 ? 
+                            {'Vessel': bookingData.fields['Boat']} : {}),
                         
                         // Link staff member if employeeId is provided
                         ...(data.employeeId ? {'Staff Member': [data.employeeId]} : {}),
@@ -1239,10 +1257,15 @@ async function handleChecklistSubmission(req, res) {
                         'Notes': `${data.notes || ''}\n\nCompleted by: ${data.staffName || submittedBy || 'Unknown'} (${data.staffPhone || 'No phone provided'})`
                     } : {
                         // Post-Departure fields with correct field names
+                        'Checklist ID': generateChecklistId(checklistType, bookingId),
                         'Booking': [bookingId],
                         'Checklist Date/Time': new Date().toISOString(),
                         'Completion Status': 'Completed',
                         'Completion Time': new Date().toISOString(),
+                        
+                        // Link vessel if available from booking
+                        ...(bookingData && bookingData.fields && bookingData.fields['Boat'] && bookingData.fields['Boat'].length > 0 ? 
+                            {'Vessel': bookingData.fields['Boat']} : {}),
                         
                         // Link staff member if employeeId is provided
                         ...(data.employeeId ? {'Staff Member': [data.employeeId]} : {}),
