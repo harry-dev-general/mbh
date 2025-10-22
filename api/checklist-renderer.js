@@ -14,9 +14,11 @@ const supabase = createClient(
 // Airtable configuration
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const BOOKINGS_BASE_ID = 'applkAFOn2qxtu7tx';
-const BOOKINGS_TABLE_ID = 'tblcBoyuVsbB1dt1I';
+const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Bookings Dashboard table (correct ID)
 const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
-const CHECKLIST_TABLE_ID = 'tblB34qRbdGWdKXQh';
+// Separate table IDs for each checklist type
+const PRE_DEPARTURE_CHECKLIST_TABLE_ID = 'tbl9igu5g1bPG4Ahu';
+const POST_DEPARTURE_CHECKLIST_TABLE_ID = 'tblYkbSQGP6zveYNi';
 
 /**
  * Fetch booking details from Airtable
@@ -216,42 +218,143 @@ function renderPreDepartureChecklist(booking, employee) {
                 <input type="hidden" id="checklistType" value="Pre-Departure">
                 
                 <div class="checklist-section">
-                    <h3>Safety Equipment</h3>
-                    <div class="checklist-item">
-                        <input type="checkbox" id="lifejackets" name="lifejackets" required>
-                        <label for="lifejackets">Life jackets checked and onboard</label>
+                    <h3><i class="fas fa-life-ring"></i> Safety Equipment</h3>
+                    
+                    <div class="form-group">
+                        <label for="lifeJackets">Life Jackets Count</label>
+                        <input type="number" id="lifeJackets" name="lifeJackets" min="0" max="50" required
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                     </div>
+
                     <div class="checklist-item">
-                        <input type="checkbox" id="flares" name="flares" required>
-                        <label for="flares">Flares checked and in date</label>
+                        <input type="checkbox" id="safetyEquipment" name="safetyEquipment">
+                        <label for="safetyEquipment">Safety Equipment Check (flares, first aid, etc.)</label>
                     </div>
+                    
                     <div class="checklist-item">
-                        <input type="checkbox" id="firstaid" name="firstaid" required>
-                        <label for="firstaid">First aid kit checked</label>
-                    </div>
-                    <div class="checklist-item">
-                        <input type="checkbox" id="fireextinguisher" name="fireextinguisher" required>
-                        <label for="fireextinguisher">Fire extinguisher checked</label>
+                        <input type="checkbox" id="fireExtinguisher" name="fireExtinguisher">
+                        <label for="fireExtinguisher">Fire Extinguisher Check</label>
                     </div>
                 </div>
                 
+                <!-- Fuel & Resources -->
                 <div class="checklist-section">
-                    <h3>Vessel Condition</h3>
-                    <div class="checklist-item">
-                        <input type="checkbox" id="hull" name="hull" required>
-                        <label for="hull">Hull condition checked</label>
+                    <h3><i class="fas fa-gas-pump"></i> Fuel & Resources</h3>
+                    
+                    <div class="form-group">
+                        <label>Fuel Level Check</label>
+                        <select id="fuelLevel" name="fuelLevel" class="form-control" required 
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">Select Level</option>
+                            <option value="Empty">Empty</option>
+                            <option value="Quarter">Quarter</option>
+                            <option value="Half">Half</option>
+                            <option value="Three-Quarter">3/4</option>
+                            <option value="Full">Full</option>
+                        </select>
                     </div>
+
+                    <div class="form-group">
+                        <label>Gas Bottle Check</label>
+                        <select id="gasLevel" name="gasLevel" class="form-control" required
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">Select Level</option>
+                            <option value="Empty">Empty</option>
+                            <option value="Quarter">Quarter</option>
+                            <option value="Half">Half</option>
+                            <option value="Three-Quarter">3/4</option>
+                            <option value="Full">Full</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Water Tank Level</label>
+                        <select id="waterLevel" name="waterLevel" class="form-control" required
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">Select Level</option>
+                            <option value="Empty">Empty</option>
+                            <option value="Quarter">Quarter</option>
+                            <option value="Half">Half</option>
+                            <option value="Three-Quarter">3/4</option>
+                            <option value="Full">Full</option>
+                        </select>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="fuelRefilled" name="fuelRefilled">
+                        <label for="fuelRefilled">Fuel Refilled (if needed)</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="gasReplaced" name="gasReplaced">
+                        <label for="gasReplaced">Gas Bottle Replaced (if needed)</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="waterRefilled" name="waterRefilled">
+                        <label for="waterRefilled">Water Tank Refilled (if needed)</label>
+                    </div>
+                </div>
+                
+                <!-- Cleanliness -->
+                <div class="checklist-section">
+                    <h3><i class="fas fa-broom"></i> Cleanliness</h3>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="bbqCleaned" name="bbqCleaned">
+                        <label for="bbqCleaned">BBQ Cleaned</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="toiletCleaned" name="toiletCleaned">
+                        <label for="toiletCleaned">Toilet Cleaned</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="deckWashed" name="deckWashed">
+                        <label for="deckWashed">Deck Washed</label>
+                    </div>
+                </div>
+                
+                <!-- Vessel Condition -->
+                <div class="checklist-section">
+                    <h3><i class="fas fa-ship"></i> Vessel Condition</h3>
+                    
+                    <div class="form-group">
+                        <label>Overall Vessel Condition</label>
+                        <select id="overallCondition" name="overallCondition" class="form-control" required
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">Select Condition</option>
+                            <option value="Ready">Ready for Use</option>
+                            <option value="Issues Found">Issues Found</option>
+                        </select>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="anchorSecured" name="anchorSecured">
+                        <label for="anchorSecured">Anchor Secured</label>
+                    </div>
+
+                    <div class="checklist-item">
+                        <input type="checkbox" id="lightsWorking" name="lightsWorking">
+                        <label for="lightsWorking">All Lights Working</label>
+                    </div>
+
                     <div class="checklist-item">
                         <input type="checkbox" id="engine" name="engine" required>
                         <label for="engine">Engine started and running smoothly</label>
                     </div>
-                    <div class="checklist-item">
-                        <input type="checkbox" id="fuel" name="fuel" required>
-                        <label for="fuel">Fuel level checked</label>
-                    </div>
+
                     <div class="checklist-item">
                         <input type="checkbox" id="battery" name="battery" required>
                         <label for="battery">Battery condition checked</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">Notes (Optional)</label>
+                        <textarea id="notes" name="notes" rows="4" 
+                                  style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"
+                                  placeholder="Any issues or observations..."></textarea>
                     </div>
                 </div>
                 
@@ -301,13 +404,43 @@ function renderPreDepartureChecklist(booking, employee) {
             try {
                 // Collect form data
                 const formData = new FormData(event.target);
-                const checklistData = {};
-                
-                // Get all checkboxes
-                const checkboxes = event.target.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(checkbox => {
-                    checklistData[checkbox.name] = checkbox.checked;
-                });
+                const checklistData = {
+                    // Resource levels
+                    fuelLevel: document.getElementById('fuelLevel')?.value,
+                    gasLevel: document.getElementById('gasLevel')?.value,
+                    waterLevel: document.getElementById('waterLevel')?.value,
+                    
+                    // Cleanliness
+                    bbqCleaned: document.getElementById('bbqCleaned')?.checked,
+                    toiletCleaned: document.getElementById('toiletCleaned')?.checked,
+                    deckWashed: document.getElementById('deckWashed')?.checked,
+                    
+                    // Safety equipment
+                    lifeJackets: document.getElementById('lifeJackets')?.value,
+                    safetyEquipment: document.getElementById('safetyEquipment')?.checked,
+                    fireExtinguisher: document.getElementById('fireExtinguisher')?.checked,
+                    
+                    // Refill tracking
+                    fuelRefilled: document.getElementById('fuelRefilled')?.checked,
+                    gasReplaced: document.getElementById('gasReplaced')?.checked,
+                    waterRefilled: document.getElementById('waterRefilled')?.checked,
+                    
+                    // Vessel condition
+                    overallCondition: document.getElementById('overallCondition')?.value,
+                    anchorSecured: document.getElementById('anchorSecured')?.checked,
+                    lightsWorking: document.getElementById('lightsWorking')?.checked,
+                    engine: document.getElementById('engine')?.checked,
+                    battery: document.getElementById('battery')?.checked,
+                    
+                    // Notes
+                    notes: document.getElementById('notes')?.value,
+                    
+                    // Customer briefing (existing checkboxes)
+                    safety_brief: document.getElementById('safety_brief')?.checked,
+                    operation_demo: document.getElementById('operation_demo')?.checked,
+                    boundaries: document.getElementById('boundaries')?.checked,
+                    return_time: document.getElementById('return_time')?.checked
+                };
                 
                 // Submit to server
                 const response = await fetch('/api/checklist/submit-rendered', {
@@ -525,23 +658,115 @@ function renderPostDepartureChecklist(booking, employee) {
                 <input type="hidden" id="bookingId" value="${booking.id}">
                 <input type="hidden" id="checklistType" value="Post-Departure">
                 
+                <!-- Resource Levels After Use -->
                 <div class="checklist-section">
-                    <h3>Vessel Return Condition</h3>
+                    <h3><i class="fas fa-gas-pump"></i> Resource Levels After Use</h3>
+                    
+                    <div class="form-group">
+                        <label>Fuel Level After Use</label>
+                        <select id="fuelLevelAfter" name="fuelLevelAfter" class="form-control" required
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">Select Level</option>
+                            <option value="Empty">Empty</option>
+                            <option value="Quarter">Quarter</option>
+                            <option value="Half">Half</option>
+                            <option value="Three-Quarter">3/4</option>
+                            <option value="Full">Full</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gas Bottle Level After Use</label>
+                        <select id="gasLevelAfter" name="gasLevelAfter" class="form-control" required
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">Select Level</option>
+                            <option value="Empty">Empty</option>
+                            <option value="Quarter">Quarter</option>
+                            <option value="Half">Half</option>
+                            <option value="Three-Quarter">3/4</option>
+                            <option value="Full">Full</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Water Tank Level After Use</label>
+                        <select id="waterLevelAfter" name="waterLevelAfter" class="form-control" required
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">Select Level</option>
+                            <option value="Empty">Empty</option>
+                            <option value="Quarter">Quarter</option>
+                            <option value="Half">Half</option>
+                            <option value="Three-Quarter">3/4</option>
+                            <option value="Full">Full</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- GPS Location -->
+                <div class="checklist-section" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin: 25px 0;">
+                    <h3 style="color: #0066cc; margin-bottom: 15px;">
+                        <i class="fas fa-map-marker-alt"></i> Vessel Location
+                    </h3>
+                    <p style="color: #666; margin-bottom: 1rem;">Record where you've moored the vessel</p>
+                    
+                    <button type="button" id="captureLocationBtn" onclick="captureLocation()" 
+                            style="background: #28a745; color: white; border: none; padding: 12px 24px; 
+                                   border-radius: 6px; font-size: 16px; cursor: pointer;">
+                        <i class="fas fa-location-arrow"></i> Capture Current Location
+                    </button>
+                    
+                    <div id="locationStatus" style="display: none; margin-top: 1rem; padding: 1rem; 
+                                                    border-radius: 5px; font-size: 0.9rem;"></div>
+                    
+                    <!-- Hidden fields to store location data -->
+                    <input type="hidden" id="gpsLatitude" name="gpsLatitude">
+                    <input type="hidden" id="gpsLongitude" name="gpsLongitude">
+                    <input type="hidden" id="locationAddress" name="locationAddress">
+                    <input type="hidden" id="locationAccuracy" name="locationAccuracy">
+                </div>
+                
+                <div class="checklist-section">
+                    <h3><i class="fas fa-ship"></i> Vessel Return Condition</h3>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="toiletPumped" name="toiletPumped">
+                        <label for="toiletPumped">Toilet Pumped Out</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="rubbishRemoved" name="rubbishRemoved">
+                        <label for="rubbishRemoved">Rubbish Removed</label>
+                    </div>
+                    
                     <div class="checklist-item">
                         <input type="checkbox" id="vessel_cleaned" name="vessel_cleaned" required>
                         <label for="vessel_cleaned">Vessel cleaned and tidy</label>
                     </div>
+                    
                     <div class="checklist-item">
                         <input type="checkbox" id="equipment_returned" name="equipment_returned" required>
                         <label for="equipment_returned">All equipment returned</label>
                     </div>
+                    
                     <div class="checklist-item">
                         <input type="checkbox" id="no_damage" name="no_damage" required>
                         <label for="no_damage">No damage to vessel</label>
                     </div>
+                    
                     <div class="checklist-item">
                         <input type="checkbox" id="fuel_topped" name="fuel_topped" required>
                         <label for="fuel_topped">Fuel topped up (if required)</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Overall Vessel Condition After Use</label>
+                        <select id="overallConditionAfter" name="overallConditionAfter" class="form-control" required
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">Select Condition</option>
+                            <option value="Good - Ready for Next Booking">Good - Ready for Next Booking</option>
+                            <option value="Needs Attention">Needs Attention</option>
+                            <option value="Major Issues - Do Not Use">Major Issues - Do Not Use</option>
+                        </select>
                     </div>
                 </div>
                 
@@ -600,16 +825,38 @@ function renderPostDepartureChecklist(booking, employee) {
             try {
                 // Collect form data
                 const formData = new FormData(event.target);
-                const checklistData = {};
-                
-                // Get all checkboxes
-                const checkboxes = event.target.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(checkbox => {
-                    checklistData[checkbox.name] = checkbox.checked;
-                });
-                
-                // Add notes
-                checklistData.notes = document.getElementById('notes').value;
+                const checklistData = {
+                    // Resource levels after use
+                    fuelLevelAfter: document.getElementById('fuelLevelAfter')?.value,
+                    gasLevelAfter: document.getElementById('gasLevelAfter')?.value,
+                    waterLevelAfter: document.getElementById('waterLevelAfter')?.value,
+                    
+                    // GPS location
+                    gpsLatitude: document.getElementById('gpsLatitude')?.value,
+                    gpsLongitude: document.getElementById('gpsLongitude')?.value,
+                    locationAddress: document.getElementById('locationAddress')?.value,
+                    locationAccuracy: document.getElementById('locationAccuracy')?.value,
+                    
+                    // Cleanliness and condition
+                    toiletPumped: document.getElementById('toiletPumped')?.checked,
+                    rubbishRemoved: document.getElementById('rubbishRemoved')?.checked,
+                    vessel_cleaned: document.getElementById('vessel_cleaned')?.checked,
+                    equipment_returned: document.getElementById('equipment_returned')?.checked,
+                    no_damage: document.getElementById('no_damage')?.checked,
+                    fuel_topped: document.getElementById('fuel_topped')?.checked,
+                    overallConditionAfter: document.getElementById('overallConditionAfter')?.value,
+                    
+                    // Safety equipment
+                    lifejackets_returned: document.getElementById('lifejackets_returned')?.checked,
+                    safety_equipment_complete: document.getElementById('safety_equipment_complete')?.checked,
+                    
+                    // Customer feedback
+                    customer_satisfied: document.getElementById('customer_satisfied')?.checked,
+                    no_incidents: document.getElementById('no_incidents')?.checked,
+                    
+                    // Notes
+                    notes: document.getElementById('notes')?.value
+                };
                 
                 // Submit to server
                 const response = await fetch('/api/checklist/submit-rendered', {
@@ -640,6 +887,108 @@ function renderPostDepartureChecklist(booking, employee) {
                 submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Checklist';
             }
         }
+        
+        // GPS location capture function
+        function captureLocation() {
+            const btn = document.getElementById('captureLocationBtn');
+            const statusDiv = document.getElementById('locationStatus');
+            
+            if (!navigator.geolocation) {
+                statusDiv.style.display = 'block';
+                statusDiv.style.backgroundColor = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> GPS location is not supported by your browser';
+                return;
+            }
+            
+            // Update button to show loading
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+            statusDiv.style.display = 'block';
+            statusDiv.style.backgroundColor = '#cce5ff';
+            statusDiv.style.color = '#004085';
+            statusDiv.innerHTML = '<i class="fas fa-info-circle"></i> Requesting GPS location...';
+            
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    // Store GPS data
+                    document.getElementById('gpsLatitude').value = lat;
+                    document.getElementById('gpsLongitude').value = lng;
+                    document.getElementById('locationAccuracy').value = Math.round(accuracy);
+                    
+                    // Try to get address using reverse geocoding
+                    try {
+                        const response = await fetch(
+                            \`https://nominatim.openstreetmap.org/reverse?format=json&lat=\${lat}&lon=\${lng}\`
+                        );
+                        const data = await response.json();
+                        
+                        let address = 'Unknown location';
+                        if (data.display_name) {
+                            address = data.display_name;
+                        }
+                        
+                        document.getElementById('locationAddress').value = address;
+                        
+                        // Update status
+                        statusDiv.style.backgroundColor = '#d4edda';
+                        statusDiv.style.color = '#155724';
+                        statusDiv.innerHTML = \`
+                            <i class="fas fa-check-circle"></i> Location captured successfully!<br>
+                            <small>GPS: \${lat.toFixed(6)}, \${lng.toFixed(6)}<br>
+                            Accuracy: \u00b1\${Math.round(accuracy)}m<br>
+                            \${address}</small>
+                        \`;
+                    } catch (error) {
+                        // Even if geocoding fails, we have GPS coords
+                        statusDiv.style.backgroundColor = '#d4edda';
+                        statusDiv.style.color = '#155724';
+                        statusDiv.innerHTML = \`
+                            <i class="fas fa-check-circle"></i> GPS location captured!<br>
+                            <small>Coordinates: \${lat.toFixed(6)}, \${lng.toFixed(6)}<br>
+                            Accuracy: \u00b1\${Math.round(accuracy)}m</small>
+                        \`;
+                    }
+                    
+                    // Reset button
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-arrow"></i> Update Location';
+                },
+                (error) => {
+                    // Handle error
+                    statusDiv.style.backgroundColor = '#f8d7da';
+                    statusDiv.style.color = '#721c24';
+                    
+                    let errorMsg = 'Unable to get your location';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Location access denied. Please enable location permissions.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Location information unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Location request timed out.';
+                            break;
+                    }
+                    
+                    statusDiv.innerHTML = \`<i class="fas fa-exclamation-circle"></i> \${errorMsg}\`;
+                    
+                    // Reset button
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-arrow"></i> Try Again';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
     </script>
 </body>
 </html>
@@ -658,10 +1007,32 @@ async function handleChecklistPage(req, res, checklistType) {
         }
         
         // Fetch booking details
-        const booking = await fetchBooking(bookingId);
+        let booking;
+        try {
+            booking = await fetchBooking(bookingId);
+        } catch (fetchError) {
+            console.error('Error fetching booking:', fetchError);
+            return res.status(404).send(`
+                <html>
+                    <body style="font-family: Arial; padding: 20px; text-align: center;">
+                        <h2>Booking Not Found</h2>
+                        <p>The booking ID provided is invalid or the booking does not exist.</p>
+                        <p style="color: #666; font-size: 14px;">Booking ID: ${bookingId}</p>
+                    </body>
+                </html>
+            `);
+        }
         
         if (!booking || booking.fields.Status !== 'PAID') {
-            return res.status(404).send('Booking not found or not in PAID status');
+            return res.status(404).send(`
+                <html>
+                    <body style="font-family: Arial; padding: 20px; text-align: center;">
+                        <h2>Booking Not Available</h2>
+                        <p>This checklist is only available for bookings with PAID status.</p>
+                        <p style="color: #666; font-size: 14px;">Current Status: ${booking?.fields?.Status || 'Unknown'}</p>
+                    </body>
+                </html>
+            `);
         }
         
         // For SMS access, we don't have employee context
@@ -701,9 +1072,16 @@ async function handleChecklistSubmission(req, res) {
     try {
         const { bookingId, checklistType, data, submittedBy } = req.body;
         
+        // Determine which table to use based on checklist type
+        const tableId = checklistType === 'Pre-Departure' 
+            ? PRE_DEPARTURE_CHECKLIST_TABLE_ID 
+            : POST_DEPARTURE_CHECKLIST_TABLE_ID;
+        
+        console.log(`Submitting ${checklistType} checklist to table ${tableId}`);
+        
         // Create checklist record in Airtable
         const response = await fetch(
-            `https://api.airtable.com/v0/${BOOKINGS_BASE_ID}/${CHECKLIST_TABLE_ID}`,
+            `https://api.airtable.com/v0/${BOOKINGS_BASE_ID}/${tableId}`,
             {
                 method: 'POST',
                 headers: {
@@ -711,20 +1089,91 @@ async function handleChecklistSubmission(req, res) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    fields: {
+                    fields: checklistType === 'Pre-Departure' ? {
+                        // Pre-Departure fields with correct field names
                         'Booking': [bookingId],
-                        'Checklist Type': checklistType,
-                        'Submitted By': submittedBy,
-                        'Submission Date': new Date().toISOString(),
-                        'Checklist Data': JSON.stringify(data),
-                        'Status': 'Completed'
+                        'Checklist Date/Time': new Date().toISOString(),
+                        'Completion Status': 'Completed',
+                        'Completion Time': new Date().toISOString(),
+                        
+                        // Resource levels
+                        'Fuel Level Check': data.fuelLevel || null,
+                        'Gas Bottle Check': data.gasLevel || null,
+                        'Water Tank Level': data.waterLevel || null,
+                        
+                        // Cleanliness
+                        'BBQ Cleaned': data.bbqCleaned || false,
+                        'Toilet Cleaned': data.toiletCleaned || false,
+                        'Deck Washed': data.deckWashed || false,
+                        
+                        // Safety equipment
+                        'Life Jackets Count': data.lifeJackets ? parseInt(data.lifeJackets) : null,
+                        'Safety Equipment Check': data.safetyEquipment || false,
+                        'Fire Extinguisher Check': data.fireExtinguisher || false,
+                        
+                        // Vessel condition
+                        'Overall Vessel Condition': data.overallCondition || null,
+                        'Anchor Secured': data.anchorSecured || false,
+                        'Lights Working': data.lightsWorking || false,
+                        
+                        // Refill tracking
+                        'Fuel Refilled': data.fuelRefilled || false,
+                        'Gas Bottle Replaced': data.gasReplaced || false,
+                        'Water Tank Refilled': data.waterRefilled || false,
+                        
+                        // Notes
+                        'Notes': data.notes || ''
+                    } : {
+                        // Post-Departure fields with correct field names
+                        'Booking': [bookingId],
+                        'Checklist Date/Time': new Date().toISOString(),
+                        'Completion Status': 'Completed',
+                        'Completion Time': new Date().toISOString(),
+                        
+                        // Resource levels after use
+                        'Fuel Level After Use': data.fuelLevelAfter || null,
+                        'Gas Bottle Level After Use': data.gasLevelAfter || null,
+                        'Water Tank Level After Use': data.waterLevelAfter || null,
+                        
+                        // GPS fields
+                        'GPS Latitude': data.gpsLatitude ? parseFloat(data.gpsLatitude) : null,
+                        'GPS Longitude': data.gpsLongitude ? parseFloat(data.gpsLongitude) : null,
+                        'Location Address': data.locationAddress || null,
+                        'Location Accuracy': data.locationAccuracy ? parseInt(data.locationAccuracy) : null,
+                        'Location Captured': data.gpsLatitude ? true : false,
+                        
+                        // Cleanliness and maintenance
+                        'Toilet Pumped Out': data.toiletPumped || false,
+                        'Toilet Cleaned': data.vessel_cleaned || false,
+                        'BBQ Cleaned': data.bbqCleaned || false,
+                        'Deck Cleaned': data.deckCleaned || false,
+                        'Rubbish Removed': data.rubbishRemoved || false,
+                        
+                        // Equipment and condition
+                        'Equipment Returned': data.equipment_returned || false,
+                        'Customer Items Left': data.itemsLeft || false,
+                        'Items Description': data.itemsDescription || '',
+                        
+                        // Overall assessment
+                        'Overall Vessel Condition After Use': data.overallConditionAfter || 
+                            (data.no_damage ? 'Good - Ready for Next Booking' : 'Needs Attention'),
+                        
+                        // Refill tracking
+                        'Fuel Refilled': data.fuel_topped || false,
+                        'Gas Bottle Replaced': data.gasReplaced || false,
+                        'Water Tank Refilled': data.waterRefilled || false,
+                        
+                        // Damage report and notes
+                        'Damage Report': data.notes || ''
                     }
                 })
             }
         );
         
         if (!response.ok) {
-            throw new Error('Failed to save checklist');
+            const errorData = await response.json();
+            console.error('Airtable response:', response.status, errorData);
+            throw new Error(`Failed to save checklist: ${errorData.error?.message || response.status}`);
         }
         
         res.json({ success: true });
