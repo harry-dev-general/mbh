@@ -205,7 +205,7 @@ function renderPreDepartureChecklist(booking, employee) {
                 </div>
                 <div class="info-row">
                     <span><strong>Vessel:</strong></span>
-                    <span>${bookingData['Vessel'] || bookingData['Booked Boat Type'] || (bookingData['Boat'] && bookingData['Boat'].length > 0 ? 'Boat Assigned' : 'N/A')}</span>
+                    <span>${bookingData['Boat'] && bookingData['Boat'].length > 0 ? bookingData['Boat'][0] : 'N/A'}</span>
                 </div>
                 <div class="info-row">
                     <span><strong>Departure Time:</strong></span>
@@ -669,7 +669,7 @@ function renderPostDepartureChecklist(booking, employee) {
                 </div>
                 <div class="info-row">
                     <span><strong>Vessel:</strong></span>
-                    <span>${bookingData['Vessel'] || bookingData['Booked Boat Type'] || (bookingData['Boat'] && bookingData['Boat'].length > 0 ? 'Boat Assigned' : 'N/A')}</span>
+                    <span>${bookingData['Boat'] && bookingData['Boat'].length > 0 ? bookingData['Boat'][0] : 'N/A'}</span>
                 </div>
                 <div class="info-row">
                     <span><strong>Return Time:</strong></span>
