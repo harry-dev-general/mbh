@@ -402,27 +402,36 @@ async function processBookingReminders(forceImmediate = false) {
             if (fields['Onboarding Time'] && 
                 (forceImmediate || shouldSendReminder(booking, 'onboarding'))) {
                 
-                // Mark as sent FIRST to prevent duplicates
-                const marked = await markReminderSent(booking.id, 'onboarding');
+                const recipients = new Set();
                 
-                if (marked) {
-                    const recipients = new Set();
-                    
-                    // Add assigned onboarding staff
-                    if (fields['Onboarding Employee']?.length) {
-                        for (const employeeId of fields['Onboarding Employee']) {
-                            const employee = await getEmployeeById(employeeId);
-                            if (employee) recipients.add(employee);
-                        }
+                // Add assigned onboarding staff
+                if (fields['Onboarding Employee']?.length) {
+                    for (const employeeId of fields['Onboarding Employee']) {
+                        const employee = await getEmployeeById(employeeId);
+                        if (employee) recipients.add(employee);
                     }
-                    
-                    // Add all full-time staff
-                    fullTimeStaff.forEach(staff => recipients.add(staff));
-                    
-                    // Send reminders
-                    for (const recipient of recipients) {
+                }
+                
+                // Add all full-time staff
+                fullTimeStaff.forEach(staff => recipients.add(staff));
+                
+                // Send reminders
+                let sentCount = 0;
+                for (const recipient of recipients) {
+                    try {
                         await sendOnboardingReminder(booking, recipient);
+                        sentCount++;
+                    } catch (error) {
+                        console.error(`Failed to send onboarding reminder to ${recipient.fields['Name']}:`, error);
                     }
+                }
+                
+                // Only mark as sent if at least one SMS was successfully sent
+                if (sentCount > 0) {
+                    await markReminderSent(booking.id, 'onboarding');
+                    console.log(`✅ Marked onboarding reminder as sent after sending ${sentCount} SMS messages`);
+                } else {
+                    console.log(`⚠️ No onboarding reminders sent - will retry next cycle`);
                 }
             }
             
@@ -430,27 +439,36 @@ async function processBookingReminders(forceImmediate = false) {
             if (fields['Deloading Time'] && 
                 (forceImmediate || shouldSendReminder(booking, 'deloading'))) {
                 
-                // Mark as sent FIRST to prevent duplicates
-                const marked = await markReminderSent(booking.id, 'deloading');
+                const recipients = new Set();
                 
-                if (marked) {
-                    const recipients = new Set();
-                    
-                    // Add assigned deloading staff
-                    if (fields['Deloading Employee']?.length) {
-                        for (const employeeId of fields['Deloading Employee']) {
-                            const employee = await getEmployeeById(employeeId);
-                            if (employee) recipients.add(employee);
-                        }
+                // Add assigned deloading staff
+                if (fields['Deloading Employee']?.length) {
+                    for (const employeeId of fields['Deloading Employee']) {
+                        const employee = await getEmployeeById(employeeId);
+                        if (employee) recipients.add(employee);
                     }
-                    
-                    // Add all full-time staff
-                    fullTimeStaff.forEach(staff => recipients.add(staff));
-                    
-                    // Send reminders
-                    for (const recipient of recipients) {
+                }
+                
+                // Add all full-time staff
+                fullTimeStaff.forEach(staff => recipients.add(staff));
+                
+                // Send reminders
+                let sentCount = 0;
+                for (const recipient of recipients) {
+                    try {
                         await sendDeloadingReminder(booking, recipient);
+                        sentCount++;
+                    } catch (error) {
+                        console.error(`Failed to send deloading reminder to ${recipient.fields['Name']}:`, error);
                     }
+                }
+                
+                // Only mark as sent if at least one SMS was successfully sent
+                if (sentCount > 0) {
+                    await markReminderSent(booking.id, 'deloading');
+                    console.log(`✅ Marked deloading reminder as sent after sending ${sentCount} SMS messages`);
+                } else {
+                    console.log(`⚠️ No deloading reminders sent - will retry next cycle`);
                 }
             }
         }
