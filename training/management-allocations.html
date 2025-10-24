@@ -2264,7 +2264,54 @@
                 }
 
                 const data = await response.json();
-                const allBookings = data.records || [];
+                let allBookings = data.records || [];
+                
+                // Handle pagination to get ALL bookings
+                let offset = data.offset;
+                while (offset) {
+                    console.log('Fetching more bookings with offset:', offset);
+                    const nextResponse = await fetchWithRetry(
+                        `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
+                        `filterByFormula=${filter}&pageSize=100&offset=${offset}&` +
+                        `fields[]=Booking Code&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time&` +
+                        `fields[]=Status&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Duration&` +
+                        `fields[]=Add-ons&` +
+                        `fields[]=Onboarding Time&fields[]=Deloading Time&fields[]=Boat&fields[]=Booked Boat Type&` +
+                        `fields[]=Booking Items&fields[]=Total Amount&` +
+                        `fields[]=Onboarding Response&fields[]=Deloading Response&_t=${Date.now()}`,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                            }
+                        }
+                    );
+                    
+                    if (!nextResponse.ok) {
+                        console.error('Failed to fetch paginated bookings');
+                        break;
+                    }
+                    
+                    const nextData = await nextResponse.json();
+                    allBookings = allBookings.concat(nextData.records || []);
+                    offset = nextData.offset;
+                }
+                
+                console.log('Total bookings fetched from Airtable:', allBookings.length);
+                
+                // Debug: Check if Minh Mai booking exists in the raw data
+                const minhMaiBookings = allBookings.filter(r => 
+                    r.fields['Customer Name'] && 
+                    (r.fields['Customer Name'].toLowerCase().includes('minh') || 
+                     r.fields['Customer Name'].toLowerCase().includes('mai'))
+                );
+                if (minhMaiBookings.length > 0) {
+                    console.log('Found Minh/Mai bookings in raw data:', minhMaiBookings.length);
+                    minhMaiBookings.forEach(booking => {
+                        console.log('Minh/Mai booking:', booking.fields);
+                    });
+                } else {
+                    console.log('NO Minh/Mai bookings found in raw Airtable data');
+                }
                 
                 // Debug: Log first booking to see field structure
                 if (allBookings.length > 0) {
@@ -2338,7 +2385,7 @@
         
         // Count both PAID and PART bookings for the log
         const paidBookings = allBookings.filter(r => r.fields['Status'] === 'PAID' || r.fields['Status'] === 'PART');
-        console.log(`Found ${paidBookings.length} PAID/PART bookings, ${bookingsData.length} for current week`, bookingsData);
+        console.log(`Found ${paidBookings.length} PAID/PART bookings (out of ${allBookings.length} total), ${bookingsData.length} for current week`, bookingsData);
                 
                 // Don't render here - let loadWeekData handle rendering after all data is loaded
                 populateBookingsSelect();
