@@ -2285,9 +2285,13 @@
             const bookingDate = record.fields['Booking Date'];
             const status = record.fields['Status'];
             
-            // Only show PAID or PART bookings (PART = partial payment)
-            // Note: PEND status is already included in the API filter but excluded here for now
-            if (status !== 'PAID' && status !== 'PART') {
+            // Only show PAID, PART, Confirmed bookings
+            // PART = partial payment, Confirmed = confirmed but not yet paid
+            if (status !== 'PAID' && status !== 'PART' && status !== 'Confirmed') {
+                // Log excluded bookings for debugging
+                if (record.fields['Customer Name'] && record.fields['Customer Name'].includes('Minh Mai')) {
+                    console.log('Minh Mai booking excluded due to status:', status);
+                }
                 return false;
             }
             
@@ -2313,6 +2317,19 @@
                     weekEnd: weekEndStr,
                     status: status,
                     isInRange: isInRange
+                });
+            }
+            
+            // Debug log for Minh Mai booking
+            if (record.fields['Customer Name'] && record.fields['Customer Name'].includes('Minh Mai')) {
+                console.log('Minh Mai booking:', {
+                    bookingDate: bookingDate,
+                    parsedDate: dateStr,
+                    weekStart: weekStartStr,
+                    weekEnd: weekEndStr,
+                    status: status,
+                    isInRange: isInRange,
+                    fullRecord: record.fields
                 });
             }
             
@@ -2570,6 +2587,13 @@
                     hour12: true
                 },
                 firstDay: 1, // Monday
+                
+                // Debug: Log when calendar dates change
+                datesSet: function(dateInfo) {
+                    console.log('Calendar displaying dates from:', dateInfo.start, 'to:', dateInfo.end);
+                    console.log('Start date ISO:', dateInfo.start.toISOString());
+                    console.log('End date ISO:', dateInfo.end.toISOString());
+                },
                 
                 // Event Display
                 eventMaxStack: 4,
@@ -2829,8 +2853,16 @@
         function transformBookingsToEvents(bookingsData) {
             const events = [];
             
+            console.log('Transforming bookings to events. Total bookings:', bookingsData.length);
+            
             bookingsData.forEach((record, index) => {
                 const booking = record.fields;
+                
+                // Debug log for Minh Mai
+                if (booking['Customer Name'] && booking['Customer Name'].includes('Minh Mai')) {
+                    console.log('Processing Minh Mai booking for calendar:', booking);
+                }
+                
                 if (!booking['Booking Date']) return;
                 
                 const boat = boatsData.find(b => b.id === booking['Boat']?.[0]);
@@ -2916,6 +2948,12 @@
                     });
                 }
             });
+            
+            console.log('Total booking events created:', events.length);
+            
+            // Debug: Log any events for Sunday
+            const sundayEvents = events.filter(e => e.start && e.start.includes('2025-10-26'));
+            console.log('Sunday booking events:', sundayEvents);
             
             return events;
         }
