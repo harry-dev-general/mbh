@@ -508,6 +508,54 @@ app.get('/api/airtable/*', async (req, res) => {
   }
 });
 
+// PATCH endpoint for Airtable updates
+app.patch('/api/airtable/*', async (req, res) => {
+  try {
+    const airtablePath = req.path.replace('/api/airtable/', '');
+    const airtableUrl = `https://api.airtable.com/v0/${airtablePath}`;
+    
+    const response = await axios({
+      method: 'PATCH',
+      url: airtableUrl,
+      headers: {
+        'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      data: req.body
+    });
+    
+    res.json(response.data);
+  } catch (error) {
+    console.error('Airtable API error:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data || { message: 'Internal server error' }
+    });
+  }
+});
+
+// DELETE endpoint for Airtable
+app.delete('/api/airtable/*', async (req, res) => {
+  try {
+    const airtablePath = req.path.replace('/api/airtable/', '');
+    const airtableUrl = `https://api.airtable.com/v0/${airtablePath}`;
+    
+    const response = await axios({
+      method: 'DELETE',
+      url: airtableUrl,
+      headers: {
+        'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`
+      }
+    });
+    
+    res.json(response.data);
+  } catch (error) {
+    console.error('Airtable API error:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data || { message: 'Internal server error' }
+    });
+  }
+});
+
 // Note: The /api/config endpoint has been moved earlier in the file
 // to consolidate all frontend configuration in one place
 

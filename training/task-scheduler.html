@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Scheduler - MBH Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-init-fix.js"></script>
+    <script src="js/role-helper.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- FullCalendar v6 with Scheduler Plugin -->
+    <link href='https://unpkg.com/fullcalendar-scheduler@6.1.19/index.global.min.css' rel='stylesheet' />
+    <script src='https://unpkg.com/fullcalendar-scheduler@6.1.19/index.global.min.js'></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.75rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            height: 210px;
+            width: auto;
+            margin-right: 1rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-white {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-white:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .btn-primary {
+            background: #2E86AB;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1B4F72;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            height: calc(100vh - 250px);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f4f8;
+        }
+        
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1B4F72;
+        }
+        
+        /* Task Card Styles */
+        .task-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: grab;
+            transition: all 0.2s ease;
+        }
+        
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .task-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .task-title {
+            font-weight: 600;
+            color: #1B4F72;
+            margin-bottom: 0.5rem;
+        }
+        
+        .task-description {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .task-priority {
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background: #fee;
+            color: #e74c3c;
+        }
+        
+        .priority-medium {
+            background: #fef3e6;
+            color: #f39c12;
+        }
+        
+        .priority-low {
+            background: #e8f5e9;
+            color: #27ae60;
+        }
+        
+        /* Calendar Container */
+        .calendar-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        #calendar {
+            height: calc(100% - 2rem);
+        }
+        
+        /* FullCalendar Custom Styles */
+        .fc .fc-resource-header-cell {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #1B4F72;
+        }
+        
+        .fc .fc-timeline-slot-label {
+            font-size: 0.875rem;
+        }
+        
+        .fc-event {
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.875rem;
+        }
+        
+        .fc-event.task-high {
+            background: #e74c3c;
+        }
+        
+        .fc-event.task-medium {
+            background: #f39c12;
+        }
+        
+        .fc-event.task-low {
+            background: #27ae60;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            transition: border-color 0.15s ease-in-out;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #2E86AB;
+            box-shadow: 0 0 0 0.2rem rgba(46,134,171,0.25);
+        }
+        
+        select.form-control {
+            cursor: pointer;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* Loading States */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #6c757d;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2E86AB;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Error States */
+        .error-message {
+            background: #fee;
+            color: #e74c3c;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .sidebar {
+                order: 2;
+            }
+            
+            .calendar-container {
+                order: 1;
+                height: 600px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .logo {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="MBH.svg" alt="MBH Logo" class="logo">
+                <h1>
+                    <i class="fas fa-tasks"></i>
+                    Task Scheduler
+                </h1>
+            </div>
+            <div class="user-info">
+                <button class="btn btn-white" onclick="window.location.href='management-dashboard.html'">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+                <span id="userDisplay">Loading...</span>
+                <button class="btn btn-white" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-layout">
+            <!-- Sidebar with Unassigned Tasks -->
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Unassigned Tasks</h2>
+                        <button class="btn btn-primary btn-sm" onclick="showCreateTaskModal()">
+                            <i class="fas fa-plus"></i> New Task
+                        </button>
+                    </div>
+                    <div id="unassignedTasks" class="tasks-container">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Filter Tasks</h2>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select class="form-control" id="priorityFilter" onchange="filterTasks()">
+                            <option value="">All Priorities</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-control" id="statusFilter" onchange="filterTasks()">
+                            <option value="">All Statuses</option>
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Awaiting Response">Awaiting Response</option>
+                            <option value="Meeting Scheduled">Meeting Scheduled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Calendar Area -->
+            <div class="calendar-container">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Create New Task</h3>
+                <span class="close" onclick="closeTaskModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <input type="hidden" id="taskId">
+                    <div class="form-group">
+                        <label class="form-label" for="taskTitle">Task Title *</label>
+                        <input type="text" class="form-control" id="taskTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskDescription">Description</label>
+                        <textarea class="form-control" id="taskDescription"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskPriority">Priority</label>
+                        <select class="form-control" id="taskPriority">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskStatus">Status</label>
+                        <select class="form-control" id="taskStatus">
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Awaiting Response">Awaiting Response</option>
+                            <option value="Meeting Scheduled">Meeting Scheduled</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskAssignee">Assignee</label>
+                        <select class="form-control" id="taskAssignee">
+                            <option value="">Unassigned</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskStartDate">Start Date & Time</label>
+                        <input type="datetime-local" class="form-control" id="taskStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="taskEndDate">End Date & Time</label>
+                        <input type="datetime-local" class="form-control" id="taskEndDate">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let calendar = null;
+        let allTasks = [];
+        let staffMembers = [];
+        let employeeProfiles = []; // Employee profiles from Management base
+        let emailToProfileMap = {}; // Map email to Employee Profile record ID
+        let currentUser = null;
+        
+        // Airtable configuration
+        const MANAGEMENT_BASE_ID = 'appPyOlmuQyAM6cJQ';
+        const TASKS_TABLE_ID = 'tblKNgpHZ8sWHYuEt';
+        const EMPLOYEE_PROFILES_TABLE_ID = 'tblFgQmuCGuYS7ae3';
+        const OPERATIONS_BASE_ID = 'applkAFOn2qxtu7tx';
+        const EMPLOYEE_DETAILS_TABLE_ID = 'tbltAE4NlNePvnkpY';
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication
+            const { user } = await checkAuth();
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            currentUser = user;
+            updateUserDisplay(user);
+            
+            // Load data and initialize calendar
+            await loadStaffMembers();
+            await loadTasks();
+            initializeCalendar();
+            renderUnassignedTasks();
+        });
+        
+        // Authentication functions
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const hasAccess = await checkAccessControl(user.email);
+                if (!hasAccess) {
+                    await supabase.auth.signOut();
+                    window.location.href = 'index.html';
+                    return { user: null };
+                }
+            }
+            return { user };
+        }
+        
+        async function checkAccessControl(email) {
+            const { data, error } = await supabase
+                .from('access_control')
+                .select('*')
+                .eq('email', email)
+                .single();
+            
+            if (error || !data) return false;
+            return ['admin', 'management'].includes(data.role);
+        }
+        
+        function updateUserDisplay(user) {
+            const userDisplay = document.getElementById('userDisplay');
+            if (user) {
+                userDisplay.textContent = user.email;
+            }
+        }
+        
+        async function handleLogout() {
+            const { error } = await supabase.auth.signOut();
+            if (!error) {
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // Load staff members from both bases
+        async function loadStaffMembers() {
+            try {
+                // Fetch from Employee Details (Operations base)
+                const opsResponse = await fetch(`/api/airtable/${OPERATIONS_BASE_ID}/${EMPLOYEE_DETAILS_TABLE_ID}?filterByFormula={Active Roster}=TRUE()`);
+                
+                if (!opsResponse.ok) throw new Error('Failed to fetch staff members from operations');
+                
+                const opsData = await opsResponse.json();
+                
+                // Fetch from Employee Profiles (Management base)
+                const profilesResponse = await fetch(`/api/airtable/${MANAGEMENT_BASE_ID}/${EMPLOYEE_PROFILES_TABLE_ID}`);
+                
+                if (!profilesResponse.ok) throw new Error('Failed to fetch employee profiles');
+                
+                const profilesData = await profilesResponse.json();
+                
+                // Store employee profiles and create email map
+                employeeProfiles = profilesData.records;
+                emailToProfileMap = {};
+                
+                profilesData.records.forEach(record => {
+                    if (record.fields['Email']) {
+                        emailToProfileMap[record.fields['Email'].toLowerCase()] = record.id;
+                    }
+                });
+                
+                // Create staff members list for calendar resources
+                staffMembers = opsData.records
+                    .filter(record => {
+                        // Only include staff that have a corresponding Employee Profile
+                        const email = record.fields['Email'];
+                        return email && emailToProfileMap[email.toLowerCase()];
+                    })
+                    .map(record => {
+                        const email = record.fields['Email'];
+                        return {
+                            id: emailToProfileMap[email.toLowerCase()], // Use Employee Profile ID as resource ID
+                            title: record.fields['Name'] || 'Unknown',
+                            email: email,
+                            mobile: record.fields['Mobile Number'] || ''
+                        };
+                    });
+                
+                console.log('Loaded staff members:', staffMembers.length);
+                console.log('Employee profiles map:', emailToProfileMap);
+            } catch (error) {
+                console.error('Error loading staff members:', error);
+                showError('Failed to load staff members');
+            }
+        }
+        
+        // Load tasks from Airtable
+        async function loadTasks() {
+            try {
+                const response = await fetch(`/api/airtable/${MANAGEMENT_BASE_ID}/${TASKS_TABLE_ID}?view=Current Tasks (excluding Completed)`);
+                
+                if (!response.ok) throw new Error('Failed to fetch tasks');
+                
+                const data = await response.json();
+                allTasks = data.records.map(record => {
+                    const task = {
+                        id: record.id,
+                        title: record.fields['Task'] || 'Untitled',
+                        description: record.fields['Description'] || '',
+                        priority: record.fields['Priority'] || 'Medium',
+                        status: record.fields['Status'] || 'Not Started',
+                        assignee: record.fields['Assignee'] || [], // Array of Employee Profile record IDs
+                        start: record.fields['Start date'] || null,
+                        end: record.fields['End date'] || null,
+                        project: record.fields['Project'] || [],
+                        dependencies: record.fields['Dependencies'] || []
+                    };
+                    return task;
+                });
+                
+                console.log('Loaded tasks:', allTasks);
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                showError('Failed to load tasks');
+            }
+        }
+        
+        // Initialize FullCalendar
+        function initializeCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+                initialView: 'resourceTimelineWeek',
+                timeZone: 'Australia/Sydney',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth'
+                },
+                slotMinTime: '06:00:00',
+                slotMaxTime: '20:00:00',
+                slotDuration: '01:00:00',
+                aspectRatio: 1.8,
+                resourceAreaHeaderContent: 'Staff Members',
+                resources: staffMembers,
+                events: getCalendarEvents(),
+                editable: true,
+                droppable: true,
+                eventClick: handleEventClick,
+                eventDrop: handleEventDrop,
+                eventResize: handleEventResize,
+                eventReceive: handleEventReceive,
+                resourceAreaWidth: '20%',
+                eventClassNames: function(arg) {
+                    return ['task-' + (arg.event.extendedProps.priority || 'medium').toLowerCase()];
+                }
+            });
+            
+            calendar.render();
+            
+            // Initialize external dragging
+            initializeExternalDragging();
+        }
+        
+        // Convert tasks to calendar events
+        function getCalendarEvents() {
+            return allTasks
+                .filter(task => task.assignee && task.assignee.length > 0 && task.start)
+                .map(task => {
+                    // The assignee is now an array of Employee Profile record IDs
+                    const resourceId = task.assignee[0]; // Using first assignee
+                    
+                    // Verify this staff member exists in our resources
+                    const staffExists = staffMembers.some(s => s.id === resourceId);
+                    if (!staffExists) return null;
+                    
+                    return {
+                        id: task.id,
+                        title: task.title,
+                        start: task.start,
+                        end: task.end || task.start,
+                        resourceId: resourceId,
+                        extendedProps: {
+                            description: task.description,
+                            priority: task.priority,
+                            status: task.status
+                        }
+                    };
+                })
+                .filter(event => event !== null);
+        }
+        
+        // Render unassigned tasks in sidebar
+        function renderUnassignedTasks() {
+            const container = document.getElementById('unassignedTasks');
+            const unassignedTasks = allTasks.filter(task => 
+                (!task.assignee || task.assignee.length === 0) && 
+                task.status !== 'Completed'
+            );
+            
+            // Apply filters
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            const filteredTasks = unassignedTasks.filter(task => {
+                if (priorityFilter && task.priority !== priorityFilter) return false;
+                if (statusFilter && task.status !== statusFilter) return false;
+                return true;
+            });
+            
+            if (filteredTasks.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No unassigned tasks</p>';
+                return;
+            }
+            
+            container.innerHTML = filteredTasks.map(task => `
+                <div class="task-card" draggable="true" data-task-id="${task.id}">
+                    <div class="task-title">${task.title}</div>
+                    ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                    <div class="task-meta">
+                        <span class="task-priority priority-${task.priority.toLowerCase()}">${task.priority}</span>
+                        <span>${task.status}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Re-initialize draggable
+            initializeExternalDragging();
+        }
+        
+        // Initialize external dragging
+        function initializeExternalDragging() {
+            const containerEl = document.getElementById('unassignedTasks');
+            
+            new FullCalendar.Draggable(containerEl, {
+                itemSelector: '.task-card',
+                eventData: function(eventEl) {
+                    const taskId = eventEl.getAttribute('data-task-id');
+                    const task = allTasks.find(t => t.id === taskId);
+                    
+                    if (task) {
+                        return {
+                            id: task.id,
+                            title: task.title,
+                            extendedProps: {
+                                description: task.description,
+                                priority: task.priority,
+                                status: task.status
+                            }
+                        };
+                    }
+                    return null;
+                }
+            });
+        }
+        
+        // Handle event click
+        function handleEventClick(info) {
+            const task = allTasks.find(t => t.id === info.event.id);
+            if (task) {
+                showEditTaskModal(task);
+            }
+        }
+        
+        // Handle event drop (rescheduling)
+        async function handleEventDrop(info) {
+            const taskId = info.event.id;
+            const newStart = info.event.start;
+            const newEnd = info.event.end || newStart;
+            const newResourceId = info.event.getResources()[0]?.id;
+            
+            try {
+                const updateFields = {
+                    'Start date': newStart.toISOString(),
+                    'End date': newEnd.toISOString()
+                };
+                
+                // Update assignee if resource changed
+                if (newResourceId && info.oldResource?.id !== newResourceId) {
+                    updateFields['Assignee'] = [newResourceId];
+                }
+                
+                await updateTaskInAirtable(taskId, updateFields);
+                
+                // Update local data
+                const task = allTasks.find(t => t.id === taskId);
+                if (task) {
+                    task.start = newStart.toISOString();
+                    task.end = newEnd.toISOString();
+                    if (newResourceId && info.oldResource?.id !== newResourceId) {
+                        task.assignee = [newResourceId];
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating task:', error);
+                info.revert();
+                showError('Failed to update task');
+            }
+        }
+        
+        // Handle event resize
+        async function handleEventResize(info) {
+            const taskId = info.event.id;
+            const newStart = info.event.start;
+            const newEnd = info.event.end;
+            
+            try {
+                await updateTaskInAirtable(taskId, {
+                    'Start date': newStart.toISOString(),
+                    'End date': newEnd.toISOString()
+                });
+                
+                // Update local data
+                const task = allTasks.find(t => t.id === taskId);
+                if (task) {
+                    task.start = newStart.toISOString();
+                    task.end = newEnd.toISOString();
+                }
+            } catch (error) {
+                console.error('Error resizing task:', error);
+                info.revert();
+                showError('Failed to resize task');
+            }
+        }
+        
+        // Handle external event drop
+        async function handleEventReceive(info) {
+            const taskId = info.event.id;
+            const resourceId = info.event.getResources()[0]?.id;
+            const start = info.event.start;
+            const end = info.event.end || start;
+            
+            if (!resourceId) {
+                info.revert();
+                showError('Please drop the task on a staff member');
+                return;
+            }
+            
+            try {
+                // Update task with the Employee Profile record ID
+                await updateTaskInAirtable(taskId, {
+                    'Assignee': [resourceId], // Array of Employee Profile record IDs
+                    'Start date': start.toISOString(),
+                    'End date': end.toISOString()
+                });
+                
+                // Update local data
+                const task = allTasks.find(t => t.id === taskId);
+                if (task) {
+                    task.assignee = [resourceId];
+                    task.start = start.toISOString();
+                    task.end = end.toISOString();
+                }
+                
+                // Remove from unassigned tasks
+                renderUnassignedTasks();
+            } catch (error) {
+                console.error('Error assigning task:', error);
+                info.revert();
+                showError('Failed to assign task');
+            }
+        }
+        
+        // Update task in Airtable
+        async function updateTaskInAirtable(taskId, fields) {
+            const response = await fetch(`/api/airtable/${MANAGEMENT_BASE_ID}/${TASKS_TABLE_ID}/${taskId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to update task in Airtable');
+            }
+            
+            return response.json();
+        }
+        
+        // Create task in Airtable
+        async function createTaskInAirtable(fields) {
+            const response = await fetch(`/api/airtable/${MANAGEMENT_BASE_ID}/${TASKS_TABLE_ID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fields })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to create task in Airtable');
+            }
+            
+            return response.json();
+        }
+        
+        // Show create task modal
+        function showCreateTaskModal() {
+            document.getElementById('modalTitle').textContent = 'Create New Task';
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+            
+            // Populate assignee dropdown
+            const assigneeSelect = document.getElementById('taskAssignee');
+            assigneeSelect.innerHTML = '<option value="">Unassigned</option>' + 
+                staffMembers.map(staff => `<option value="${staff.id}">${staff.title}</option>`).join('');
+            
+            document.getElementById('taskModal').style.display = 'block';
+        }
+        
+        // Show edit task modal
+        function showEditTaskModal(task) {
+            document.getElementById('modalTitle').textContent = 'Edit Task';
+            document.getElementById('taskId').value = task.id;
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description;
+            document.getElementById('taskPriority').value = task.priority;
+            document.getElementById('taskStatus').value = task.status;
+            
+            // Populate assignee dropdown
+            const assigneeSelect = document.getElementById('taskAssignee');
+            assigneeSelect.innerHTML = '<option value="">Unassigned</option>' + 
+                staffMembers.map(staff => `<option value="${staff.id}">${staff.title}</option>`).join('');
+            
+            // Set current assignee
+            if (task.assignee && task.assignee.length > 0) {
+                assigneeSelect.value = task.assignee[0];
+            }
+            
+            if (task.start) {
+                const startDate = new Date(task.start);
+                document.getElementById('taskStartDate').value = formatDateTimeLocal(startDate);
+            }
+            
+            if (task.end) {
+                const endDate = new Date(task.end);
+                document.getElementById('taskEndDate').value = formatDateTimeLocal(endDate);
+            }
+            
+            document.getElementById('taskModal').style.display = 'block';
+        }
+        
+        // Close task modal
+        function closeTaskModal() {
+            document.getElementById('taskModal').style.display = 'none';
+        }
+        
+        // Save task
+        async function saveTask() {
+            const taskId = document.getElementById('taskId').value;
+            const fields = {
+                'Task': document.getElementById('taskTitle').value,
+                'Description': document.getElementById('taskDescription').value,
+                'Priority': document.getElementById('taskPriority').value,
+                'Status': document.getElementById('taskStatus').value
+            };
+            
+            // Handle assignee
+            const assigneeValue = document.getElementById('taskAssignee').value;
+            if (assigneeValue) {
+                fields['Assignee'] = [assigneeValue];
+            } else {
+                fields['Assignee'] = [];
+            }
+            
+            const startDate = document.getElementById('taskStartDate').value;
+            const endDate = document.getElementById('taskEndDate').value;
+            
+            if (startDate) {
+                fields['Start date'] = new Date(startDate).toISOString();
+            }
+            
+            if (endDate) {
+                fields['End date'] = new Date(endDate).toISOString();
+            }
+            
+            try {
+                if (taskId) {
+                    // Update existing task
+                    await updateTaskInAirtable(taskId, fields);
+                } else {
+                    // Create new task
+                    await createTaskInAirtable(fields);
+                }
+                
+                // Reload tasks and refresh UI
+                await loadTasks();
+                calendar.removeAllEvents();
+                calendar.addEventSource(getCalendarEvents());
+                renderUnassignedTasks();
+                closeTaskModal();
+            } catch (error) {
+                console.error('Error saving task:', error);
+                showError('Failed to save task');
+            }
+        }
+        
+        // Filter tasks
+        function filterTasks() {
+            renderUnassignedTasks();
+        }
+        
+        // Utility functions
+        function formatDateTimeLocal(date) {
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+        
+        function showError(message) {
+            // You could implement a toast notification here
+            alert(message);
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('taskModal');
+            if (event.target == modal) {
+                closeTaskModal();
+            }
+        }
+    </script>
+</body>
+</html>
