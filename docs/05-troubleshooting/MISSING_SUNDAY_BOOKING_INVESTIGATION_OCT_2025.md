@@ -51,6 +51,8 @@ The calendar is configured with:
 2. **Calendar Transform Debug**: Added logging in `transformBookingsToEvents` function
 3. **Sunday Events Debug**: Added specific logging for Sunday events
 4. **Calendar Date Range Debug**: Added logging to show what dates the calendar is displaying
+5. **Comprehensive Customer Name Logging**: Added logging to display ALL customer names in bookings
+6. **Case-Insensitive Name Matching**: Updated Minh Mai detection to check for variations (lowercase "minh" or "mai")
 
 ## Current Status
 The following debug logging has been added and deployed:
@@ -59,19 +61,33 @@ The following debug logging has been added and deployed:
 - Total booking events created
 - Sunday-specific booking events
 - Calendar date range display
+- **NEW**: All customer names and their status/date
+- **NEW**: Sunday-specific bookings with full details
+- **NEW**: Case-insensitive matching for names containing "minh" or "mai"
+
+## Recent Findings
+Based on the latest console logs provided by the user:
+- Total bookings: 11
+- Total booking events created: 22 (suggests each booking creates 2 events for onboarding/deloading)
+- Sunday booking events: Array(4) - This indicates 4 events ARE being created for Sunday
+- However, the specific "Minh Mai" debug logs are NOT triggering
+
+This suggests that either:
+1. The customer name is not exactly "Minh Mai" in the data
+2. The booking is present but under a different customer name format
 
 ## Next Steps
 1. Have the user refresh the page and check the console logs for:
-   - "Minh Mai booking:" messages showing the booking data
-   - "Processing Minh Mai booking for calendar:" messages
-   - "Sunday booking events:" to see if the event is created
-   - "Calendar displaying dates from:" to verify Sunday is included
+   - **"All customer names in bookings:"** - This will show EVERY customer name exactly as stored
+   - **"Sunday (2025-10-26) bookings:"** - This will show ALL Sunday bookings with full details
+   - **"Processing booking with customer name containing 'minh' or 'mai':"** - Case-insensitive match
+   - **"Sunday booking events:"** - To see what events are actually created
 
 2. Based on the debug output, we can determine:
-   - If the booking is being filtered out somewhere
-   - If the calendar event is being created properly
-   - If there's a timezone or date parsing issue
-   - If the calendar view is not including Sunday
+   - The exact customer name format in the data (might be "Mai Minh" or have extra spaces/characters)
+   - If the booking exists but under a different name
+   - If the Sunday events are being created but not displayed
+   - If there's a data formatting issue preventing the match
 
 ## Possible Additional Causes
 1. **Timezone Issues**: The booking date might be parsed differently due to timezone
