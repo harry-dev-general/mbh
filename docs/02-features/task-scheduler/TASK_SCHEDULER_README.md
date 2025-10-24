@@ -75,6 +75,20 @@ Use the filter panel in the sidebar to:
 - Data Source: Airtable "MBH Management" base
 - Authentication: Supabase Auth with role-based access
 
+## Known Issues and Resolutions
+
+### Service Worker Interference (Resolved October 2025)
+- **Issue**: Task scheduler pages were showing 502 errors but actually being served incorrect content
+- **Cause**: Calendar service worker was intercepting all page requests
+- **Resolution**: Service worker updated to only handle specific paths
+- **Details**: See [Service Worker Interference Issue Documentation](/docs/05-troubleshooting/SERVICE_WORKER_INTERFERENCE_ISSUE_OCT_2025.md)
+
+If you experience issues accessing the task scheduler:
+1. Visit `/training/unregister-sw.html`
+2. Click "Unregister All Service Workers"
+3. Click "Clear All Caches"
+4. Retry accessing the task scheduler
+
 ## Future Enhancements
 1. Task dependencies visualization
 2. Project grouping and filtering
