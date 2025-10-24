@@ -1,7 +1,7 @@
-# Service Worker Interference Issue - October 2025 (UNRESOLVED)
+# Service Worker Interference Issue - October 2025 (RESOLVED)
 
 ## Overview
-This document details a critical unresolved issue discovered on October 24, 2025, where task scheduler pages fail to load in production with 502 errors.
+This document details a critical issue discovered on October 24, 2025, where task scheduler pages failed to load in production with 502 errors. The issue was caused by service worker interference and has been resolved.
 
 ## Issue Summary
 - **Problem**: Task scheduler pages (`task-scheduler.html` and `task-scheduler-debug.html`) are returning 502 errors
@@ -171,6 +171,66 @@ The issue remains unresolved. After attempting the service worker fix:
 3. **Check file permissions** - Ensure the new files are accessible in the Railway deployment
 4. **Review nginx/proxy configuration** - Railway's edge proxy may be blocking certain paths
 5. **Test direct server access** - Try accessing the Node.js server directly without Railway's proxy
+
+## Resolution (October 2025)
+
+The issue was resolved through a multi-pronged approach:
+
+### 1. Service Worker Updates
+- **Version Bump**: Incremented cache version from `mbh-calendar-v1` to `mbh-calendar-v2` to force updates
+- **Path Exclusions**: Added excluded paths array to prevent service worker from intercepting task scheduler pages
+- **Fetch Handler Fix**: Modified fetch event to skip excluded paths entirely
+
+### 2. Server-Side Changes
+- **Explicit Routes**: Added explicit Express routes for task scheduler pages with no-cache headers
+- **Cache Prevention Middleware**: Added middleware to set cache-control headers for excluded paths
+- **Direct File Serving**: Ensured task scheduler files bypass service worker entirely
+
+### 3. Service Worker Management
+- **Force Update Page**: Created `/training/sw-force-update.html` to help users update stuck service workers
+- **Inline Implementation**: Made the page self-contained with no external dependencies
+
+### Implementation Details
+
+#### Updated Service Worker (calendar-service-worker.js)
+```javascript
+const CACHE_NAME = 'mbh-calendar-v2'; // Incremented version
+const excludedPaths = [
+  '/training/task-scheduler.html',
+  '/training/task-scheduler-debug.html',
+  '/training/unregister-sw.html',
+  '/api/task-scheduler-proxy',
+  '/api/task-scheduler-test'
+];
+
+// In fetch handler:
+if (excludedPaths.some(path => url.pathname === path || url.pathname.startsWith(path))) {
+  return; // Don't intercept, let browser handle normally
+}
+```
+
+#### Server Routes (server.js)
+```javascript
+// Explicit routes with cache prevention
+app.get('/training/task-scheduler.html', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, 'training', 'task-scheduler.html'));
+});
+```
+
+### Deployment Steps
+1. Deploy the updated service worker with new version
+2. Deploy server.js with explicit routes and cache headers
+3. Users with stuck service workers can access `/training/sw-force-update.html`
+4. The force update page will update and clear old service workers
+
+### Files Modified in Resolution
+1. `/training/calendar-service-worker.js` - Added path exclusions and version bump
+2. `/server.js` - Added explicit routes and cache prevention middleware
+3. `/training/sw-force-update.html` - Created service worker management utility
+4. This documentation file - Updated with resolution details
 
 ## Related Documentation
 - [Task Scheduler Implementation](/docs/02-features/task-scheduler/TASK_SCHEDULER_README.md)

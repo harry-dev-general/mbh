@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Worker Force Update - MBH Staff Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        .error {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        .warning {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #1565c0;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .button-danger {
+            background: #d32f2f;
+        }
+        .button-danger:hover {
+            background: #c62828;
+        }
+        .links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .links a {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 16px;
+            background: #f5f5f5;
+            text-decoration: none;
+            color: #333;
+            border-radius: 4px;
+        }
+        .links a:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Service Worker Force Update</h1>
+        
+        <p>This page helps resolve service worker caching issues that prevent new pages from loading.</p>
+        
+        <div id="status-container"></div>
+        
+        <div>
+            <button onclick="forceUpdate()">Force Update Service Worker</button>
+            <button onclick="checkWorkers()">Check Status</button>
+            <button onclick="unregisterAll()" class="button-danger">Unregister All Workers</button>
+            <button onclick="clearAllCaches()" class="button-danger">Clear All Caches</button>
+        </div>
+        
+        <div class="links">
+            <h3>Test Pages:</h3>
+            <a href="/training/task-scheduler.html">Task Scheduler</a>
+            <a href="/training/task-scheduler-debug.html">Task Scheduler Debug</a>
+            <a href="/training/management-allocations.html">Management Allocations</a>
+            <a href="/training/dashboard.html">Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        function addStatus(message, type = 'info') {
+            const container = document.getElementById('status-container');
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(status);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function checkWorkers() {
+            if (!('serviceWorker' in navigator)) {
+                addStatus('Service Workers not supported in this browser', 'error');
+                return;
+            }
+
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length === 0) {
+                    addStatus('No service workers registered', 'info');
+                    return;
+                }
+
+                addStatus(`Found ${registrations.length} service worker(s):`, 'info');
+                
+                for (const reg of registrations) {
+                    const scope = reg.scope;
+                    const state = reg.active ? 'active' : reg.waiting ? 'waiting' : reg.installing ? 'installing' : 'none';
+                    addStatus(`Scope: ${scope}, State: ${state}`, 'info');
+                    
+                    if (reg.active) {
+                        addStatus(`  Active: ${reg.active.scriptURL}`, 'info');
+                    }
+                    if (reg.waiting) {
+                        addStatus(`  Waiting: ${reg.waiting.scriptURL}`, 'warning');
+                    }
+                    if (reg.installing) {
+                        addStatus(`  Installing: ${reg.installing.scriptURL}`, 'warning');
+                    }
+                }
+            } catch (error) {
+                addStatus(`Error checking workers: ${error.message}`, 'error');
+            }
+        }
+
+        async function forceUpdate() {
+            if (!('serviceWorker' in navigator)) {
+                addStatus('Service Workers not supported', 'error');
+                return;
+            }
+
+            try {
+                addStatus('Starting force update...', 'info');
+                
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                
+                for (const reg of registrations) {
+                    // Check for updates
+                    await reg.update();
+                    addStatus(`Updated registration for ${reg.scope}`, 'success');
+                    
+                    // If there's a waiting worker, skip waiting and activate it
+                    if (reg.waiting) {
+                        addStatus('Found waiting worker, activating...', 'info');
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                        
+                        // Wait for the new worker to become active
+                        await new Promise((resolve) => {
+                            const checkActive = setInterval(() => {
+                                if (reg.active && reg.active !== reg.waiting) {
+                                    clearInterval(checkActive);
+                                    resolve();
+                                }
+                            }, 100);
+                        });
+                        
+                        addStatus('New worker activated!', 'success');
+                        
+                        // Reload to use the new worker
+                        addStatus('Reloading page in 2 seconds...', 'info');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    }
+                }
+                
+                if (registrations.length === 0) {
+                    addStatus('No service workers to update', 'info');
+                } else {
+                    addStatus('Update check complete', 'success');
+                }
+                
+            } catch (error) {
+                addStatus(`Error during update: ${error.message}`, 'error');
+            }
+        }
+
+        async function unregisterAll() {
+            if (!confirm('This will unregister all service workers. Continue?')) {
+                return;
+            }
+
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length === 0) {
+                    addStatus('No service workers to unregister', 'info');
+                    return;
+                }
+
+                for (const reg of registrations) {
+                    const success = await reg.unregister();
+                    if (success) {
+                        addStatus(`Unregistered: ${reg.scope}`, 'success');
+                    } else {
+                        addStatus(`Failed to unregister: ${reg.scope}`, 'error');
+                    }
+                }
+
+                addStatus('All service workers unregistered', 'success');
+                
+                // Clear caches too
+                await clearAllCaches();
+                
+                addStatus('Reloading page in 2 seconds...', 'info');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                addStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearAllCaches() {
+            try {
+                const cacheNames = await caches.keys();
+                if (cacheNames.length === 0) {
+                    addStatus('No caches to clear', 'info');
+                    return;
+                }
+
+                for (const name of cacheNames) {
+                    await caches.delete(name);
+                    addStatus(`Deleted cache: ${name}`, 'success');
+                }
+
+                addStatus('All caches cleared', 'success');
+            } catch (error) {
+                addStatus(`Error clearing caches: ${error.message}`, 'error');
+            }
+        }
+
+        // Check status on load
+        window.addEventListener('load', () => {
+            addStatus('Page loaded - checking service workers...', 'info');
+            checkWorkers();
+        });
+    </script>
+</body>
+</html>

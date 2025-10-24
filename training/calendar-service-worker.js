@@ -3,7 +3,7 @@
  * Provides offline support and caching for better performance
  */
 
-const CACHE_NAME = 'mbh-calendar-v1';
+const CACHE_NAME = 'mbh-calendar-v2'; // Incremented version to force update
 const urlsToCache = [
   '/training/management-allocations.html',
   '/training/calendar-enhancements.js',
@@ -12,6 +12,15 @@ const urlsToCache = [
   'https://unpkg.com/fullcalendar@6.1.19/index.global.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+];
+
+// Pages that should never be cached or intercepted by this service worker
+const excludedPaths = [
+  '/training/task-scheduler.html',
+  '/training/task-scheduler-debug.html',
+  '/training/unregister-sw.html',
+  '/api/task-scheduler-proxy',
+  '/api/task-scheduler-test'
 ];
 
 // Install event - cache resources
@@ -51,6 +60,11 @@ self.addEventListener('fetch', event => {
 
   // Parse URL
   const url = new URL(event.request.url);
+
+  // Skip excluded paths - let them go directly to network
+  if (excludedPaths.some(path => url.pathname === path || url.pathname.startsWith(path))) {
+    return; // Don't intercept, let the browser handle it normally
+  }
 
   // Handle API requests differently
   if (url.pathname.startsWith('/api/')) {

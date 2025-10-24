@@ -145,6 +145,27 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware to prevent service worker caching of task scheduler pages
+app.use((req, res, next) => {
+  const excludedPaths = [
+    '/training/task-scheduler.html',
+    '/training/task-scheduler-debug.html', 
+    '/training/unregister-sw.html',
+    '/task-scheduler.html',
+    '/task-scheduler-debug.html',
+    '/unregister-sw.html'
+  ];
+  
+  if (excludedPaths.includes(req.path)) {
+    // Set headers to prevent any caching
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Service-Worker-Allowed', 'none'); // Prevent service worker from handling
+  }
+  next();
+});
+
 // Serve static files from the training directory
 app.use(express.static(path.join(__dirname, 'training')));
 
@@ -1293,6 +1314,35 @@ app.get('/dashboard.html', (req, res) => {
 
 app.get('/training/dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
+});
+
+// Explicit routes for task scheduler pages to bypass service worker
+app.get('/training/task-scheduler.html', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, 'training', 'task-scheduler.html'));
+});
+
+app.get('/training/task-scheduler-debug.html', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, 'training', 'task-scheduler-debug.html'));
+});
+
+app.get('/training/unregister-sw.html', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, 'training', 'unregister-sw.html'));
+});
+
+app.get('/training/sw-force-update.html', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(__dirname, 'training', 'sw-force-update.html'));
 });
 
 // Admin endpoint to manually trigger reminder check
