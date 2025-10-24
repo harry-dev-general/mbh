@@ -1,13 +1,13 @@
-# Service Worker Interference Issue - October 2025
+# Service Worker Interference Issue - October 2025 (UNRESOLVED)
 
 ## Overview
-This document details a critical issue discovered on October 24, 2025, where the calendar service worker was intercepting all page requests and serving the wrong content, preventing access to the task scheduler feature.
+This document details a critical unresolved issue discovered on October 24, 2025, where task scheduler pages fail to load in production with 502 errors.
 
 ## Issue Summary
-- **Problem**: Task scheduler pages (`task-scheduler.html` and `task-scheduler-debug.html`) were returning 502 errors
-- **Root Cause**: The calendar service worker (`calendar-service-worker.js`) was intercepting all document requests and serving `management-allocations.html` as a fallback for any uncached page
-- **Impact**: Any page not explicitly cached by the service worker would display the management allocations page instead
-- **Resolution**: Modified service worker to only serve fallback content for management-allocations specific paths
+- **Problem**: Task scheduler pages (`task-scheduler.html` and `task-scheduler-debug.html`) are returning 502 errors
+- **Initial Theory**: The calendar service worker (`calendar-service-worker.js`) was intercepting all document requests and serving `management-allocations.html` as a fallback for any uncached page
+- **Impact**: Task scheduler functionality is completely inaccessible in production
+- **Status**: UNRESOLVED - Initial service worker fix did not resolve the issue
 
 ## Technical Discovery Process
 
@@ -94,9 +94,9 @@ Examined `calendar-service-worker.js` and found the problematic code:
 
 This code was serving `management-allocations.html` as a fallback for ANY document request that wasn't in the cache.
 
-## Solution Implementation
+## Attempted Solutions (Failed)
 
-### Service Worker Fix
+### Service Worker Fix (Did Not Resolve Issue)
 Modified the service worker to only serve the fallback for management-allocations specific paths:
 ```javascript
 .catch(() => {
@@ -158,13 +158,19 @@ The investigation revealed these are correctly configured:
 3. `/server.js` - Added diagnostic endpoints (can be removed if not needed)
 4. `/training/task-scheduler-debug.html` - Created diagnostic page (can be removed)
 
-## Post-Fix Actions Required
-1. Users experiencing the issue need to:
-   - Visit `/training/unregister-sw.html`
-   - Unregister service workers
-   - Clear caches
-2. New visitors will automatically get the fixed service worker
-3. Consider removing diagnostic endpoints and pages after verification
+## Current Status
+The issue remains unresolved. After attempting the service worker fix:
+1. The unregister service worker page (`/training/unregister-sw.html`) also fails to load
+2. The task scheduler pages continue to return 502 errors
+3. The diagnostic page (`/training/task-scheduler-debug.html`) also fails to load
+4. Browser console logs show that `management-allocations.html` is still being served instead
+
+## Next Investigation Steps
+1. **Check Railway deployment logs** - The 502 errors suggest a server-side issue
+2. **Verify static file serving** - The Express static middleware configuration may have issues
+3. **Check file permissions** - Ensure the new files are accessible in the Railway deployment
+4. **Review nginx/proxy configuration** - Railway's edge proxy may be blocking certain paths
+5. **Test direct server access** - Try accessing the Node.js server directly without Railway's proxy
 
 ## Related Documentation
 - [Task Scheduler Implementation](/docs/02-features/task-scheduler/TASK_SCHEDULER_README.md)

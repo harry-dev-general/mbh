@@ -75,19 +75,16 @@ Use the filter panel in the sidebar to:
 - Data Source: Airtable "MBH Management" base
 - Authentication: Supabase Auth with role-based access
 
-## Known Issues and Resolutions
+## Known Issues
 
-### Service Worker Interference (Resolved October 2025)
-- **Issue**: Task scheduler pages were showing 502 errors but actually being served incorrect content
-- **Cause**: Calendar service worker was intercepting all page requests
-- **Resolution**: Service worker updated to only handle specific paths
+### Task Scheduler Inaccessible in Production (UNRESOLVED - October 2025)
+- **Issue**: Task scheduler pages return 502 errors and fail to load completely
+- **Impact**: The entire task scheduler feature is currently inaccessible in production
+- **Initial Theory**: Calendar service worker was intercepting page requests (fix attempted but unsuccessful)
+- **Current Status**: Under investigation - appears to be a server-side or deployment issue
 - **Details**: See [Service Worker Interference Issue Documentation](/docs/05-troubleshooting/SERVICE_WORKER_INTERFERENCE_ISSUE_OCT_2025.md)
 
-If you experience issues accessing the task scheduler:
-1. Visit `/training/unregister-sw.html`
-2. Click "Unregister All Service Workers"
-3. Click "Clear All Caches"
-4. Retry accessing the task scheduler
+**WARNING**: The task scheduler feature is currently non-functional in production. Do not attempt to use it until this issue is resolved.
 
 ## Future Enhancements
 1. Task dependencies visualization
