@@ -229,8 +229,8 @@ async function getVesselMaintenanceStatus() {
             if (latestPreDep && latestPostDep) {
                 // Compare timestamps to see which is more recent
                 const preDepTime = new Date(latestPreDep.fields['Created time']);
-                // Use Last modified time for Post-Departure, fallback to Created time
-                const postDepTime = new Date(latestPostDep.fields['Last modified time'] || latestPostDep.fields['Created time']);
+          // Use Created time for Post-Departure
+          const postDepTime = new Date(latestPostDep.fields['Created time']);
                 
                 if (preDepTime > postDepTime) {
                     // Pre-departure is more recent
@@ -307,8 +307,8 @@ async function getVesselMaintenanceStatus() {
                     } : null
                 };
                 lastCheckType = 'Post-Departure';
-                // Use Last modified time for Post-Departure, fallback to Created time
-                lastCheckTime = new Date(latestPostDep.fields['Last modified time'] || latestPostDep.fields['Created time']);
+                // Use Created time for Post-Departure
+                lastCheckTime = new Date(latestPostDep.fields['Created time']);
                 lastChecklistId = latestPostDep.id;
                 lastCompletedBy = latestPostDep.fields['Completed by'] || '';
                 
