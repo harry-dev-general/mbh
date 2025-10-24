@@ -244,7 +244,14 @@ async function getVesselMaintenanceStatus() {
                     lastCheckType = 'Pre-Departure';
                     lastCheckTime = preDepTime;
                     lastChecklistId = latestPreDep.id;
-                    lastCompletedBy = latestPreDep.fields['Completed by'] || '';
+                    // Get completed by from either 'Completed by' field or fetch from linked Staff Member
+                    if (latestPreDep.fields['Completed by']) {
+                        lastCompletedBy = latestPreDep.fields['Completed by'];
+                    } else if (latestPreDep.fields['Staff Member Name']) {
+                        lastCompletedBy = latestPreDep.fields['Staff Member Name'];
+                    } else {
+                        lastCompletedBy = '';
+                    }
                     
                     console.log(`${boatName}: Using pre-departure checklist from ${preDepTime.toLocaleDateString()}`);
                 } else {

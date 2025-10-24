@@ -232,12 +232,33 @@ router.post('/:id/status-update', async (req, res) => {
         const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
         const BASE_ID = 'applkAFOn2qxtu7tx';
         const POST_DEP_TABLE_ID = 'tblYkbSQGP6zveYNi';
+        const EMPLOYEE_TABLE_ID = 'tblFX0MXVqXfGGMov';
+        
+        // If staffId provided, fetch the employee name
+        let completedByName = '';
+        if (staffId) {
+            try {
+                const employeeResponse = await axios.get(
+                    `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}/${staffId}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                        }
+                    }
+                );
+                completedByName = employeeResponse.data.fields['Name'] || employeeResponse.data.fields['Full Name'] || '';
+                console.log('Found employee name:', completedByName);
+            } catch (error) {
+                console.error('Failed to fetch employee details:', error.message);
+            }
+        }
         
         // Create a management update checklist record
         const checklistData = {
             fields: {
                 'Vessel': [vesselId],
                 'Staff Member': staffId ? [staffId] : undefined,
+                'Completed by': completedByName || undefined,
                 'Checklist Date/Time': new Date().toISOString(),
                 'Completion Status': 'Completed',
                 'Completion Time': new Date().toISOString(),
@@ -318,7 +339,7 @@ router.post('/:id/status-update', async (req, res) => {
 // Updates vessel location manually
 router.post('/update-location', async (req, res) => {
     try {
-        const { vesselId, latitude, longitude, address, manualUpdate } = req.body;
+        const { vesselId, latitude, longitude, address, manualUpdate, staffId } = req.body;
         const userEmail = req.user?.email || 'Unknown';
         
         console.log('=== MANUAL LOCATION UPDATE REQUEST ===');
@@ -340,6 +361,7 @@ router.post('/update-location', async (req, res) => {
         const BASE_ID = 'applkAFOn2qxtu7tx';
         const POST_DEP_TABLE_ID = 'tblYkbSQGP6zveYNi';
         const PRE_DEP_TABLE_ID = 'tbl9igu5g1bPG4Ahu';
+        const EMPLOYEE_TABLE_ID = 'tblFX0MXVqXfGGMov';
         
         // Get recent Post-Departure checklists and find the one for this vessel
         const ninetyDaysAgo = new Date();
@@ -412,9 +434,30 @@ router.post('/update-location', async (req, res) => {
             // No existing checklist found - create a new location-only checklist
             console.log('No existing checklist found, creating location-only checklist');
             
+            // If staffId provided, fetch the employee name
+            let completedByName = '';
+            if (staffId) {
+                try {
+                    const employeeResponse = await axios.get(
+                        `https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}/${staffId}`,
+                        {
+                            headers: {
+                                'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                            }
+                        }
+                    );
+                    completedByName = employeeResponse.data.fields['Name'] || employeeResponse.data.fields['Full Name'] || '';
+                    console.log('Found employee name for location update:', completedByName);
+                } catch (error) {
+                    console.error('Failed to fetch employee details for location update:', error.message);
+                }
+            }
+            
             const createData = {
                 fields: {
                     'Vessel': [vesselId],
+                    'Staff Member': staffId ? [staffId] : undefined,
+                    'Completed by': completedByName || undefined,
                     'GPS Latitude': latitude,
                     'GPS Longitude': longitude,
                     'Location Address': address || 'Manual location update',

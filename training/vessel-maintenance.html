@@ -953,19 +953,17 @@
                 return;
             }
             
-            // Get staff ID from profile
+            // Get staff ID from employee lookup
             let staffId = null;
             try {
-                const { data: profile, error } = await supabase
-                    .from('profiles')
-                    .select('airtable_record_id')
-                    .eq('id', currentUser.id)
-                    .single();
-                
-                if (error) {
-                    console.error('Error fetching profile:', error);
+                // Use the email to lookup the employee in Airtable
+                const employeeResponse = await fetch(`/api/checklist/employee-by-email?email=${encodeURIComponent(currentUser.email)}`);
+                if (employeeResponse.ok) {
+                    const employeeData = await employeeResponse.json();
+                    staffId = employeeData.id;
+                    console.log('Found employee ID:', staffId);
                 } else {
-                    staffId = profile?.airtable_record_id;
+                    console.error('Employee not found for email:', currentUser.email);
                 }
             } catch (error) {
                 console.error('Failed to fetch staff ID:', error);
@@ -1150,19 +1148,17 @@
                 // Continue without address
             }
             
-            // Get staff ID from profile
+            // Get staff ID from employee lookup
             let staffId = null;
             try {
-                const { data: profile, error } = await supabase
-                    .from('profiles')
-                    .select('airtable_record_id')
-                    .eq('id', currentUser.id)
-                    .single();
-                
-                if (error) {
-                    console.error('Error fetching profile:', error);
+                // Use the email to lookup the employee in Airtable
+                const employeeResponse = await fetch(`/api/checklist/employee-by-email?email=${encodeURIComponent(currentUser.email)}`);
+                if (employeeResponse.ok) {
+                    const employeeData = await employeeResponse.json();
+                    staffId = employeeData.id;
+                    console.log('Found employee ID:', staffId);
                 } else {
-                    staffId = profile?.airtable_record_id;
+                    console.error('Employee not found for email:', currentUser.email);
                 }
             } catch (error) {
                 console.error('Failed to fetch staff ID:', error);
