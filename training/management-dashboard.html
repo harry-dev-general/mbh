@@ -2672,11 +2672,11 @@
                                         </div>
                                         <div class="detail-item">
                                             <span class="detail-label">Last Check:</span>
-                                            <span class="detail-value">${vessel.lastCheckType || 'N/A'}</span>
+                                            <span class="detail-value">${vessel.lastCheck?.timeFormatted || 'N/A'}</span>
                                         </div>
                                         <div class="detail-item">
-                                            <span class="detail-label">Days Since Check:</span>
-                                            <span class="detail-value">${vessel.daysSinceCheck || 'N/A'}</span>
+                                            <span class="detail-label">Last completed by:</span>
+                                            <span class="detail-value">${vessel.lastCheck?.completedBy || 'N/A'}</span>
                                         </div>
                                     </div>
                                     <div class="vessel-maintenance-actions">

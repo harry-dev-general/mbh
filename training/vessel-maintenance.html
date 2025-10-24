@@ -829,8 +829,8 @@
                 
                 // Location info
                 const location = status.location?.address || vessel.location || 'Unknown Location';
-                const lastCheck = vessel.lastCheckType || 'N/A';
-                const daysSince = vessel.daysSinceCheck || 'N/A';
+                const lastCheck = vessel.lastCheck?.timeFormatted || 'N/A';
+                const lastCompletedBy = vessel.lastCheck?.completedBy || 'N/A';
                 
                 return `
                     <div class="vessel-card">
@@ -851,8 +851,8 @@
                                 <span class="detail-value">${lastCheck}</span>
                             </div>
                             <div class="detail-row">
-                                <span class="detail-label">Days Since Check:</span>
-                                <span class="detail-value">${daysSince}</span>
+                                <span class="detail-label">Last completed by:</span>
+                                <span class="detail-value">${lastCompletedBy}</span>
                             </div>
                         </div>
                         

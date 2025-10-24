@@ -224,11 +224,13 @@ async function getVesselMaintenanceStatus() {
             let lastCheckType = 'None';
             let lastCheckTime = null;
             let lastChecklistId = null;
+            let lastCompletedBy = '';
             
             if (latestPreDep && latestPostDep) {
                 // Compare timestamps to see which is more recent
                 const preDepTime = new Date(latestPreDep.fields['Created time']);
-                const postDepTime = new Date(latestPostDep.fields['Created time']);
+                // Use Last modified time for Post-Departure, fallback to Created time
+                const postDepTime = new Date(latestPostDep.fields['Last modified time'] || latestPostDep.fields['Created time']);
                 
                 if (preDepTime > postDepTime) {
                     // Pre-departure is more recent
@@ -242,6 +244,7 @@ async function getVesselMaintenanceStatus() {
                     lastCheckType = 'Pre-Departure';
                     lastCheckTime = preDepTime;
                     lastChecklistId = latestPreDep.id;
+                    lastCompletedBy = latestPreDep.fields['Completed by'] || '';
                     
                     console.log(`${boatName}: Using pre-departure checklist from ${preDepTime.toLocaleDateString()}`);
                 } else {
@@ -265,6 +268,7 @@ async function getVesselMaintenanceStatus() {
                     lastCheckType = 'Post-Departure';
                     lastCheckTime = postDepTime;
                     lastChecklistId = latestPostDep.id;
+                    lastCompletedBy = latestPostDep.fields['Completed by'] || '';
                     
                     console.log(`${boatName}: Using post-departure checklist from ${postDepTime.toLocaleDateString()}`);
                 }
@@ -280,6 +284,7 @@ async function getVesselMaintenanceStatus() {
                 lastCheckType = 'Pre-Departure';
                 lastCheckTime = new Date(latestPreDep.fields['Created time']);
                 lastChecklistId = latestPreDep.id;
+                lastCompletedBy = latestPreDep.fields['Completed by'] || '';
                 
                 console.log(`${boatName}: Only pre-departure checklist available`);
             } else if (latestPostDep) {
@@ -302,8 +307,10 @@ async function getVesselMaintenanceStatus() {
                     } : null
                 };
                 lastCheckType = 'Post-Departure';
-                lastCheckTime = new Date(latestPostDep.fields['Created time']);
+                // Use Last modified time for Post-Departure, fallback to Created time
+                lastCheckTime = new Date(latestPostDep.fields['Last modified time'] || latestPostDep.fields['Created time']);
                 lastChecklistId = latestPostDep.id;
+                lastCompletedBy = latestPostDep.fields['Completed by'] || '';
                 
                 console.log(`${boatName}: Only post-departure checklist available`);
             } else {
@@ -355,8 +362,16 @@ async function getVesselMaintenanceStatus() {
                 lastCheck: {
                     type: lastCheckType,
                     time: lastCheckTime,
+                    timeFormatted: lastCheckTime ? lastCheckTime.toLocaleString('en-AU', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : null,
                     checklistId: lastChecklistId,
-                    daysSince: daysSinceCheck
+                    daysSince: daysSinceCheck,
+                    completedBy: lastCompletedBy
                 },
                 alerts: alerts,
                 overallStatus: overallStatus,
