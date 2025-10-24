@@ -73,7 +73,8 @@ router.get('/employee-by-email', async (req, res) => {
  * Get assigned bookings for an employee or all bookings for management
  */
 router.get('/assigned-bookings', async (req, res) => {
-    const { employeeId, type, bookingId, isManagement } = req.query;
+    const { employeeId, type, bookingId } = req.query;
+    const isManagement = req.query.isManagement === 'true';
     
     try {
         // Build filter formula
@@ -94,7 +95,7 @@ router.get('/assigned-bookings', async (req, res) => {
             {
                 headers,
                 params: {
-                    filterByFormula,
+                    filterByFormula: filterFormula,
                     sort: [
                         { field: 'Booking Date', direction: 'asc' },
                         { field: type === 'pre-departure' ? 'Onboarding Time' : 'Deloading Time', direction: 'asc' }
