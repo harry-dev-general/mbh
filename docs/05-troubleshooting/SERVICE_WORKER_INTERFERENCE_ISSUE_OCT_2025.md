@@ -172,7 +172,7 @@ The issue remains unresolved. After attempting the service worker fix:
 4. **Review nginx/proxy configuration** - Railway's edge proxy may be blocking certain paths
 5. **Test direct server access** - Try accessing the Node.js server directly without Railway's proxy
 
-## Resolution (October 2025)
+## Resolution (October 2025) - COMPLETE
 
 The issue was resolved through a multi-pronged approach:
 
@@ -226,11 +226,32 @@ app.get('/training/task-scheduler.html', (req, res) => {
 3. Users with stuck service workers can access `/training/sw-force-update.html`
 4. The force update page will update and clear old service workers
 
+### Additional Issues Found and Fixed
+
+#### Resource Path Issues
+- **Problem**: Task scheduler page used relative paths that didn't match Express static serving
+- **Fix**: Updated paths from relative to absolute:
+  - `js/supabase-init-fix.js` → `/js/supabase-init-fix.js`
+  - `js/role-helper.js` → `/js/role-helper.js`
+  - `MBH.svg` → `/images/mbh-logo.png`
+
+#### Supabase Initialization Missing
+- **Problem**: `supabase` variable was undefined, causing `Cannot read properties of undefined` errors
+- **Fix**: Added proper initialization in task-scheduler.html:
+  ```javascript
+  // Added to global variables
+  let supabase = null;
+  
+  // Added to DOMContentLoaded handler
+  supabase = await window.SupabaseInit.getClient();
+  ```
+
 ### Files Modified in Resolution
 1. `/training/calendar-service-worker.js` - Added path exclusions and version bump
 2. `/server.js` - Added explicit routes and cache prevention middleware
 3. `/training/sw-force-update.html` - Created service worker management utility
-4. This documentation file - Updated with resolution details
+4. `/training/task-scheduler.html` - Fixed resource paths and added Supabase initialization
+5. This documentation file - Updated with complete resolution details
 
 ## Related Documentation
 - [Task Scheduler Implementation](/docs/02-features/task-scheduler/TASK_SCHEDULER_README.md)
