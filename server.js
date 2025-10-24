@@ -151,12 +151,17 @@ app.use((req, res, next) => {
     '/training/task-scheduler.html',
     '/training/task-scheduler-debug.html', 
     '/training/unregister-sw.html',
+    '/training/sw-force-update.html',
     '/task-scheduler.html',
     '/task-scheduler-debug.html',
-    '/unregister-sw.html'
+    '/unregister-sw.html',
+    '/sw-force-update.html'
   ];
   
+  console.log('Middleware checking path:', req.path);
+  
   if (excludedPaths.includes(req.path)) {
+    console.log('Path matched excluded paths, setting no-cache headers');
     // Set headers to prevent any caching
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -1318,10 +1323,22 @@ app.get('/training/dashboard.html', (req, res) => {
 
 // Explicit routes for task scheduler pages to bypass service worker
 app.get('/training/task-scheduler.html', (req, res) => {
+  console.log('Task scheduler route hit:', req.path);
+  const filePath = path.join(__dirname, 'training', 'task-scheduler.html');
+  console.log('Attempting to serve file:', filePath);
+  
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.sendFile(path.join(__dirname, 'training', 'task-scheduler.html'));
+  
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('Error serving task-scheduler.html:', err);
+      res.status(500).send('Error loading task scheduler');
+    } else {
+      console.log('Successfully served task-scheduler.html');
+    }
+  });
 });
 
 app.get('/training/task-scheduler-debug.html', (req, res) => {
@@ -1343,6 +1360,25 @@ app.get('/training/sw-force-update.html', (req, res) => {
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, 'training', 'sw-force-update.html'));
+});
+
+// Also handle routes without /training/ prefix (served by static middleware)
+app.get('/task-scheduler.html', (req, res) => {
+  console.log('Root task scheduler route hit:', req.path);
+  const filePath = path.join(__dirname, 'training', 'task-scheduler.html');
+  
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('Error serving task-scheduler.html from root:', err);
+      res.status(500).send('Error loading task scheduler');
+    } else {
+      console.log('Successfully served task-scheduler.html from root');
+    }
+  });
 });
 
 // Admin endpoint to manually trigger reminder check
@@ -1443,10 +1479,13 @@ app.post('/api/admin/trigger-booking-reminders', adminAuth, async (req, res) => 
 });
 
 // Catch-all route for HTML5 client-side routing
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
   // If it's not an API route and the file doesn't exist, serve dashboard
   if (!req.path.startsWith('/api/') && !req.path.includes('.')) {
     res.sendFile(path.join(__dirname, 'training', 'dashboard.html'));
+  } else {
+    // Pass to next handler if it's an API route or has a file extension
+    next();
   }
 });
 
