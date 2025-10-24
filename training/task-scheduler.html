@@ -544,6 +544,7 @@
 
     <script>
         // Global variables
+        let supabase = null;
         let calendar = null;
         let allTasks = [];
         let staffMembers = [];
@@ -560,10 +561,21 @@
         
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async function() {
-            // Check authentication
-            const { user } = await checkAuth();
-            if (!user) {
-                window.location.href = 'index.html';
+            try {
+                // Initialize Supabase client
+                console.log('Initializing Supabase client...');
+                supabase = await window.SupabaseInit.getClient();
+                console.log('Supabase client initialized');
+                
+                // Check authentication
+                const { user } = await checkAuth();
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+            } catch (error) {
+                console.error('Initialization error:', error);
+                alert('Failed to initialize application. Please refresh the page.');
                 return;
             }
             
