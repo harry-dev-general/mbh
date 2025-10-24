@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Scheduler Debug</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task Scheduler Debug</h1>
+    
+    <div class="test-section">
+        <h2>1. Health Check</h2>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="health-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Task Scheduler API Test</h2>
+        <button onclick="testTaskSchedulerAPI()">Test Task Scheduler API</button>
+        <div id="task-api-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Management Base Access Test</h2>
+        <button onclick="testManagementBase()">Test Management Base Access</button>
+        <div id="management-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Operations Base Access Test</h2>
+        <button onclick="testOperationsBase()">Test Operations Base Access</button>
+        <div id="operations-result"></div>
+    </div>
+
+    <script>
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                resultDiv.innerHTML = `<pre class="success">${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<pre class="error">Error: ${error.message}</pre>`;
+            }
+        }
+        
+        async function testTaskSchedulerAPI() {
+            const resultDiv = document.getElementById('task-api-result');
+            try {
+                const response = await fetch('/api/task-scheduler-test');
+                const data = await response.json();
+                if (response.ok) {
+                    resultDiv.innerHTML = `<pre class="success">${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<pre class="error">${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<pre class="error">Error: ${error.message}</pre>`;
+            }
+        }
+        
+        async function testManagementBase() {
+            const resultDiv = document.getElementById('management-result');
+            const MANAGEMENT_BASE_ID = 'appPyOlmuQyAM6cJQ';
+            const TASKS_TABLE_ID = 'tblKNgpHZ8sWHYuEt';
+            
+            try {
+                const response = await fetch(`/api/airtable/${MANAGEMENT_BASE_ID}/${TASKS_TABLE_ID}?maxRecords=1`);
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<pre class="success">Success! Found ${data.records.length} records\n${JSON.stringify(data.records[0]?.fields || {}, null, 2)}</pre>`;
+                } else {
+                    const error = await response.json();
+                    resultDiv.innerHTML = `<pre class="error">Error ${response.status}: ${JSON.stringify(error, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<pre class="error">Error: ${error.message}</pre>`;
+            }
+        }
+        
+        async function testOperationsBase() {
+            const resultDiv = document.getElementById('operations-result');
+            const OPERATIONS_BASE_ID = 'applkAFOn2qxtu7tx';
+            const STAFF_TABLE_ID = 'tbltAE4NlNePvnkpY';
+            
+            try {
+                const response = await fetch(`/api/airtable/${OPERATIONS_BASE_ID}/${STAFF_TABLE_ID}?maxRecords=1`);
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<pre class="success">Success! Found ${data.records.length} records\n${JSON.stringify(data.records[0]?.fields || {}, null, 2)}</pre>`;
+                } else {
+                    const error = await response.json();
+                    resultDiv.innerHTML = `<pre class="error">Error ${response.status}: ${JSON.stringify(error, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<pre class="error">Error: ${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>
