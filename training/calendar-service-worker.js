@@ -109,10 +109,20 @@ self.addEventListener('fetch', event => {
         });
       })
       .catch(() => {
-        // Return offline page for navigation requests
-        if (event.request.destination === 'document') {
+        // Only return offline page for management-allocations related requests
+        if (event.request.destination === 'document' && 
+            (url.pathname === '/training/management-allocations.html' || 
+             url.pathname === '/training/management-allocations')) {
           return caches.match('/training/management-allocations.html');
         }
+        // For other pages, just fail normally
+        return new Response('Offline - Page not available', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: new Headers({
+            'Content-Type': 'text/plain'
+          })
+        });
       })
   );
 });

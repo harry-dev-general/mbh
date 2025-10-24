@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unregister Service Worker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Service Worker Management</h1>
+    
+    <p>The calendar service worker is interfering with other pages by serving cached content. Use this page to manage service workers.</p>
+    
+    <div id="status"></div>
+    
+    <button onclick="checkServiceWorkers()">Check Service Workers</button>
+    <button onclick="unregisterAll()">Unregister All Service Workers</button>
+    <button onclick="clearAllCaches()">Clear All Caches</button>
+    
+    <h2>After unregistering:</h2>
+    <ul>
+        <li><a href="/training/task-scheduler.html">Go to Task Scheduler</a></li>
+        <li><a href="/training/task-scheduler-debug.html">Go to Task Scheduler Debug</a></li>
+        <li><a href="/training/management-allocations.html">Go to Management Allocations</a></li>
+    </ul>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        function addStatus(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            statusDiv.appendChild(div);
+        }
+        
+        async function checkServiceWorkers() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    if (registrations.length === 0) {
+                        addStatus('No service workers registered', 'info');
+                    } else {
+                        addStatus(`Found ${registrations.length} service worker(s):`, 'info');
+                        registrations.forEach((reg, index) => {
+                            addStatus(`  ${index + 1}. Scope: ${reg.scope}, Active: ${reg.active ? 'Yes' : 'No'}`, 'info');
+                        });
+                    }
+                } catch (error) {
+                    addStatus(`Error checking service workers: ${error.message}`, 'error');
+                }
+            } else {
+                addStatus('Service workers not supported in this browser', 'error');
+            }
+        }
+        
+        async function unregisterAll() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    if (registrations.length === 0) {
+                        addStatus('No service workers to unregister', 'info');
+                        return;
+                    }
+                    
+                    for (const registration of registrations) {
+                        try {
+                            await registration.unregister();
+                            addStatus(`Unregistered service worker: ${registration.scope}`, 'success');
+                        } catch (error) {
+                            addStatus(`Failed to unregister ${registration.scope}: ${error.message}`, 'error');
+                        }
+                    }
+                    
+                    addStatus('All service workers unregistered!', 'success');
+                } catch (error) {
+                    addStatus(`Error unregistering service workers: ${error.message}`, 'error');
+                }
+            } else {
+                addStatus('Service workers not supported in this browser', 'error');
+            }
+        }
+        
+        async function clearAllCaches() {
+            try {
+                const cacheNames = await caches.keys();
+                if (cacheNames.length === 0) {
+                    addStatus('No caches to clear', 'info');
+                    return;
+                }
+                
+                for (const cacheName of cacheNames) {
+                    try {
+                        await caches.delete(cacheName);
+                        addStatus(`Deleted cache: ${cacheName}`, 'success');
+                    } catch (error) {
+                        addStatus(`Failed to delete cache ${cacheName}: ${error.message}`, 'error');
+                    }
+                }
+                
+                addStatus('All caches cleared!', 'success');
+            } catch (error) {
+                addStatus(`Error clearing caches: ${error.message}`, 'error');
+            }
+        }
+        
+        // Check status on load
+        window.addEventListener('load', () => {
+            checkServiceWorkers();
+        });
+    </script>
+</body>
+</html>
