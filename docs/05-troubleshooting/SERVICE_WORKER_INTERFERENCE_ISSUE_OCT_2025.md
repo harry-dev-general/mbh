@@ -246,11 +246,24 @@ app.get('/training/task-scheduler.html', (req, res) => {
   supabase = await window.SupabaseInit.getClient();
   ```
 
+#### Authentication Redirect Loop
+- **Problem**: Direct access to task scheduler page caused redirect to auth page
+- **Fix**: Changed authentication check to use `getSession()` instead of `getUser()`:
+  ```javascript
+  // Before (makes API call)
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // After (uses cached session)
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  ```
+  Also added auth state listener and proper returnUrl handling for auth redirects.
+
 ### Files Modified in Resolution
 1. `/training/calendar-service-worker.js` - Added path exclusions and version bump
 2. `/server.js` - Added explicit routes and cache prevention middleware
 3. `/training/sw-force-update.html` - Created service worker management utility
-4. `/training/task-scheduler.html` - Fixed resource paths and added Supabase initialization
+4. `/training/task-scheduler.html` - Fixed resource paths, Supabase initialization, and authentication flow (using getSession instead of getUser)
 5. This documentation file - Updated with complete resolution details
 
 ## Related Documentation
