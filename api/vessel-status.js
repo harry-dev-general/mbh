@@ -244,14 +244,7 @@ async function getVesselMaintenanceStatus() {
                     lastCheckType = 'Pre-Departure';
                     lastCheckTime = preDepTime;
                     lastChecklistId = latestPreDep.id;
-                    // Get completed by from either 'Completed by' field or fetch from linked Staff Member
-                    if (latestPreDep.fields['Completed by']) {
-                        lastCompletedBy = latestPreDep.fields['Completed by'];
-                    } else if (latestPreDep.fields['Staff Member Name']) {
-                        lastCompletedBy = latestPreDep.fields['Staff Member Name'];
-                    } else {
-                        lastCompletedBy = '';
-                    }
+                    lastCompletedBy = latestPreDep.fields['Completed by'] || '';
                     
                     console.log(`${boatName}: Using pre-departure checklist from ${preDepTime.toLocaleDateString()}`);
                 } else {
@@ -374,7 +367,8 @@ async function getVesselMaintenanceStatus() {
                         month: 'short',
                         day: 'numeric',
                         hour: '2-digit',
-                        minute: '2-digit'
+                        minute: '2-digit',
+                        timeZone: 'Australia/Sydney'
                     }) : null,
                     checklistId: lastChecklistId,
                     daysSince: daysSinceCheck,
