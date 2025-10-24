@@ -1381,6 +1381,13 @@ app.get('/task-scheduler.html', (req, res) => {
   });
 });
 
+// Test page route
+app.get('/training/task-scheduler-test.html', (req, res) => {
+  console.log('Test page route hit:', req.path);
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'training', 'task-scheduler-test.html'));
+});
+
 // Admin endpoint to manually trigger reminder check
 app.post('/api/admin/trigger-reminders', adminAuth, async (req, res) => {
   try {
