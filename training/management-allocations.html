@@ -2855,12 +2855,29 @@
             
             console.log('Transforming bookings to events. Total bookings:', bookingsData.length);
             
+            // Debug: Log all customer names
+            console.log('All customer names in bookings:');
+            bookingsData.forEach((booking, idx) => {
+                console.log(`Booking ${idx + 1}: "${booking.fields['Customer Name']}" - Status: ${booking.fields['Status']} - Date: ${booking.fields['Booking Date']}`);
+            });
+            
+            // Debug: Log Sunday bookings specifically
+            console.log('Sunday (2025-10-26) bookings:');
+            bookingsData.forEach((booking, idx) => {
+                if (booking.fields['Booking Date'] && booking.fields['Booking Date'].includes('2025-10-26')) {
+                    console.log(`Sunday Booking: Customer: "${booking.fields['Customer Name']}", Status: ${booking.fields['Status']}`, booking.fields);
+                }
+            });
+            
             bookingsData.forEach((record, index) => {
                 const booking = record.fields;
                 
-                // Debug log for Minh Mai
-                if (booking['Customer Name'] && booking['Customer Name'].includes('Minh Mai')) {
-                    console.log('Processing Minh Mai booking for calendar:', booking);
+                // Debug log for Minh Mai or similar names
+                if (booking['Customer Name'] && (
+                    booking['Customer Name'].toLowerCase().includes('minh') || 
+                    booking['Customer Name'].toLowerCase().includes('mai')
+                )) {
+                    console.log(`Processing booking with customer name containing "minh" or "mai": "${booking['Customer Name']}"`, booking);
                 }
                 
                 if (!booking['Booking Date']) return;

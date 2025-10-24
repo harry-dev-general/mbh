@@ -457,6 +457,59 @@ app.delete('/api/announcements/:id', async (req, res) => {
   }
 });
 
+// Health check endpoint for troubleshooting
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    env: {
+      hasSupabaseUrl: !!process.env.SUPABASE_URL,
+      hasSupabaseAnon: !!process.env.SUPABASE_ANON_KEY,
+      hasSupabaseService: !!process.env.SUPABASE_SERVICE_KEY,
+      hasAirtableKey: !!process.env.AIRTABLE_API_KEY,
+      hasTwilioSid: !!process.env.TWILIO_ACCOUNT_SID,
+      nodeEnv: process.env.NODE_ENV,
+      railwayEnv: process.env.RAILWAY_ENVIRONMENT
+    }
+  });
+});
+
+// Task scheduler test endpoint
+app.get('/api/task-scheduler-test', async (req, res) => {
+  try {
+    // Test Airtable connection
+    const testUrl = 'https://api.airtable.com/v0/appPyOlmuQyAM6cJQ/tblKNgpHZ8sWHYuEt?maxRecords=1';
+    const response = await axios({
+      method: 'GET',
+      url: testUrl,
+      headers: {
+        'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`
+      }
+    });
+    
+    res.json({
+      status: 'ok',
+      message: 'Task scheduler test successful',
+      airtable: {
+        connected: true,
+        recordCount: response.data.records.length
+      },
+      env: {
+        hasAirtableKey: !!process.env.AIRTABLE_API_KEY
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Task scheduler test failed',
+      error: error.message,
+      env: {
+        hasAirtableKey: !!process.env.AIRTABLE_API_KEY
+      }
+    });
+  }
+});
+
 // API proxy endpoint for Airtable requests
 app.post('/api/airtable/*', async (req, res) => {
   try {
