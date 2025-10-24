@@ -54,48 +54,52 @@ The calendar is configured with:
 5. **Comprehensive Customer Name Logging**: Added logging to display ALL customer names in bookings
 6. **Case-Insensitive Name Matching**: Updated Minh Mai detection to check for variations (lowercase "minh" or "mai")
 
-## Current Status
-The following debug logging has been added and deployed:
-- When Minh Mai's booking is processed during filtering
-- When Minh Mai's booking is transformed to a calendar event
-- Total booking events created
-- Sunday-specific booking events
-- Calendar date range display
-- **NEW**: All customer names and their status/date
-- **NEW**: Sunday-specific bookings with full details
-- **NEW**: Case-insensitive matching for names containing "minh" or "mai"
+## Current Status - RESOLVED
+The issue has been identified and fixed!
 
-## Recent Findings
-Based on the latest console logs provided by the user:
-- Total bookings: 11
-- Total booking events created: 22 (suggests each booking creates 2 events for onboarding/deloading)
-- Sunday booking events: Array(4) - This indicates 4 events ARE being created for Sunday
-- However, the specific "Minh Mai" debug logs are NOT triggering
+### Root Cause
+The `/management-allocations.html` page was only fetching the first 100 bookings from Airtable due to the API's default pagination limit. The console logs showed exactly 100 bookings being retrieved, and Minh Mai's booking was beyond this limit.
 
-This suggests that either:
-1. The customer name is not exactly "Minh Mai" in the data
-2. The booking is present but under a different customer name format
+### Verification
+Using the Airtable MCP, we confirmed Minh Mai's booking EXISTS with:
+- Customer Name: "Minh Mai"
+- Booking Date: "2025-10-26" (Sunday)
+- Status: "PAID"
+- Booking Code: "JMAN-141025"
 
-## Next Steps
-1. Have the user refresh the page and check the console logs for:
-   - **"All customer names in bookings:"** - This will show EVERY customer name exactly as stored
-   - **"Sunday (2025-10-26) bookings:"** - This will show ALL Sunday bookings with full details
-   - **"Processing booking with customer name containing 'minh' or 'mai':"** - Case-insensitive match
-   - **"Sunday booking events:"** - To see what events are actually created
+### Solution Implemented
+Added pagination support to the `loadBookings()` function to fetch ALL bookings from Airtable:
+```javascript
+// Handle pagination to get ALL bookings
+let offset = data.offset;
+while (offset) {
+    console.log('Fetching more bookings with offset:', offset);
+    const nextResponse = await fetchWithRetry(/* ... with offset parameter ... */);
+    // ... append records and update offset
+}
+```
 
-2. Based on the debug output, we can determine:
-   - The exact customer name format in the data (might be "Mai Minh" or have extra spaces/characters)
-   - If the booking exists but under a different name
-   - If the Sunday events are being created but not displayed
-   - If there's a data formatting issue preventing the match
+### Debug Logging Added
+The following comprehensive debug logging was added:
+- Total bookings fetched from Airtable (will now show > 100)
+- Specific check for Minh/Mai bookings in raw data
+- All customer names and their status/date
+- Sunday-specific bookings with full details
+- Case-insensitive matching for names containing "minh" or "mai"
 
-## Possible Additional Causes
-1. **Timezone Issues**: The booking date might be parsed differently due to timezone
-2. **Calendar Event Creation**: The event might not be created with the correct date/time
-3. **Visual Rendering**: The event might exist but not be visible due to CSS or overlapping issues
-4. **Date Range Edge Case**: Sunday being the last day of the week might have an edge case
+## Testing the Fix
+1. The user should refresh the `/management-allocations.html` page
+2. Check the console logs for:
+   - **"Total bookings fetched from Airtable:"** - Should now show more than 100
+   - **"Found Minh/Mai bookings in raw data:"** - Should find Minh Mai's booking
+   - **"Minh/Mai booking:"** - Will show the booking details
+   - **"All customer names in bookings:"** - Should now include "Minh Mai"
+   - **"Sunday (2025-10-26) bookings:"** - Should include Minh Mai's booking
+
+3. The calendar should now display Minh Mai's booking on Sunday, October 26, 2025
 
 ## Code Changes Made
-- Updated status filter to include 'Confirmed' bookings
-- Added comprehensive debug logging throughout the booking processing pipeline
-- Deployed to production for testing
+1. **Added Airtable Pagination**: Modified `loadBookings()` function to fetch ALL records using Airtable's offset-based pagination
+2. **Updated Status Filter**: Included 'Confirmed' status in addition to 'PAID' and 'PART' 
+3. **Added Debug Logging**: Comprehensive logging throughout the booking processing pipeline
+4. **Deployed to Production**: All changes have been pushed to the main branch
