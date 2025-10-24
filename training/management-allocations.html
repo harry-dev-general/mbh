@@ -2235,10 +2235,11 @@
                 
                 console.log('Loading bookings for week:', startStr, 'to', endStr);
                 
-                // Fetch all relevant bookings - will filter by date client-side
-                // This avoids field name issues in filterByFormula
-                // Fetch ALL bookings to ensure we don't miss any (including PART status)
-                const filter = encodeURIComponent(`OR({Status}='PAID', {Status}='PART', {Status}='Confirmed', {Status}='Pending')`);
+                // Only fetch PAID bookings that are for today or in the future
+                // Using Airtable formula: Status = 'PAID' AND Booking Date >= TODAY()
+                const todayStr = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+                console.log('Filtering for PAID bookings from today onwards:', todayStr);
+                const filter = encodeURIComponent(`AND({Status}='PAID', {Booking Date} >= '${todayStr}')`);
                 
                 // Use retry logic for resilience
                 const response = await fetchWithRetry(
@@ -2332,13 +2333,9 @@
             const bookingDate = record.fields['Booking Date'];
             const status = record.fields['Status'];
             
-            // Only show PAID, PART, Confirmed bookings
-            // PART = partial payment, Confirmed = confirmed but not yet paid
-            if (status !== 'PAID' && status !== 'PART' && status !== 'Confirmed') {
-                // Log excluded bookings for debugging
-                if (record.fields['Customer Name'] && record.fields['Customer Name'].includes('Minh Mai')) {
-                    console.log('Minh Mai booking excluded due to status:', status);
-                }
+            // Only show PAID bookings (should already be filtered server-side)
+            if (status !== 'PAID') {
+                console.log('Booking excluded due to non-PAID status:', status, record.fields['Customer Name']);
                 return false;
             }
             
@@ -2383,9 +2380,9 @@
             return isInRange;
         });
         
-        // Count both PAID and PART bookings for the log
-        const paidBookings = allBookings.filter(r => r.fields['Status'] === 'PAID' || r.fields['Status'] === 'PART');
-        console.log(`Found ${paidBookings.length} PAID/PART bookings (out of ${allBookings.length} total), ${bookingsData.length} for current week`, bookingsData);
+        // Count PAID bookings for the log
+        const paidBookings = allBookings.filter(r => r.fields['Status'] === 'PAID');
+        console.log(`Found ${paidBookings.length} PAID bookings (today or future), ${bookingsData.length} for current week`, bookingsData);
                 
                 // Don't render here - let loadWeekData handle rendering after all data is loaded
                 populateBookingsSelect();
