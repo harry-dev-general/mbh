@@ -561,6 +561,8 @@
         
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async function() {
+            let user = null;
+            
             try {
                 // Initialize Supabase client
                 console.log('Initializing Supabase client...');
@@ -568,7 +570,9 @@
                 console.log('Supabase client initialized');
                 
                 // Check authentication
-                const { user } = await checkAuth();
+                const authResult = await checkAuth();
+                user = authResult.user;
+                
                 if (!user) {
                     // Redirect to auth page with return URL
                     const returnUrl = encodeURIComponent(window.location.pathname);
@@ -584,6 +588,16 @@
             currentUser = user;
             updateUserDisplay(user);
             
+            // Set up auth state listener after Supabase is initialized
+            supabase.auth.onAuthStateChange((event, session) => {
+                console.log('Auth event:', event);
+                
+                // Handle sign out
+                if (event === 'SIGNED_OUT') {
+                    window.location.href = '/auth.html';
+                }
+            });
+            
             // Load data and initialize calendar
             await loadStaffMembers();
             await loadTasks();
@@ -591,32 +605,37 @@
             renderUnassignedTasks();
         });
         
-        // Listen for auth state changes
-        supabase.auth.onAuthStateChange((event, session) => {
-            console.log('Auth event:', event);
-            
-            // Handle sign out
-            if (event === 'SIGNED_OUT') {
-                window.location.href = '/auth.html';
-            }
-        });
-        
         // Authentication functions
         async function checkAuth() {
+            console.log('Checking authentication...');
+            
             // Use getSession for immediate cached check
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (error) {
+                console.error('Error getting session:', error);
+                return { user: null };
+            }
+            
+            console.log('Session:', session);
+            
             if (!session || !session.user) {
+                console.log('No session or user found');
                 return { user: null };
             }
             
             const user = session.user;
+            console.log('User found:', user.email);
+            
             const hasAccess = await checkAccessControl(user.email);
             if (!hasAccess) {
+                console.log('User does not have access');
                 await supabase.auth.signOut();
                 window.location.href = '/index.html';
                 return { user: null };
             }
             
+            console.log('User authenticated successfully');
             return { user };
         }
         
