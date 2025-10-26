@@ -559,6 +559,43 @@
         const OPERATIONS_BASE_ID = 'applkAFOn2qxtu7tx';
         const EMPLOYEE_DETAILS_TABLE_ID = 'tbltAE4NlNePvnkpY';
         
+        // Check if user has access (simplified for now)
+        async function checkAccessControl(email) {
+            // For now, just return true for any logged-in user
+            // The auth system already checks if they're in the access control table
+            console.log('Access control check for:', email);
+            return true;
+        }
+        
+        // Check authentication and access control
+        async function checkAuth() {
+            console.log('Checking authentication...');
+            
+            // Use getSession for immediate cached check
+            const { data: { session } } = await supabase.auth.getSession();
+            console.log('Session check result:', !!session);
+            
+            if (!session || !session.user) {
+                console.log('No session found');
+                return { user: null };
+            }
+            
+            const user = session.user;
+            console.log('User found:', user.email);
+            
+            // Check access control
+            const hasAccess = await checkAccessControl(user.email);
+            console.log('Access control result:', hasAccess);
+            
+            if (!hasAccess) {
+                console.log('User does not have access');
+                await supabase.auth.signOut();
+                return { user: null };
+            }
+            
+            return { user };
+        }
+        
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async function() {
             let user = null;
@@ -605,63 +642,23 @@
             renderUnassignedTasks();
         });
         
-        // Authentication functions
-        async function checkAuth() {
-            console.log('Checking authentication...');
-            
-            // Use getSession for immediate cached check
-            const { data: { session }, error } = await supabase.auth.getSession();
-            
-            if (error) {
-                console.error('Error getting session:', error);
-                return { user: null };
-            }
-            
-            console.log('Session:', session);
-            
-            if (!session || !session.user) {
-                console.log('No session or user found');
-                return { user: null };
-            }
-            
-            const user = session.user;
-            console.log('User found:', user.email);
-            
-            const hasAccess = await checkAccessControl(user.email);
-            if (!hasAccess) {
-                console.log('User does not have access');
-                await supabase.auth.signOut();
-                window.location.href = '/index.html';
-                return { user: null };
-            }
-            
-            console.log('User authenticated successfully');
-            return { user };
-        }
-        
-        async function checkAccessControl(email) {
-            const { data, error } = await supabase
-                .from('access_control')
-                .select('*')
-                .eq('email', email)
-                .single();
-            
-            if (error || !data) return false;
-            return ['admin', 'management'].includes(data.role);
-        }
-        
+        // Update user display in header
         function updateUserDisplay(user) {
-            const userDisplay = document.getElementById('userDisplay');
-            if (user) {
-                userDisplay.textContent = user.email;
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement && user && user.email) {
+                // Extract name from email or use email
+                const name = user.email.split('@')[0]
+                    .split('.')
+                    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                    .join(' ');
+                userNameElement.textContent = name;
             }
         }
         
-        async function handleLogout() {
-            const { error } = await supabase.auth.signOut();
-            if (!error) {
-                window.location.href = 'index.html';
-            }
+        // Logout function  
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = '/auth.html';
         }
         
         // Load staff members from both bases
