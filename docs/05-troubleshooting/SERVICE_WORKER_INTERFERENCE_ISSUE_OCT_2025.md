@@ -259,6 +259,28 @@ app.get('/training/task-scheduler.html', (req, res) => {
   ```
   Also added auth state listener and proper returnUrl handling for auth redirects.
 
+#### Variable Scoping Issue
+- **Problem**: User variable was destructured inside try block but used outside, causing undefined reference and authentication failures
+- **Fix**: Declared user variable outside try block to ensure proper scoping:
+  ```javascript
+  // Before (scoping issue)
+  try {
+      const { user } = await checkAuth();
+      // ...
+  }
+  currentUser = user; // Error: user is undefined
+  
+  // After (fixed)
+  let user = null;
+  try {
+      const authResult = await checkAuth();
+      user = authResult.user;
+      // ...
+  }
+  currentUser = user; // Works correctly
+  ```
+- **Result**: Eliminated runtime errors and authentication failures due to scoping issues
+
 ### Files Modified in Resolution
 1. `/training/calendar-service-worker.js` - Added path exclusions and version bump
 2. `/server.js` - Added explicit routes and cache prevention middleware
