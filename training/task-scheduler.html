@@ -572,7 +572,7 @@
                 if (!user) {
                     // Redirect to auth page with return URL
                     const returnUrl = encodeURIComponent(window.location.pathname);
-                    window.location.href = `auth.html?returnUrl=${returnUrl}`;
+                    window.location.href = `/auth.html?returnUrl=${returnUrl}`;
                     return;
                 }
             } catch (error) {
@@ -597,7 +597,7 @@
             
             // Handle sign out
             if (event === 'SIGNED_OUT') {
-                window.location.href = 'auth.html';
+                window.location.href = '/auth.html';
             }
         });
         
@@ -613,7 +613,7 @@
             const hasAccess = await checkAccessControl(user.email);
             if (!hasAccess) {
                 await supabase.auth.signOut();
-                window.location.href = 'index.html';
+                window.location.href = '/index.html';
                 return { user: null };
             }
             
