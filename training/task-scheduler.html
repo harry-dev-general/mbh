@@ -222,10 +222,74 @@
             padding: 1.5rem;
             height: 100%;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Employee Selector Styles */
+        .employee-selector {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e9ecef;
+        }
+        
+        .selector-header {
+            margin-bottom: 0.75rem;
+        }
+        
+        .selector-title {
+            color: #1B4F72;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .employee-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .employee-tab {
+            padding: 0.5rem 1rem;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #495057;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .employee-tab:hover {
+            background: #e9ecef;
+            border-color: #2E86AB;
+            color: #1B4F72;
+        }
+        
+        .employee-tab.active {
+            background: #2E86AB;
+            color: white;
+            border-color: #2E86AB;
+            font-weight: 600;
+        }
+        
+        .employee-tab i {
+            font-size: 0.875rem;
         }
         
         #calendar {
-            height: calc(100% - 2rem);
+            flex: 1;
+            min-height: 0; /* Important for flex child */
         }
         
         /* FullCalendar Custom Styles */
@@ -457,6 +521,23 @@
             .logo {
                 height: 150px;
             }
+            
+            .employee-selector {
+                padding: 0.75rem;
+            }
+            
+            .employee-tabs {
+                gap: 0.25rem;
+            }
+            
+            .employee-tab {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.8rem;
+            }
+            
+            .selector-title {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -526,6 +607,22 @@
 
             <!-- Main Calendar Area -->
             <div class="calendar-container">
+                <!-- Employee Selector Tabs -->
+                <div class="employee-selector">
+                    <div class="selector-header">
+                        <h3 class="selector-title">
+                            <i class="fas fa-users"></i>
+                            View Schedule For:
+                        </h3>
+                    </div>
+                    <div class="employee-tabs" id="employeeTabs">
+                        <button class="employee-tab active" data-employee-id="all" onclick="selectEmployee('all')">
+                            <i class="fas fa-users"></i>
+                            All Staff
+                        </button>
+                        <!-- Employee tabs will be dynamically added here -->
+                    </div>
+                </div>
                 <div id="calendar"></div>
             </div>
         </div>
@@ -599,6 +696,7 @@
         let employeeProfiles = []; // Employee profiles from Management base
         let emailToProfileMap = {}; // Map email to Employee Profile record ID
         let currentUser = null;
+        let selectedEmployeeId = 'all'; // Currently selected employee filter
         
         // Airtable configuration
         const MANAGEMENT_BASE_ID = 'appPyOlmuQyAM6cJQ';
@@ -688,6 +786,7 @@
             await loadTasks();
             initializeCalendar();
             renderUnassignedTasks();
+            populateEmployeeTabs();
         });
         
         // Update user display in header
@@ -796,21 +895,26 @@
         function initializeCalendar() {
             const calendarEl = document.getElementById('calendar');
             
+            // Get filtered resources based on selection
+            const filteredResources = getFilteredResources();
+            
             calendar = new FullCalendar.Calendar(calendarEl, {
                 schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-                initialView: 'resourceTimeGridWeek',
+                initialView: selectedEmployeeId === 'all' ? 'resourceTimeGridWeek' : 'timeGridWeek',
                 timeZone: 'Australia/Sydney',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth'
+                    right: selectedEmployeeId === 'all' 
+                        ? 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth'
+                        : 'timeGridDay,timeGridWeek,dayGridMonth'
                 },
                 slotMinTime: '06:00:00',
                 slotMaxTime: '20:00:00',
                 slotDuration: '01:00:00',
                 height: '100%',
                 resourceOrder: 'title', // Sort resources alphabetically
-                resources: staffMembers,
+                resources: filteredResources,
                 events: getCalendarEvents(),
                 editable: true,
                 droppable: true,
@@ -833,6 +937,54 @@
             initializeExternalDragging();
         }
         
+        // Get filtered resources based on employee selection
+        function getFilteredResources() {
+            if (selectedEmployeeId === 'all') {
+                return staffMembers;
+            }
+            return staffMembers.filter(staff => staff.id === selectedEmployeeId);
+        }
+        
+        // Populate employee tabs
+        function populateEmployeeTabs() {
+            const tabsContainer = document.getElementById('employeeTabs');
+            
+            // Keep the "All Staff" button
+            const allStaffButton = tabsContainer.querySelector('[data-employee-id="all"]');
+            
+            // Add individual employee tabs
+            const employeeTabs = staffMembers.map(staff => `
+                <button class="employee-tab" data-employee-id="${staff.id}" onclick="selectEmployee('${staff.id}')">
+                    <i class="fas fa-user"></i>
+                    ${staff.title}
+                </button>
+            `).join('');
+            
+            tabsContainer.innerHTML = allStaffButton.outerHTML + employeeTabs;
+        }
+        
+        // Handle employee selection
+        function selectEmployee(employeeId) {
+            selectedEmployeeId = employeeId;
+            
+            // Update active tab
+            document.querySelectorAll('.employee-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-employee-id') === employeeId) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Destroy and recreate calendar with filtered view
+            if (calendar) {
+                calendar.destroy();
+            }
+            initializeCalendar();
+            
+            // Update unassigned tasks display
+            renderUnassignedTasks();
+        }
+        
         // Convert tasks to calendar events
         function getCalendarEvents() {
             return allTasks
@@ -844,6 +996,11 @@
                     // Verify this staff member exists in our resources
                     const staffExists = staffMembers.some(s => s.id === resourceId);
                     if (!staffExists) return null;
+                    
+                    // Filter by selected employee if not showing all
+                    if (selectedEmployeeId !== 'all' && resourceId !== selectedEmployeeId) {
+                        return null;
+                    }
                     
                     return {
                         id: task.id,
@@ -997,9 +1154,14 @@
         // Handle external event drop
         async function handleEventReceive(info) {
             const taskId = info.event.id;
-            const resourceId = info.event.getResources()[0]?.id;
+            let resourceId = info.event.getResources()[0]?.id;
             const start = info.event.start;
             const end = info.event.end || start;
+            
+            // If in single employee view, use the selected employee
+            if (selectedEmployeeId !== 'all' && !resourceId) {
+                resourceId = selectedEmployeeId;
+            }
             
             if (!resourceId) {
                 info.revert();
