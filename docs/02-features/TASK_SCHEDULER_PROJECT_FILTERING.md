@@ -13,7 +13,7 @@ The task scheduler now includes project-based filtering, allowing managers to qu
 - The panel now serves as a comprehensive task viewer with filtering capabilities
 
 ### 2. Project Filter Dropdown
-- Added below existing Priority and Status filters
+- Added at the top of the Tasks panel (not in Filter Tasks section)
 - Dynamically populated from the Projects table in Airtable
 - Options include:
   - **All Projects**: Shows all tasks regardless of project
@@ -30,9 +30,11 @@ The task scheduler now includes project-based filtering, allowing managers to qu
 ### Data Loading
 ```javascript
 // Loads projects from Airtable
+const PROJECTS_TABLE_ID = 'tblhqQZOrGw7rqW1p'; // Correct table ID
 async function loadProjects() {
     const response = await fetch(`/api/airtable/${MANAGEMENT_BASE_ID}/${PROJECTS_TABLE_ID}`);
     // Creates projectMap for easy ID-to-name lookup
+    // Uses 'Project name' field from Airtable
 }
 ```
 
