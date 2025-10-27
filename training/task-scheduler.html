@@ -404,16 +404,20 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
         }
         
         .modal-content {
             background-color: #fefefe;
-            margin: 5% auto;
+            margin: 2rem auto;
             padding: 0;
             border-radius: 8px;
             width: 90%;
             max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative;
         }
         
         .modal-header {
@@ -424,10 +428,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         
         .modal-body {
             padding: 1.5rem;
+            max-height: calc(90vh - 200px); /* Account for header and footer */
+            overflow-y: auto;
         }
         
         .modal-footer {
@@ -438,6 +447,9 @@
             display: flex;
             justify-content: flex-end;
             gap: 0.5rem;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
         }
         
         .close {
@@ -519,6 +531,19 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+        
+        /* Mobile modal adjustments */
+        @media (max-width: 768px) {
+            .modal-content {
+                margin: 1rem auto;
+                width: 95%;
+                max-height: 95vh;
+            }
+            
+            .modal-body {
+                max-height: calc(95vh - 180px);
+            }
         }
         
         /* Responsive Design */
@@ -1349,6 +1374,7 @@
                 staffMembers.map(staff => `<option value="${staff.id}">${staff.title}</option>`).join('');
             
             document.getElementById('taskModal').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
         }
         
         // Show edit task modal
@@ -1381,11 +1407,13 @@
             }
             
             document.getElementById('taskModal').style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
         }
         
         // Close task modal
         function closeTaskModal() {
             document.getElementById('taskModal').style.display = 'none';
+            document.body.style.overflow = ''; // Restore body scrolling
         }
         
         // Save task
