@@ -209,6 +209,23 @@ Tested and working on:
 - Smooth scrolling with stable layout
 - Responsive heights for desktop and mobile
 
+### Layout Improvements ✅ IMPLEMENTED
+- Increased calendar visibility (shows 8-10 hours instead of 4)
+- Tasks panel guaranteed to show at least 3 tasks
+- Optimized vertical space distribution
+- Changed to 30-minute calendar slots for better visibility
+- Reduced panel gaps for more content space
+
+### Mobile Optimization ✅ IMPLEMENTED (January 2025)
+- Touch-optimized interface with 44px minimum touch targets
+- Swipe gestures for calendar navigation
+- Mobile-specific views (Day and List)
+- Bottom sheet style modals
+- Horizontal scrolling employee tabs
+- 1-hour time slots on mobile
+- Disabled drag/drop for better scrolling
+- Responsive design throughout
+
 ## Known Limitations
 
 1. ~~Multi-select not yet implemented~~ ✅ Completed January 2025
