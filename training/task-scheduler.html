@@ -871,7 +871,7 @@
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
                 <h3>Keyboard Shortcuts</h3>
-                <span class="close" onclick="document.getElementById('keyboardShortcutsModal').style.display='none'">&times;</span>
+                <span class="close" onclick="closeKeyboardShortcuts()">&times;</span>
             </div>
             <div class="modal-body">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -890,7 +890,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" onclick="document.getElementById('keyboardShortcutsModal').style.display='none'">Close</button>
+                <button class="btn btn-primary" onclick="closeKeyboardShortcuts()">Close</button>
             </div>
         </div>
     </div>
@@ -2069,8 +2069,7 @@
             if (event.target == taskModal) {
                 closeTaskModal();
             } else if (event.target == shortcutsModal) {
-                shortcutsModal.style.display = 'none';
-                document.body.style.overflow = '';
+                closeKeyboardShortcuts();
             }
         }
         
@@ -2083,9 +2082,13 @@
                 
                 // Allow Escape key in modals
                 if (event.key === 'Escape') {
-                    const modal = document.getElementById('taskModal');
-                    if (modal.style.display === 'block') {
+                    const taskModal = document.getElementById('taskModal');
+                    const shortcutsModal = document.getElementById('keyboardShortcutsModal');
+                    
+                    if (taskModal.style.display === 'block') {
                         closeTaskModal();
+                    } else if (shortcutsModal.style.display === 'block') {
+                        closeKeyboardShortcuts();
                     }
                 }
                 return;
@@ -2122,11 +2125,15 @@
                 }
             }
             
-            // Escape: Close modal
+            // Escape: Close modals
             else if (event.key === 'Escape') {
-                const modal = document.getElementById('taskModal');
-                if (modal.style.display === 'block') {
+                const taskModal = document.getElementById('taskModal');
+                const shortcutsModal = document.getElementById('keyboardShortcutsModal');
+                
+                if (taskModal.style.display === 'block') {
                     closeTaskModal();
+                } else if (shortcutsModal.style.display === 'block') {
+                    closeKeyboardShortcuts();
                 }
             }
             
@@ -2140,6 +2147,12 @@
         function showKeyboardShortcuts() {
             document.getElementById('keyboardShortcutsModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
+        }
+        
+        // Close keyboard shortcuts modal
+        function closeKeyboardShortcuts() {
+            document.getElementById('keyboardShortcutsModal').style.display = 'none';
+            document.body.style.overflow = ''; // Restore body scrolling
         }
         
         // Context menu handling
