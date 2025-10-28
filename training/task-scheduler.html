@@ -84,6 +84,17 @@
             background: rgba(255,255,255,0.3);
         }
         
+        .panel .btn-white {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+        
+        .panel .btn-white:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
         .btn-primary {
             background: #2E86AB;
             color: white;
@@ -655,11 +666,19 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h2 class="panel-title">Tasks</h2>
-                        <button class="btn btn-primary btn-sm" onclick="showCreateTaskModal()">
-                            <i class="fas fa-plus"></i> New Task
-                        </button>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-primary btn-sm" onclick="showCreateTaskModal()" title="Ctrl/Cmd + N">
+                                <i class="fas fa-plus"></i> New Task
+                            </button>
+                            <button class="btn btn-white btn-sm" onclick="showKeyboardShortcuts()" title="Keyboard shortcuts">
+                                <i class="fas fa-keyboard"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="panel-body">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="taskSearch" placeholder="Search tasks..." onkeyup="handleTaskSearch()">
+                        </div>
                         <div class="form-group">
                             <select class="form-control" id="projectFilter" onchange="filterTasks()">
                                 <option value="">All Projects</option>
@@ -794,6 +813,11 @@
         let projects = []; // Projects from Management base
         let projectMap = {}; // Map project ID to project name
         
+        // Performance optimization: Cache calendar views
+        let viewCache = new Map(); // Cache calendar configurations by employee ID
+        let isInitialLoad = true; // Track if this is the first calendar load
+        let searchTerm = ''; // Current search term for tasks
+        
         // Airtable configuration
         const MANAGEMENT_BASE_ID = 'appPyOlmuQyAM6cJQ';
         const TASKS_TABLE_ID = 'tblKNgpHZ8sWHYuEt';
@@ -878,6 +902,9 @@
                 }
             });
             
+            // Restore user preferences from localStorage
+            restoreUserPreferences();
+            
             // Load data and initialize calendar
             await loadStaffMembers();
             await loadProjects();
@@ -886,6 +913,11 @@
             renderUnassignedTasks();
             populateEmployeeTabs();
             populateProjectFilter();
+            
+            // Apply restored employee selection after tabs are populated
+            if (selectedEmployeeId !== 'all') {
+                selectEmployee(selectedEmployeeId);
+            }
         });
         
         // Update user display in header
@@ -905,6 +937,47 @@
         async function logout() {
             await supabase.auth.signOut();
             window.location.href = '/auth.html';
+        }
+        
+        // Restore user preferences from localStorage
+        function restoreUserPreferences() {
+            if (typeof(Storage) === "undefined") return;
+            
+            // Restore selected employee
+            const savedEmployee = localStorage.getItem('mbh_selected_employee');
+            if (savedEmployee) {
+                selectedEmployeeId = savedEmployee;
+            }
+            
+            // Restore filter selections
+            const savedPriorityFilter = localStorage.getItem('mbh_priority_filter');
+            const savedStatusFilter = localStorage.getItem('mbh_status_filter');
+            const savedProjectFilter = localStorage.getItem('mbh_project_filter');
+            
+            // We'll apply these after the DOM elements are populated
+            window.restoredFilters = {
+                priority: savedPriorityFilter,
+                status: savedStatusFilter,
+                project: savedProjectFilter
+            };
+        }
+        
+        // Apply restored filters after dropdowns are populated
+        function applyRestoredFilters() {
+            if (!window.restoredFilters) return;
+            
+            if (window.restoredFilters.priority) {
+                document.getElementById('priorityFilter').value = window.restoredFilters.priority;
+            }
+            if (window.restoredFilters.status) {
+                document.getElementById('statusFilter').value = window.restoredFilters.status;
+            }
+            if (window.restoredFilters.project) {
+                document.getElementById('projectFilter').value = window.restoredFilters.project;
+            }
+            
+            // Clean up
+            delete window.restoredFilters;
         }
         
         // Load staff members from both bases
@@ -1098,8 +1171,9 @@
             tabsContainer.innerHTML = allStaffButton.outerHTML + employeeTabs;
         }
         
-        // Handle employee selection
+        // Handle employee selection with optimized view caching
         function selectEmployee(employeeId) {
+            const previousEmployeeId = selectedEmployeeId;
             selectedEmployeeId = employeeId;
             
             // Update active tab
@@ -1110,14 +1184,43 @@
                 }
             });
             
-            // Destroy and recreate calendar with filtered view
-            if (calendar) {
-                calendar.destroy();
+            // Use view caching for better performance
+            if (!isInitialLoad && calendar) {
+                // Try to switch views without recreating calendar
+                const needsViewTypeChange = 
+                    (previousEmployeeId === 'all' && employeeId !== 'all') ||
+                    (previousEmployeeId !== 'all' && employeeId === 'all');
+                
+                if (needsViewTypeChange) {
+                    // View type change required (resource vs non-resource)
+                    calendar.destroy();
+                    initializeCalendar();
+                } else {
+                    // Same view type, just update resources and events
+                    if (employeeId === 'all') {
+                        // Update resources for all staff view
+                        calendar.refetchResources();
+                    }
+                    // Update events to reflect new filter
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(getCalendarEvents());
+                }
+            } else {
+                // Initial load or no calendar exists
+                if (calendar) {
+                    calendar.destroy();
+                }
+                initializeCalendar();
+                isInitialLoad = false;
             }
-            initializeCalendar();
             
             // Update unassigned tasks display
             renderUnassignedTasks();
+            
+            // Save preference to localStorage
+            if (typeof(Storage) !== "undefined") {
+                localStorage.setItem('mbh_selected_employee', employeeId);
+            }
         }
         
         // Populate project filter dropdown
@@ -1142,6 +1245,9 @@
             noProjectOption.value = 'none';
             noProjectOption.textContent = 'No Project';
             projectFilter.appendChild(noProjectOption);
+            
+            // Apply restored filters
+            applyRestoredFilters();
         }
         
         // Convert tasks to calendar events
@@ -1202,6 +1308,22 @@
                     } else {
                         // Show tasks for specific project
                         if (!task.project || !task.project.includes(projectFilter)) return false;
+                    }
+                }
+                
+                // Search filter
+                if (searchTerm) {
+                    const taskTitle = (task.title || '').toLowerCase();
+                    const taskDescription = (task.description || '').toLowerCase();
+                    const projectName = task.project && task.project.length > 0 && projectMap[task.project[0]] 
+                        ? projectMap[task.project[0]].toLowerCase() 
+                        : '';
+                    
+                    // Search in title, description, and project name
+                    if (!taskTitle.includes(searchTerm) && 
+                        !taskDescription.includes(searchTerm) &&
+                        !projectName.includes(searchTerm)) {
+                        return false;
                     }
                 }
                 
@@ -1513,9 +1635,35 @@
             }
         }
         
-        // Filter tasks
+        // Filter tasks and save preferences
         function filterTasks() {
+            // Save filter preferences to localStorage
+            if (typeof(Storage) !== "undefined") {
+                const priorityFilter = document.getElementById('priorityFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                const projectFilter = document.getElementById('projectFilter').value;
+                
+                localStorage.setItem('mbh_priority_filter', priorityFilter);
+                localStorage.setItem('mbh_status_filter', statusFilter);
+                localStorage.setItem('mbh_project_filter', projectFilter);
+            }
+            
             renderUnassignedTasks();
+        }
+        
+        // Handle task search with debouncing
+        let searchTimeout;
+        function handleTaskSearch() {
+            const searchInput = document.getElementById('taskSearch').value;
+            searchTerm = searchInput.toLowerCase().trim();
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // Debounce search for better performance
+            searchTimeout = setTimeout(() => {
+                renderUnassignedTasks();
+            }, 300);
         }
         
         // Utility functions
@@ -1535,6 +1683,87 @@
             if (event.target == modal) {
                 closeTaskModal();
             }
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Ignore if typing in an input field
+            if (event.target.tagName === 'INPUT' || 
+                event.target.tagName === 'TEXTAREA' || 
+                event.target.tagName === 'SELECT') {
+                
+                // Allow Escape key in modals
+                if (event.key === 'Escape') {
+                    const modal = document.getElementById('taskModal');
+                    if (modal.style.display === 'block') {
+                        closeTaskModal();
+                    }
+                }
+                return;
+            }
+            
+            // Ctrl/Cmd + N: Create new task
+            if ((event.ctrlKey || event.metaKey) && event.key === 'n') {
+                event.preventDefault();
+                showCreateTaskModal();
+            }
+            
+            // Ctrl/Cmd + F: Focus search
+            else if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+                event.preventDefault();
+                document.getElementById('taskSearch').focus();
+            }
+            
+            // Arrow keys: Navigate employee tabs
+            else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                const tabs = Array.from(document.querySelectorAll('.employee-tab'));
+                const activeTab = document.querySelector('.employee-tab.active');
+                const currentIndex = tabs.indexOf(activeTab);
+                
+                if (currentIndex !== -1) {
+                    let newIndex;
+                    if (event.key === 'ArrowLeft') {
+                        newIndex = currentIndex > 0 ? currentIndex - 1 : tabs.length - 1;
+                    } else {
+                        newIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0;
+                    }
+                    
+                    const newEmployeeId = tabs[newIndex].getAttribute('data-employee-id');
+                    selectEmployee(newEmployeeId);
+                }
+            }
+            
+            // Escape: Close modal
+            else if (event.key === 'Escape') {
+                const modal = document.getElementById('taskModal');
+                if (modal.style.display === 'block') {
+                    closeTaskModal();
+                }
+            }
+            
+            // ? or h: Show help (keyboard shortcuts)
+            else if (event.key === '?' || event.key === 'h') {
+                showKeyboardShortcuts();
+            }
+        });
+        
+        // Show keyboard shortcuts help
+        function showKeyboardShortcuts() {
+            const shortcuts = [
+                'Keyboard Shortcuts:',
+                '',
+                'Ctrl/Cmd + N - Create new task',
+                'Ctrl/Cmd + F - Focus search',
+                '← → Arrow Keys - Navigate employee tabs',
+                'Escape - Close modals',
+                '? or H - Show this help',
+                '',
+                'When dragging tasks:',
+                'Hold Shift - Snap to 30-minute intervals',
+                'Hold Ctrl/Cmd - Copy instead of move'
+            ];
+            
+            alert(shortcuts.join('\n'));
         }
     </script>
 </body>
