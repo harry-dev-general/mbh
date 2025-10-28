@@ -816,46 +816,180 @@
         /* Mobile modal adjustments */
         @media (max-width: 768px) {
             .modal-content {
-                margin: 1rem auto;
-                width: 95%;
-                max-height: 95vh;
+                margin: 0.5rem auto;
+                width: 100%;
+                max-width: 95vw;
+                max-height: 98vh;
+                border-radius: 12px 12px 0 0;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                transform: none;
             }
             
             .modal-body {
-                max-height: calc(95vh - 180px);
+                max-height: calc(98vh - 150px);
+                padding: 1rem;
+            }
+            
+            .modal-header {
+                padding: 1rem;
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 1;
+                border-radius: 12px 12px 0 0;
+            }
+            
+            .modal-footer {
+                padding: 1rem;
+                position: sticky;
+                bottom: 0;
+                background: white;
+                border-top: 1px solid #e9ecef;
             }
         }
         
-        /* Responsive Design */
+        /* Responsive Design - Mobile Optimized */
         @media (max-width: 768px) {
             .main-layout {
                 grid-template-columns: 1fr;
                 height: auto;
+                gap: 1rem; /* Reduced gap on mobile */
             }
             
             .sidebar {
                 order: 2;
                 height: auto;
+                padding: 0 0.5rem; /* Add some padding on mobile */
             }
             
             .tasks-container {
-                max-height: 400px; /* Fixed height for mobile */
+                max-height: 350px; /* Optimized height for mobile */
+                min-height: 200px;
             }
             
             .calendar-container {
                 order: 1;
-                height: 70vh;
-                min-height: 500px;
+                height: 60vh; /* Reduced for better mobile balance */
+                min-height: 400px;
+                padding: 1rem; /* Reduced padding on mobile */
             }
             
             .header-content {
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
+                padding: 1rem; /* Reduced padding */
             }
             
             .logo {
-                height: 150px;
+                height: 120px; /* Smaller logo on mobile */
+            }
+            
+            /* Mobile-optimized buttons */
+            .btn {
+                min-height: 44px; /* iOS touch target minimum */
+                padding: 0.75rem 1rem;
+                font-size: 1rem; /* Larger font on mobile */
+            }
+            
+            .btn-sm {
+                min-height: 40px;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+            }
+            
+            /* Task cards mobile optimization */
+            .task-card {
+                padding: 0.75rem;
+                margin-bottom: 0.5rem;
+                touch-action: manipulation; /* Better touch handling */
+            }
+            
+            /* Employee tabs mobile optimization */
+            .employee-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+                scroll-snap-type: x mandatory;
+                padding-bottom: 10px; /* Space for scrollbar */
+            }
+            
+            .employee-tab {
+                min-width: 120px;
+                min-height: 44px;
+                scroll-snap-align: start;
+                font-size: 0.9rem;
+                padding: 0.5rem 0.75rem;
+                white-space: nowrap;
+            }
+            
+            /* Mobile-specific calendar adjustments */
+            #calendar {
+                font-size: 0.85rem;
+            }
+            
+            /* Larger time labels on mobile */
+            .fc-timegrid-slot-label {
+                font-size: 0.75rem;
+            }
+            
+            /* Panel adjustments */
+            .panel {
+                margin-bottom: 1rem;
+                padding: 1rem;
+            }
+            
+            .panel-header {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .panel-title {
+                font-size: 1.1rem;
+            }
+            
+            /* Form controls on mobile */
+            .form-control {
+                font-size: 16px; /* Prevents zoom on iOS */
+                min-height: 44px;
+            }
+            
+            /* Bulk operations bar mobile */
+            .bulk-operations-bar {
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                transform: none;
+                border-radius: 12px 12px 0 0;
+                padding: 1rem;
+            }
+            
+            .bulk-operations-bar.active {
+                bottom: 0;
+            }
+            
+            .bulk-operations-bar .bulk-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .bulk-operations-bar .btn {
+                flex: 1;
+                min-width: 100px;
+            }
+            
+            /* Touch-friendly checkboxes */
+            .task-checkbox {
+                padding: 8px; /* Larger touch area */
+            }
+            
+            .task-checkbox input[type="checkbox"] {
+                width: 24px;
+                height: 24px;
             }
             
             .employee-selector {
@@ -873,6 +1007,101 @@
             
             .selector-title {
                 font-size: 0.9rem;
+            }
+            
+            /* Hide keyboard shortcuts button on mobile */
+            button[onclick*="showKeyboardShortcuts"] {
+                display: none;
+            }
+            
+            /* Context menu mobile adjustments */
+            .context-menu {
+                font-size: 1rem;
+                min-width: 150px;
+            }
+            
+            .context-menu button {
+                padding: 0.75rem 1rem;
+                min-height: 44px;
+            }
+            
+            /* Event tooltip mobile */
+            .event-tooltip {
+                font-size: 0.9rem;
+                max-width: 90vw;
+            }
+            
+            /* Mobile-specific calendar event styling */
+            .fc-event {
+                font-size: 0.75rem;
+                padding: 2px;
+            }
+            
+            /* Mobile day view optimizations */
+            .fc-timeGridDay-view .fc-timegrid-slot {
+                height: 40px; /* Larger slots on mobile */
+            }
+            
+            /* List view for mobile */
+            .fc-listWeek-view {
+                font-size: 0.9rem;
+            }
+            
+            .fc-list-event-time {
+                font-weight: 600;
+            }
+            
+            /* Simplify header on mobile */
+            .header h1 {
+                font-size: 1.25rem;
+            }
+            
+            /* Mobile loading states */
+            .loading {
+                padding: 2rem;
+            }
+            
+            /* Mobile calendar toolbar */
+            .fc-toolbar {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                padding: 0.5rem 0;
+            }
+            
+            .fc-toolbar-title {
+                font-size: 1rem;
+                font-weight: 600;
+            }
+            
+            .fc-button {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+                min-height: 36px;
+            }
+            
+            .fc-button-group {
+                margin: 0;
+            }
+            
+            /* Mobile event display */
+            .fc-event-title {
+                font-size: 0.75rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            /* Mobile list view styling */
+            .fc-list-event {
+                display: flex;
+                align-items: center;
+                padding: 0.75rem;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            /* Better spacing for mobile panels */
+            .panel:first-child {
+                margin-top: 0;
             }
         }
     </style>
@@ -1423,18 +1652,31 @@
             // Get filtered resources based on selection
             const filteredResources = getFilteredResources();
             
+            // Detect if mobile
+            const isMobile = window.innerWidth <= 768;
+            
             calendar = new FullCalendar.Calendar(calendarEl, {
                 schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-                initialView: selectedEmployeeId === 'all' ? 'resourceTimeGridDay' : 'timeGridDay',
+                initialView: isMobile ? 'timeGridDay' : (selectedEmployeeId === 'all' ? 'resourceTimeGridDay' : 'timeGridDay'),
                 timeZone: 'Australia/Sydney',
-                headerToolbar: {
+                headerToolbar: isMobile ? {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'timeGridDay,listWeek'
+                } : {
                     left: 'prev,next today',
                     center: 'title',
                     right: selectedEmployeeId === 'all' 
                         ? 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth'
                         : 'timeGridDay,timeGridWeek,dayGridMonth'
                 },
-                buttonText: {
+                buttonText: isMobile ? {
+                    today: 'Today',
+                    month: 'Month',
+                    week: 'Week',
+                    day: 'Day',
+                    list: 'List'
+                } : {
                     today: 'Today',
                     month: 'Month',
                     week: 'Week',
@@ -1442,7 +1684,7 @@
                 },
                 slotMinTime: '07:00:00',
                 slotMaxTime: '21:00:00',
-                slotDuration: '00:30:00', // 30-minute slots for better visibility
+                slotDuration: isMobile ? '01:00:00' : '00:30:00', // 1-hour slots on mobile, 30-min on desktop
                 slotLabelInterval: '01:00:00', // Show labels every hour
                 snapDuration: '00:15:00', // Still allow 15-minute precision for dragging
                 slotLabelFormat: {
@@ -1456,8 +1698,8 @@
                 resourceOrder: 'title', // Sort resources alphabetically
                 resources: filteredResources,
                 events: getCalendarEvents(),
-                editable: true,
-                droppable: true,
+                editable: !isMobile, // Disable drag on mobile by default
+                droppable: !isMobile, // Disable drop on mobile by default
                 eventClick: handleEventClick,
                 eventDrop: handleEventDrop,
                 eventResize: handleEventResize,
@@ -1520,6 +1762,9 @@
             
             // Initialize external dragging
             initializeExternalDragging();
+            
+            // Initialize mobile enhancements
+            initializeMobileEnhancements();
         }
         
         // Get filtered resources based on employee selection
@@ -2646,6 +2891,99 @@
             // ? or h: Show help (keyboard shortcuts)
             else if (event.key === '?' || event.key === 'h') {
                 showKeyboardShortcuts();
+            }
+        });
+        
+        // Mobile-specific enhancements
+        function initializeMobileEnhancements() {
+            // Detect if user is on mobile
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // Add mobile class to body for additional styling
+                document.body.classList.add('mobile-device');
+                
+                // Enhance touch scrolling for employee tabs
+                const employeeTabs = document.getElementById('employeeTabs');
+                if (employeeTabs) {
+                    let isScrolling = false;
+                    let startX = 0;
+                    let scrollLeft = 0;
+                    
+                    employeeTabs.addEventListener('touchstart', (e) => {
+                        isScrolling = true;
+                        startX = e.touches[0].pageX - employeeTabs.offsetLeft;
+                        scrollLeft = employeeTabs.scrollLeft;
+                    });
+                    
+                    employeeTabs.addEventListener('touchmove', (e) => {
+                        if (!isScrolling) return;
+                        e.preventDefault();
+                        const x = e.touches[0].pageX - employeeTabs.offsetLeft;
+                        const walk = (x - startX) * 2;
+                        employeeTabs.scrollLeft = scrollLeft - walk;
+                    });
+                    
+                    employeeTabs.addEventListener('touchend', () => {
+                        isScrolling = false;
+                    });
+                }
+                
+                // Add swipe gestures for calendar navigation
+                let touchStartX = 0;
+                let touchStartY = 0;
+                
+                document.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                });
+                
+                document.addEventListener('touchend', (e) => {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchEndY = e.changedTouches[0].clientY;
+                    const deltaX = touchEndX - touchStartX;
+                    const deltaY = touchEndY - touchStartY;
+                    
+                    // Check if it's a horizontal swipe (not vertical scroll)
+                    if (Math.abs(deltaX) > 50 && Math.abs(deltaY) < 50) {
+                        if (deltaX > 0) {
+                            // Swipe right - previous day/week
+                            if (calendar) calendar.prev();
+                        } else {
+                            // Swipe left - next day/week
+                            if (calendar) calendar.next();
+                        }
+                    }
+                });
+                
+                // Adjust calendar view for mobile
+                if (calendar) {
+                    // Switch to day view on mobile by default
+                    calendar.changeView('timeGridDay');
+                    
+                    // Update header toolbar for mobile
+                    calendar.setOption('headerToolbar', {
+                        left: 'prev,next',
+                        center: 'title',
+                        right: 'timeGridDay,listWeek'
+                    });
+                }
+            }
+        }
+        
+        // Call mobile enhancements after calendar is initialized
+        window.addEventListener('resize', () => {
+            const wasMobile = document.body.classList.contains('mobile-device');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile && !wasMobile) {
+                initializeMobileEnhancements();
+            } else if (!isMobile && wasMobile) {
+                document.body.classList.remove('mobile-device');
+                // Restore desktop view
+                if (calendar && selectedEmployeeId === 'all') {
+                    calendar.changeView('resourceTimeGridDay');
+                }
             }
         });
         
