@@ -9,8 +9,8 @@ The time slots on the Y-axis of the calendar were extremely compressed, making i
 ## Solution Implemented
 
 ### 1. Slot Duration Changes
-- Changed from 1-hour slots to 30-minute slots
-- Provides better granularity for task scheduling
+- Changed from 1-hour slots to 15-minute slots (4 slots per hour)
+- Provides maximum granularity for precise task scheduling
 - Time labels still shown every hour for clarity
 
 ### 2. Time Range Optimization
@@ -21,15 +21,19 @@ The time slots on the Y-axis of the calendar were extremely compressed, making i
 ### 3. Height and Spacing Improvements
 ```javascript
 // Calendar configuration
-slotDuration: '00:30:00',           // 30-minute slots
+slotDuration: '00:15:00',           // 15-minute slots
 slotLabelInterval: '01:00:00',      // Labels every hour
 expandRows: true,                    // Fill available height
+snapDuration: '00:15:00',           // Snap to 15-minute intervals
 ```
 
 ### 4. CSS Enhancements
-- Minimum slot height of 30px for readability
+- Minimum slot height of 25px for 15-minute slots
 - Time axis width increased to 70px
-- Dotted borders for 30-minute marks
+- Visual hierarchy for time marks:
+  - Solid lines for hour marks
+  - Dashed lines for 30-minute marks
+  - Dotted lines for 15 and 45-minute marks
 - Improved container height calculation
 
 ### 5. Layout Optimizations
@@ -52,12 +56,13 @@ Shows times as "8am", "9am", etc. for clean display
 
 ### Grid Lines
 - Solid lines for hour marks
-- Dotted lines for 30-minute marks
+- Dashed lines for 30-minute marks
+- Dotted lines for 15 and 45-minute marks
 - Clear visual hierarchy
 
 ## Benefits
 - **Better Readability**: Time slots are properly spaced
-- **Improved Precision**: 30-minute scheduling granularity
+- **Maximum Precision**: 15-minute scheduling granularity
 - **Responsive Design**: Works well on all screen sizes
 - **Efficient Space Usage**: Maximizes calendar display area
 - **Clear Visual Hierarchy**: Easy to distinguish time intervals
