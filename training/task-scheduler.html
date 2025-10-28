@@ -139,6 +139,8 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            height: 100%;
+            min-height: 0;
         }
         
         .panel {
@@ -175,6 +177,54 @@
             width: 100%;
         }
         
+        /* Tasks container scrolling */
+        .tasks-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0; /* Important for flex child scrolling */
+            max-height: calc(100vh - 500px); /* Adjust based on header/filters */
+            padding-right: 5px; /* Space for scrollbar */
+            scroll-behavior: smooth;
+            /* Prevent layout shift when scrollbar appears */
+            scrollbar-gutter: stable;
+        }
+        
+        /* Custom scrollbar for tasks */
+        .tasks-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .tasks-container::-webkit-scrollbar-track {
+            background: #f0f4f8;
+            border-radius: 4px;
+        }
+        
+        .tasks-container::-webkit-scrollbar-thumb {
+            background: #c0c6cf;
+            border-radius: 4px;
+        }
+        
+        .tasks-container::-webkit-scrollbar-thumb:hover {
+            background: #a0a6af;
+        }
+        
+        /* Ensure panel with tasks uses flexbox properly */
+        .panel.tasks-panel {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0; /* Allow panel to shrink */
+        }
+        
+        .panel.tasks-panel .panel-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0; /* Allow panel body to shrink */
+            overflow: hidden;
+        }
+        
         /* Task Card Styles */
         .task-card {
             background: #f8f9fa;
@@ -184,6 +234,7 @@
             margin-bottom: 0.75rem;
             cursor: grab;
             transition: all 0.2s ease;
+            position: relative;
         }
         
         .task-card:hover {
@@ -194,6 +245,78 @@
         .task-card.dragging {
             opacity: 0.5;
             cursor: grabbing;
+        }
+        
+        .task-card.selected {
+            background: #e8f4fd;
+            border-color: #2E86AB;
+            box-shadow: 0 2px 8px rgba(46, 134, 171, 0.2);
+        }
+        
+        /* Task Checkbox */
+        .task-checkbox {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            display: none;
+        }
+        
+        .selection-mode .task-checkbox {
+            display: block;
+        }
+        
+        .selection-mode .task-card {
+            padding-left: 2.5rem;
+        }
+        
+        .task-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        /* Bulk Operations Bar */
+        .bulk-operations-bar {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 1000;
+            transition: bottom 0.3s ease;
+        }
+        
+        .bulk-operations-bar.active {
+            bottom: 2rem;
+        }
+        
+        .bulk-operations-bar .selected-count {
+            font-weight: 600;
+            color: #1B4F72;
+            margin-right: 1rem;
+            padding-right: 1rem;
+            border-right: 2px solid #e9ecef;
+        }
+        
+        .bulk-operations-bar .bulk-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        /* Selection Mode Toggle */
+        .selection-toggle {
+            margin-left: 0.5rem;
+        }
+        
+        .selection-toggle.active {
+            background: #2E86AB;
+            color: white;
         }
         
         .task-title {
@@ -707,6 +830,11 @@
             
             .sidebar {
                 order: 2;
+                height: auto;
+            }
+            
+            .tasks-container {
+                max-height: 400px; /* Fixed height for mobile */
             }
             
             .calendar-container {
@@ -768,10 +896,13 @@
         <div class="main-layout">
             <!-- Sidebar with Unassigned Tasks -->
             <div class="sidebar">
-                <div class="panel">
+                <div class="panel tasks-panel">
                     <div class="panel-header">
                         <h2 class="panel-title">Tasks</h2>
                         <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-white btn-sm selection-toggle" onclick="toggleSelectionMode()" title="Multi-select tasks">
+                                <i class="fas fa-check-square"></i>
+                            </button>
                             <button class="btn btn-primary btn-sm" onclick="showCreateTaskModal()" title="Ctrl/Cmd + N">
                                 <i class="fas fa-plus"></i> New Task
                             </button>
@@ -877,8 +1008,9 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>Ctrl/Cmd + N</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Create new task</td></tr>
                     <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>Ctrl/Cmd + F</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Focus search</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>Ctrl/Cmd + S</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Toggle selection mode</td></tr>
                     <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>← →</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Navigate employee tabs</td></tr>
-                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>Escape</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Close modals</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>Escape</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Close modals / Clear selection</td></tr>
                     <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>?</kbd> or <kbd>H</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Show this help</td></tr>
                 </table>
                 <h4 style="margin-top: 1.5rem;">Calendar Actions</h4>
@@ -888,10 +1020,41 @@
                     <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Right-click task</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Context menu</td></tr>
                     <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Hover on task</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Show details tooltip</td></tr>
                 </table>
+                <h4 style="margin-top: 1.5rem;">Selection Mode</h4>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Click checkbox</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Select/deselect task</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Shift + Click</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Select range of tasks</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Ctrl/Cmd + A</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Select all visible tasks</td></tr>
+                    <tr><td style="padding: 8px;">Escape</td><td style="padding: 8px;">Clear selection</td></tr>
+                </table>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" onclick="closeKeyboardShortcuts()">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Bulk Operations Bar -->
+    <div class="bulk-operations-bar" id="bulkOperationsBar">
+        <div class="selected-count">
+            <span id="selectedCount">0</span> tasks selected
+        </div>
+        <div class="bulk-actions">
+            <button class="btn btn-white btn-sm" onclick="clearSelection()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+            <button class="btn btn-white btn-sm" onclick="selectAll()">
+                <i class="fas fa-check-double"></i> Select All
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="showBulkAssignModal()">
+                <i class="fas fa-user-plus"></i> Assign
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="showBulkStatusModal()">
+                <i class="fas fa-tasks"></i> Change Status
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="bulkDeleteTasks()">
+                <i class="fas fa-trash"></i> Delete
+            </button>
         </div>
     </div>
 
@@ -971,6 +1134,11 @@
         let viewCache = new Map(); // Cache calendar configurations by employee ID
         let isInitialLoad = true; // Track if this is the first calendar load
         let searchTerm = ''; // Current search term for tasks
+        
+        // Multi-select state
+        let isSelectionMode = false; // Whether selection mode is active
+        let selectedTaskIds = new Set(); // Set of selected task IDs
+        let lastSelectedTaskIndex = -1; // For shift-click range selection
         
         // Airtable configuration
         const MANAGEMENT_BASE_ID = 'appPyOlmuQyAM6cJQ';
@@ -1535,19 +1703,24 @@
             });
             
             if (filteredTasks.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No unassigned tasks</p>';
+                container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 200px;"><p style="text-align: center; color: #6c757d;">No unassigned tasks</p></div>';
                 return;
             }
             
-            container.innerHTML = filteredTasks.map(task => {
+            container.innerHTML = filteredTasks.map((task, index) => {
                 // Get project name if exists
                 let projectName = '';
                 if (task.project && task.project.length > 0 && projectMap[task.project[0]]) {
                     projectName = projectMap[task.project[0]];
                 }
                 
+                const isSelected = selectedTaskIds.has(task.id);
+                
                 return `
-                    <div class="task-card" draggable="true" data-task-id="${task.id}">
+                    <div class="task-card ${isSelected ? 'selected' : ''}" draggable="true" data-task-id="${task.id}" data-task-index="${index}">
+                        <div class="task-checkbox">
+                            <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="handleTaskSelection('${task.id}', ${index}, event)" onclick="event.stopPropagation()">
+                        </div>
                         <div class="task-title">${task.title}</div>
                         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                         ${projectName ? `<div class="task-project"><i class="fas fa-folder"></i> ${projectName}</div>` : ''}
@@ -2031,6 +2204,314 @@
             }, 300);
         }
         
+        // Multi-select functionality
+        function toggleSelectionMode() {
+            isSelectionMode = !isSelectionMode;
+            document.querySelector('.sidebar').classList.toggle('selection-mode', isSelectionMode);
+            document.querySelector('.selection-toggle').classList.toggle('active', isSelectionMode);
+            
+            if (!isSelectionMode) {
+                clearSelection();
+            }
+            
+            updateBulkOperationsBar();
+        }
+        
+        function handleTaskSelection(taskId, taskIndex, event) {
+            if (event.shiftKey && lastSelectedTaskIndex !== -1) {
+                // Range selection with shift+click
+                const start = Math.min(lastSelectedTaskIndex, taskIndex);
+                const end = Math.max(lastSelectedTaskIndex, taskIndex);
+                
+                const taskCards = document.querySelectorAll('.task-card');
+                for (let i = start; i <= end; i++) {
+                    const card = taskCards[i];
+                    if (card) {
+                        const id = card.getAttribute('data-task-id');
+                        selectedTaskIds.add(id);
+                        card.classList.add('selected');
+                        const checkbox = card.querySelector('input[type="checkbox"]');
+                        if (checkbox) checkbox.checked = true;
+                    }
+                }
+            } else {
+                // Single selection
+                if (selectedTaskIds.has(taskId)) {
+                    selectedTaskIds.delete(taskId);
+                } else {
+                    selectedTaskIds.add(taskId);
+                }
+                
+                const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (taskCard) {
+                    taskCard.classList.toggle('selected', selectedTaskIds.has(taskId));
+                }
+            }
+            
+            lastSelectedTaskIndex = taskIndex;
+            updateBulkOperationsBar();
+        }
+        
+        function updateBulkOperationsBar() {
+            const bulkBar = document.getElementById('bulkOperationsBar');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (isSelectionMode && selectedTaskIds.size > 0) {
+                bulkBar.classList.add('active');
+                selectedCount.textContent = selectedTaskIds.size;
+            } else {
+                bulkBar.classList.remove('active');
+            }
+        }
+        
+        function clearSelection() {
+            selectedTaskIds.clear();
+            document.querySelectorAll('.task-card.selected').forEach(card => {
+                card.classList.remove('selected');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = false;
+            });
+            lastSelectedTaskIndex = -1;
+            updateBulkOperationsBar();
+        }
+        
+        function selectAll() {
+            const taskCards = document.querySelectorAll('.task-card');
+            taskCards.forEach((card, index) => {
+                const taskId = card.getAttribute('data-task-id');
+                selectedTaskIds.add(taskId);
+                card.classList.add('selected');
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = true;
+                
+                // Update last selected index to the last card
+                lastSelectedTaskIndex = index;
+            });
+            updateBulkOperationsBar();
+        }
+        
+        // Bulk operations
+        async function showBulkAssignModal() {
+            const selectedTasks = Array.from(selectedTaskIds).map(id => 
+                allTasks.find(t => t.id === id)
+            ).filter(Boolean);
+            
+            if (selectedTasks.length === 0) return;
+            
+            // Create a simple modal for bulk assignment
+            const assigneeSelect = await createAssigneeSelect();
+            const modal = `
+                <div class="modal" style="display: block;">
+                    <div class="modal-content" style="max-width: 400px;">
+                        <div class="modal-header">
+                            <h3>Assign ${selectedTasks.length} Tasks</h3>
+                            <span class="close" onclick="closeBulkModal(this)">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">Assign to:</label>
+                                ${assigneeSelect}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="closeBulkModal(this)">Cancel</button>
+                            <button class="btn btn-primary" onclick="bulkAssignTasks()">Assign Tasks</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modal);
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+        
+        async function bulkAssignTasks() {
+            const modal = document.querySelector('.modal');
+            const assigneeId = modal.querySelector('#bulkAssignee').value;
+            
+            if (!assigneeId) {
+                alert('Please select an assignee');
+                return;
+            }
+            
+            modal.querySelector('.btn-primary').disabled = true;
+            modal.querySelector('.btn-primary').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+            
+            try {
+                const updates = Array.from(selectedTaskIds).map(taskId => ({
+                    id: taskId,
+                    fields: {
+                        'Assignee': [assigneeId] // Employee Profile record ID
+                    }
+                }));
+                
+                // Update in batches of 10 (Airtable limit)
+                for (let i = 0; i < updates.length; i += 10) {
+                    const batch = updates.slice(i, i + 10);
+                    await updateTaskBatch(batch);
+                }
+                
+                // Refresh tasks
+                await loadTasks();
+                clearSelection();
+                modal.remove();
+                document.body.style.overflow = ''; // Restore body scrolling
+                showSuccess(`Successfully assigned ${updates.length} tasks`);
+            } catch (error) {
+                console.error('Error bulk assigning tasks:', error);
+                showError('Failed to assign tasks');
+                modal.querySelector('.btn-primary').disabled = false;
+                modal.querySelector('.btn-primary').innerHTML = 'Assign Tasks';
+            }
+        }
+        
+        async function showBulkStatusModal() {
+            const selectedTasks = Array.from(selectedTaskIds).map(id => 
+                allTasks.find(t => t.id === id)
+            ).filter(Boolean);
+            
+            if (selectedTasks.length === 0) return;
+            
+            const modal = `
+                <div class="modal" style="display: block;">
+                    <div class="modal-content" style="max-width: 400px;">
+                        <div class="modal-header">
+                            <h3>Change Status for ${selectedTasks.length} Tasks</h3>
+                            <span class="close" onclick="closeBulkModal(this)">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">New Status:</label>
+                                <select class="form-control" id="bulkStatus">
+                                    <option value="Not Started">Not Started</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Awaiting Response">Awaiting Response</option>
+                                    <option value="Meeting Scheduled">Meeting Scheduled</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="closeBulkModal(this)">Cancel</button>
+                            <button class="btn btn-primary" onclick="bulkChangeStatus()">Update Status</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modal);
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+        
+        async function bulkChangeStatus() {
+            const modal = document.querySelector('.modal');
+            const newStatus = modal.querySelector('#bulkStatus').value;
+            
+            modal.querySelector('.btn-primary').disabled = true;
+            modal.querySelector('.btn-primary').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+            
+            try {
+                const updates = Array.from(selectedTaskIds).map(taskId => ({
+                    id: taskId,
+                    fields: {
+                        'Status': newStatus
+                    }
+                }));
+                
+                // Update in batches of 10 (Airtable limit)
+                for (let i = 0; i < updates.length; i += 10) {
+                    const batch = updates.slice(i, i + 10);
+                    await updateTaskBatch(batch);
+                }
+                
+                // Refresh tasks
+                await loadTasks();
+                clearSelection();
+                modal.remove();
+                document.body.style.overflow = ''; // Restore body scrolling
+                showSuccess(`Successfully updated ${updates.length} tasks to "${newStatus}"`);
+            } catch (error) {
+                console.error('Error bulk updating status:', error);
+                showError('Failed to update task status');
+                modal.querySelector('.btn-primary').disabled = false;
+                modal.querySelector('.btn-primary').innerHTML = 'Update Status';
+            }
+        }
+        
+        async function bulkDeleteTasks() {
+            const count = selectedTaskIds.size;
+            
+            if (!confirm(`Are you sure you want to delete ${count} task${count > 1 ? 's' : ''}? This cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const taskIds = Array.from(selectedTaskIds);
+                
+                // Delete in batches of 10 (Airtable limit)
+                for (let i = 0; i < taskIds.length; i += 10) {
+                    const batch = taskIds.slice(i, i + 10);
+                    const response = await fetch(`/api/airtable/${MANAGEMENT_BASE_ID}/${TASKS_TABLE_ID}/bulk-delete`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ records: batch })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to delete tasks');
+                    }
+                }
+                
+                // Refresh tasks
+                await loadTasks();
+                clearSelection();
+                showSuccess(`Successfully deleted ${count} task${count > 1 ? 's' : ''}`);
+            } catch (error) {
+                console.error('Error bulk deleting tasks:', error);
+                showError('Failed to delete tasks');
+            }
+        }
+        
+        // Helper function to create assignee select with staffMembers
+        async function createAssigneeSelect() {
+            const options = staffMembers.map(staff => 
+                `<option value="${staff.id}">${staff.title}</option>`
+            ).join('');
+            
+            return `
+                <select class="form-control" id="bulkAssignee">
+                    <option value="">Select assignee...</option>
+                    ${options}
+                </select>
+            `;
+        }
+        
+        // Helper function to update task batch
+        async function updateTaskBatch(updates) {
+            const response = await fetch(`/api/airtable/${MANAGEMENT_BASE_ID}/${TASKS_TABLE_ID}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ records: updates })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to update tasks');
+            }
+            
+            return response.json();
+        }
+        
+        // Helper function to close bulk modals properly
+        function closeBulkModal(element) {
+            const modal = element.closest('.modal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = ''; // Restore body scrolling
+            }
+        }
+        
         // Utility functions
         function formatDateTimeLocal(date) {
             const pad = (n) => n.toString().padStart(2, '0');
@@ -2112,6 +2593,18 @@
                 document.getElementById('taskSearch').focus();
             }
             
+            // Ctrl/Cmd + S: Toggle selection mode
+            else if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                event.preventDefault();
+                toggleSelectionMode();
+            }
+            
+            // Ctrl/Cmd + A: Select all (in selection mode)
+            else if ((event.ctrlKey || event.metaKey) && event.key === 'a' && isSelectionMode) {
+                event.preventDefault();
+                selectAll();
+            }
+            
             // Arrow keys: Navigate employee tabs
             else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                 const tabs = Array.from(document.querySelectorAll('.employee-tab'));
@@ -2131,7 +2624,7 @@
                 }
             }
             
-            // Escape: Close modals
+            // Escape: Close modals or clear selection
             else if (event.key === 'Escape') {
                 const taskModal = document.getElementById('taskModal');
                 const shortcutsModal = document.getElementById('keyboardShortcutsModal');
@@ -2140,6 +2633,8 @@
                     closeTaskModal();
                 } else if (shortcutsModal.style.display === 'block') {
                     closeKeyboardShortcuts();
+                } else if (isSelectionMode && selectedTaskIds.size > 0) {
+                    clearSelection();
                 }
             }
             
