@@ -1290,7 +1290,7 @@ app.post('/api/allocations/update-status', async (req, res) => {
 });
 
 // Update booking allocation (staff assignment and times)
-app.post('/api/update-allocation', requireAuth, async (req, res) => {
+app.post('/api/update-allocation', authenticate, async (req, res) => {
   const updateAllocationHandler = require('./api/update-allocation');
   updateAllocationHandler(req, res);
 });
