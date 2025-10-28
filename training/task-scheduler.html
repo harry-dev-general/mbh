@@ -347,15 +347,23 @@
         }
         
         .fc .fc-timegrid-slot {
-            min-height: 30px; /* Ensure minimum readable height */
+            min-height: 25px; /* Ensure minimum readable height for 15-min slots */
         }
         
         .fc .fc-timegrid-slot-lane {
             border-top: 1px solid #e9ecef;
         }
         
-        .fc .fc-timegrid-slot-lane:not(.fc-timegrid-slot-lane-frame) {
-            border-top-style: dotted; /* Dotted lines for 30-min marks */
+        /* Style different slot intervals */
+        .fc .fc-timegrid-slot-lane[data-time$=":15"],
+        .fc .fc-timegrid-slot-lane[data-time$=":45"] {
+            border-top-style: dotted;
+            border-top-color: #f0f4f8;
+        }
+        
+        .fc .fc-timegrid-slot-lane[data-time$=":30"] {
+            border-top-style: dashed;
+            border-top-color: #e9ecef;
         }
         
         /* Resource column headers */
@@ -1028,7 +1036,7 @@
                 },
                 slotMinTime: '07:00:00',
                 slotMaxTime: '19:00:00',
-                slotDuration: '00:30:00', // 30-minute slots for better granularity
+                slotDuration: '00:15:00', // 15-minute slots for maximum granularity
                 slotLabelInterval: '01:00:00', // Show labels every hour
                 slotLabelFormat: {
                     hour: 'numeric',
@@ -1052,6 +1060,7 @@
                 resourceLabelText: 'Staff', // Label for the resource area
                 allDaySlot: false, // Hide all-day slot for cleaner view
                 slotEventOverlap: false, // Prevent event overlap for clarity
+                snapDuration: '00:15:00', // Snap to 15-minute intervals when dragging
                 eventClassNames: function(arg) {
                     return ['task-' + (arg.event.extendedProps.priority || 'medium').toLowerCase()];
                 }
