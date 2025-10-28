@@ -580,6 +580,111 @@
             gap: 0.5rem;
         }
         
+        /* Event Tooltip Styles */
+        .event-tooltip {
+            position: absolute;
+            z-index: 1001;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 300px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .event-tooltip.show {
+            opacity: 1;
+        }
+        
+        .event-tooltip-title {
+            font-weight: 600;
+            color: #1B4F72;
+            margin-bottom: 0.5rem;
+        }
+        
+        .event-tooltip-meta {
+            font-size: 0.875rem;
+            color: #6c757d;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .event-tooltip-meta i {
+            width: 16px;
+            text-align: center;
+            margin-right: 0.25rem;
+        }
+        
+        /* Selection Styles */
+        .fc-highlight {
+            background: rgba(46, 134, 171, 0.15);
+            border: 2px dashed #2E86AB;
+        }
+        
+        /* Drag Mirror Styles */
+        .fc-event-dragging {
+            opacity: 0.75;
+        }
+        
+        .fc-event-mirror {
+            opacity: 0.6;
+            background: #2E86AB !important;
+        }
+        
+        /* Context Menu Styles */
+        .context-menu {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 180px;
+            font-size: 0.9rem;
+        }
+        
+        .context-menu-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s ease;
+        }
+        
+        .context-menu-item:hover {
+            background: #f0f4f8;
+        }
+        
+        .context-menu-item i {
+            width: 16px;
+            text-align: center;
+        }
+        
+        .context-menu-separator {
+            height: 1px;
+            background: #eee;
+            margin: 0.25rem 0;
+        }
+        
+        /* Keyboard styles */
+        kbd {
+            background-color: #f7f7f7;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.2), 0 0 0 2px #fff inset;
+            color: #333;
+            display: inline-block;
+            font-family: monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 0 .1em;
+            padding: .1em .6em;
+            text-shadow: 0 1px 0 #fff;
+        }
+        
         /* Mobile modal adjustments */
         @media (max-width: 768px) {
             .modal-content {
@@ -737,6 +842,55 @@
                     </div>
                 </div>
                 <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Tooltip -->
+    <div id="eventTooltip" class="event-tooltip"></div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu" class="context-menu" style="display: none; position: absolute; z-index: 1002;">
+        <div class="context-menu-item" onclick="contextMenuEdit()">
+            <i class="fas fa-edit"></i> Edit Task
+        </div>
+        <div class="context-menu-item" onclick="contextMenuDuplicate()">
+            <i class="fas fa-copy"></i> Duplicate Task
+        </div>
+        <div class="context-menu-item" onclick="contextMenuDelete()">
+            <i class="fas fa-trash"></i> Delete Task
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="contextMenuChangeStatus()">
+            <i class="fas fa-tasks"></i> Change Status
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="keyboardShortcutsModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Keyboard Shortcuts</h3>
+                <span class="close" onclick="document.getElementById('keyboardShortcutsModal').style.display='none'">&times;</span>
+            </div>
+            <div class="modal-body">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>Ctrl/Cmd + N</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Create new task</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>Ctrl/Cmd + F</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Focus search</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>← →</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Navigate employee tabs</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>Escape</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Close modals</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><kbd>?</kbd> or <kbd>H</kbd></td><td style="padding: 8px; border-bottom: 1px solid #eee;">Show this help</td></tr>
+                </table>
+                <h4 style="margin-top: 1.5rem;">Calendar Actions</h4>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Click empty slot</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Create task at that time</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Drag select</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Create task for time range</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Right-click task</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Context menu</td></tr>
+                    <tr><td style="padding: 8px; border-bottom: 1px solid #eee;">Hover on task</td><td style="padding: 8px; border-bottom: 1px solid #eee;">Show details tooltip</td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="document.getElementById('keyboardShortcutsModal').style.display='none'">Close</button>
             </div>
         </div>
     </div>
@@ -1136,10 +1290,54 @@
                 snapDuration: '00:15:00', // Snap to 15-minute intervals when dragging
                 eventClassNames: function(arg) {
                     return ['task-' + (arg.event.extendedProps.priority || 'medium').toLowerCase()];
+                },
+                // Enhanced drag feedback
+                eventDragMinDistance: 5, // Minimum pixels before drag starts
+                dragRevertDuration: 250, // Smooth revert animation
+                dragScroll: true, // Auto-scroll during drag
+                selectMirror: true, // Show placeholder while selecting
+                // Date clicking to create tasks
+                dateClick: handleDateClick,
+                selectable: true, // Allow date range selection
+                selectHelper: true,
+                select: handleDateSelect,
+                unselectAuto: true,
+                unselectCancel: '.task-card,.modal', // Don't unselect when clicking these
+                // Event hover for tooltips
+                eventMouseEnter: handleEventMouseEnter,
+                eventMouseLeave: handleEventMouseLeave,
+                // Better event display
+                eventTimeFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    omitZeroMinute: false,
+                    meridiem: 'short'
+                },
+                displayEventEnd: true, // Show end times
+                eventMaxStack: 3, // Maximum events stacked in timeGrid
+                // Event popover for crowded slots
+                dayMaxEvents: true, // Show popover when too many events
+                moreLinkClick: 'popover', // Show in popover instead of new view
+                // Add right-click handler to events
+                eventDidMount: function(info) {
+                    // Add right-click handler
+                    info.el.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        const task = allTasks.find(t => t.id === info.event.id);
+                        if (task) {
+                            showContextMenu(e, task);
+                        }
+                    });
+                    
+                    // Add better cursor feedback
+                    info.el.style.cursor = 'pointer';
                 }
             });
             
             calendar.render();
+            
+            // Add context menu handlers after calendar is rendered
+            addContextMenuHandlers();
             
             // Initialize external dragging
             initializeExternalDragging();
@@ -1381,8 +1579,23 @@
                         };
                     }
                     return null;
+                },
+                // Add visual feedback during drag
+                dragStart: function(info) {
+                    info.draggedEl.classList.add('dragging');
+                },
+                dragEnd: function(info) {
+                    info.draggedEl.classList.remove('dragging');
                 }
             });
+            
+            // Add touch support for mobile devices
+            if ('ontouchstart' in window) {
+                const cards = containerEl.querySelectorAll('.task-card');
+                cards.forEach(card => {
+                    card.style.touchAction = 'none'; // Allow touch dragging
+                });
+            }
         }
         
         // Handle event click
@@ -1391,6 +1604,115 @@
             if (task) {
                 showEditTaskModal(task);
             }
+        }
+        
+        // Handle date click - create new task
+        function handleDateClick(info) {
+            // Only handle clicks in time grid views, not in month view
+            if (info.view.type.includes('timeGrid') || info.view.type.includes('resourceTimeGrid')) {
+                const clickedDate = info.date;
+                const endDate = new Date(clickedDate);
+                endDate.setHours(endDate.getHours() + 1); // Default 1 hour duration
+                
+                // If in individual employee view, pre-select that employee
+                let preselectedEmployee = null;
+                if (selectedEmployeeId !== 'all' && info.resource) {
+                    preselectedEmployee = info.resource.id;
+                } else if (selectedEmployeeId !== 'all') {
+                    preselectedEmployee = selectedEmployeeId;
+                }
+                
+                showCreateTaskModalWithDefaults({
+                    start: clickedDate,
+                    end: endDate,
+                    assignee: preselectedEmployee
+                });
+            }
+        }
+        
+        // Handle date range selection
+        function handleDateSelect(info) {
+            // Create task with selected time range
+            let preselectedEmployee = null;
+            if (info.resource) {
+                preselectedEmployee = info.resource.id;
+            } else if (selectedEmployeeId !== 'all') {
+                preselectedEmployee = selectedEmployeeId;
+            }
+            
+            showCreateTaskModalWithDefaults({
+                start: info.start,
+                end: info.end,
+                assignee: preselectedEmployee
+            });
+            
+            // Clear selection
+            calendar.unselect();
+        }
+        
+        // Handle event mouse enter - show tooltip
+        let tooltipTimeout;
+        function handleEventMouseEnter(info) {
+            clearTimeout(tooltipTimeout);
+            
+            const event = info.event;
+            const task = allTasks.find(t => t.id === event.id);
+            if (!task) return;
+            
+            const tooltip = document.getElementById('eventTooltip');
+            
+            // Get staff member name
+            let assigneeName = 'Unassigned';
+            if (task.assignee && task.assignee.length > 0) {
+                const staff = staffMembers.find(s => s.id === task.assignee[0]);
+                if (staff) assigneeName = staff.title;
+            }
+            
+            // Get project name
+            let projectName = 'No project';
+            if (task.project && task.project.length > 0 && projectMap[task.project[0]]) {
+                projectName = projectMap[task.project[0]];
+            }
+            
+            // Build tooltip content
+            tooltip.innerHTML = `
+                <div class="event-tooltip-title">${task.title}</div>
+                <div class="event-tooltip-meta">
+                    ${task.description ? `<div><i class="fas fa-align-left"></i> ${task.description}</div>` : ''}
+                    <div><i class="fas fa-user"></i> ${assigneeName}</div>
+                    <div><i class="fas fa-folder"></i> ${projectName}</div>
+                    <div><i class="fas fa-flag"></i> ${task.priority} Priority</div>
+                    <div><i class="fas fa-tasks"></i> ${task.status}</div>
+                    <div><i class="fas fa-clock"></i> ${formatTimeRange(event.start, event.end)}</div>
+                </div>
+            `;
+            
+            // Position tooltip near the event
+            const rect = info.el.getBoundingClientRect();
+            const tooltipWidth = 300; // Max width set in CSS
+            
+            let left = rect.right + 10;
+            let top = rect.top;
+            
+            // Adjust if tooltip would go off screen
+            if (left + tooltipWidth > window.innerWidth) {
+                left = rect.left - tooltipWidth - 10;
+            }
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            
+            // Show tooltip with delay
+            tooltipTimeout = setTimeout(() => {
+                tooltip.classList.add('show');
+            }, 500);
+        }
+        
+        // Handle event mouse leave - hide tooltip
+        function handleEventMouseLeave(info) {
+            clearTimeout(tooltipTimeout);
+            const tooltip = document.getElementById('eventTooltip');
+            tooltip.classList.remove('show');
         }
         
         // Handle event drop (rescheduling)
@@ -1531,6 +1853,22 @@
             return response.json();
         }
         
+        // Delete task in Airtable
+        async function deleteTaskInAirtable(taskId) {
+            const response = await fetch(`/api/airtable/${MANAGEMENT_BASE_ID}/${TASKS_TABLE_ID}/${taskId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to delete task in Airtable');
+            }
+            
+            return response.json();
+        }
+        
         // Show create task modal
         function showCreateTaskModal() {
             document.getElementById('modalTitle').textContent = 'Create New Task';
@@ -1544,6 +1882,27 @@
             
             document.getElementById('taskModal').style.display = 'block';
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+        
+        // Show create task modal with default values
+        function showCreateTaskModalWithDefaults(defaults) {
+            showCreateTaskModal();
+            
+            // Set default values if provided
+            if (defaults.start) {
+                document.getElementById('taskStartDate').value = formatDateTimeLocal(defaults.start);
+            }
+            if (defaults.end) {
+                document.getElementById('taskEndDate').value = formatDateTimeLocal(defaults.end);
+            }
+            if (defaults.assignee) {
+                document.getElementById('taskAssignee').value = defaults.assignee;
+            }
+            
+            // Focus on title field for quick entry
+            setTimeout(() => {
+                document.getElementById('taskTitle').focus();
+            }, 100);
         }
         
         // Show edit task modal
@@ -1672,6 +2031,31 @@
             return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
         }
         
+        function formatTimeRange(start, end) {
+            const formatTime = (date) => {
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+                const ampm = hours >= 12 ? 'pm' : 'am';
+                const displayHours = hours % 12 || 12;
+                return `${displayHours}:${minutes.toString().padStart(2, '0')}${ampm}`;
+            };
+            
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            
+            // Check if same day
+            if (startDate.toDateString() === endDate.toDateString()) {
+                return `${formatTime(startDate)} - ${formatTime(endDate)}`;
+            } else {
+                // Different days
+                const formatDate = (date) => {
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    return `${days[date.getDay()]} ${date.getDate()}`;
+                };
+                return `${formatDate(startDate)} ${formatTime(startDate)} - ${formatDate(endDate)} ${formatTime(endDate)}`;
+            }
+        }
+        
         function showError(message) {
             // You could implement a toast notification here
             alert(message);
@@ -1679,9 +2063,14 @@
         
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('taskModal');
-            if (event.target == modal) {
+            const taskModal = document.getElementById('taskModal');
+            const shortcutsModal = document.getElementById('keyboardShortcutsModal');
+            
+            if (event.target == taskModal) {
                 closeTaskModal();
+            } else if (event.target == shortcutsModal) {
+                shortcutsModal.style.display = 'none';
+                document.body.style.overflow = '';
             }
         }
         
@@ -1749,21 +2138,107 @@
         
         // Show keyboard shortcuts help
         function showKeyboardShortcuts() {
-            const shortcuts = [
-                'Keyboard Shortcuts:',
-                '',
-                'Ctrl/Cmd + N - Create new task',
-                'Ctrl/Cmd + F - Focus search',
-                '← → Arrow Keys - Navigate employee tabs',
-                'Escape - Close modals',
-                '? or H - Show this help',
-                '',
-                'When dragging tasks:',
-                'Hold Shift - Snap to 30-minute intervals',
-                'Hold Ctrl/Cmd - Copy instead of move'
-            ];
+            document.getElementById('keyboardShortcutsModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Context menu handling
+        let contextMenuTask = null;
+        
+        // Add right-click handler to calendar
+        function addContextMenuHandlers() {
+            // Hide context menu when clicking elsewhere
+            document.addEventListener('click', () => {
+                document.getElementById('contextMenu').style.display = 'none';
+            });
             
-            alert(shortcuts.join('\n'));
+            // Add right-click prevention to calendar
+            calendar.el.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+        }
+        
+        // Show context menu
+        function showContextMenu(event, task) {
+            event.preventDefault();
+            contextMenuTask = task;
+            
+            const menu = document.getElementById('contextMenu');
+            menu.style.left = event.pageX + 'px';
+            menu.style.top = event.pageY + 'px';
+            menu.style.display = 'block';
+            
+            // Adjust position if menu would go off screen
+            const rect = menu.getBoundingClientRect();
+            if (rect.right > window.innerWidth) {
+                menu.style.left = (event.pageX - rect.width) + 'px';
+            }
+            if (rect.bottom > window.innerHeight) {
+                menu.style.top = (event.pageY - rect.height) + 'px';
+            }
+        }
+        
+        // Context menu actions
+        function contextMenuEdit() {
+            if (contextMenuTask) {
+                showEditTaskModal(contextMenuTask);
+            }
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+        
+        async function contextMenuDuplicate() {
+            if (contextMenuTask) {
+                const newTask = {
+                    'Task': contextMenuTask.title + ' (Copy)',
+                    'Description': contextMenuTask.description,
+                    'Priority': contextMenuTask.priority,
+                    'Status': 'Not Started',
+                    'Assignee': contextMenuTask.assignee || []
+                };
+                
+                try {
+                    await createTaskInAirtable(newTask);
+                    await loadTasks();
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(getCalendarEvents());
+                    renderUnassignedTasks();
+                } catch (error) {
+                    showError('Failed to duplicate task');
+                }
+            }
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+        
+        async function contextMenuDelete() {
+            if (contextMenuTask && confirm('Are you sure you want to delete this task?')) {
+                try {
+                    await deleteTaskInAirtable(contextMenuTask.id);
+                    await loadTasks();
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(getCalendarEvents());
+                    renderUnassignedTasks();
+                } catch (error) {
+                    showError('Failed to delete task');
+                }
+            }
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+        
+        function contextMenuChangeStatus() {
+            if (contextMenuTask) {
+                const newStatus = prompt('Enter new status:', contextMenuTask.status);
+                if (newStatus && newStatus !== contextMenuTask.status) {
+                    updateTaskInAirtable(contextMenuTask.id, { 'Status': newStatus })
+                        .then(() => loadTasks())
+                        .then(() => {
+                            calendar.removeAllEvents();
+                            calendar.addEventSource(getCalendarEvents());
+                            renderUnassignedTasks();
+                        })
+                        .catch(() => showError('Failed to update status'));
+                }
+            }
+            document.getElementById('contextMenu').style.display = 'none';
         }
     </script>
 </body>
