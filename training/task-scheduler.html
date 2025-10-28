@@ -132,13 +132,13 @@
             display: grid;
             grid-template-columns: 300px 1fr;
             gap: 2rem;
-            height: calc(100vh - 200px); /* Reduced header space for more calendar height */
+            height: calc(100vh - 120px); /* Increased available height */
         }
         
         .sidebar {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem; /* Reduced gap between panels */
             height: 100%;
             min-height: 0;
         }
@@ -182,8 +182,8 @@
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
-            min-height: 0; /* Important for flex child scrolling */
-            max-height: calc(100vh - 500px); /* Adjust based on header/filters */
+            min-height: 250px; /* Ensure space for at least 3 tasks */
+            max-height: calc(100vh - 400px); /* Increased available height */
             padding-right: 5px; /* Space for scrollbar */
             scroll-behavior: smooth;
             /* Prevent layout shift when scrollbar appears */
@@ -383,7 +383,12 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 600px; /* Ensure minimum usable height */
+            min-height: 700px; /* Increased minimum height for more calendar visibility */
+        }
+        
+        #calendar {
+            flex: 1;
+            min-height: 600px; /* Ensure calendar itself has minimum height */
         }
         
         /* Employee Selector Styles */
@@ -1437,8 +1442,9 @@
                 },
                 slotMinTime: '07:00:00',
                 slotMaxTime: '21:00:00',
-                slotDuration: '00:15:00', // 15-minute slots for maximum granularity
+                slotDuration: '00:30:00', // 30-minute slots for better visibility
                 slotLabelInterval: '01:00:00', // Show labels every hour
+                snapDuration: '00:15:00', // Still allow 15-minute precision for dragging
                 slotLabelFormat: {
                     hour: 'numeric',
                     minute: '2-digit',
@@ -1461,7 +1467,6 @@
                 resourceLabelText: 'Staff', // Label for the resource area
                 allDaySlot: false, // Hide all-day slot for cleaner view
                 slotEventOverlap: false, // Prevent event overlap for clarity
-                snapDuration: '00:15:00', // Snap to 15-minute intervals when dragging
                 eventClassNames: function(arg) {
                     return ['task-' + (arg.event.extendedProps.priority || 'medium').toLowerCase()];
                 },
