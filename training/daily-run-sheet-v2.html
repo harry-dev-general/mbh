@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Run Sheet - MBH Staff Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- FullCalendar v6 Premium Bundle (includes scheduler/resources) -->
+    <link href='https://unpkg.com/fullcalendar-scheduler@6.1.19/index.global.min.css' rel='stylesheet' />
+    <script src='https://unpkg.com/fullcalendar-scheduler@6.1.19/index.global.min.js'></script>
+    
+    <!-- Custom styles -->
+    <link href="css/daily-run-sheet-calendar.css" rel="stylesheet">
+    
+    <!-- Base styles for header and layout -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, #1B4F72 0%, #2E86AB 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 15px rgba(27, 79, 114, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .view-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 4px;
+        }
+        
+        .view-toggle button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .view-toggle button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .view-toggle button.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+        }
+        
+        .refresh-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .refresh-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Container */
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Back Button */
+        .back-button {
+            background: white;
+            color: #1B4F72;
+            border: 2px solid #1B4F72;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            margin-bottom: 2rem;
+        }
+        
+        .back-button:hover {
+            background: #1B4F72;
+            color: white;
+        }
+        
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1B4F72;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        /* Calendar Section */
+        .calendar-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .calendar-header h2 {
+            color: #1B4F72;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Add-ons Section */
+        .addons-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .addons-header {
+            color: #1B4F72;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .addons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .addon-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .addon-item:hover {
+            border-color: #1B4F72;
+            background: #fff;
+        }
+        
+        .addon-icon {
+            font-size: 2rem;
+        }
+        
+        .addon-details {
+            flex: 1;
+        }
+        
+        .addon-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .addon-count {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .addon-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1B4F72;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 1rem;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        /* No Data Message */
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .no-data i {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .calendar-section {
+                padding: 1rem;
+            }
+            
+            .addons-section {
+                padding: 1rem;
+            }
+            
+            .addons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Header -->
+    <div class="header">
+        <h1><i class="fas fa-clipboard-list"></i> Daily Run Sheet</h1>
+        <div class="header-controls">
+            <div class="view-toggle">
+                <button id="timelineViewBtn" class="active" onclick="switchView('timeline')">
+                    <i class="fas fa-stream"></i> Timeline
+                </button>
+                <button id="gridViewBtn" onclick="switchView('grid')">
+                    <i class="fas fa-th"></i> Grid
+                </button>
+            </div>
+            <button class="refresh-button" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Back Button -->
+        <a href="management-dashboard.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Management Dashboard
+        </a>
+        
+        <!-- Stats Bar -->
+        <div id="statsContainer" class="stats-bar"></div>
+        
+        <!-- Calendar Section -->
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <h2><i class="fas fa-calendar-alt"></i> Booking Timeline</h2>
+                <div id="currentTimeLabel" style="color: #666; font-size: 0.9rem;">
+                    <i class="fas fa-clock"></i> <span id="currentTime"></span>
+                </div>
+            </div>
+            <div id="calendar"></div>
+        </div>
+        
+        <!-- Add-ons Section -->
+        <div id="addonsSection" class="addons-section"></div>
+    </div>
+    
+    <!-- Booking Details Modal -->
+    <div id="bookingModal" class="modal-overlay" onclick="closeModal(event, 'bookingModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Booking Details</h3>
+                <button class="modal-close" onclick="closeModal(null, 'bookingModal')">×</button>
+            </div>
+            <div id="modalBody">
+                <!-- Content will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Allocation Modal -->
+    <div id="allocationModal" class="modal-overlay" onclick="closeModal(event, 'allocationModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Staff Allocation</h3>
+                <button class="modal-close" onclick="closeModal(null, 'allocationModal')">×</button>
+            </div>
+            <div id="allocationModalBody">
+                <!-- Content will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Supabase initialization
+        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
+    
+    <!-- Load the calendar JavaScript -->
+    <script src="js/daily-run-sheet-calendar.js"></script>
+</body>
+</html>

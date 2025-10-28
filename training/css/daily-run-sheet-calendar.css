@@ -1,0 +1,490 @@
+/* Daily Run Sheet Calendar Styles */
+
+/* FullCalendar Overrides */
+.fc {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+    border-color: #e0e0e0;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: #e0e0e0;
+}
+
+/* Header styling */
+.fc-toolbar {
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.fc-toolbar-title {
+    color: #1B4F72;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.fc-button {
+    background-color: #2E86AB;
+    border: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+}
+
+.fc-button:hover {
+    background-color: #1B4F72;
+}
+
+.fc-button-active {
+    background-color: #1B4F72 !important;
+}
+
+.fc-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Resource Timeline Specific */
+.fc-resource-timeline .fc-timeline-lane-frame {
+    min-height: 80px;
+}
+
+.fc-timeline-slot-label {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Resource Column Styling */
+.fc-col-header-cell {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.fc-resource-timeline .fc-resource-header {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Custom Resource Label */
+.vessel-resource-label {
+    padding: 0.5rem;
+}
+
+.vessel-resource-label .vessel-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.vessel-resource-label .vessel-status {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.vessel-status.status-ready {
+    background: #E8F5E9;
+    color: #2E7D32;
+}
+
+.vessel-status.status-preparing {
+    background: #FFF8E1;
+    color: #F57C00;
+}
+
+.vessel-status.status-on_water {
+    background: #E3F2FD;
+    color: #1565C0;
+}
+
+.vessel-status.status-returning {
+    background: #FFF3E0;
+    color: #E65100;
+}
+
+.vessel-status.status-maintenance {
+    background: #FFEBEE;
+    color: #C62828;
+}
+
+.resource-mini-gauges {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.gauge-mini {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: #666;
+}
+
+/* Event Styling */
+.fc-timeline-event {
+    border-radius: 6px;
+    border-width: 2px;
+    overflow: hidden;
+}
+
+.fc-event-main {
+    padding: 0.25rem 0.5rem;
+}
+
+/* Main booking events */
+.event-booking {
+    border-style: solid !important;
+}
+
+.event-booking .fc-event-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.event-booking .fc-event-time {
+    font-size: 0.75rem;
+    opacity: 0.9;
+}
+
+/* Allocation events */
+.event-allocation {
+    border-width: 2px !important;
+    min-height: 40px;
+}
+
+.event-onboarding {
+    background-color: #4CAF50 !important;
+    border-color: #388E3C !important;
+}
+
+.event-deloading {
+    background-color: #2196F3 !important;
+    border-color: #1976D2 !important;
+}
+
+.event-allocation.unstaffed {
+    background-color: #f44336 !important;
+    border-color: #d32f2f !important;
+    opacity: 0.8;
+}
+
+.fc-event-allocation {
+    padding: 0.25rem 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.fc-event-allocation .fc-event-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Add-on badge */
+.addon-badge {
+    background: #FF9800;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.3rem;
+    border-radius: 10px;
+    margin-left: 0.25rem;
+    font-weight: bold;
+}
+
+/* Now indicator */
+.fc-timeline-now-indicator-arrow {
+    background-color: #f44336;
+    border-color: #f44336;
+}
+
+.fc-timeline-now-indicator-line {
+    border-color: #f44336;
+    border-width: 2px;
+}
+
+/* Time grid view styles */
+.fc-timegrid-slot-minor {
+    border-top-style: dotted;
+}
+
+.fc-timegrid-event {
+    border-radius: 6px;
+    padding: 0.25rem;
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2E86AB;
+}
+
+.form-value {
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #2E86AB;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1B4F72;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+/* Booking details styles */
+.booking-details {
+    padding: 0.5rem 0;
+}
+
+.detail-row {
+    display: flex;
+    margin-bottom: 0.75rem;
+    align-items: flex-start;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #666;
+    min-width: 120px;
+    margin-right: 1rem;
+}
+
+.detail-value {
+    color: #333;
+    flex: 1;
+}
+
+.add-ons-list {
+    margin-top: 0.5rem;
+}
+
+.add-on-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.add-on-icon {
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+}
+
+.add-on-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.add-on-price {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.no-addons {
+    color: #999;
+    font-style: italic;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    /* Use list view on mobile */
+    .fc-list {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .fc-list-event {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .fc-list-event:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .fc-list-event-title {
+        font-weight: 600;
+    }
+    
+    .fc-list-event-time {
+        color: #666;
+    }
+    
+    /* Resource labels on mobile */
+    .vessel-resource-label {
+        padding: 0.25rem;
+        font-size: 0.85rem;
+    }
+    
+    .vessel-resource-label .vessel-name {
+        font-size: 0.9rem;
+    }
+    
+    .resource-mini-gauges {
+        display: none; /* Hide gauges on mobile to save space */
+    }
+    
+    /* Smaller events on mobile */
+    .fc-timeline-event {
+        font-size: 0.8rem;
+    }
+    
+    .fc-event-main {
+        padding: 0.2rem 0.4rem;
+    }
+    
+    /* Hide time on mobile events */
+    .fc-event-time {
+        display: none;
+    }
+    
+    /* Smaller toolbar */
+    .fc-toolbar-title {
+        font-size: 1.2rem;
+    }
+    
+    .fc-button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Modal adjustments */
+    .modal-content {
+        padding: 1.5rem;
+        max-width: 95%;
+    }
+}
+
+/* Print styles */
+@media print {
+    .header,
+    .back-button,
+    .view-toggle,
+    .refresh-button,
+    .fc-button,
+    .addons-section {
+        display: none !important;
+    }
+    
+    .calendar-section {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .fc-event {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Error message styles */
+.error-message {
+    background: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Hover effects */
+.fc-timeline-event:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    z-index: 10;
+}
+
+/* Custom scrollbar for timeline */
+.fc-scroller::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+}
+
+.fc-scroller::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.fc-scroller::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+.fc-scroller::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

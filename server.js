@@ -1289,6 +1289,12 @@ app.post('/api/allocations/update-status', async (req, res) => {
   updateStatusHandler(req, res);
 });
 
+// Update booking allocation (staff assignment and times)
+app.post('/api/update-allocation', requireAuth, async (req, res) => {
+  const updateAllocationHandler = require('./api/update-allocation');
+  updateAllocationHandler(req, res);
+});
+
 // Default route - serve the index page which handles authentication
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'training', 'index.html'));
