@@ -1252,7 +1252,7 @@
             
             calendar = new FullCalendar.Calendar(calendarEl, {
                 schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-                initialView: selectedEmployeeId === 'all' ? 'resourceTimeGridWeek' : 'timeGridWeek',
+                initialView: selectedEmployeeId === 'all' ? 'resourceTimeGridDay' : 'timeGridDay',
                 timeZone: 'Australia/Sydney',
                 headerToolbar: {
                     left: 'prev,next today',
@@ -1260,6 +1260,12 @@
                     right: selectedEmployeeId === 'all' 
                         ? 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth'
                         : 'timeGridDay,timeGridWeek,dayGridMonth'
+                },
+                buttonText: {
+                    today: 'Today',
+                    month: 'Month',
+                    week: 'Week',
+                    day: 'Day'
                 },
                 slotMinTime: '07:00:00',
                 slotMaxTime: '19:00:00',
