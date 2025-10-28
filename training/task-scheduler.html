@@ -121,7 +121,7 @@
             display: grid;
             grid-template-columns: 300px 1fr;
             gap: 2rem;
-            height: calc(100vh - 250px);
+            height: calc(100vh - 200px); /* Reduced header space for more calendar height */
         }
         
         .sidebar {
@@ -249,6 +249,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            min-height: 600px; /* Ensure minimum usable height */
         }
         
         /* Employee Selector Styles */
@@ -338,10 +339,23 @@
         
         .fc .fc-timegrid-slot-label {
             font-size: 0.875rem;
+            font-weight: 500;
         }
         
         .fc .fc-timegrid-axis {
-            width: 60px;
+            width: 70px;
+        }
+        
+        .fc .fc-timegrid-slot {
+            min-height: 30px; /* Ensure minimum readable height */
+        }
+        
+        .fc .fc-timegrid-slot-lane {
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .fc .fc-timegrid-slot-lane:not(.fc-timegrid-slot-lane-frame) {
+            border-top-style: dotted; /* Dotted lines for 30-min marks */
         }
         
         /* Resource column headers */
@@ -392,6 +406,20 @@
             color: white;
             font-weight: 600;
             padding: 8px;
+        }
+        
+        /* Ensure calendar uses full height */
+        .fc-timegrid {
+            flex: 1;
+        }
+        
+        .fc-scroller {
+            overflow-y: auto !important;
+            overflow-x: auto !important;
+        }
+        
+        .fc-timegrid-body {
+            width: 100% !important;
         }
         
         /* Modal Styles */
@@ -559,7 +587,8 @@
             
             .calendar-container {
                 order: 1;
-                height: 600px;
+                height: 70vh;
+                min-height: 500px;
             }
             
             .header-content {
@@ -997,10 +1026,18 @@
                         ? 'resourceTimeGridDay,resourceTimeGridWeek,dayGridMonth'
                         : 'timeGridDay,timeGridWeek,dayGridMonth'
                 },
-                slotMinTime: '06:00:00',
-                slotMaxTime: '20:00:00',
-                slotDuration: '01:00:00',
+                slotMinTime: '07:00:00',
+                slotMaxTime: '19:00:00',
+                slotDuration: '00:30:00', // 30-minute slots for better granularity
+                slotLabelInterval: '01:00:00', // Show labels every hour
+                slotLabelFormat: {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    omitZeroMinute: true,
+                    meridiem: 'short'
+                },
                 height: '100%',
+                expandRows: true, // Expand rows to fill available height
                 resourceOrder: 'title', // Sort resources alphabetically
                 resources: filteredResources,
                 events: getCalendarEvents(),
@@ -1014,6 +1051,7 @@
                 dayMinWidth: 150, // Minimum width for each day column
                 resourceLabelText: 'Staff', // Label for the resource area
                 allDaySlot: false, // Hide all-day slot for cleaner view
+                slotEventOverlap: false, // Prevent event overlap for clarity
                 eventClassNames: function(arg) {
                     return ['task-' + (arg.event.extendedProps.priority || 'medium').toLowerCase()];
                 }
