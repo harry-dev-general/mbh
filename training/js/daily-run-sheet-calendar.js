@@ -966,19 +966,8 @@ class DailyRunSheetCalendar {
 // Initialize the calendar
 let dailyRunSheet;
 document.addEventListener('DOMContentLoaded', () => {
-    // Wait for FullCalendar to be fully loaded
-    if (window.fullCalendarReady) {
-        dailyRunSheet = new DailyRunSheetCalendar();
-    } else if (window.whenFullCalendarReady) {
-        window.whenFullCalendarReady(() => {
-            dailyRunSheet = new DailyRunSheetCalendar();
-        });
-    } else {
-        // Fallback - try after a delay
-        setTimeout(() => {
-            dailyRunSheet = new DailyRunSheetCalendar();
-        }, 1000);
-    }
+    // FullCalendar scheduler should be loaded with cdn.jsdelivr.net
+    dailyRunSheet = new DailyRunSheetCalendar();
 });
 
 // Global functions for onclick handlers
