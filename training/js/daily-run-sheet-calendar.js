@@ -136,6 +136,7 @@ class DailyRunSheetCalendar {
         
         // Prepare resources (vessels)
         const resources = this.getVesselResources();
+        console.log('Initializing calendar with', resources.length, 'resources');
         
         this.calendar = new FullCalendar.Calendar(calendarEl, {
             schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
@@ -218,9 +219,13 @@ class DailyRunSheetCalendar {
     }
     
     getVesselResources() {
-        if (!this.runSheetData || !this.runSheetData.vessels) return [];
+        if (!this.runSheetData || !this.runSheetData.vessels) {
+            console.log('No vessels data available for resources');
+            return [];
+        }
         
-        return this.runSheetData.vessels.map(vessel => ({
+        console.log('Creating resources from vessels:', this.runSheetData.vessels.length, 'vessels');
+        const resources = this.runSheetData.vessels.map(vessel => ({
             id: vessel.id,
             title: vessel.name,
             extendedProps: {
@@ -230,6 +235,8 @@ class DailyRunSheetCalendar {
                 gasLevel: vessel.gasLevel
             }
         }));
+        console.log('Resources created:', resources);
+        return resources;
     }
     
     renderResourceLabel(arg) {
@@ -263,8 +270,10 @@ class DailyRunSheetCalendar {
         if (!this.runSheetData || !this.runSheetData.bookings) return [];
         
         const events = [];
+        console.log('Transforming bookings to events:', this.runSheetData.bookings.length, 'bookings');
         
         this.runSheetData.bookings.forEach(booking => {
+            console.log('Processing booking:', booking.customerName, 'vesselId:', booking.vesselId);
             // Main booking block
             events.push({
                 id: `booking-${booking.id}`,
@@ -797,14 +806,37 @@ class DailyRunSheetCalendar {
     }
     
     updateCalendarEvents() {
-        if (!this.calendar) return;
+        if (!this.calendar) {
+            console.log('No calendar instance to update');
+            return;
+        }
+        
+        console.log('Updating calendar events...');
         
         // Remove all events
         this.calendar.removeAllEvents();
         
         // Add new events
         const events = this.transformToCalendarEvents();
-        events.forEach(event => this.calendar.addEvent(event));
+        console.log('Adding', events.length, 'events to calendar');
+        events.forEach(event => {
+            console.log('Adding event:', event.title, 'to resource:', event.resourceId);
+            this.calendar.addEvent(event);
+        });
+        
+        // Also check if we need to update resources
+        const currentResources = this.calendar.getResources();
+        console.log('Current calendar resources:', currentResources.length);
+        
+        // If no resources, we need to add them
+        if (currentResources.length === 0 && this.runSheetData && this.runSheetData.vessels) {
+            console.log('No resources in calendar, adding vessels as resources...');
+            const resources = this.getVesselResources();
+            resources.forEach(resource => {
+                console.log('Adding resource:', resource.id, resource.title);
+                this.calendar.addResource(resource);
+            });
+        }
     }
     
     switchView(viewType) {

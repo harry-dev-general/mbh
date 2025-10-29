@@ -213,12 +213,14 @@ async function getAllVesselStatuses() {
             return vesselStatusCache;
         }
         
-        // Get all boats
-        const boatsUrl = `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE}?pageSize=100`;
+        // Get all active boats
+        const boatsFilter = encodeURIComponent('{Active}=1');
+        const boatsUrl = `https://api.airtable.com/v0/${BASE_ID}/${BOATS_TABLE}?filterByFormula=${boatsFilter}&pageSize=100`;
         
         const boatsResponse = await axios.get(boatsUrl, { headers });
         
         const vessels = boatsResponse.data.records;
+        console.log('Fetched', vessels.length, 'active vessels from Airtable');
         
         // Get status for each vessel in parallel
         const vesselStatuses = await Promise.all(

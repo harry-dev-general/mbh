@@ -230,6 +230,8 @@ app.get('/api/daily-run-sheet', async (req, res) => {
         // not just ones with bookings today
         const activeVessels = vesselStatuses;
         
+        console.log('Active vessels:', activeVessels.map(v => ({ id: v.id, name: v.name })));
+        
         // Get employee details for name mapping
         const employeeMap = await dailyRunSheet.getEmployeeDetails();
         
@@ -237,6 +239,11 @@ app.get('/api/daily-run-sheet', async (req, res) => {
         const addOnsSummary = dailyRunSheet.extractAddOns(bookings);
         
         // Process bookings for timeline
+        console.log('Processing bookings, vessel IDs:', bookings.map(b => ({
+            customer: b.fields['Customer Name'],
+            vesselId: b.fields['Boat']?.[0]
+        })));
+        
         const processedBookings = bookings.map(b => ({
             id: b.id,
             bookingRecordId: b.id,  // Add record ID for allocation updates
