@@ -113,16 +113,27 @@ updateCalendarEvents() {
    - Consider alternatives like DayPilot (has free version)
    - Or Toast UI Calendar
 
+## Update: Date Format Issue
+
+After the initial fix, events were still not displaying. Further investigation revealed a timezone/date format issue:
+
+**Problem**: Using `.toISOString()` returns UTC timestamps (e.g., "2025-10-29T01:00:00.000Z") which FullCalendar was interpreting incorrectly.
+
+**Solution**: Changed to match the working implementation's date format:
+- Use local date/time strings: `${booking.bookingDate}T${this.convertTo24Hour(booking.startTime)}`
+- Added helper functions `convertTo24Hour()` and `addMinutes()` from working implementation
+- This creates strings like "2025-10-29T12:00:00" without timezone suffix
+
 ## Next Steps
 
-1. Deploy changes to Railway
-2. Clear any server-side caches
-3. Test that events display in the standard calendar view
-4. If resource view is critical, evaluate purchasing Scheduler license
-5. Consider implementing a custom vessel filter dropdown as alternative to resource columns
+1. Deploy the date format fix to Railway
+2. Test that events display correctly on production
+3. Verify events appear in the correct time slots
+4. Consider purchasing Scheduler license if resource view is needed
 
 ## Related Issues
 - Initial 500 error (fixed)
 - Date filtering issue (fixed)
 - Authentication flow (fixed)
-- Event display issue (fixed with this solution)
+- Event display issue - Scheduler plugin (fixed)
+- Event display issue - Date format (fixed)

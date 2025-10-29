@@ -125,8 +125,14 @@ class DailyRunSheetCalendar {
             console.log('FullCalendar version:', FullCalendar.version);
         }
         
+        // Debug current date
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+        console.log('Today is:', todayStr, 'Full date:', today.toString());
+        
         this.calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: isMobile ? 'listDay' : 'timeGridDay',
+            initialDate: todayStr, // Ensure we're on today's date
             timeZone: 'Australia/Sydney',
             
             // Header toolbar
@@ -172,7 +178,12 @@ class DailyRunSheetCalendar {
             
             // Event rendering
             eventContent: (arg) => this.renderEvent(arg),
-            eventClassNames: (arg) => this.getEventClasses(arg)
+            eventClassNames: (arg) => this.getEventClasses(arg),
+            
+            // Debug event mounting
+            eventDidMount: (info) => {
+                console.log('Event mounted:', info.event.title, 'at', info.event.start);
+            }
         });
         
         // Render the calendar
@@ -202,17 +213,17 @@ class DailyRunSheetCalendar {
                 return;
             }
             
-            // Parse dates - matching the working implementation format
-            const startDate = this.parseDateTime(booking.bookingDate, booking.startTime);
-            const endDate = this.parseDateTime(booking.bookingDate, booking.finishTime);
-            
             // Main booking event (vessel schedule view)
             const vesselName = booking.vesselName || 'No Vessel';
+            const startTimeStr = `${booking.bookingDate}T${this.convertTo24Hour(booking.startTime)}`;
+            const endTimeStr = `${booking.bookingDate}T${this.convertTo24Hour(booking.finishTime)}`;
+            console.log('Event times:', startTimeStr, 'to', endTimeStr);
+            
             events.push({
                 id: `booking-${booking.id}`,
                 title: `🛥️ ${booking.customerName} (${vesselName})`,
-                start: startDate.toISOString(),
-                end: endDate.toISOString(),
+                start: startTimeStr,
+                end: endTimeStr,
                 backgroundColor: '#2196F3',
                 borderColor: '#1976D2',
                 classNames: ['booking-event', 'booking-main'],
@@ -226,17 +237,14 @@ class DailyRunSheetCalendar {
             
             // Onboarding event (staff schedule view)
             if (booking.onboardingTime) {
-                const onboardingStart = this.parseDateTime(booking.bookingDate, booking.onboardingTime);
-                const onboardingEnd = new Date(onboardingStart.getTime() + 30 * 60000); // 30 minutes
-                
                 const hasStaff = !!booking.onboardingStaffName;
                 const statusClass = !hasStaff ? 'booking-unallocated' : 'booking-pending';
                 
                 events.push({
                     id: `onboarding-${booking.id}`,
                     title: `🚢 ON ${booking.customerName}`,
-                    start: onboardingStart.toISOString(),
-                    end: onboardingEnd.toISOString(),
+                    start: `${booking.bookingDate}T${this.convertTo24Hour(booking.onboardingTime)}`,
+                    end: `${booking.bookingDate}T${this.addMinutes(booking.onboardingTime, 30)}`,
                     backgroundColor: hasStaff ? '#4CAF50' : '#f44336',
                     borderColor: hasStaff ? '#388E3C' : '#d32f2f',
                     classNames: ['booking-event', 'booking-onboarding', statusClass],
@@ -253,17 +261,14 @@ class DailyRunSheetCalendar {
             
             // Deloading event (staff schedule view)
             if (booking.deloadingTime && booking.deloadingTime !== booking.onboardingTime) {
-                const deloadingStart = this.parseDateTime(booking.bookingDate, booking.deloadingTime);
-                const deloadingEnd = new Date(deloadingStart.getTime() + 30 * 60000); // 30 minutes
-                
                 const hasStaff = !!booking.deloadingStaffName;
                 const statusClass = !hasStaff ? 'booking-unallocated' : 'booking-pending';
                 
                 events.push({
                     id: `deloading-${booking.id}`,
                     title: `🏁 OFF ${booking.customerName}`,
-                    start: deloadingStart.toISOString(),
-                    end: deloadingEnd.toISOString(),
+                    start: `${booking.bookingDate}T${this.convertTo24Hour(booking.deloadingTime)}`,
+                    end: `${booking.bookingDate}T${this.addMinutes(booking.deloadingTime, 30)}`,
                     backgroundColor: hasStaff ? '#2196F3' : '#f44336',
                     borderColor: hasStaff ? '#1976D2' : '#d32f2f',
                     classNames: ['booking-event', 'booking-deloading', statusClass],
@@ -825,6 +830,45 @@ class DailyRunSheetCalendar {
         console.log('Created date:', dateStr, timeStr, '->', date.toISOString(), 'Local:', date.toString());
         
         return date;
+    }
+    
+    // Convert time to 24-hour format (matching management-allocations.html)
+    convertTo24Hour(timeStr) {
+        if (!timeStr) return '09:00:00';
+        
+        // If already in 24-hour format (no AM/PM)
+        if (!timeStr.toLowerCase().includes('am') && !timeStr.toLowerCase().includes('pm')) {
+            // Ensure it has seconds
+            const parts = timeStr.split(':');
+            if (parts.length === 2) {
+                return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:00`;
+            }
+            return timeStr;
+        }
+        
+        // Parse 12-hour format
+        const timeParts = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+        if (!timeParts) return '09:00:00';
+        
+        let hours = parseInt(timeParts[1]);
+        const minutes = timeParts[2];
+        const ampm = timeParts[3].toUpperCase();
+        
+        if (ampm === 'PM' && hours !== 12) hours += 12;
+        if (ampm === 'AM' && hours === 12) hours = 0;
+        
+        return `${hours.toString().padStart(2, '0')}:${minutes}:00`;
+    }
+    
+    // Add minutes to a time string
+    addMinutes(timeStr, minutesToAdd) {
+        // First convert to 24-hour format
+        const time24 = this.convertTo24Hour(timeStr);
+        const [h, m] = time24.split(':').map(Number);
+        const totalMinutes = h * 60 + m + minutesToAdd;
+        const newHour = Math.floor(totalMinutes / 60);
+        const newMinute = totalMinutes % 60;
+        return `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}:00`;
     }
     
     formatTime(date) {
