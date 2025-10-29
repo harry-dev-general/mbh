@@ -113,7 +113,18 @@ class DailyRunSheetCalendar {
         
         // Check if FullCalendar plugins are loaded
         console.log('FullCalendar loaded:', typeof FullCalendar !== 'undefined');
-        console.log('Resource plugin available:', typeof FullCalendar !== 'undefined' && FullCalendar.ResourceTimeline);
+        
+        // Try different ways to check for resource/scheduler plugin
+        if (typeof FullCalendar !== 'undefined') {
+            console.log('FullCalendar version:', FullCalendar.version);
+            console.log('FullCalendar plugins:', Object.keys(FullCalendar));
+            
+            // Check for scheduler-specific features
+            console.log('Has Calendar:', typeof FullCalendar.Calendar !== 'undefined');
+            console.log('Calendar prototype has resources:', 
+                FullCalendar.Calendar && FullCalendar.Calendar.prototype && 
+                typeof FullCalendar.Calendar.prototype.getResources !== 'undefined');
+        }
         
         // Prepare resources (vessels)
         const resources = this.getVesselResources();
@@ -955,12 +966,26 @@ class DailyRunSheetCalendar {
 // Initialize the calendar
 let dailyRunSheet;
 document.addEventListener('DOMContentLoaded', () => {
-    dailyRunSheet = new DailyRunSheetCalendar();
+    // Wait for FullCalendar to be fully loaded
+    if (window.fullCalendarReady) {
+        dailyRunSheet = new DailyRunSheetCalendar();
+    } else if (window.whenFullCalendarReady) {
+        window.whenFullCalendarReady(() => {
+            dailyRunSheet = new DailyRunSheetCalendar();
+        });
+    } else {
+        // Fallback - try after a delay
+        setTimeout(() => {
+            dailyRunSheet = new DailyRunSheetCalendar();
+        }, 1000);
+    }
 });
 
 // Global functions for onclick handlers
 function switchView(viewType) {
-    dailyRunSheet.switchView(viewType);
+    if (dailyRunSheet) {
+        dailyRunSheet.switchView(viewType);
+    }
 }
 
 function refreshData() {
@@ -969,7 +994,7 @@ function refreshData() {
         const currentDate = dailyRunSheet.calendar.getDate();
         const dateStr = currentDate.toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' });
         dailyRunSheet.loadData(dateStr);
-    } else {
+    } else if (dailyRunSheet) {
         dailyRunSheet.loadData();
     }
 }
