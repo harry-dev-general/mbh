@@ -119,33 +119,14 @@ class DailyRunSheetCalendar {
         const calendarEl = document.getElementById('calendar');
         const isMobile = window.innerWidth <= 768;
         
-        // Check if FullCalendar plugins are loaded
+        // Check if FullCalendar is loaded
         console.log('FullCalendar loaded:', typeof FullCalendar !== 'undefined');
-        
-        // Try different ways to check for resource/scheduler plugin
         if (typeof FullCalendar !== 'undefined') {
             console.log('FullCalendar version:', FullCalendar.version);
-            console.log('FullCalendar plugins:', Object.keys(FullCalendar));
-            
-            // Check for scheduler-specific features
-            console.log('Has Calendar:', typeof FullCalendar.Calendar !== 'undefined');
-            console.log('Calendar prototype has resources:', 
-                FullCalendar.Calendar && FullCalendar.Calendar.prototype && 
-                typeof FullCalendar.Calendar.prototype.getResources !== 'undefined');
-        }
-        
-        // Prepare resources (vessels)
-        const resources = this.getVesselResources();
-        console.log('Initializing calendar with', resources.length, 'resources');
-        
-        // Debug inline test event
-        if (resources.length > 0) {
-            console.log('Creating inline test event with resource:', resources[0].id, resources[0].title);
         }
         
         this.calendar = new FullCalendar.Calendar(calendarEl, {
-            schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
-            initialView: isMobile ? 'listDay' : 'resourceTimelineDay',
+            initialView: isMobile ? 'listDay' : 'timeGridDay',
             timeZone: 'Australia/Sydney',
             
             // Header toolbar
@@ -166,202 +147,139 @@ class DailyRunSheetCalendar {
                 hour12: true
             },
             
-            // Resources (vessels)
-            resources: resources,
-            resourceOrder: 'title', // Order resources alphabetically
-            resourceAreaHeaderContent: 'Vessels',
+            // View configuration
+            height: isMobile ? '70vh' : 'auto',
+            expandRows: true,
+            nowIndicator: true,
+            dayMaxEvents: false,
+            eventMaxStack: 5,
+            eventOverlap: true,
+            slotEventOverlap: true,
+            eventMinHeight: isMobile ? 25 : 30,
+            displayEventTime: !isMobile,
+            displayEventEnd: false,
             
-            // Test events inline
-            events: resources.length > 0 ? [{
-                id: 'inline-test',
-                title: 'INLINE TEST EVENT',
-                start: new Date().toISOString(),
-                end: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-                resourceId: resources[0].id,
-                backgroundColor: '#00FF00',
-                borderColor: '#00AA00'
-            }] : [],
-            resourceAreaWidth: isMobile ? '120px' : '180px',
+            // Interaction
+            editable: false, // Disable for now
+            eventClick: (info) => this.handleEventClick(info),
+            dateClick: (info) => this.handleDateClick(info),
             
-            // Resource rendering
-            resourceLabelContent: (arg) => this.renderResourceLabel(arg),
-            
-            // Events
-            events: this.transformToCalendarEvents(),
+            // Date navigation handler
+            datesSet: (dateInfo) => {
+                console.log('Calendar date changed to:', dateInfo.start);
+                this.handleDatesSet(dateInfo);
+            },
             
             // Event rendering
             eventContent: (arg) => this.renderEvent(arg),
-            eventClassNames: (arg) => this.getEventClasses(arg),
-            
-            // Interaction
-            editable: this.userRole === 'Admin',
-            droppable: false, // No external dragging
-            eventResizableFromStart: true,
-            eventDurationEditable: this.userRole === 'Admin',
-            eventStartEditable: this.userRole === 'Admin',
-            
-            // Event handlers
-            eventClick: (info) => this.handleEventClick(info),
-            dateClick: (info) => this.handleDateClick(info),
-            eventDrop: (info) => this.handleEventDrop(info),
-            eventResize: (info) => this.handleEventResize(info),
-            
-            // Date navigation handler
-            datesSet: (dateInfo) => this.handleDatesSet(dateInfo),
-            
-            // View configuration
-            height: 'auto',
-            expandRows: true,
-            nowIndicator: true,
-            
-            // Mobile adjustments
-            dayMaxEvents: isMobile ? 3 : false,
-            eventMinHeight: 30,
-            
-            // Custom buttons for now indicator
-            customButtons: {
-                nowIndicator: {
-                    text: 'Now',
-                    click: () => this.scrollToNow()
-                }
-            }
+            eventClassNames: (arg) => this.getEventClasses(arg)
         });
         
+        // Render the calendar
         this.calendar.render();
         
-        // Add current time line for timeline view
-        if (!isMobile) {
-            this.addCurrentTimeLine();
-        }
+        // Load events after calendar is rendered (matching management-allocations)
+        console.log('Calendar rendered, updating events...');
+        this.updateCalendarEvents();
     }
     
-    getVesselResources() {
-        if (!this.runSheetData || !this.runSheetData.vessels) {
-            console.log('No vessels data available for resources');
-            return [];
-        }
-        
-        console.log('Creating resources from vessels:', this.runSheetData.vessels.length, 'vessels');
-        console.log('Vessel IDs:', this.runSheetData.vessels.map(v => ({ id: v.id, name: v.name })));
-        const resources = this.runSheetData.vessels.map(vessel => ({
-            id: vessel.id,
-            title: vessel.name,
-            extendedProps: {
-                status: vessel.status,
-                fuelLevel: vessel.fuelLevel,
-                waterLevel: vessel.waterLevel,
-                gasLevel: vessel.gasLevel
-            }
-        }));
-        console.log('Resources created:', resources);
-        return resources;
-    }
-    
-    renderResourceLabel(arg) {
-        const vessel = arg.resource.extendedProps;
-        const statusClass = `status-${vessel.status}`;
-        const statusText = this.formatStatus(vessel.status);
-        
-        // Create resource label with vessel info and mini gauges
-        const html = `
-            <div class="vessel-resource-label">
-                <div class="vessel-name">${arg.resource.title}</div>
-                <div class="vessel-status ${statusClass}">${statusText}</div>
-                <div class="resource-mini-gauges">
-                    <span class="gauge-mini" title="Fuel: ${vessel.fuelLevel}">
-                        ⛽ ${this.levelToIcon(vessel.fuelLevel)}
-                    </span>
-                    <span class="gauge-mini" title="Water: ${vessel.waterLevel}">
-                        💧 ${this.levelToIcon(vessel.waterLevel)}
-                    </span>
-                    <span class="gauge-mini" title="Gas: ${vessel.gasLevel}">
-                        🔥 ${this.levelToIcon(vessel.gasLevel)}
-                    </span>
-                </div>
-            </div>
-        `;
-        
-        return { html };
-    }
+    // Resource-related functions removed - no longer using resource views
     
     transformToCalendarEvents() {
-        if (!this.runSheetData || !this.runSheetData.bookings) return [];
+        if (!this.runSheetData || !this.runSheetData.bookings) {
+            console.log('No bookings data available');
+            return [];
+        }
         
         const events = [];
         console.log('Transforming bookings to events:', this.runSheetData.bookings.length, 'bookings');
         
         this.runSheetData.bookings.forEach(booking => {
-            console.log('Processing booking:', booking.customerName, 'vesselId:', booking.vesselId);
+            console.log('Processing booking:', booking.customerName, 'on', booking.vesselName);
             
+            if (!booking.bookingDate) {
+                console.warn('Booking has no date:', booking);
+                return;
+            }
+            
+            // Parse dates - matching the working implementation format
             const startDate = this.parseDateTime(booking.bookingDate, booking.startTime);
             const endDate = this.parseDateTime(booking.bookingDate, booking.finishTime);
-            console.log('  Booking times:', booking.bookingDate, booking.startTime, '->', booking.finishTime);
-            console.log('  Parsed dates:', startDate.toISOString(), '->', endDate.toISOString());
             
-            // Main booking block
+            // Main booking event (vessel schedule view)
+            const vesselName = booking.vesselName || 'No Vessel';
             events.push({
                 id: `booking-${booking.id}`,
-                resourceId: booking.vesselId,
-                title: booking.customerName,
-                start: startDate,
-                end: endDate,
+                title: `🛥️ ${booking.customerName} (${vesselName})`,
+                start: startDate.toISOString(),
+                end: endDate.toISOString(),
                 backgroundColor: '#2196F3',
                 borderColor: '#1976D2',
-                classNames: ['booking-main'],
+                classNames: ['booking-event', 'booking-main'],
                 extendedProps: {
-                    type: 'booking',
+                    recordType: 'booking',
                     booking: booking,
+                    vesselName: vesselName,
                     status: booking.status
                 }
             });
             
-            // Onboarding allocation
+            // Onboarding event (staff schedule view)
             if (booking.onboardingTime) {
                 const onboardingStart = this.parseDateTime(booking.bookingDate, booking.onboardingTime);
                 const onboardingEnd = new Date(onboardingStart.getTime() + 30 * 60000); // 30 minutes
                 
+                const hasStaff = !!booking.onboardingStaffName;
+                const statusClass = !hasStaff ? 'booking-unallocated' : 'booking-pending';
+                
                 events.push({
                     id: `onboarding-${booking.id}`,
-                    resourceId: booking.vesselId,
-                    title: `🚢 ${booking.onboardingStaffName || 'Unassigned'}`,
-                    start: onboardingStart,
-                    end: onboardingEnd,
-                    backgroundColor: booking.onboardingStaffName ? '#4CAF50' : '#f44336',
-                    borderColor: booking.onboardingStaffName ? '#388E3C' : '#d32f2f',
-                    classNames: ['allocation-onboarding'],
+                    title: `🚢 ON ${booking.customerName}`,
+                    start: onboardingStart.toISOString(),
+                    end: onboardingEnd.toISOString(),
+                    backgroundColor: hasStaff ? '#4CAF50' : '#f44336',
+                    borderColor: hasStaff ? '#388E3C' : '#d32f2f',
+                    classNames: ['booking-event', 'booking-onboarding', statusClass],
                     extendedProps: {
-                        type: 'onboarding',
+                        recordType: 'booking',
+                        allocationType: 'onboarding',
                         booking: booking,
+                        hasStaff: hasStaff,
                         staffName: booking.onboardingStaffName,
-                        allocationType: 'onboarding'
+                        vesselName: vesselName
                     }
                 });
             }
             
-            // Deloading allocation
+            // Deloading event (staff schedule view)
             if (booking.deloadingTime && booking.deloadingTime !== booking.onboardingTime) {
                 const deloadingStart = this.parseDateTime(booking.bookingDate, booking.deloadingTime);
                 const deloadingEnd = new Date(deloadingStart.getTime() + 30 * 60000); // 30 minutes
                 
+                const hasStaff = !!booking.deloadingStaffName;
+                const statusClass = !hasStaff ? 'booking-unallocated' : 'booking-pending';
+                
                 events.push({
                     id: `deloading-${booking.id}`,
-                    resourceId: booking.vesselId,
-                    title: `🏁 ${booking.deloadingStaffName || 'Unassigned'}`,
-                    start: deloadingStart,
-                    end: deloadingEnd,
-                    backgroundColor: booking.deloadingStaffName ? '#2196F3' : '#f44336',
-                    borderColor: booking.deloadingStaffName ? '#1976D2' : '#d32f2f',
-                    classNames: ['allocation-deloading'],
+                    title: `🏁 OFF ${booking.customerName}`,
+                    start: deloadingStart.toISOString(),
+                    end: deloadingEnd.toISOString(),
+                    backgroundColor: hasStaff ? '#2196F3' : '#f44336',
+                    borderColor: hasStaff ? '#1976D2' : '#d32f2f',
+                    classNames: ['booking-event', 'booking-deloading', statusClass],
                     extendedProps: {
-                        type: 'deloading',
+                        recordType: 'booking',
+                        allocationType: 'deloading',
                         booking: booking,
+                        hasStaff: hasStaff,
                         staffName: booking.deloadingStaffName,
-                        allocationType: 'deloading'
+                        vesselName: vesselName
                     }
                 });
             }
         });
         
+        console.log('Created', events.length, 'events');
         return events;
     }
     
@@ -435,30 +353,8 @@ class DailyRunSheetCalendar {
     }
     
     handleDateClick(info) {
-        // Only allow admins to create new allocations
-        if (this.userRole !== 'Admin') return;
-        
-        // Only in timeline view
-        if (!info.resource) return;
-        
-        // Check if click is within a booking
-        const clickTime = info.date;
-        const vesselId = info.resource.id;
-        
-        // Find booking at this time
-        const booking = this.runSheetData.bookings.find(b => {
-            if (b.vesselId !== vesselId) return false;
-            
-            const bookingStart = this.parseDateTime(b.bookingDate, b.startTime);
-            const bookingEnd = this.parseDateTime(b.bookingDate, b.finishTime);
-            
-            return clickTime >= bookingStart && clickTime <= bookingEnd;
-        });
-        
-        if (booking) {
-            // Show allocation creation modal
-            this.showCreateAllocationModal(booking, clickTime);
-        }
+        // Date click functionality disabled for non-resource views
+        // This was only used for creating allocations in timeline view
     }
     
     async handleEventDrop(info) {
@@ -831,98 +727,45 @@ class DailyRunSheetCalendar {
     
     updateCalendarEvents() {
         if (!this.calendar) {
-            console.log('No calendar instance to update');
+            console.log('Calendar not initialized yet');
             return;
         }
         
         console.log('Updating calendar events...');
         
-        // Remove all events
+        // Remove all existing events (matching management-allocations)
         this.calendar.removeAllEvents();
         
-        // Add new events
+        // Transform and add events
         const events = this.transformToCalendarEvents();
         console.log('Adding', events.length, 'events to calendar');
+        
+        // Add all events to calendar (matching management-allocations pattern)
         events.forEach(event => {
-            console.log('Adding event:', event.title, 'to resource:', event.resourceId);
-            // Add the event
-            const addedEvent = this.calendar.addEvent(event);
-            
-            // Check if event was added successfully
-            if (addedEvent) {
-                console.log('Event added successfully:', addedEvent.id);
-                // For resource timeline view, ensure resource association
-                if (event.resourceId && this.calendar.view.type.includes('resource')) {
-                    const resource = this.calendar.getResourceById(event.resourceId);
-                    if (resource) {
-                        console.log('Resource found for event:', resource.id, resource.title);
-                    } else {
-                        console.error('Resource not found for event:', event.resourceId);
-                    }
-                }
-            } else {
-                console.error('Failed to add event:', event.title);
-            }
+            this.calendar.addEvent(event);
         });
         
-        // Also check if we need to update resources
-        const currentResources = this.calendar.getResources();
-        console.log('Current calendar resources:', currentResources.length);
-        
-        // If no resources, we need to add them
-        if (currentResources.length === 0 && this.runSheetData && this.runSheetData.vessels) {
-            console.log('No resources in calendar, adding vessels as resources...');
-            const resources = this.getVesselResources();
-            resources.forEach(resource => {
-                console.log('Adding resource:', resource.id, resource.title);
-                this.calendar.addResource(resource);
-            });
-        }
-        
-        // Force calendar to re-render
-        console.log('Forcing calendar render...');
-        this.calendar.render();
-        
-        // Check what events are actually in the calendar
-        const allEvents = this.calendar.getEvents();
-        console.log('Total events in calendar after update:', allEvents.length);
-        allEvents.forEach(event => {
-            console.log('Event in calendar:', {
-                title: event.title,
-                start: event.start?.toISOString(),
-                end: event.end?.toISOString(),
-                resourceId: event.getResources()?.[0]?.id
-            });
-        });
-        
-        // Add a test event to verify the calendar can display events
-        if (this.runSheetData && this.runSheetData.vessels && this.runSheetData.vessels.length > 0) {
-            const testResource = this.runSheetData.vessels[0];
-            const now = new Date();
-            const testEvent = {
-                id: 'test-event',
-                title: 'TEST EVENT',
-                start: now,
-                end: new Date(now.getTime() + 2 * 60 * 60 * 1000), // 2 hours
-                resourceId: testResource.id,
-                backgroundColor: '#FF0000'
-            };
-            console.log('Adding test event:', testEvent);
-            this.calendar.addEvent(testEvent);
-        }
+        console.log('Events added. Total in calendar:', this.calendar.getEvents().length);
     }
     
     switchView(viewType) {
         if (viewType === 'timeline') {
-            this.calendar.changeView('resourceTimelineDay');
-            document.getElementById('timelineViewBtn').classList.add('active');
-            document.getElementById('gridViewBtn').classList.remove('active');
+            this.calendar.changeView('timeGridDay');
+            const btn1 = document.getElementById('timelineViewBtn');
+            const btn2 = document.getElementById('gridViewBtn');
+            if (btn1) btn1.classList.add('active');
+            if (btn2) btn2.classList.remove('active');
         } else {
-            this.calendar.changeView('resourceTimeGridDay');
-            document.getElementById('timelineViewBtn').classList.remove('active');
-            document.getElementById('gridViewBtn').classList.add('active');
+            this.calendar.changeView('timeGridWeek'); 
+            const btn1 = document.getElementById('timelineViewBtn');
+            const btn2 = document.getElementById('gridViewBtn');
+            if (btn1) btn1.classList.remove('active');
+            if (btn2) btn2.classList.add('active');
         }
         this.currentView = viewType;
+        
+        // Force calendar to update size
+        this.calendar.updateSize();
     }
     
     scrollToNow() {
@@ -1087,8 +930,8 @@ class DailyRunSheetCalendar {
 
 // Global functions for onclick handlers
 function switchView(viewType) {
-    if (dailyRunSheet) {
-        dailyRunSheet.switchView(viewType);
+    if (window.dailyRunSheet) {
+        window.dailyRunSheet.switchView(viewType);
     }
 }
 
