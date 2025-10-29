@@ -225,6 +225,7 @@ class DailyRunSheetCalendar {
         }
         
         console.log('Creating resources from vessels:', this.runSheetData.vessels.length, 'vessels');
+        console.log('Vessel IDs:', this.runSheetData.vessels.map(v => ({ id: v.id, name: v.name })));
         const resources = this.runSheetData.vessels.map(vessel => ({
             id: vessel.id,
             title: vessel.name,
@@ -274,13 +275,19 @@ class DailyRunSheetCalendar {
         
         this.runSheetData.bookings.forEach(booking => {
             console.log('Processing booking:', booking.customerName, 'vesselId:', booking.vesselId);
+            
+            const startDate = this.parseDateTime(booking.bookingDate, booking.startTime);
+            const endDate = this.parseDateTime(booking.bookingDate, booking.finishTime);
+            console.log('  Booking times:', booking.bookingDate, booking.startTime, '->', booking.finishTime);
+            console.log('  Parsed dates:', startDate.toISOString(), '->', endDate.toISOString());
+            
             // Main booking block
             events.push({
                 id: `booking-${booking.id}`,
                 resourceId: booking.vesselId,
                 title: booking.customerName,
-                start: this.parseDateTime(booking.bookingDate, booking.startTime),
-                end: this.parseDateTime(booking.bookingDate, booking.finishTime),
+                start: startDate,
+                end: endDate,
                 backgroundColor: '#2196F3',
                 borderColor: '#1976D2',
                 classNames: ['booking-main'],
@@ -821,7 +828,24 @@ class DailyRunSheetCalendar {
         console.log('Adding', events.length, 'events to calendar');
         events.forEach(event => {
             console.log('Adding event:', event.title, 'to resource:', event.resourceId);
-            this.calendar.addEvent(event);
+            // Add the event
+            const addedEvent = this.calendar.addEvent(event);
+            
+            // Check if event was added successfully
+            if (addedEvent) {
+                console.log('Event added successfully:', addedEvent.id);
+                // For resource timeline view, ensure resource association
+                if (event.resourceId && this.calendar.view.type.includes('resource')) {
+                    const resource = this.calendar.getResourceById(event.resourceId);
+                    if (resource) {
+                        console.log('Resource found for event:', resource.id, resource.title);
+                    } else {
+                        console.error('Resource not found for event:', event.resourceId);
+                    }
+                }
+            } else {
+                console.error('Failed to add event:', event.title);
+            }
         });
         
         // Also check if we need to update resources
@@ -836,6 +860,38 @@ class DailyRunSheetCalendar {
                 console.log('Adding resource:', resource.id, resource.title);
                 this.calendar.addResource(resource);
             });
+        }
+        
+        // Force calendar to re-render
+        console.log('Forcing calendar render...');
+        this.calendar.render();
+        
+        // Check what events are actually in the calendar
+        const allEvents = this.calendar.getEvents();
+        console.log('Total events in calendar after update:', allEvents.length);
+        allEvents.forEach(event => {
+            console.log('Event in calendar:', {
+                title: event.title,
+                start: event.start?.toISOString(),
+                end: event.end?.toISOString(),
+                resourceId: event.getResources()?.[0]?.id
+            });
+        });
+        
+        // Add a test event to verify the calendar can display events
+        if (this.runSheetData && this.runSheetData.vessels && this.runSheetData.vessels.length > 0) {
+            const testResource = this.runSheetData.vessels[0];
+            const now = new Date();
+            const testEvent = {
+                id: 'test-event',
+                title: 'TEST EVENT',
+                start: now,
+                end: new Date(now.getTime() + 2 * 60 * 60 * 1000), // 2 hours
+                resourceId: testResource.id,
+                backgroundColor: '#FF0000'
+            };
+            console.log('Adding test event:', testEvent);
+            this.calendar.addEvent(testEvent);
         }
     }
     
@@ -902,7 +958,13 @@ class DailyRunSheetCalendar {
             if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
         }
         
-        return new Date(year, month - 1, day, hours, minutes);
+        // Create date in local time
+        const date = new Date(year, month - 1, day, hours, minutes);
+        
+        // Log the created date for debugging
+        console.log('Created date:', dateStr, timeStr, '->', date.toISOString(), 'Local:', date.toString());
+        
+        return date;
     }
     
     formatTime(date) {
