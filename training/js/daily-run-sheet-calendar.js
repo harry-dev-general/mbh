@@ -133,7 +133,7 @@ class DailyRunSheetCalendar {
         this.calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: isMobile ? 'listDay' : 'timeGridDay',
             initialDate: todayStr, // Ensure we're on today's date
-            timeZone: 'Australia/Sydney',
+            timeZone: 'local',  // Use local timezone to prevent conversion
             
             // Header toolbar
             headerToolbar: {
@@ -292,9 +292,13 @@ class DailyRunSheetCalendar {
         const props = arg.event.extendedProps;
         let content = '';
         
-        if (props.type === 'booking') {
+        // Check both recordType (new) and type (old) for compatibility
+        const eventType = props.recordType || props.type;
+        const allocationType = props.allocationType;
+        
+        if (eventType === 'booking' && !allocationType) {
             // Main booking event
-            const hasAddOns = props.booking.addOns && props.booking.addOns !== 'None';
+            const hasAddOns = props.booking && props.booking.addOns && props.booking.addOns !== 'None';
             content = `
                 <div class="fc-event-main">
                     <div class="fc-event-title">
@@ -306,36 +310,43 @@ class DailyRunSheetCalendar {
                     </div>
                 </div>
             `;
-        } else if (props.type === 'onboarding' || props.type === 'deloading') {
+        } else if (allocationType === 'onboarding' || allocationType === 'deloading') {
             // Allocation event
-            const isStaffed = props.staffName && props.staffName !== 'Unassigned';
+            const isStaffed = props.hasStaff || (props.staffName && props.staffName !== 'Unassigned');
             content = `
                 <div class="fc-event-allocation ${isStaffed ? 'staffed' : 'unstaffed'}">
                     <div class="fc-event-title">${arg.event.title}</div>
                 </div>
             `;
+        } else {
+            // Fallback for any other event type
+            content = `<div class="fc-event-title">${arg.event.title}</div>`;
         }
         
-        return { html: content };
+        return { html: content || '<div>Event</div>' };
     }
     
     getEventClasses(arg) {
         const classes = [];
         const props = arg.event.extendedProps;
         
-        if (props.type === 'booking') {
+        // Check both recordType (new) and type (old) for compatibility
+        const eventType = props.recordType || props.type;
+        const allocationType = props.allocationType;
+        
+        if (eventType === 'booking' && !allocationType) {
             classes.push('event-booking');
             if (props.status) {
                 classes.push(`status-${props.status.toLowerCase()}`);
             }
-        } else if (props.type === 'onboarding') {
+        } else if (allocationType === 'onboarding') {
             classes.push('event-allocation', 'event-onboarding');
-            if (!props.staffName || props.staffName === 'Unassigned') {
+            if (!props.hasStaff) {
                 classes.push('unstaffed');
             }
-        } else if (props.type === 'deloading') {
+        } else if (allocationType === 'deloading') {
             classes.push('event-allocation', 'event-deloading');
-            if (!props.staffName || props.staffName === 'Unassigned') {
+            if (!props.hasStaff) {
                 classes.push('unstaffed');
             }
         }
