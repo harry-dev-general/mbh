@@ -226,11 +226,11 @@ app.get('/api/daily-run-sheet', async (req, res) => {
         // Get status for all vessels
         const vesselStatuses = await dailyRunSheet.getAllVesselStatuses();
         
-        // For the calendar view, we want to show ALL active vessels as resources
+        // For the calendar view, we want to show ALL vessels as resources
         // not just ones with bookings today
         const activeVessels = vesselStatuses;
         
-        console.log('Active vessels:', activeVessels.map(v => ({ id: v.id, name: v.name })));
+        console.log('Available vessels:', activeVessels.map(v => ({ id: v.id, name: v.name })));
         
         // Get employee details for name mapping
         const employeeMap = await dailyRunSheet.getEmployeeDetails();
