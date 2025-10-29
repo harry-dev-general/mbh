@@ -70,6 +70,14 @@ After deploying these changes:
 ## Files Modified
 - `/training/daily-run-sheet-v2.html` - Updated CDN URLs and removed polling script
 - `/training/js/daily-run-sheet-calendar.js` - Simplified initialization logic
+- `/server.js` - Added cdn.jsdelivr.net to CSP styleSrc directive
+
+## Additional Fix: Content Security Policy
+When running locally or on production, the CSP (Content Security Policy) may block the cdn.jsdelivr.net resources. The fix is to add `https://cdn.jsdelivr.net` to the styleSrc directive in server.js:
+
+```javascript
+styleSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+```
 
 ## Date: October 29, 2025
-Fixed in commit: `3b98f46`
+Fixed in commits: `3b98f46`, `a129fca`
