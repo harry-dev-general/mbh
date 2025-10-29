@@ -42,7 +42,7 @@ class DailyRunSheetCalendar {
     
     async getUserRole() {
         try {
-            const response = await fetch('/api/get-user-role', {
+            const response = await fetch('/api/user/role', {
                 headers: {
                     'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
                 }
@@ -113,7 +113,7 @@ class DailyRunSheetCalendar {
         
         // Check if FullCalendar plugins are loaded
         console.log('FullCalendar loaded:', typeof FullCalendar !== 'undefined');
-        console.log('Resource plugin available:', typeof FullCalendar !== 'undefined' && FullCalendar.ResourceTimelineView);
+        console.log('Resource plugin available:', typeof FullCalendar !== 'undefined' && FullCalendar.ResourceTimeline);
         
         // Prepare resources (vessels)
         const resources = this.getVesselResources();

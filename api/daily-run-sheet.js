@@ -32,7 +32,8 @@ async function getDailyBookings(date) {
         
         // Alternative approach: fetch all bookings and filter client-side
         // This matches the pattern used in management-allocations
-        const statusFilter = `OR({Status}='PAID', {Status}='PEND', {Status}='PART')`;
+        // Include date filter in the Airtable query for better performance
+        const statusFilter = `AND(OR({Status}='PAID', {Status}='PEND', {Status}='PART'), {Booking Date}='${dateString}')`;
         
         console.log('Filter formula:', statusFilter);
         
@@ -48,30 +49,37 @@ async function getDailyBookings(date) {
             `fields[]=Onboarding Time&fields[]=Deloading Time&` +
             `fields[]=Total Amount&fields[]=Pre Departure Checklist&fields[]=Post Departure Checklist`;
         
-        const response = await axios.get(url, { headers });
+        // Fetch all pages of bookings
+        let allBookings = [];
+        let offset = null;
         
-        const allBookings = response.data.records || [];
-        console.log('Total bookings fetched:', allBookings.length);
-        
-        // Filter for the specific date client-side
-        const filteredBookings = allBookings.filter(record => {
-            const bookingDate = record.fields['Booking Date'];
-            if (!bookingDate) {
-                console.log('Booking without date:', record.fields['Booking Code']);
-                return false;
+        do {
+            const paginatedUrl = url + (offset ? `&offset=${offset}` : '');
+            const response = await axios.get(paginatedUrl, { headers });
+            
+            if (response.data.records) {
+                allBookings = allBookings.concat(response.data.records);
             }
             
-            // Direct string comparison
-            const matches = bookingDate === dateString;
-            if (matches) {
-                console.log('Found booking for date:', bookingDate, record.fields['Booking Code']);
-            }
-            return matches;
-        });
+            offset = response.data.offset;
+        } while (offset);
         
-        console.log('Bookings for', dateString, ':', filteredBookings.length);
+        console.log('Total bookings fetched:', allBookings.length);
         
-        return filteredBookings;
+        // Log first few bookings for debugging
+        if (allBookings.length > 0) {
+            console.log('Sample bookings:', allBookings.slice(0, 3).map(b => ({
+                code: b.fields['Booking Code'],
+                date: b.fields['Booking Date'],
+                customer: b.fields['Customer Name']
+            })));
+        }
+        
+        // Since we're now filtering by date in the Airtable query,
+        // all returned bookings should be for the requested date
+        console.log('Bookings for', dateString, ':', allBookings.length);
+        
+        return allBookings;
     } catch (error) {
         console.error('Error fetching daily bookings:', error.response?.data || error.message);
         throw error;
