@@ -58,13 +58,13 @@ class DailyRunSheetCalendar {
         }
     }
     
-    async loadData() {
+    async loadData(dateStr = null) {
         try {
-            // Get current date in Sydney timezone
-            const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' });
+            // Get date to load - either passed date or today in Sydney timezone
+            const dateToLoad = dateStr || new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' });
             
             // Load run sheet data
-            const response = await fetch(`/api/daily-run-sheet?date=${today}`);
+            const response = await fetch(`/api/daily-run-sheet?date=${dateToLoad}`);
             if (!response.ok) throw new Error('Failed to load data');
             
             this.runSheetData = await response.json();
@@ -168,6 +168,9 @@ class DailyRunSheetCalendar {
             dateClick: (info) => this.handleDateClick(info),
             eventDrop: (info) => this.handleEventDrop(info),
             eventResize: (info) => this.handleEventResize(info),
+            
+            // Date navigation handler
+            datesSet: (dateInfo) => this.handleDatesSet(dateInfo),
             
             // View configuration
             height: 'auto',
@@ -433,6 +436,20 @@ class DailyRunSheetCalendar {
         
         // Don't allow resizing of allocations or bookings
         info.revert();
+    }
+    
+    async handleDatesSet(dateInfo) {
+        // Get the current date displayed in the calendar
+        const currentDate = dateInfo.start;
+        const dateStr = currentDate.toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' });
+        
+        console.log('Calendar date changed to:', dateStr);
+        
+        // Load data for the new date
+        await this.loadData(dateStr);
+        
+        // Refresh the calendar events
+        this.updateCalendarEvents();
     }
     
     showBookingDetails(booking) {
@@ -947,7 +964,14 @@ function switchView(viewType) {
 }
 
 function refreshData() {
-    dailyRunSheet.loadData();
+    if (dailyRunSheet && dailyRunSheet.calendar) {
+        // Get current calendar date
+        const currentDate = dailyRunSheet.calendar.getDate();
+        const dateStr = currentDate.toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' });
+        dailyRunSheet.loadData(dateStr);
+    } else {
+        dailyRunSheet.loadData();
+    }
 }
 
 function closeModal(event, modalId) {
