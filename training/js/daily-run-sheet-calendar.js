@@ -138,6 +138,11 @@ class DailyRunSheetCalendar {
         const resources = this.getVesselResources();
         console.log('Initializing calendar with', resources.length, 'resources');
         
+        // Debug inline test event
+        if (resources.length > 0) {
+            console.log('Creating inline test event with resource:', resources[0].id, resources[0].title);
+        }
+        
         this.calendar = new FullCalendar.Calendar(calendarEl, {
             schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
             initialView: isMobile ? 'listDay' : 'resourceTimelineDay',
@@ -163,7 +168,19 @@ class DailyRunSheetCalendar {
             
             // Resources (vessels)
             resources: resources,
+            resourceOrder: 'title', // Order resources alphabetically
             resourceAreaHeaderContent: 'Vessels',
+            
+            // Test events inline
+            events: resources.length > 0 ? [{
+                id: 'inline-test',
+                title: 'INLINE TEST EVENT',
+                start: new Date().toISOString(),
+                end: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+                resourceId: resources[0].id,
+                backgroundColor: '#00FF00',
+                borderColor: '#00AA00'
+            }] : [],
             resourceAreaWidth: isMobile ? '120px' : '180px',
             
             // Resource rendering
