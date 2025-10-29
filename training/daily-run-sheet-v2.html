@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Run Sheet - MBH Staff Portal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-init-fix.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <!-- FullCalendar v6 with Scheduler Plugin (same as task-scheduler.html) -->
@@ -479,10 +480,45 @@
     </div>
     
     <script>
-        // Supabase initialization
-        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialize authentication
+        let supabase;
+        
+        async function checkAuth() {
+            try {
+                // Initialize Supabase client using SupabaseInit module
+                supabase = await window.SupabaseInit.getClient();
+                window.supabase = supabase; // Make it globally available
+                
+                // Get session with retry logic
+                const { session, error } = await window.SupabaseInit.getSession();
+                
+                if (error) {
+                    console.error('Session error:', error);
+                    // Redirect to login if no session
+                    window.location.href = '/index.html';
+                    return;
+                }
+                
+                if (!session) {
+                    console.log('No session found, redirecting to login');
+                    window.location.href = '/index.html';
+                    return;
+                }
+                
+                console.log('Authentication successful');
+                
+                // Initialize the calendar after successful authentication
+                if (!window.dailyRunSheet) {
+                    window.dailyRunSheet = new DailyRunSheetCalendar();
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                window.location.href = '/index.html';
+            }
+        }
+        
+        // Check auth on page load
+        window.addEventListener('DOMContentLoaded', checkAuth);
     </script>
     
     <!-- Load the calendar JavaScript -->

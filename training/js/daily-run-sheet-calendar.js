@@ -12,10 +12,18 @@ class DailyRunSheetCalendar {
     }
     
     async init() {
+        // Wait for supabase to be available from global scope
+        if (!window.supabase) {
+            console.log('Waiting for Supabase to be initialized...');
+            // Supabase should be set by checkAuth() in the HTML
+            setTimeout(() => this.init(), 100);
+            return;
+        }
+        
         // Check authentication
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await window.supabase.auth.getUser();
         if (!user) {
-            window.location.href = 'auth.html';
+            window.location.href = 'index.html';
             return;
         }
         this.currentUser = user;
@@ -44,7 +52,7 @@ class DailyRunSheetCalendar {
         try {
             const response = await fetch('/api/user/role', {
                 headers: {
-                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                    'Authorization': `Bearer ${(await window.supabase.auth.getSession()).data.session?.access_token}`
                 }
             });
             
@@ -689,7 +697,7 @@ class DailyRunSheetCalendar {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                    'Authorization': `Bearer ${(await window.supabase.auth.getSession()).data.session?.access_token}`
                 },
                 body: JSON.stringify({
                     bookingId: booking.bookingRecordId,
@@ -963,12 +971,8 @@ class DailyRunSheetCalendar {
     }
 }
 
-// Initialize the calendar
-let dailyRunSheet;
-document.addEventListener('DOMContentLoaded', () => {
-    // FullCalendar scheduler should be loaded with cdn.jsdelivr.net
-    dailyRunSheet = new DailyRunSheetCalendar();
-});
+// The calendar will be initialized from the HTML file after successful authentication
+// This ensures supabase is available before we try to use it
 
 // Global functions for onclick handlers
 function switchView(viewType) {

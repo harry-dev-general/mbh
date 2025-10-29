@@ -226,10 +226,9 @@ app.get('/api/daily-run-sheet', async (req, res) => {
         // Get status for all vessels
         const vesselStatuses = await dailyRunSheet.getAllVesselStatuses();
         
-        // Filter to only vessels that have bookings today
-        const activeVessels = vesselStatuses.filter(v => 
-            vesselIds.includes(v.id)
-        );
+        // For the calendar view, we want to show ALL active vessels as resources
+        // not just ones with bookings today
+        const activeVessels = vesselStatuses;
         
         // Get employee details for name mapping
         const employeeMap = await dailyRunSheet.getEmployeeDetails();
@@ -240,8 +239,10 @@ app.get('/api/daily-run-sheet', async (req, res) => {
         // Process bookings for timeline
         const processedBookings = bookings.map(b => ({
             id: b.id,
+            bookingRecordId: b.id,  // Add record ID for allocation updates
             bookingCode: b.fields['Booking Code'],
             customerName: b.fields['Customer Name'],
+            bookingDate: b.fields['Booking Date'],  // Add this field!
             vesselId: b.fields['Boat']?.[0],
             vesselName: activeVessels.find(v => v.id === b.fields['Boat']?.[0])?.name || 'Unassigned',
             startTime: b.fields['Start Time'],

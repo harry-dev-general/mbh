@@ -30,12 +30,11 @@ async function getDailyBookings(date) {
         
         console.log('Searching for bookings on date:', dateString);
         
-        // Alternative approach: fetch all bookings and filter client-side
-        // This matches the pattern used in management-allocations
-        // Include date filter in the Airtable query for better performance
-        const statusFilter = `AND(OR({Status}='PAID', {Status}='PEND', {Status}='PART'), {Booking Date}='${dateString}')`;
+        // Use IS_SAME function for proper date comparison in Airtable
+        const statusFilter = `AND(OR({Status}='PAID', {Status}='PEND', {Status}='PART'), IS_SAME({Booking Date}, '${dateString}', 'day'))`;
         
         console.log('Filter formula:', statusFilter);
+        console.log('Date string being used:', dateString);
         
         // Build URL with proper encoding for Airtable
         const url = `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE}?` +
@@ -74,6 +73,7 @@ async function getDailyBookings(date) {
                 customer: b.fields['Customer Name']
             })));
         }
+        
         
         // Since we're now filtering by date in the Airtable query,
         // all returned bookings should be for the requested date
