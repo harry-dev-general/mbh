@@ -219,7 +219,7 @@ class DailyRunSheetCalendar {
             const endTimeStr = `${booking.bookingDate}T${this.convertTo24Hour(booking.finishTime)}`;
             console.log('Event times:', startTimeStr, 'to', endTimeStr);
             
-            events.push({
+            const mainEvent = {
                 id: `booking-${booking.id}`,
                 title: `🛥️ ${booking.customerName} (${vesselName})`,
                 start: startTimeStr,
@@ -233,14 +233,23 @@ class DailyRunSheetCalendar {
                     vesselName: vesselName,
                     status: booking.status
                 }
+            };
+            
+            console.log('Created main booking event:', {
+                id: mainEvent.id,
+                title: mainEvent.title,
+                recordType: mainEvent.extendedProps.recordType,
+                vesselName: mainEvent.extendedProps.vesselName
             });
+            
+            events.push(mainEvent);
             
             // Onboarding event (staff schedule view)
             if (booking.onboardingTime) {
                 const hasStaff = !!booking.onboardingStaffName;
                 const statusClass = !hasStaff ? 'booking-unallocated' : 'booking-pending';
                 
-                events.push({
+                const onboardEvent = {
                     id: `onboarding-${booking.id}`,
                     title: `🚢 ON ${booking.customerName}`,
                     start: `${booking.bookingDate}T${this.convertTo24Hour(booking.onboardingTime)}`,
@@ -256,7 +265,16 @@ class DailyRunSheetCalendar {
                         staffName: booking.onboardingStaffName,
                         vesselName: vesselName
                     }
+                };
+                
+                console.log('Created onboarding event:', {
+                    id: onboardEvent.id,
+                    title: onboardEvent.title,
+                    allocationType: onboardEvent.extendedProps.allocationType,
+                    hasStaff: onboardEvent.extendedProps.hasStaff
                 });
+                
+                events.push(onboardEvent);
             }
             
             // Deloading event (staff schedule view)
@@ -264,7 +282,7 @@ class DailyRunSheetCalendar {
                 const hasStaff = !!booking.deloadingStaffName;
                 const statusClass = !hasStaff ? 'booking-unallocated' : 'booking-pending';
                 
-                events.push({
+                const deloadEvent = {
                     id: `deloading-${booking.id}`,
                     title: `🏁 OFF ${booking.customerName}`,
                     start: `${booking.bookingDate}T${this.convertTo24Hour(booking.deloadingTime)}`,
@@ -280,7 +298,16 @@ class DailyRunSheetCalendar {
                         staffName: booking.deloadingStaffName,
                         vesselName: vesselName
                     }
+                };
+                
+                console.log('Created deloading event:', {
+                    id: deloadEvent.id,
+                    title: deloadEvent.title,
+                    allocationType: deloadEvent.extendedProps.allocationType,
+                    hasStaff: deloadEvent.extendedProps.hasStaff
                 });
+                
+                events.push(deloadEvent);
             }
         });
         
@@ -356,10 +383,16 @@ class DailyRunSheetCalendar {
     
     handleEventClick(info) {
         const props = info.event.extendedProps;
+        const eventType = props.recordType || props.type;
+        const allocationType = props.allocationType;
         
-        if (props.type === 'booking') {
+        console.log('Event clicked:', info.event.title, 'Type:', eventType, 'Allocation:', allocationType);
+        
+        if (eventType === 'booking' && !allocationType) {
+            // Main booking event
             this.showBookingDetails(props.booking);
-        } else if (props.type === 'onboarding' || props.type === 'deloading') {
+        } else if (allocationType === 'onboarding' || allocationType === 'deloading') {
+            // Staff allocation event
             if (this.userRole === 'Admin') {
                 this.showAllocationModal(props);
             } else {
@@ -375,9 +408,10 @@ class DailyRunSheetCalendar {
     
     async handleEventDrop(info) {
         const props = info.event.extendedProps;
+        const allocationType = props.allocationType;
         
         // Only allow time adjustments for allocations
-        if (props.type !== 'onboarding' && props.type !== 'deloading') {
+        if (allocationType !== 'onboarding' && allocationType !== 'deloading') {
             info.revert();
             return;
         }
@@ -386,7 +420,7 @@ class DailyRunSheetCalendar {
         const newTime = this.formatTime(info.event.start);
         const success = await this.updateAllocationTime(
             props.booking.id,
-            props.allocationType,
+            allocationType,
             newTime
         );
         
@@ -757,11 +791,28 @@ class DailyRunSheetCalendar {
         console.log('Adding', events.length, 'events to calendar');
         
         // Add all events to calendar (matching management-allocations pattern)
-        events.forEach(event => {
+        events.forEach((event, index) => {
+            console.log(`Adding event ${index + 1}:`, {
+                title: event.title,
+                start: event.start,
+                recordType: event.extendedProps?.recordType,
+                allocationType: event.extendedProps?.allocationType
+            });
             this.calendar.addEvent(event);
         });
         
         console.log('Events added. Total in calendar:', this.calendar.getEvents().length);
+        
+        // Verify events were added
+        const addedEvents = this.calendar.getEvents();
+        if (addedEvents.length > 0) {
+            console.log('Sample event from calendar:', {
+                title: addedEvents[0].title,
+                start: addedEvents[0].start,
+                display: addedEvents[0].display,
+                extendedProps: addedEvents[0].extendedProps
+            });
+        }
     }
     
     switchView(viewType) {
