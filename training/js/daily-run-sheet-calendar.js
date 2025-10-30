@@ -244,8 +244,8 @@ class DailyRunSheetCalendar {
             const endTimeStr = `${booking.bookingDate}T${this.convertTo24Hour(booking.finishTime)}`;
             console.log('Event times:', startTimeStr, 'to', endTimeStr);
             
-            // Get vessel ID for resource view
-            const resourceId = booking.vesselId || vesselName.replace(/\s+/g, '-').toLowerCase() || 'unassigned';
+            // Get vessel ID for resource view - always use vessel name for consistency
+            const resourceId = vesselName ? vesselName.replace(/\s+/g, '-').toLowerCase() : 'unassigned';
             
             const mainEvent = {
                 id: `booking-${booking.id}`,
@@ -268,7 +268,8 @@ class DailyRunSheetCalendar {
                 id: mainEvent.id,
                 title: mainEvent.title,
                 recordType: mainEvent.extendedProps.recordType,
-                vesselName: mainEvent.extendedProps.vesselName
+                vesselName: mainEvent.extendedProps.vesselName,
+                resourceId: mainEvent.resourceId
             });
             
             events.push(mainEvent);
@@ -895,6 +896,7 @@ class DailyRunSheetCalendar {
         }
         
         console.log('Updating calendar resources:', resources.length, 'resources');
+        console.log('Resources being created:', resources);
         
         // Clear existing resources
         const existingResources = this.calendar.getResources();
