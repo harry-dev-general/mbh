@@ -10,6 +10,7 @@ class DailyRunSheetCalendar {
         this.autoRefreshInterval = null;
         this.selectedVessel = ''; // Track selected vessel filter
         this.availableVessels = new Set(); // Track unique vessels
+        this.currentCalendarDate = null; // Track current calendar date for refresh
         this.init();
     }
     
@@ -138,16 +139,26 @@ class DailyRunSheetCalendar {
         const todayStr = today.toISOString().split('T')[0];
         console.log('Today is:', todayStr, 'Full date:', today.toString());
         
+        // Set initial calendar date
+        this.currentCalendarDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' });
+        
         this.calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: isMobile ? 'listDay' : 'timeGridDay',
+            // Scheduler license key (GPL for open source)
+            schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
+            
+            initialView: isMobile ? 'listDay' : 'resourceTimeGridDay',
             initialDate: todayStr, // Ensure we're on today's date
             timeZone: 'local',  // Use local timezone to prevent conversion
+            
+            // Resource configuration
+            resources: [], // Will be populated dynamically
+            resourceOrder: 'title', // Sort resources alphabetically
             
             // Header toolbar
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: ''  // We'll use custom view buttons
+                right: 'resourceTimeGridDay,timeGridWeek,listWeek'
             },
             
             // Time configuration
@@ -233,11 +244,15 @@ class DailyRunSheetCalendar {
             const endTimeStr = `${booking.bookingDate}T${this.convertTo24Hour(booking.finishTime)}`;
             console.log('Event times:', startTimeStr, 'to', endTimeStr);
             
+            // Get vessel ID for resource view
+            const resourceId = booking.vesselId || vesselName.replace(/\s+/g, '-').toLowerCase() || 'unassigned';
+            
             const mainEvent = {
                 id: `booking-${booking.id}`,
-                title: `🛥️ ${booking.customerName} (${vesselName})`,
+                title: `🛥️ ${booking.customerName}`,
                 start: startTimeStr,
                 end: endTimeStr,
+                resourceId: resourceId, // Assign to vessel resource
                 backgroundColor: '#2196F3',
                 borderColor: '#1976D2',
                 classNames: ['booking-event', 'booking-main'],
@@ -268,6 +283,7 @@ class DailyRunSheetCalendar {
                     title: `🚢 ON ${booking.customerName}`,
                     start: `${booking.bookingDate}T${this.convertTo24Hour(booking.onboardingTime)}`,
                     end: `${booking.bookingDate}T${this.addMinutes(booking.onboardingTime, 30)}`,
+                    resourceId: resourceId, // Same vessel resource
                     backgroundColor: hasStaff ? '#4CAF50' : '#f44336',
                     borderColor: hasStaff ? '#388E3C' : '#d32f2f',
                     classNames: ['booking-event', 'booking-onboarding', statusClass],
@@ -301,6 +317,7 @@ class DailyRunSheetCalendar {
                     title: `🏁 OFF ${booking.customerName}`,
                     start: `${booking.bookingDate}T${this.convertTo24Hour(booking.deloadingTime)}`,
                     end: `${booking.bookingDate}T${this.addMinutes(booking.deloadingTime, 30)}`,
+                    resourceId: resourceId, // Same vessel resource
                     backgroundColor: hasStaff ? '#2196F3' : '#f44336',
                     borderColor: hasStaff ? '#1976D2' : '#d32f2f',
                     classNames: ['booking-event', 'booking-deloading', statusClass],
@@ -456,6 +473,9 @@ class DailyRunSheetCalendar {
         const dateStr = currentDate.toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' });
         
         console.log('Calendar date changed to:', dateStr);
+        
+        // Store the current date for auto-refresh
+        this.currentCalendarDate = dateStr;
         
         // Load data for the new date
         await this.loadData(dateStr);
@@ -804,25 +824,19 @@ class DailyRunSheetCalendar {
         const events = this.transformToCalendarEvents();
         console.log('Adding', events.length, 'events to calendar');
         
+        // Update calendar resources from available vessels
+        this.updateCalendarResources();
+        
         // Update vessel dropdown
         this.updateVesselDropdown();
         
-        // Filter events if a vessel is selected
-        let filteredEvents = events;
-        if (this.selectedVessel) {
-            filteredEvents = events.filter(event => {
-                const vesselName = event.extendedProps?.vesselName || 'Unassigned';
-                return vesselName === this.selectedVessel;
-            });
-            console.log(`Filtering for vessel "${this.selectedVessel}": ${filteredEvents.length} events`);
-        }
-        
-        // Add filtered events to calendar
-        filteredEvents.forEach((event, index) => {
+        // Add all events to calendar (resource filtering handles visibility)
+        events.forEach((event, index) => {
             console.log(`Adding event ${index + 1}:`, {
                 title: event.title,
                 start: event.start,
                 vessel: event.extendedProps?.vesselName,
+                resourceId: event.resourceId,
                 recordType: event.extendedProps?.recordType,
                 allocationType: event.extendedProps?.allocationType
             });
@@ -837,15 +851,64 @@ class DailyRunSheetCalendar {
             console.log('Sample event from calendar:', {
                 title: addedEvents[0].title,
                 start: addedEvents[0].start,
+                resourceId: addedEvents[0].resourceId,
                 display: addedEvents[0].display,
                 extendedProps: addedEvents[0].extendedProps
             });
         }
     }
     
+    updateCalendarResources() {
+        if (!this.calendar) return;
+        
+        // Create resources from available vessels
+        const resources = [];
+        
+        // If a vessel is selected, only show that vessel
+        if (this.selectedVessel) {
+            const resourceId = this.selectedVessel === 'Unassigned' ? 
+                'unassigned' : 
+                this.selectedVessel.replace(/\s+/g, '-').toLowerCase();
+            
+            resources.push({
+                id: resourceId,
+                title: this.selectedVessel
+            });
+        } else {
+            // Show all vessels
+            // Add each vessel as a resource
+            const sortedVessels = Array.from(this.availableVessels).sort();
+            sortedVessels.forEach(vessel => {
+                resources.push({
+                    id: vessel.replace(/\s+/g, '-').toLowerCase(),
+                    title: vessel
+                });
+            });
+            
+            // Add unassigned resource if there are unassigned bookings
+            if (this.runSheetData?.bookings?.some(b => !b.vesselName || b.vesselName === 'Unassigned')) {
+                resources.push({
+                    id: 'unassigned',
+                    title: 'Unassigned'
+                });
+            }
+        }
+        
+        console.log('Updating calendar resources:', resources.length, 'resources');
+        
+        // Clear existing resources
+        const existingResources = this.calendar.getResources();
+        existingResources.forEach(resource => resource.remove());
+        
+        // Add new resources
+        resources.forEach(resource => {
+            this.calendar.addResource(resource);
+        });
+    }
+    
     switchView(viewType) {
         if (viewType === 'timeline') {
-            this.calendar.changeView('timeGridDay');
+            this.calendar.changeView('resourceTimeGridDay');
             const btn1 = document.getElementById('timelineViewBtn');
             const btn2 = document.getElementById('gridViewBtn');
             if (btn1) btn1.classList.add('active');
@@ -878,7 +941,10 @@ class DailyRunSheetCalendar {
     startAutoRefresh() {
         // Refresh every 30 seconds
         this.autoRefreshInterval = setInterval(() => {
-            this.loadData();
+            // Use the current calendar date if available, otherwise today
+            const dateToLoad = this.currentCalendarDate || new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' });
+            console.log('Auto-refresh loading data for date:', dateToLoad);
+            this.loadData(dateToLoad);
         }, 30000);
     }
     
