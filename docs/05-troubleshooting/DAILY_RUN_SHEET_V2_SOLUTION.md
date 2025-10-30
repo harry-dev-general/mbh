@@ -124,12 +124,34 @@ After the initial fix, events were still not displaying. Further investigation r
 - Added helper functions `convertTo24Hour()` and `addMinutes()` from working implementation
 - This creates strings like "2025-10-29T12:00:00" without timezone suffix
 
+## Update: Event Content and Final Timezone Fix
+
+Events appeared but were blank and still at wrong times (11 PM instead of 12 PM).
+
+**Problems Found**:
+1. Property name mismatch: `renderEvent()` expected `props.type` but we set `props.recordType`
+2. Calendar timezone setting still caused conversion
+
+**Solutions Applied**:
+1. Updated `renderEvent()` and `getEventClasses()` to check both property names
+2. Changed calendar timezone from `'Australia/Sydney'` to `'local'`
+3. Added fallback content to ensure events always display something
+
+## Final Status
+
+As of October 29, 2025, the calendar is functional with:
+- ✅ Events display with proper content
+- ✅ Events appear at correct times
+- ✅ Day and Week views work correctly
+- ❌ Resource/Timeline view not available (requires commercial license)
+
+For complete technical analysis, see: [DAILY_RUN_SHEET_V2_TECHNICAL_DISCOVERIES.md](./DAILY_RUN_SHEET_V2_TECHNICAL_DISCOVERIES.md)
+
 ## Next Steps
 
-1. Deploy the date format fix to Railway
-2. Test that events display correctly on production
-3. Verify events appear in the correct time slots
-4. Consider purchasing Scheduler license if resource view is needed
+1. Monitor production deployment
+2. Consider purchasing Scheduler license for resource view
+3. Implement vessel filter dropdown as alternative to resource columns
 
 ## Related Issues
 - Initial 500 error (fixed)
@@ -137,3 +159,5 @@ After the initial fix, events were still not displaying. Further investigation r
 - Authentication flow (fixed)
 - Event display issue - Scheduler plugin (fixed)
 - Event display issue - Date format (fixed)
+- Event display issue - Content rendering (fixed)
+- Event display issue - Timezone conversion (fixed)

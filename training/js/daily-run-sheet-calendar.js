@@ -8,6 +8,8 @@ class DailyRunSheetCalendar {
         this.currentView = 'timeline';
         this.staffMembers = [];
         this.autoRefreshInterval = null;
+        this.selectedVessel = ''; // Track selected vessel filter
+        this.availableVessels = new Set(); // Track unique vessels
         this.init();
     }
     
@@ -37,12 +39,18 @@ class DailyRunSheetCalendar {
         // Initialize calendar
         this.initializeCalendar();
         
+        // Set up vessel filter
+        this.setupVesselFilter();
+        
         // Set up auto-refresh
         this.startAutoRefresh();
         
         // Update current time
         this.updateCurrentTime();
         setInterval(() => this.updateCurrentTime(), 60000);
+        
+        // Set up window resize handler to fix calendar rendering
+        this.setupResizeHandler();
         
         // Hide loading
         document.getElementById('loading').style.display = 'none';
@@ -203,6 +211,7 @@ class DailyRunSheetCalendar {
         }
         
         const events = [];
+        this.availableVessels.clear(); // Clear previous vessels
         console.log('Transforming bookings to events:', this.runSheetData.bookings.length, 'bookings');
         
         this.runSheetData.bookings.forEach(booking => {
@@ -215,6 +224,11 @@ class DailyRunSheetCalendar {
             
             // Main booking event (vessel schedule view)
             const vesselName = booking.vesselName || 'No Vessel';
+            // Track unique vessels
+            if (vesselName && vesselName !== 'Unassigned') {
+                this.availableVessels.add(vesselName);
+            }
+            
             const startTimeStr = `${booking.bookingDate}T${this.convertTo24Hour(booking.startTime)}`;
             const endTimeStr = `${booking.bookingDate}T${this.convertTo24Hour(booking.finishTime)}`;
             console.log('Event times:', startTimeStr, 'to', endTimeStr);
@@ -790,11 +804,25 @@ class DailyRunSheetCalendar {
         const events = this.transformToCalendarEvents();
         console.log('Adding', events.length, 'events to calendar');
         
-        // Add all events to calendar (matching management-allocations pattern)
-        events.forEach((event, index) => {
+        // Update vessel dropdown
+        this.updateVesselDropdown();
+        
+        // Filter events if a vessel is selected
+        let filteredEvents = events;
+        if (this.selectedVessel) {
+            filteredEvents = events.filter(event => {
+                const vesselName = event.extendedProps?.vesselName || 'Unassigned';
+                return vesselName === this.selectedVessel;
+            });
+            console.log(`Filtering for vessel "${this.selectedVessel}": ${filteredEvents.length} events`);
+        }
+        
+        // Add filtered events to calendar
+        filteredEvents.forEach((event, index) => {
             console.log(`Adding event ${index + 1}:`, {
                 title: event.title,
                 start: event.start,
+                vessel: event.extendedProps?.vesselName,
                 recordType: event.extendedProps?.recordType,
                 allocationType: event.extendedProps?.allocationType
             });
@@ -863,6 +891,79 @@ class DailyRunSheetCalendar {
             timeZone: 'Australia/Sydney'
         });
         document.getElementById('currentTime').textContent = timeString;
+    }
+    
+    setupResizeHandler() {
+        let resizeTimer;
+        
+        // Handle window resize events
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (this.calendar) {
+                    console.log('Window resized, updating calendar size');
+                    this.calendar.updateSize();
+                }
+            }, 250);
+        });
+        
+        // Watch for DevTools open/close by monitoring window outer height changes
+        let lastOuterHeight = window.outerHeight;
+        setInterval(() => {
+            if (window.outerHeight !== lastOuterHeight) {
+                lastOuterHeight = window.outerHeight;
+                setTimeout(() => {
+                    if (this.calendar) {
+                        console.log('DevTools state changed, updating calendar');
+                        this.calendar.updateSize();
+                        // Force re-render of events
+                        this.calendar.render();
+                    }
+                }, 100);
+            }
+        }, 500);
+    }
+    
+    setupVesselFilter() {
+        const vesselFilter = document.getElementById('vesselFilter');
+        if (!vesselFilter) return;
+        
+        // Handle filter change
+        vesselFilter.addEventListener('change', (e) => {
+            this.selectedVessel = e.target.value;
+            console.log('Vessel filter changed to:', this.selectedVessel);
+            this.updateCalendarEvents();
+        });
+    }
+    
+    updateVesselDropdown() {
+        const vesselFilter = document.getElementById('vesselFilter');
+        if (!vesselFilter) return;
+        
+        // Store current selection
+        const currentSelection = this.selectedVessel;
+        
+        // Clear and repopulate
+        vesselFilter.innerHTML = '<option value="">All Vessels</option>';
+        
+        // Sort vessels alphabetically
+        const sortedVessels = Array.from(this.availableVessels).sort();
+        sortedVessels.forEach(vessel => {
+            const option = document.createElement('option');
+            option.value = vessel;
+            option.textContent = vessel;
+            option.selected = vessel === currentSelection;
+            vesselFilter.appendChild(option);
+        });
+        
+        // Add special option for unassigned
+        if (this.runSheetData?.bookings?.some(b => !b.vesselName || b.vesselName === 'Unassigned')) {
+            const option = document.createElement('option');
+            option.value = 'Unassigned';
+            option.textContent = 'Unassigned';
+            option.selected = 'Unassigned' === currentSelection;
+            vesselFilter.appendChild(option);
+        }
     }
     
     // Helper functions
