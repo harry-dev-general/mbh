@@ -3,10 +3,15 @@
 
 const axios = require('axios');
 
-// For Railway deployment, these are set in environment variables
-// For local development, you can hardcode them temporarily
-const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
+// Environment variables are required - no fallback values for security
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
 const BASE_ID = process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx';
+
+// Validate required environment variables
+if (!AIRTABLE_API_KEY) {
+    console.error('ERROR: AIRTABLE_API_KEY environment variable is required');
+    throw new Error('Missing required environment variable: AIRTABLE_API_KEY');
+}
 const ANNOUNCEMENTS_TABLE_ID = 'tblDCSmGREv0tF0Rq'; // Announcements table
 const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
 const ROSTER_TABLE_ID = 'tblwwK1jWGxnfuzAN';

@@ -31,8 +31,12 @@ Your Supabase Anon Key was exposed in the codebase and needs to be rotated. The 
    - Select "JWT Signing Keys" tab (not Legacy JWT Secret)
 
 2. **Create New Signing Key**
-   - Click "Add new signing key"
-   - This enables zero-downtime key rotation
+   - Click "Add new signing key" ✅ (You've completed this)
+   - This creates a STANDBY KEY
+   - Click "Rotate keys" to make it the CURRENT KEY
+   - Check both confirmation boxes (they're required):
+     - First box: Confirms your app can handle the new key (automatic with Supabase libraries)
+     - Second box: Acknowledges that old tokens remain valid until manually revoked
    - Both old and new JWTs will work during transition
 
 3. **Generate New API Keys**

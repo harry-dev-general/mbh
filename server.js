@@ -199,7 +199,8 @@ const adminAuth = (req, res, next) => {
 };
 
 // Config endpoint for frontend configuration
-app.get('/api/config', (req, res) => {
+// Returns public config without auth, sensitive config with auth
+app.get('/api/config', optionalAuthenticate, (req, res) => {
     // Ensure environment variables are set
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
         console.error('ERROR: SUPABASE_URL and SUPABASE_ANON_KEY must be set in Railway environment variables');
@@ -209,15 +210,22 @@ app.get('/api/config', (req, res) => {
         });
     }
     
-    res.json({
-        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
+    // Public configuration - always provided for auth pages
+    const publicConfig = {
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-        airtableApiKey: process.env.AIRTABLE_API_KEY || '',
-        airtableBaseId: process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx',
         API_BASE_URL: '', // Empty string means use relative URLs
         APP_URL: process.env.APP_URL || '' // Add APP_URL for proper URL handling
-    });
+    };
+    
+    // If user is authenticated, add sensitive configuration
+    if (req.user) {
+        publicConfig.googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || '';
+        publicConfig.airtableApiKey = process.env.AIRTABLE_API_KEY || '';
+        publicConfig.airtableBaseId = process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx';
+    }
+    
+    res.json(publicConfig);
 });
 
 // Daily Run Sheet API endpoints

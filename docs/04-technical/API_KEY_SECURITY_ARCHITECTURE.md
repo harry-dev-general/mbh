@@ -50,16 +50,31 @@ requiredEnvVars.forEach(varName => {
 });
 ```
 
-### Layer 3: Authenticated Configuration Endpoint
+### Layer 3: Tiered Configuration Endpoint
 
 **Implementation**:
 ```javascript
-app.get('/api/config', authMiddlewareV2, async (req, res) => {
-    // Only authenticated users can access
-    // Returns only frontend-safe keys
-    // Never exposes service keys
+app.get('/api/config', optionalAuthenticate, (req, res) => {
+    // Public config always available (for auth pages)
+    const publicConfig = {
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
+    };
+    
+    // Sensitive config only for authenticated users
+    if (req.user) {
+        publicConfig.airtableApiKey = process.env.AIRTABLE_API_KEY;
+        // ... other sensitive keys
+    }
+    
+    res.json(publicConfig);
 });
 ```
+
+This tiered approach ensures:
+- Authentication pages can initialize Supabase
+- Sensitive keys remain protected
+- No circular dependency issues
 
 ### Layer 4: Frontend Lazy Loading
 

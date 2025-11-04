@@ -59,12 +59,28 @@ The application uses a secure `/api/config` endpoint to serve necessary public k
 
 ```javascript
 // server.js - /api/config endpoint
-app.get('/api/config', authMiddlewareV2, async (req, res) => {
-    // Validates environment variables
-    // Returns only public keys (never service/secret keys)
-    // Requires authentication
+app.get('/api/config', optionalAuthenticate, (req, res) => {
+    // Always returns public Supabase config (needed for auth)
+    const publicConfig = {
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
+    };
+    
+    // If user is authenticated, add sensitive keys
+    if (req.user) {
+        publicConfig.airtableApiKey = process.env.AIRTABLE_API_KEY;
+        publicConfig.airtableBaseId = process.env.AIRTABLE_BASE_ID;
+        publicConfig.googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+    }
+    
+    res.json(publicConfig);
 });
 ```
+
+This approach:
+- Allows authentication pages to get Supabase config
+- Protects sensitive keys (Airtable, etc.) behind authentication
+- Maintains backward compatibility
 
 ### Frontend Configuration Loading
 

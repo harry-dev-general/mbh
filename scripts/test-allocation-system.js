@@ -1,11 +1,18 @@
 // Test script to verify Shift Allocations system is working
 // Run this in your browser console on the management-allocations.html page
+// IMPORTANT: The page must be loaded and authenticated first
 
 async function testAllocationSystem() {
     console.log('🔧 Testing Shift Allocations System...\n');
     
-    const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
-    const BASE_ID = 'applkAFOn2qxtu7tx';
+    // Get configuration from the page's loaded config
+    // These should already be available if the page loaded correctly
+    if (typeof AIRTABLE_API_KEY === 'undefined' || !AIRTABLE_API_KEY) {
+        console.error('❌ AIRTABLE_API_KEY not found. Make sure the page has loaded configuration.');
+        return;
+    }
+    
+    const BASE_ID = window.BASE_ID || 'applkAFOn2qxtu7tx';
     const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX';
     
     try {
