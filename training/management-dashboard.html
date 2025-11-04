@@ -2453,25 +2453,36 @@
         // API configuration - Use backend proxy for security
         // All Airtable API calls should go through the server to protect API keys
         
-        // Listen for auth state changes
-        supabase.auth.onAuthStateChange((event, session) => {
-            console.log('Auth event:', event);
-            
-            // Handle sign out
-            if (event === 'SIGNED_OUT') {
-                window.location.href = 'auth.html';
+        // Setup auth state listener (must be called after supabase is initialized)
+        function setupAuthListener() {
+            if (!supabase) {
+                console.error('Cannot setup auth listener - supabase not initialized');
+                return;
             }
             
-            // Handle initial session on page load
-            if (event === 'INITIAL_SESSION' && !session) {
-                console.log('No initial session, will redirect from checkAuth');
-            }
-        });
+            // Listen for auth state changes
+            supabase.auth.onAuthStateChange((event, session) => {
+                console.log('Auth event:', event);
+                
+                // Handle sign out
+                if (event === 'SIGNED_OUT') {
+                    window.location.href = 'auth.html';
+                }
+                
+                // Handle initial session on page load
+                if (event === 'INITIAL_SESSION' && !session) {
+                    console.log('No initial session, will redirect from checkAuth');
+                }
+            });
+        }
         
         // Check authentication on load
         async function checkAuth() {
             // Load configuration first
             await loadConfig();
+            
+            // Setup auth listener after supabase is initialized
+            setupAuthListener();
             
             // Use getSession instead of getUser to avoid race conditions
             const { data: { session }, error } = await supabase.auth.getSession();

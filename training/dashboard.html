@@ -985,6 +985,8 @@
                 // Load config first if not already loaded
                 if (!supabase) {
                     await loadConfig();
+                    // Setup auth listener after supabase is initialized
+                    setupAuthListener();
                 }
                 
                 const { data: { user }, error } = await supabase.auth.getUser();
@@ -1105,14 +1107,22 @@
             window.location.href = 'management-dashboard.html';
         }
 
-        // Listen for auth state changes
-        supabase.auth.onAuthStateChange((event, session) => {
-            console.log('Auth event:', event);
-            // Only handle sign out events - let init() handle sign in
-            if (event === 'SIGNED_OUT') {
-                window.location.href = 'auth.html';
+        // Setup auth state listener (must be called after supabase is initialized)
+        function setupAuthListener() {
+            if (!supabase) {
+                console.error('Cannot setup auth listener - supabase not initialized');
+                return;
             }
-        });
+            
+            // Listen for auth state changes
+            supabase.auth.onAuthStateChange((event, session) => {
+                console.log('Auth event:', event);
+                // Only handle sign out events - let init() handle sign in
+                if (event === 'SIGNED_OUT') {
+                    window.location.href = 'auth.html';
+                }
+            });
+        }
         
         // Load dynamic card content based on user role
         async function loadDynamicCard() {
