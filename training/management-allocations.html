@@ -1703,9 +1703,9 @@
         // We'll initialize Supabase in checkAuth using SupabaseInit module
         let supabase;
 
-        // Airtable configuration
-        const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
-        const BASE_ID = 'applkAFOn2qxtu7tx';
+        // Airtable configuration - will be loaded from server
+        let AIRTABLE_API_KEY = null;
+        let BASE_ID = null;
         const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
         const ROSTER_TABLE_ID = 'tblwwK1jWGxnfuzAN'; // Corrected Roster table ID
         const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Bookings Dashboard table (correct ID verified via Airtable)
@@ -1744,6 +1744,25 @@
             return `${year}-${month}-${day}`;
         }
 
+        // Load configuration from server
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                if (!response.ok) throw new Error('Failed to load configuration');
+                const config = await response.json();
+                AIRTABLE_API_KEY = config.airtableApiKey;
+                BASE_ID = config.airtableBaseId || 'applkAFOn2qxtu7tx';
+                
+                if (!AIRTABLE_API_KEY) {
+                    throw new Error('Airtable API key not configured on server');
+                }
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+                alert('Failed to load configuration. Please contact support.');
+                throw error;
+            }
+        }
+
         // Check authentication and permissions
         async function checkAuth() {
             try {
@@ -1756,6 +1775,9 @@
                 
                 // Initialize role helper
                 await RoleHelper.initializeRoleHelper();
+                
+                // Load API configuration
+                await loadConfig();
                 
                 // Get session with retry logic
                 const { session, error } = await window.SupabaseInit.getSession();

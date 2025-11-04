@@ -8,7 +8,12 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const PRODUCTION_URL = 'https://mbh-production-f0d1.up.railway.app';
-const ADMIN_KEY = process.env.ADMIN_API_KEY || 'mbh-admin-2025';
+const ADMIN_KEY = process.env.ADMIN_API_KEY;
+
+if (!ADMIN_KEY) {
+    console.error('ERROR: ADMIN_API_KEY environment variable not set');
+    process.exit(1);
+}
 const MONITORING_LOG_FILE = path.join(__dirname, 'monitoring-results.json');
 
 // Performance thresholds

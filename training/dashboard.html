@@ -941,10 +941,26 @@
     </div>
 
     <script>
-        // Initialize Supabase with proper session detection
-        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        // Initialize Supabase - credentials will be loaded from server
+        let SUPABASE_URL, SUPABASE_ANON_KEY, supabase;
+        
+        // Load configuration from server first
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                if (!response.ok) throw new Error('Failed to load configuration');
+                const config = await response.json();
+                SUPABASE_URL = config.SUPABASE_URL;
+                SUPABASE_ANON_KEY = config.SUPABASE_ANON_KEY;
+                AIRTABLE_API_KEY = config.airtableApiKey || AIRTABLE_API_KEY;
+                BASE_ID = config.airtableBaseId || BASE_ID;
+                
+                if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+                    throw new Error('Supabase configuration missing');
+                }
+                
+                // Now create Supabase client with loaded credentials
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
                 autoRefreshToken: true,
                 persistSession: true,
@@ -953,8 +969,8 @@
         });
 
         // Airtable configuration for employee lookup
-        const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
-        const BASE_ID = 'applkAFOn2qxtu7tx';
+        let AIRTABLE_API_KEY = null; // Will be loaded from server config
+        let BASE_ID = null; // Will be loaded from server config
         const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
         const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX'; // Shift Allocations table
         const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf'; // Bookings Dashboard table
@@ -966,6 +982,11 @@
         // Check authentication and load user data
         async function checkAuth() {
             try {
+                // Load config first if not already loaded
+                if (!supabase) {
+                    await loadConfig();
+                }
+                
                 const { data: { user }, error } = await supabase.auth.getUser();
                 
                 if (error) {

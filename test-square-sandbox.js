@@ -5,9 +5,14 @@
 
 const fetch = require('node-fetch');
 
-// Your sandbox credentials
-const SQUARE_ACCESS_TOKEN = 'EAAAlxvlv1BGVkvpMDljJs4JeK6o0Z4JzXpLgFRmrBhH5HQ_lET7JTWL7uoSxmYb';
-const SQUARE_APPLICATION_ID = 'sandbox-sq0idb-XMJPuJhbFV7hveP13KCkzQ';
+// Load credentials from environment
+const SQUARE_ACCESS_TOKEN = process.env.SQUARE_ACCESS_TOKEN;
+const SQUARE_APPLICATION_ID = process.env.SQUARE_APPLICATION_ID;
+
+if (!SQUARE_ACCESS_TOKEN || !SQUARE_APPLICATION_ID) {
+    console.error('ERROR: Square credentials not set in environment variables');
+    process.exit(1);
+}
 
 async function testSquareConnection() {
     console.log('🧪 Testing Square Sandbox Connection...\n');

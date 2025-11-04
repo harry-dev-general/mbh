@@ -180,7 +180,14 @@ app.use('/api/vessels', vesselRoutes);
 // Simple admin authentication middleware
 const adminAuth = (req, res, next) => {
   const adminKey = req.headers['x-admin-key'] || req.query.adminKey;
-  const expectedKey = process.env.ADMIN_API_KEY || 'mbh-admin-2025';
+  const expectedKey = process.env.ADMIN_API_KEY;
+  
+  if (!expectedKey) {
+    return res.status(500).json({ 
+      error: 'Server configuration error',
+      message: 'Admin API key not configured' 
+    });
+  }
   
   if (adminKey !== expectedKey) {
     return res.status(401).json({ 
@@ -206,6 +213,8 @@ app.get('/api/config', (req, res) => {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+        airtableApiKey: process.env.AIRTABLE_API_KEY || '',
+        airtableBaseId: process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx',
         API_BASE_URL: '', // Empty string means use relative URLs
         APP_URL: process.env.APP_URL || '' // Add APP_URL for proper URL handling
     });
@@ -753,8 +762,15 @@ app.get('/api/auth/test-jwt', async (req, res) => {
   
   try {
     const { createClient } = require('@supabase/supabase-js');
-    const SUPABASE_URL = process.env.SUPABASE_URL || 'https://etkugeooigiwahikrmzr.supabase.co';
-    const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+    
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        return res.status(503).json({
+            error: 'Service unavailable',
+            message: 'Authentication service not configured'
+        });
+    }
     
     // Create client with auth header
     const authSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -953,8 +969,15 @@ app.post('/api/auth/debug-jwt', async (req, res) => {
   // Try to verify with Supabase
   try {
     const { createClient } = require('@supabase/supabase-js');
-    const SUPABASE_URL = process.env.SUPABASE_URL || 'https://etkugeooigiwahikrmzr.supabase.co';
-    const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+    
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        return res.status(503).json({
+            error: 'Service unavailable',
+            message: 'Authentication service not configured'
+        });
+    }
     
     const authSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: {

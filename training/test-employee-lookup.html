@@ -67,8 +67,8 @@
     </div>
 
     <script>
-        const AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14';
-        const BASE_ID = 'applkAFOn2qxtu7tx';
+        let AIRTABLE_API_KEY = null; // Will be loaded from server config
+        let BASE_ID = null; // Will be loaded from server config
         const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
 
         async function lookupEmployee() {

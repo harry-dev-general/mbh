@@ -12,7 +12,12 @@ const path = require('path');
 
 // Configuration
 const API_BASE_URL = process.env.API_URL || 'https://mbh-development.up.railway.app';
-const ADMIN_KEY = process.env.ADMIN_API_KEY || 'mbh-admin-2025';
+const ADMIN_KEY = process.env.ADMIN_API_KEY;
+
+if (!ADMIN_KEY) {
+    console.error('ERROR: ADMIN_API_KEY environment variable not set');
+    process.exit(1);
+}
 const LOG_DIR = path.join(__dirname, '..', 'logs', 'monitoring');
 
 // Ensure log directory exists

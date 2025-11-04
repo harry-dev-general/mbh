@@ -6,7 +6,12 @@
 const axios = require('axios');
 
 const PRODUCTION_URL = 'https://mbh-production-f0d1.up.railway.app';
-const ADMIN_KEY = 'mbh-admin-2025';
+const ADMIN_KEY = process.env.ADMIN_API_KEY;
+
+if (!ADMIN_KEY) {
+    console.error('ERROR: ADMIN_API_KEY environment variable not set');
+    process.exit(1);
+}
 
 async function checkBookingReminderStatus() {
     console.log('🔍 Checking MBH Booking Reminder System Status...\n');

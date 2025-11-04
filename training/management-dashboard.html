@@ -2420,10 +2420,35 @@
     </div>
 
     <script>
-        // Initialize Supabase - must match the same instance as dashboard.html
-        const SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Initialize Supabase - credentials will be loaded from server
+        let SUPABASE_URL, SUPABASE_KEY, supabase;
+        
+        // Load configuration from server
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                if (!response.ok) throw new Error('Failed to load configuration');
+                const config = await response.json();
+                SUPABASE_URL = config.SUPABASE_URL;
+                SUPABASE_KEY = config.SUPABASE_ANON_KEY;
+                
+                if (!SUPABASE_URL || !SUPABASE_KEY) {
+                    throw new Error('Supabase configuration missing');
+                }
+                
+                // Create Supabase client with loaded credentials
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                
+                // Also load Google Maps API key
+                if (config.googleMapsApiKey) {
+                    GOOGLE_MAPS_API_KEY = config.googleMapsApiKey;
+                }
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+                alert('Failed to load configuration. Please refresh the page.');
+                throw error;
+            }
+        }
         
         // API configuration - Use backend proxy for security
         // All Airtable API calls should go through the server to protect API keys
@@ -2445,6 +2470,9 @@
         
         // Check authentication on load
         async function checkAuth() {
+            // Load configuration first
+            await loadConfig();
+            
             // Use getSession instead of getUser to avoid race conditions
             const { data: { session }, error } = await supabase.auth.getSession();
             
