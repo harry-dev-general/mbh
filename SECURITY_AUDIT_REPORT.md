@@ -61,10 +61,14 @@ Created `.env.example` file documenting all required variables:
 ### 1. **Rotate All Exposed Keys**
 ⚠️ **CRITICAL**: All exposed API keys should be considered compromised and must be rotated immediately:
 
-1. **Airtable**: Generate new API key at https://airtable.com/account
-2. **Supabase**: Rotate keys at https://app.supabase.com/project/[project-id]/settings/api
-3. **Square**: Generate new credentials in Square Developer Dashboard
-4. **Admin Key**: Generate a new secure random string
+1. **Airtable**: ✅ User confirmed new key generated
+2. **Supabase**: 
+   - Use JWT Signing Keys approach (not Legacy JWT Secret change)
+   - Go to Settings > Authentication > JWT Keys > JWT Signing Keys tab
+   - Create new signing key for zero-downtime rotation
+   - Then go to Settings > API to get new Anon key
+3. **Square**: Generate new credentials in Square Developer Dashboard (if using in production)
+4. **Admin Key**: Generate a new secure random string to replace `mbh-admin-2025`
 
 ### 2. **Update Environment Variables**
 After rotating keys, update environment variables in:
@@ -120,3 +124,4 @@ Review logs and access patterns for any unauthorized use of the exposed credenti
 All identified security vulnerabilities have been addressed in the code. However, immediate action is required to rotate the exposed credentials and clean the git history to fully secure the application.
 
 For questions or assistance, please contact the security team.
+
