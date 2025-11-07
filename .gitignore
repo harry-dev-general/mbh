@@ -39,3 +39,13 @@ build/
 # Log files
 logs.*.json
 deployment.log
+
+# Test files and security
+test-files/
+*-test.html
+*-backup-*.html
+auth-no-check.html
+secrets-to-remove.txt
+
+# Temporary security cleanup files
+mbh-mirror.git/

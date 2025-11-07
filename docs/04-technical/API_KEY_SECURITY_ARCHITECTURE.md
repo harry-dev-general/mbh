@@ -117,6 +117,36 @@ async function initializePage() {
 }
 ```
 
+**Important**: For management pages that require Airtable configuration, the loadConfig function must include authentication headers:
+
+```javascript
+async function loadConfig() {
+    try {
+        // Get current session for auth header
+        const { data: { session } } = await window.SupabaseInit.getSession();
+        
+        // Include auth header if available
+        const headers = {};
+        if (session?.access_token) {
+            headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+        
+        const response = await fetch('/api/config', { headers });
+        const config = await response.json();
+        
+        // Management pages require Airtable config
+        if (!config.airtableApiKey) {
+            throw new Error('Airtable configuration not available');
+        }
+        
+        AIRTABLE_API_KEY = config.airtableApiKey;
+    } catch (error) {
+        console.error('Failed to load configuration:', error);
+        throw error;
+    }
+}
+```
+
 ## API Key Types and Usage
 
 ### Public Keys (Safe for Frontend)
@@ -297,8 +327,73 @@ grep -r "sb_publishable_" .
 railway variables set SUPABASE_ANON_KEY="new_key_value"
 ```
 
+## Common Implementation Pitfalls
+
+### 1. JavaScript Initialization Order
+
+**Issue**: Auth listeners called before client initialization
+```javascript
+// ❌ WRONG - This will throw "Cannot read properties of undefined"
+supabase.auth.onAuthStateChange((event, session) => {
+    // supabase is still null!
+});
+
+async function loadConfig() {
+    // This runs later...
+    supabase = window.supabase.createClient(...);
+}
+```
+
+**Solution**: Setup listeners after initialization
+```javascript
+// ✅ CORRECT - Setup listener after client is ready
+function setupAuthListener() {
+    if (!supabase) return;
+    supabase.auth.onAuthStateChange((event, session) => {
+        // Now safe to use
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadConfig(); // Initialize supabase
+    setupAuthListener(); // Then setup listeners
+});
+```
+
+### 2. Missing Authentication Headers
+
+**Issue**: Management pages fail to load Airtable config
+```javascript
+// ❌ WRONG - No auth header sent
+const response = await fetch('/api/config');
+// Returns only public config, no Airtable keys
+```
+
+**Solution**: Include session token in request
+```javascript
+// ✅ CORRECT - Include auth header
+const { data: { session } } = await window.SupabaseInit.getSession();
+const headers = session?.access_token 
+    ? { 'Authorization': `Bearer ${session.access_token}` }
+    : {};
+const response = await fetch('/api/config', { headers });
+```
+
+### 3. Circular Dependencies
+
+**Issue**: Auth needs config, config needs auth
+- Login page needs Supabase config to authenticate
+- But `/api/config` requires authentication
+- Creates impossible circular dependency
+
+**Solution**: Tiered access with `optionalAuthenticate`
+- Public config (Supabase) available without auth
+- Sensitive config (Airtable) requires auth
+- No circular dependencies
+
 ## Related Documentation
 
 - [SECURITY_AUDIT_NOV_2025.md](../05-troubleshooting/SECURITY_AUDIT_NOV_2025.md)
 - [API_KEY_SECURITY_SETUP.md](../01-setup/API_KEY_SECURITY_SETUP.md)
 - [AUTHENTICATION_ARCHITECTURE.md](./AUTHENTICATION_ARCHITECTURE.md)
+- [AUTHENTICATION_CONFIG_LOADING_JOURNEY_NOV_2025.md](../05-troubleshooting/AUTHENTICATION_CONFIG_LOADING_JOURNEY_NOV_2025.md)

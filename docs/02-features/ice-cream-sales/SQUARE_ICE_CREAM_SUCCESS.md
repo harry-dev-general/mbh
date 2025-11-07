@@ -22,9 +22,9 @@
 ### 1. **Deploy to Railway**
 Add these environment variables to Railway:
 ```bash
-railway variables set AIRTABLE_API_KEY=patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14
-railway variables set SQUARE_WEBHOOK_SIGNATURE_KEY=CPK571BwzDvZCy58EhV8FQ
-railway variables set SQUARE_ACCESS_TOKEN=EAAAlxvlv1BGVkvpMDljJs4JeK6o0Z4JzXpLgFRmrBhH5HQ_lET7JTWL7uoSxmYb
+railway variables set AIRTABLE_API_KEY=YOUR_AIRTABLE_API_KEY_HERE
+railway variables set SQUARE_WEBHOOK_SIGNATURE_KEY=YOUR_SQUARE_WEBHOOK_SIGNATURE_KEY_HERE
+railway variables set SQUARE_ACCESS_TOKEN=YOUR_SQUARE_ACCESS_TOKEN_HERE
 railway variables set SQUARE_ENVIRONMENT=sandbox
 railway up
 ```

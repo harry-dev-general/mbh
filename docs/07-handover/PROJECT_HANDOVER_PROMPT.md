@@ -58,12 +58,12 @@ I need help continuing development on the MBH Staff Portal, a web-based manageme
 ## Critical Configuration
 ```javascript
 // Supabase (Authentication)
-SUPABASE_URL = 'https://etkugeooigiwahikrmzr.supabase.co'
-SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU'
+SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL_HERE'
+SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE'
 
 // Airtable
-AIRTABLE_API_KEY = 'patYiJdXfvcSenMU4.f16c95bde5176be23391051e0c5bdc6405991805c434696d55b851bf208a2f14'
-BASE_ID = 'applkAFOn2qxtu7tx'
+AIRTABLE_API_KEY = 'YOUR_AIRTABLE_API_KEY_HERE'
+BASE_ID = 'YOUR_AIRTABLE_BASE_ID_HERE'
 ```
 
 ## Key Frontend Pages

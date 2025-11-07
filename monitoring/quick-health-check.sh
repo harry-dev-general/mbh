@@ -10,7 +10,14 @@ echo ""
 
 # Configuration
 PRODUCTION_URL="https://mbh-production-f0d1.up.railway.app"
-ADMIN_KEY="${ADMIN_API_KEY:-mbh-admin-2025}"
+ADMIN_KEY="${ADMIN_API_KEY}"
+
+# Check if admin key is provided
+if [ -z "$ADMIN_KEY" ]; then
+    echo "❌ Error: ADMIN_API_KEY environment variable not set"
+    echo "   Please set: export ADMIN_API_KEY=your_admin_key"
+    exit 1
+fi
 
 # Function to measure response time
 measure_response_time() {

@@ -118,12 +118,26 @@ Before deploying to production:
 3. **Fail-safe initialization** - Apps won't start without valid config
 4. **Clear error messages** - Users informed when config fails
 
+## Additional Issues Discovered & Fixed
+
+During the implementation of the security remediation, several critical authentication and configuration loading issues were discovered:
+
+1. **Circular Authentication Dependency** - The `/api/config` endpoint initially required authentication, but auth pages needed config to initialize Supabase
+2. **JavaScript Initialization Order** - `supabase.auth.onAuthStateChange` was called before the Supabase client was initialized
+3. **Syntax Errors** - Missing closing braces in `dashboard.html` prevented proper loading
+4. **Authentication Flow** - Management pages failed to load config because they weren't sending auth headers
+
+**Full details**: See [AUTHENTICATION_CONFIG_LOADING_JOURNEY_NOV_2025.md](./AUTHENTICATION_CONFIG_LOADING_JOURNEY_NOV_2025.md)
+
 ## Lessons Learned
 
 1. **Never use fallback API keys** in production code
 2. **Test files should use separate mechanisms** for credentials
 3. **Git history contains secrets longer than expected** - cleanup essential
 4. **Environment variable validation** should happen at startup
+5. **JavaScript initialization order** is critical - always initialize before use
+6. **Tiered authentication** prevents circular dependencies
+7. **Comprehensive error logging** is essential for debugging
 
 ## Contact for Questions
 

@@ -28,8 +28,8 @@ GOOGLE_MAPS_API_KEY=your_actual_google_maps_api_key_here
 
 ```env
 # Supabase Configuration
-SUPABASE_URL=https://etkugeooigiwahikrmzr.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU
+SUPABASE_URL=YOUR_SUPABASE_PROJECT_URL_HERE
+SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY_HERE
 
 # Airtable Configuration
 AIRTABLE_API_KEY=your_airtable_api_key_here
@@ -55,8 +55,8 @@ For immediate development setup, create a `.env` file with these values:
 # Create .env file
 cat > .env << EOF
 # Supabase Configuration (Public keys - safe for development)
-SUPABASE_URL=https://etkugeooigiwahikrmzr.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0a3VnZW9vaWdpd2FoaWtybXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4MDI0OTcsImV4cCI6MjA2ODM3ODQ5N30.OPIYLsnPNNF7dP3SDCODIurzaa3X_Q3xEhfPO3rLJxU
+SUPABASE_URL=YOUR_SUPABASE_PROJECT_URL_HERE
+SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY_HERE
 
 # Google Maps - REQUIRED FOR FLEET MAP
 GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY_HERE
