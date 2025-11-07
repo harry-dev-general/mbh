@@ -421,12 +421,10 @@
             try {
                 // Get bookings assigned to this employee
                 const params = new URLSearchParams({
-                    filterByFormula: `AND({Status}='PAID', OR(FIND('${employeeRecord.id}', ARRAYJOIN({Onboarding Employee})), FIND('${employeeRecord.id}', ARRAYJOIN({Deloading Employee}))))`,
-                    fields: ['Booking Date', 'Onboarding Employee', 'Deloading Employee'],
-                    pageSize: 100
+                    employeeId: employeeRecord.id
                 });
                 
-                const response = await fetch(`/api/checklist/bookings?${params}`);
+                const response = await fetch(`/api/checklist/assigned-bookings?${params}`);
                 const data = await response.json();
                 
                 if (data.error) {
