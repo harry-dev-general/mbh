@@ -756,7 +756,7 @@
                 
                 // Set Airtable configuration (only available when authenticated)
                 if (config.airtableApiKey) {
-                    AIRTABLE_API_KEY = config.airtableApiKey;
+                AIRTABLE_API_KEY = config.airtableApiKey;
                 }
                 BASE_ID = config.airtableBaseId || 'applkAFOn2qxtu7tx';
                 
@@ -1039,12 +1039,30 @@
                 formData.fields[`${day} Available`] = available;
                 
                 if (available) {
-                    const from = document.getElementById(`${dayLower}From`).value || '9:00 AM';
-                    const until = document.getElementById(`${dayLower}Until`).value || '5:00 PM';
-                    formData.fields[`${day} From`] = formatTime(from);
-                    formData.fields[`${day} Until`] = formatTime(until);
+                    const fromInput = document.getElementById(`${dayLower}From`);
+                    const untilInput = document.getElementById(`${dayLower}Until`);
+                    const fromRaw = fromInput.value;
+                    const untilRaw = untilInput.value;
+                    
+                    // Debug logging
+                    console.log(`${day} From Input: type="${fromInput.type}", value="${fromRaw}"`);
+                    console.log(`${day} Until Input: type="${untilInput.type}", value="${untilRaw}"`);
+                    
+                    const from = fromRaw || '09:00';  // Default in 24h format
+                    const until = untilRaw || '17:00'; // Default in 24h format
+                    
+                    const fromFormatted = formatTime(from);
+                    const untilFormatted = formatTime(until);
+                    
+                    console.log(`${day}: "${from}" → "${fromFormatted}", "${until}" → "${untilFormatted}"`);
+                    
+                    formData.fields[`${day} From`] = fromFormatted;
+                    formData.fields[`${day} Until`] = untilFormatted;
                 }
             });
+            
+            // Log the complete form data before submission
+            console.log('Form data being submitted:', JSON.stringify(formData, null, 2));
 
             try {
                 const response = await fetch(`/api/airtable/${BASE_ID}/${TABLE_ID}`, {

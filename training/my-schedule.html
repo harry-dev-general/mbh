@@ -1302,7 +1302,7 @@
                 
                 // Set Airtable configuration (only available when authenticated)
                 if (config.airtableApiKey) {
-                    AIRTABLE_API_KEY = config.airtableApiKey;
+                AIRTABLE_API_KEY = config.airtableApiKey;
                 }
                 BASE_ID = config.airtableBaseId || 'applkAFOn2qxtu7tx';
                 
@@ -1316,7 +1316,7 @@
                 throw error;
             }
         }
-        
+
         // Load configuration with authentication headers
         async function loadConfigWithAuth() {
             try {
