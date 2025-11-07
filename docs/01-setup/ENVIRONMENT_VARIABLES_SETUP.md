@@ -1,6 +1,6 @@
 # Environment Variables Setup
 
-**Important**: The following environment variables must be set for the vessel maintenance and SMS features to work.
+**Important**: The following environment variables must be set for the vessel maintenance, SMS features, and map functionality to work.
 
 ## Required Environment Variables
 
@@ -15,6 +15,13 @@ TWILIO_ACCOUNT_SID=your_twilio_account_sid
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
 TWILIO_PHONE_NUMBER=+your_twilio_phone_number
 ```
+
+### Google Maps (for fleet tracking and vessel locations)
+```bash
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+```
+
+**Note**: See [`GOOGLE_MAPS_API_KEY_SETUP.md`](./GOOGLE_MAPS_API_KEY_SETUP.md) for detailed setup instructions.
 
 ## Where to Set These
 

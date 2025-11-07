@@ -210,6 +210,13 @@ app.get('/api/config', optionalAuthenticate, (req, res) => {
         });
     }
     
+    // Debug logging for Google Maps API key
+    if (!process.env.GOOGLE_MAPS_API_KEY) {
+        console.warn('WARNING: GOOGLE_MAPS_API_KEY environment variable is not set');
+    } else {
+        console.log('Google Maps API key is configured (first 10 chars):', process.env.GOOGLE_MAPS_API_KEY.substring(0, 10) + '...');
+    }
+    
     // Public configuration - always provided for auth pages
     const publicConfig = {
         SUPABASE_URL: process.env.SUPABASE_URL,
@@ -220,9 +227,12 @@ app.get('/api/config', optionalAuthenticate, (req, res) => {
     
     // If user is authenticated, add sensitive configuration
     if (req.user) {
+        console.log('Authenticated user requesting config:', req.user.email);
         publicConfig.googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || '';
         publicConfig.airtableApiKey = process.env.AIRTABLE_API_KEY || '';
         publicConfig.airtableBaseId = process.env.AIRTABLE_BASE_ID || 'applkAFOn2qxtu7tx';
+    } else {
+        console.log('Unauthenticated request to /api/config');
     }
     
     res.json(publicConfig);
@@ -1527,6 +1537,36 @@ app.post('/api/admin/trigger-booking-reminders', adminAuth, async (req, res) => 
       error: 'Failed to trigger booking reminder check',
       details: error.message 
     });
+  }
+});
+
+// Debug endpoint for environment variables (admin only)
+app.get('/api/debug/env', authenticate, async (req, res) => {
+  try {
+    // Check if user is admin
+    const role = await roleManager.getUserRole(req.user.id);
+    if (role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    // Return status of environment variables (not the actual values for security)
+    res.json({
+      environment: process.env.NODE_ENV || 'development',
+      railwayEnv: process.env.RAILWAY_ENVIRONMENT || 'not set',
+      variables: {
+        GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY ? 'Set' : 'Not set',
+        SUPABASE_URL: process.env.SUPABASE_URL ? 'Set' : 'Not set',
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'Set' : 'Not set',
+        AIRTABLE_API_KEY: process.env.AIRTABLE_API_KEY ? 'Set' : 'Not set',
+        AIRTABLE_BASE_ID: process.env.AIRTABLE_BASE_ID || 'Not set',
+        TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID ? 'Set' : 'Not set',
+        TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN ? 'Set' : 'Not set',
+        TWILIO_FROM_NUMBER: process.env.TWILIO_FROM_NUMBER ? 'Set' : 'Not set'
+      }
+    });
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

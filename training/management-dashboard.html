@@ -3913,7 +3913,14 @@
             // First, load the API key from server config
             if (!GOOGLE_MAPS_API_KEY) {
                 try {
-                    const response = await fetch('/api/config');
+                    // Get current session for authentication
+                    const { session } = await window.SupabaseInit.getSession();
+                    const headers = {};
+                    if (session?.access_token) {
+                        headers['Authorization'] = `Bearer ${session.access_token}`;
+                    }
+                    
+                    const response = await fetch('/api/config', { headers });
                     const config = await response.json();
                     GOOGLE_MAPS_API_KEY = config.googleMapsApiKey;
                     
@@ -3922,7 +3929,14 @@
                     }
                 } catch (error) {
                     console.error('Failed to load configuration:', error);
-                    document.getElementById('fleetMap').innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">Map configuration error</div>';
+                    document.getElementById('fleetMap').innerHTML = `
+                        <div style="padding: 2rem; text-align: center;">
+                            <i class="fas fa-exclamation-triangle" style="color: #ff9800; font-size: 48px; margin-bottom: 1rem; display: block;"></i>
+                            <h3 style="margin-bottom: 1rem; color: #333;">Google Maps Configuration Required</h3>
+                            <p style="color: #666; margin-bottom: 1rem;">The Google Maps API key is not configured on the server.</p>
+                            <p style="color: #666; font-size: 14px;">To fix this, add <code>GOOGLE_MAPS_API_KEY</code> to Railway environment variables.</p>
+                        </div>
+                    `;
                     return;
                 }
             }
