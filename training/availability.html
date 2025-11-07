@@ -953,6 +953,28 @@
 
         // Set default week starting date to current week's Monday (or next Monday if today is Sunday)
         function setDefaultWeekStarting() {
+            // Check for week parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const weekParam = urlParams.get('week');
+            
+            if (weekParam && /^\d{4}-\d{2}-\d{2}$/.test(weekParam)) {
+                // Valid date format provided in URL
+                document.getElementById('weekStarting').value = weekParam;
+                
+                // Still set minimum date
+                const today = new Date();
+                const dayOfWeek = today.getDay();
+                const currentWeekMonday = new Date(today);
+                if (dayOfWeek === 0) {
+                    currentWeekMonday.setDate(today.getDate() - 6);
+                } else {
+                    currentWeekMonday.setDate(today.getDate() - (dayOfWeek - 1));
+                }
+                document.getElementById('weekStarting').min = currentWeekMonday.toISOString().split('T')[0];
+                return;
+            }
+            
+            // Original logic if no URL parameter
             const today = new Date();
             const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
             
