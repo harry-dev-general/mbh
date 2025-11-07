@@ -736,7 +736,7 @@
 
         // Airtable configuration
         let AIRTABLE_API_KEY = null; // Will be loaded from server config
-        let BASE_ID = null; // Will be loaded from server config
+        let BASE_ID = 'applkAFOn2qxtu7tx'; // MBH Airtable base ID
         
         // Configuration loading function
         async function loadConfig() {
@@ -754,16 +754,47 @@
                     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 }
                 
-                // Set Airtable configuration
-                AIRTABLE_API_KEY = config.airtableApiKey;
+                // Set Airtable configuration (only available when authenticated)
+                if (config.airtableApiKey) {
+                    AIRTABLE_API_KEY = config.airtableApiKey;
+                }
                 BASE_ID = config.airtableBaseId || 'applkAFOn2qxtu7tx';
                 
-                if (!AIRTABLE_API_KEY || !SUPABASE_URL) {
-                    throw new Error('Required configuration values missing');
+                // Only check for Supabase config on initial load
+                if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+                    throw new Error('Required Supabase configuration values missing');
                 }
             } catch (error) {
                 console.error('Failed to load configuration:', error);
                 alert('Failed to load configuration. Please refresh the page or contact support.');
+                throw error;
+            }
+        }
+        
+        // Load configuration with authentication headers
+        async function loadConfigWithAuth() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const headers = {};
+                if (session?.access_token) {
+                    headers['Authorization'] = `Bearer ${session.access_token}`;
+                }
+                
+                const response = await fetch('/api/config', { headers });
+                if (!response.ok) throw new Error('Failed to load authenticated configuration');
+                const config = await response.json();
+                
+                // Update Airtable configuration with authenticated values
+                if (config.airtableApiKey) {
+                    AIRTABLE_API_KEY = config.airtableApiKey;
+                }
+                BASE_ID = config.airtableBaseId || 'applkAFOn2qxtu7tx';
+                
+                if (!AIRTABLE_API_KEY) {
+                    console.warn('Airtable API key not available from server');
+                }
+            } catch (error) {
+                console.error('Failed to load authenticated configuration:', error);
                 throw error;
             }
         }
@@ -786,6 +817,9 @@
                 document.getElementById('userInfo').style.display = 'block';
                 document.getElementById('userEmail').textContent = user.email;
                 
+                // Reload configuration with authentication to get Airtable API key
+                await loadConfigWithAuth();
+                
                 // Find employee record
                 await findEmployeeRecord(user.email);
             }
@@ -794,11 +828,7 @@
         // Find employee record in Airtable by email
         async function findEmployeeRecord(email) {
             try {
-                const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${EMPLOYEE_TABLE_ID}?filterByFormula={Email}='${email}'`, {
-                    headers: {
-                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`
-                    }
-                });
+                const response = await fetch(`/api/airtable/${BASE_ID}/${EMPLOYEE_TABLE_ID}?filterByFormula={Email}='${email}'`);
 
                 const data = await response.json();
                 if (data.records && data.records.length > 0) {
@@ -995,10 +1025,9 @@
             });
 
             try {
-                const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`, {
+                const response = await fetch(`/api/airtable/${BASE_ID}/${TABLE_ID}`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(formData)
