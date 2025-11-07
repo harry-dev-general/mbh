@@ -3914,7 +3914,7 @@
             if (!GOOGLE_MAPS_API_KEY) {
                 try {
                     // Get current session for authentication
-                    const { session } = await window.SupabaseInit.getSession();
+                    const { data: { session } } = await supabase.auth.getSession();
                     const headers = {};
                     if (session?.access_token) {
                         headers['Authorization'] = `Bearer ${session.access_token}`;

@@ -1218,7 +1218,7 @@
         async function loadGoogleMaps() {
             try {
                 // Wait for authentication to be established
-                const { session } = await window.SupabaseInit.getSession();
+                const { data: { session } } = await supabase.auth.getSession();
                 if (!session) {
                     console.warn('No session found, Google Maps may not load');
                 }
