@@ -1314,9 +1314,7 @@
             }
         }
 
-        // Airtable configuration
-        let AIRTABLE_API_KEY = null; // Will be loaded from server config
-        let BASE_ID = null; // Will be loaded from server config
+        // Airtable table IDs (API key and Base ID are already declared above)
         const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
         const ALLOCATIONS_TABLE_ID = 'tbl22YKtQXZtDFtEX'; // Shift Allocations table
         const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
@@ -1391,6 +1389,8 @@
                 
                 if (employeeRecordId) {
                     loadSchedule();
+                    // Load Google Maps after successful authentication
+                    loadGoogleMapsWithConfig();
                 } else {
                     showNoEmployeeMessage();
                 }
@@ -2608,8 +2608,23 @@
                 }
             }
         }
+        
+        // Initialize app
+        async function initializeApp() {
+            try {
+                // Load configuration first
+                await loadConfig();
+                
+                // Then check authentication
+                await checkAuth();
+            } catch (error) {
+                console.error('Failed to initialize app:', error);
+                alert('Failed to initialize application. Please refresh the page.');
+            }
+        }
+        
         // Initialize on page load
-        checkAuth();
+        initializeApp();
     </script>
     
     <!-- Google Maps API for vessel location display -->
@@ -2617,7 +2632,14 @@
         // Load Google Maps API from server configuration
         async function loadGoogleMapsWithConfig() {
             try {
-                const response = await fetch('/api/config');
+                // Get current session for authentication
+                const { data: { session } } = await supabase.auth.getSession();
+                const headers = {};
+                if (session?.access_token) {
+                    headers['Authorization'] = `Bearer ${session.access_token}`;
+                }
+                
+                const response = await fetch('/api/config', { headers });
                 const config = await response.json();
                 const GOOGLE_MAPS_API_KEY = config.googleMapsApiKey;
                 
@@ -2639,8 +2661,7 @@
             }
         }
         
-        // Initialize loading
-        loadGoogleMapsWithConfig();
+        // Note: Google Maps will be loaded after authentication is complete
     </script>
 </body>
 </html>
