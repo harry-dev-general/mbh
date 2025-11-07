@@ -1124,12 +1124,38 @@
                 AIRTABLE_API_KEY = config.airtableApiKey;
                 BASE_ID = config.airtableBaseId || 'applkAFOn2qxtu7tx';
                 
-                if (!AIRTABLE_API_KEY || !SUPABASE_URL) {
-                    throw new Error('Required configuration values missing');
+                if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+                    throw new Error('Required Supabase configuration values missing');
                 }
             } catch (error) {
                 console.error('Failed to load configuration:', error);
                 alert('Failed to load configuration. Please refresh the page or contact support.');
+                throw error;
+            }
+        }
+        
+        // Load config with authentication for sensitive data
+        async function loadConfigWithAuth() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+                
+                const headers = {
+                    'Authorization': `Bearer ${session.access_token}`
+                };
+                
+                const response = await fetch('/api/config', { headers });
+                if (!response.ok) throw new Error('Failed to load authenticated configuration');
+                const config = await response.json();
+                
+                // Set authenticated configuration
+                AIRTABLE_API_KEY = config.airtableApiKey;
+                
+                if (!AIRTABLE_API_KEY) {
+                    throw new Error('Required Airtable configuration values missing');
+                }
+            } catch (error) {
+                console.error('Failed to load authenticated configuration:', error);
                 throw error;
             }
         }
@@ -1141,6 +1167,8 @@
                 // Redirect to login page if not authenticated
                 window.location.href = 'auth.html';
             } else {
+                // Load authenticated configuration
+                await loadConfigWithAuth();
                 // Show user info
                 document.getElementById('userInfo').style.display = 'block';
                 document.getElementById('userEmail').textContent = user.email;
@@ -1181,7 +1209,16 @@
         });
 
         // Run auth check when page loads
-        checkAuth();
+        async function initialize() {
+            try {
+                await loadConfig();
+                await checkAuth();
+            } catch (error) {
+                console.error('Initialization failed:', error);
+            }
+        }
+        
+        initialize();
 
         // Initialize Mermaid
         mermaid.initialize({ 
