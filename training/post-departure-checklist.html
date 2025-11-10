@@ -745,8 +745,12 @@
         let employeeFirstName = null;
         let selectedBooking = null;
         let selectedBoatName = null;
+        let selectedBoatType = null;
         let assignedBookings = [];
         let isManagement = false;
+        
+        // Boat type constants
+        const BBQ_BOAT_TYPES = ['12 Person BBQ Boat', '8 Person BBQ Boat'];
         
         // Check for booking ID from URL parameter
         const urlParams = new URLSearchParams(window.location.search);
@@ -909,6 +913,18 @@
                 return 'Unknown Boat';
             }
         }
+        
+        // Get boat details including type
+        async function getBoatDetails(boatId) {
+            try {
+                const response = await fetch(`/api/checklist/boat/${boatId}`);
+                const data = await response.json();
+                return data.success ? data.boat : { name: 'Unknown Boat', boatType: 'Unknown' };
+            } catch (error) {
+                console.error('Error fetching boat details:', error);
+                return { name: 'Unknown Boat', boatType: 'Unknown' };
+            }
+        }
 
         // Create booking card element
         function createBookingCard(booking, boatName) {
@@ -958,11 +974,16 @@
         async function selectBooking(booking, boatName) {
             selectedBooking = booking;
             
-            // If boatName not provided, fetch it
-            if (!boatName && booking.fields['Boat']) {
-                boatName = await getBoatName(booking.fields['Boat']);
+            // Fetch complete boat details including type
+            if (booking.fields['Boat'] && booking.fields['Boat'][0]) {
+                const boatDetails = await getBoatDetails(booking.fields['Boat'][0]);
+                selectedBoatName = boatDetails.name;
+                selectedBoatType = boatDetails.boatType;
+                boatName = selectedBoatName; // Update boatName for display
+            } else {
+                selectedBoatName = boatName || 'No Boat Assigned';
+                selectedBoatType = 'Unknown';
             }
-            selectedBoatName = boatName;
 
             // Show checklist form
             document.getElementById('bookingsSection').style.display = 'none';
@@ -1000,6 +1021,9 @@
                 document.getElementById('locationMapPreview').style.display = 'none';
                 window.vesselLocation = null;
             }
+            
+            // Configure fields based on boat type
+            configureFieldsForBoatType(selectedBoatType);
         }
 
         // Cancel checklist and go back
@@ -1156,6 +1180,52 @@
                 item.classList.remove('checked');
             });
         }
+        
+        // Configure fields based on boat type
+        function configureFieldsForBoatType(boatType) {
+            const isBBQBoat = BBQ_BOAT_TYPES.includes(boatType);
+            
+            // Gas-related fields
+            const gasLevelGroup = document.getElementById('gasLevelAfter')?.closest('.form-group');
+            const gasReplacedItem = document.getElementById('gasReplaced')?.closest('.checklist-item');
+            
+            // Water-related fields  
+            const waterLevelGroup = document.getElementById('waterLevelAfter')?.closest('.form-group');
+            const waterRefilledItem = document.getElementById('waterRefilled')?.closest('.checklist-item');
+            
+            // Update group title
+            const fuelGroupTitle = document.querySelector('.checklist-group h3');
+            if (fuelGroupTitle) {
+                if (isBBQBoat) {
+                    fuelGroupTitle.innerHTML = '<i class="fas fa-gas-pump"></i> Resource Levels After Use';
+                } else {
+                    fuelGroupTitle.innerHTML = '<i class="fas fa-gas-pump"></i> Fuel Level After Use';
+                }
+            }
+            
+            // Show/hide fields
+            [gasLevelGroup, gasReplacedItem, waterLevelGroup, waterRefilledItem].forEach(field => {
+                if (field) {
+                    field.style.display = isBBQBoat ? 'block' : 'none';
+                    
+                    // Clear values for hidden fields
+                    if (!isBBQBoat) {
+                        const selectGroup = field.querySelector('.select-group');
+                        if (selectGroup) {
+                            selectGroup.querySelectorAll('.select-option').forEach(opt => {
+                                opt.classList.remove('selected');
+                            });
+                        }
+                        
+                        const checkbox = field.querySelector('input[type="checkbox"]');
+                        if (checkbox) {
+                            checkbox.checked = false;
+                            checkbox.closest('.checklist-item')?.classList.remove('checked');
+                        }
+                    }
+                }
+            });
+        }
 
         // Get selected value from a select group
         function getSelectedValue(groupId) {
@@ -1186,17 +1256,23 @@
 
                 // Validate required fields
                 const fuelLevelAfter = getSelectedValue('fuelLevelAfter');
-                const gasLevelAfter = getSelectedValue('gasLevelAfter');
-                const waterLevelAfter = getSelectedValue('waterLevelAfter');
                 const lightsCondition = getSelectedValue('lightsCondition');
                 const safetyEquipmentCondition = getSelectedValue('safetyEquipmentCondition');
                 const anchorCondition = getSelectedValue('anchorCondition');
                 const overallCondition = getSelectedValue('overallCondition');
+                
+                // Get gas and water levels - required only for BBQ boats
+                const isBBQBoat = BBQ_BOAT_TYPES.includes(selectedBoatType);
+                const gasLevelAfter = isBBQBoat ? getSelectedValue('gasLevelAfter') : 'N/A';
+                const waterLevelAfter = isBBQBoat ? getSelectedValue('waterLevelAfter') : 'N/A';
 
-                if (!fuelLevelAfter || !gasLevelAfter || !waterLevelAfter || 
-                    !lightsCondition || !safetyEquipmentCondition || 
+                if (!fuelLevelAfter || !lightsCondition || !safetyEquipmentCondition || 
                     !anchorCondition || !overallCondition) {
                     throw new Error('Please complete all required fields');
+                }
+                
+                if (isBBQBoat && (!gasLevelAfter || !waterLevelAfter)) {
+                    throw new Error('Please complete gas and water levels for BBQ boats');
                 }
 
                 // Generate Checklist ID: "Vessel name - Employee first name - date"
@@ -1237,8 +1313,8 @@
                         "Completion Status": "Completed",
                         "Completion Time": new Date().toISOString(),
                         "Fuel Refilled": document.getElementById('fuelRefilled').checked,
-                        "Gas Bottle Replaced": document.getElementById('gasReplaced').checked,
-                        "Water Tank Refilled": document.getElementById('waterRefilled').checked,
+                        "Gas Bottle Replaced": isBBQBoat ? document.getElementById('gasReplaced').checked : false,
+                        "Water Tank Refilled": isBBQBoat ? document.getElementById('waterRefilled').checked : false,
                         // Location tracking fields
                         "GPS Latitude": window.vesselLocation?.latitude || null,
                         "GPS Longitude": window.vesselLocation?.longitude || null,

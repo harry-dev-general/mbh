@@ -150,7 +150,8 @@ router.get('/boat/:boatId', async (req, res) => {
             success: true,
             boat: {
                 id: response.data.id,
-                name: response.data.fields.Name || 'Unknown Boat'
+                name: response.data.fields.Name || 'Unknown Boat',
+                boatType: response.data.fields['Boat Type'] || 'Unknown'
             }
         });
     } catch (error) {
