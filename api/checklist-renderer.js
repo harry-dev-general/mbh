@@ -366,7 +366,7 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                     ${isBBQBoat ? `
                     <div class="form-group">
                         <label>Gas Bottle Check</label>
-                        <select id="gasLevel" name="gasLevel" class="form-control" required
+                        <select id="gasLevel" name="gasLevel" class="form-control"
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                             <option value="">Select Level</option>
                             <option value="Empty">Empty</option>
@@ -379,7 +379,7 @@ function renderPreDepartureChecklist(booking, employee, boat) {
 
                     <div class="form-group">
                         <label>Water Tank Level</label>
-                        <select id="waterLevel" name="waterLevel" class="form-control" required
+                        <select id="waterLevel" name="waterLevel" class="form-control"
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                             <option value="">Select Level</option>
                             <option value="Empty">Empty</option>
@@ -540,8 +540,8 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                     
                     // Refill tracking
                     fuelRefilled: document.getElementById('fuelRefilled')?.checked,
-                    gasReplaced: document.getElementById('gasReplaced')?.checked,
-                    waterRefilled: document.getElementById('waterRefilled')?.checked,
+                    gasReplaced: document.getElementById('gasReplaced')?.checked || false,
+                    waterRefilled: document.getElementById('waterRefilled')?.checked || false,
                     
                     // Vessel condition
                     overallCondition: document.getElementById('overallCondition')?.value,
@@ -835,7 +835,7 @@ function renderPostDepartureChecklist(booking, employee, boat) {
                     ${isBBQBoat ? `
                     <div class="form-group">
                         <label>Gas Bottle Level After Use</label>
-                        <select id="gasLevelAfter" name="gasLevelAfter" class="form-control" required
+                        <select id="gasLevelAfter" name="gasLevelAfter" class="form-control"
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                             <option value="">Select Level</option>
                             <option value="Empty">Empty</option>
@@ -848,7 +848,7 @@ function renderPostDepartureChecklist(booking, employee, boat) {
 
                     <div class="form-group">
                         <label>Water Tank Level After Use</label>
-                        <select id="waterLevelAfter" name="waterLevelAfter" class="form-control" required
+                        <select id="waterLevelAfter" name="waterLevelAfter" class="form-control"
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                             <option value="">Select Level</option>
                             <option value="Empty">Empty</option>
