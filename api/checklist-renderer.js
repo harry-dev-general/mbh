@@ -1258,6 +1258,14 @@ async function handleChecklistSubmission(req, res) {
             : POST_DEPARTURE_CHECKLIST_TABLE_ID;
         
         console.log(`Submitting ${checklistType} checklist to table ${tableId}`);
+        console.log('Gas/Water field data:', {
+            gasLevel: data.gasLevel,
+            waterLevel: data.waterLevel,
+            gasLevelAfter: data.gasLevelAfter,
+            waterLevelAfter: data.waterLevelAfter,
+            gasReplaced: data.gasReplaced,
+            waterRefilled: data.waterRefilled
+        });
         
         // Create checklist record in Airtable
         const response = await fetch(
@@ -1286,8 +1294,8 @@ async function handleChecklistSubmission(req, res) {
                         
                         // Resource levels
                         'Fuel Level Check': data.fuelLevel || null,
-                        'Gas Bottle Check': data.gasLevel === 'N/A' ? 'N/A' : (data.gasLevel || null),
-                        'Water Tank Level': data.waterLevel === 'N/A' ? 'N/A' : (data.waterLevel || null),
+                        'Gas Bottle Check': (!data.gasLevel || data.gasLevel === 'N/A') ? 'N/A' : data.gasLevel,
+                        'Water Tank Level': (!data.waterLevel || data.waterLevel === 'N/A') ? 'N/A' : data.waterLevel,
                         
                         // Cleanliness
                         'BBQ Cleaned': data.bbqCleaned || false,
@@ -1328,8 +1336,8 @@ async function handleChecklistSubmission(req, res) {
                         
                         // Resource levels after use
                         'Fuel Level After Use': data.fuelLevelAfter || null,
-                        'Gas Bottle Level After Use': data.gasLevelAfter === 'N/A' ? 'N/A' : (data.gasLevelAfter || null),
-                        'Water Tank Level After Use': data.waterLevelAfter === 'N/A' ? 'N/A' : (data.waterLevelAfter || null),
+                        'Gas Bottle Level After Use': (!data.gasLevelAfter || data.gasLevelAfter === 'N/A') ? 'N/A' : data.gasLevelAfter,
+                        'Water Tank Level After Use': (!data.waterLevelAfter || data.waterLevelAfter === 'N/A') ? 'N/A' : data.waterLevelAfter,
                         
                         // GPS fields
                         'GPS Latitude': data.gpsLatitude ? parseFloat(data.gpsLatitude) : null,
@@ -1376,7 +1384,13 @@ async function handleChecklistSubmission(req, res) {
         
     } catch (error) {
         console.error('Error submitting checklist:', error);
-        res.status(500).json({ error: error.message });
+        if (error.response) {
+            console.error('Airtable response error:', await error.response.text());
+        }
+        res.status(500).json({ 
+            error: error.message,
+            details: error.response ? 'Check server logs for Airtable response details' : 'No response details available'
+        });
     }
 }
 
