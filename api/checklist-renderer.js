@@ -19,6 +19,10 @@ const EMPLOYEE_TABLE_ID = 'tbltAE4NlNePvnkpY';
 // Separate table IDs for each checklist type
 const PRE_DEPARTURE_CHECKLIST_TABLE_ID = 'tbl9igu5g1bPG4Ahu';
 const POST_DEPARTURE_CHECKLIST_TABLE_ID = 'tblYkbSQGP6zveYNi';
+const BOATS_TABLE_ID = 'tblNLoBNb4daWzjob';
+
+// Boat type constants
+const BBQ_BOAT_TYPES = ['12 Person BBQ Boat', '8 Person BBQ Boat'];
 
 /**
  * Generate a unique checklist ID
@@ -81,9 +85,37 @@ async function fetchEmployee(employeeId) {
 }
 
 /**
+ * Fetch boat details from Airtable
+ */
+async function fetchBoat(boatId) {
+    try {
+        const response = await fetch(
+            `https://api.airtable.com/v0/${BOOKINGS_BASE_ID}/${BOATS_TABLE_ID}/${boatId}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (!response.ok) {
+            console.error(`Failed to fetch boat: ${response.status}`);
+            return null;
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching boat:', error);
+        return null;
+    }
+}
+
+/**
  * Render pre-departure checklist HTML
  */
-function renderPreDepartureChecklist(booking, employee) {
+function renderPreDepartureChecklist(booking, employee, boat) {
     const bookingData = booking.fields;
     
     // Extract employee data if available
@@ -92,6 +124,11 @@ function renderPreDepartureChecklist(booking, employee) {
                       employee?.fields?.['Mobile'] || 
                       employee?.fields?.['Mobile Number'] || '';
     const isStaffPrefilled = !!(employee && staffName);
+    
+    // Extract boat data
+    const boatName = boat?.fields?.['Name'] || 'Unknown Vessel';
+    const boatType = boat?.fields?.['Boat Type'] || 'Unknown';
+    const isBBQBoat = BBQ_BOAT_TYPES.includes(boatType);
     
     return `
 <!DOCTYPE html>
@@ -250,7 +287,7 @@ function renderPreDepartureChecklist(booking, employee) {
                 </div>
                 <div class="info-row">
                     <span><strong>Vessel:</strong></span>
-                    <span>${bookingData['Boat'] && bookingData['Boat'].length > 0 ? bookingData['Boat'][0] : 'N/A'}</span>
+                    <span>${boatName} ${isBBQBoat ? '(BBQ Boat)' : ''}</span>
                 </div>
                 <div class="info-row">
                     <span><strong>Departure Time:</strong></span>
@@ -261,6 +298,7 @@ function renderPreDepartureChecklist(booking, employee) {
             <form id="checklistForm" onsubmit="handleSubmit(event)">
                 <input type="hidden" id="bookingId" value="${booking.id}">
                 <input type="hidden" id="checklistType" value="Pre-Departure">
+                <input type="hidden" id="isBBQBoat" value="${isBBQBoat}">
                 ${employee ? `<input type="hidden" id="employeeId" value="${employee.id}">` : ''}
                 
                 <!-- Staff Identification -->
@@ -310,7 +348,7 @@ function renderPreDepartureChecklist(booking, employee) {
                 
                 <!-- Fuel & Resources -->
                 <div class="checklist-section">
-                    <h3><i class="fas fa-gas-pump"></i> Fuel & Resources</h3>
+                    <h3><i class="fas fa-gas-pump"></i> ${isBBQBoat ? 'Fuel, Gas & Water Resources' : 'Fuel Resources'}</h3>
                     
                     <div class="form-group">
                         <label>Fuel Level Check</label>
@@ -325,6 +363,7 @@ function renderPreDepartureChecklist(booking, employee) {
                         </select>
                     </div>
 
+                    ${isBBQBoat ? `
                     <div class="form-group">
                         <label>Gas Bottle Check</label>
                         <select id="gasLevel" name="gasLevel" class="form-control" required
@@ -350,12 +389,14 @@ function renderPreDepartureChecklist(booking, employee) {
                             <option value="Full">Full</option>
                         </select>
                     </div>
+                    ` : ''}
 
                     <div class="checklist-item">
                         <input type="checkbox" id="fuelRefilled" name="fuelRefilled">
                         <label for="fuelRefilled">Fuel Refilled (if needed)</label>
                     </div>
 
+                    ${isBBQBoat ? `
                     <div class="checklist-item">
                         <input type="checkbox" id="gasReplaced" name="gasReplaced">
                         <label for="gasReplaced">Gas Bottle Replaced (if needed)</label>
@@ -365,6 +406,7 @@ function renderPreDepartureChecklist(booking, employee) {
                         <input type="checkbox" id="waterRefilled" name="waterRefilled">
                         <label for="waterRefilled">Water Tank Refilled (if needed)</label>
                     </div>
+                    ` : ''}
                 </div>
                 
                 <!-- Cleanliness -->
@@ -483,8 +525,8 @@ function renderPreDepartureChecklist(booking, employee) {
                     
                     // Resource levels
                     fuelLevel: document.getElementById('fuelLevel')?.value,
-                    gasLevel: document.getElementById('gasLevel')?.value,
-                    waterLevel: document.getElementById('waterLevel')?.value,
+                    gasLevel: document.getElementById('gasLevel')?.value || 'N/A',
+                    waterLevel: document.getElementById('waterLevel')?.value || 'N/A',
                     
                     // Cleanliness
                     bbqCleaned: document.getElementById('bbqCleaned')?.checked,
@@ -556,7 +598,7 @@ function renderPreDepartureChecklist(booking, employee) {
 /**
  * Render post-departure checklist HTML
  */
-function renderPostDepartureChecklist(booking, employee) {
+function renderPostDepartureChecklist(booking, employee, boat) {
     const bookingData = booking.fields;
     
     // Extract employee data if available
@@ -565,6 +607,11 @@ function renderPostDepartureChecklist(booking, employee) {
                       employee?.fields?.['Mobile'] || 
                       employee?.fields?.['Mobile Number'] || '';
     const isStaffPrefilled = !!(employee && staffName);
+    
+    // Extract boat data
+    const boatName = boat?.fields?.['Name'] || 'Unknown Vessel';
+    const boatType = boat?.fields?.['Boat Type'] || 'Unknown';
+    const isBBQBoat = BBQ_BOAT_TYPES.includes(boatType);
     
     return `
 <!DOCTYPE html>
@@ -729,7 +776,7 @@ function renderPostDepartureChecklist(booking, employee) {
                 </div>
                 <div class="info-row">
                     <span><strong>Vessel:</strong></span>
-                    <span>${bookingData['Boat'] && bookingData['Boat'].length > 0 ? bookingData['Boat'][0] : 'N/A'}</span>
+                    <span>${boatName} ${isBBQBoat ? '(BBQ Boat)' : ''}</span>
                 </div>
                 <div class="info-row">
                     <span><strong>Return Time:</strong></span>
@@ -740,6 +787,7 @@ function renderPostDepartureChecklist(booking, employee) {
             <form id="checklistForm" onsubmit="handleSubmit(event)">
                 <input type="hidden" id="bookingId" value="${booking.id}">
                 <input type="hidden" id="checklistType" value="Post-Departure">
+                <input type="hidden" id="isBBQBoat" value="${isBBQBoat}">
                 ${employee ? `<input type="hidden" id="employeeId" value="${employee.id}">` : ''}
                 
                 <!-- Staff Identification -->
@@ -769,7 +817,7 @@ function renderPostDepartureChecklist(booking, employee) {
                 
                 <!-- Resource Levels After Use -->
                 <div class="checklist-section">
-                    <h3><i class="fas fa-gas-pump"></i> Resource Levels After Use</h3>
+                    <h3><i class="fas fa-gas-pump"></i> ${isBBQBoat ? 'Resource Levels After Use' : 'Fuel Level After Use'}</h3>
                     
                     <div class="form-group">
                         <label>Fuel Level After Use</label>
@@ -784,6 +832,7 @@ function renderPostDepartureChecklist(booking, employee) {
                         </select>
                     </div>
 
+                    ${isBBQBoat ? `
                     <div class="form-group">
                         <label>Gas Bottle Level After Use</label>
                         <select id="gasLevelAfter" name="gasLevelAfter" class="form-control" required
@@ -809,6 +858,7 @@ function renderPostDepartureChecklist(booking, employee) {
                             <option value="Full">Full</option>
                         </select>
                     </div>
+                    ` : ''}
                 </div>
 
                 <!-- GPS Location -->
@@ -942,8 +992,8 @@ function renderPostDepartureChecklist(booking, employee) {
                     
                     // Resource levels after use
                     fuelLevelAfter: document.getElementById('fuelLevelAfter')?.value,
-                    gasLevelAfter: document.getElementById('gasLevelAfter')?.value,
-                    waterLevelAfter: document.getElementById('waterLevelAfter')?.value,
+                    gasLevelAfter: document.getElementById('gasLevelAfter')?.value || 'N/A',
+                    waterLevelAfter: document.getElementById('waterLevelAfter')?.value || 'N/A',
                     
                     // GPS location
                     gpsLatitude: document.getElementById('gpsLatitude')?.value,
@@ -1160,12 +1210,18 @@ async function handleChecklistPage(req, res, checklistType) {
             }
         }
         
+        // Fetch boat details if booking has a boat assigned
+        let boat = null;
+        if (booking.fields['Boat'] && booking.fields['Boat'].length > 0) {
+            boat = await fetchBoat(booking.fields['Boat'][0]);
+        }
+        
         // Render appropriate checklist
         let html;
         if (checklistType === 'pre-departure') {
-            html = renderPreDepartureChecklist(booking, employee);
+            html = renderPreDepartureChecklist(booking, employee, boat);
         } else {
-            html = renderPostDepartureChecklist(booking, employee);
+            html = renderPostDepartureChecklist(booking, employee, boat);
         }
         
         // Send rendered HTML
@@ -1230,8 +1286,8 @@ async function handleChecklistSubmission(req, res) {
                         
                         // Resource levels
                         'Fuel Level Check': data.fuelLevel || null,
-                        'Gas Bottle Check': data.gasLevel || null,
-                        'Water Tank Level': data.waterLevel || null,
+                        'Gas Bottle Check': data.gasLevel === 'N/A' ? 'N/A' : (data.gasLevel || null),
+                        'Water Tank Level': data.waterLevel === 'N/A' ? 'N/A' : (data.waterLevel || null),
                         
                         // Cleanliness
                         'BBQ Cleaned': data.bbqCleaned || false,
@@ -1272,8 +1328,8 @@ async function handleChecklistSubmission(req, res) {
                         
                         // Resource levels after use
                         'Fuel Level After Use': data.fuelLevelAfter || null,
-                        'Gas Bottle Level After Use': data.gasLevelAfter || null,
-                        'Water Tank Level After Use': data.waterLevelAfter || null,
+                        'Gas Bottle Level After Use': data.gasLevelAfter === 'N/A' ? 'N/A' : (data.gasLevelAfter || null),
+                        'Water Tank Level After Use': data.waterLevelAfter === 'N/A' ? 'N/A' : (data.waterLevelAfter || null),
                         
                         // GPS fields
                         'GPS Latitude': data.gpsLatitude ? parseFloat(data.gpsLatitude) : null,
