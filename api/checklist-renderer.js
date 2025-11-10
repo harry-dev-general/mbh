@@ -413,6 +413,7 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                 <div class="checklist-section">
                     <h3><i class="fas fa-broom"></i> Cleanliness</h3>
                     
+                    ${isBBQBoat ? `
                     <div class="checklist-item">
                         <input type="checkbox" id="bbqCleaned" name="bbqCleaned">
                         <label for="bbqCleaned">BBQ Cleaned</label>
@@ -422,6 +423,7 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                         <input type="checkbox" id="toiletCleaned" name="toiletCleaned">
                         <label for="toiletCleaned">Toilet Cleaned</label>
                     </div>
+                    ` : ''}
 
                     <div class="checklist-item">
                         <input type="checkbox" id="deckWashed" name="deckWashed">
@@ -448,20 +450,24 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                         <label for="anchorSecured">Anchor Secured</label>
                     </div>
 
+                    ${isBBQBoat ? `
                     <div class="checklist-item">
                         <input type="checkbox" id="lightsWorking" name="lightsWorking">
                         <label for="lightsWorking">All Lights Working</label>
                     </div>
+                    ` : ''}
 
                     <div class="checklist-item">
                         <input type="checkbox" id="engine" name="engine" required>
                         <label for="engine">Engine started and running smoothly</label>
                     </div>
 
+                    ${isBBQBoat ? `
                     <div class="checklist-item">
-                        <input type="checkbox" id="battery" name="battery" required>
+                        <input type="checkbox" id="battery" name="battery">
                         <label for="battery">Battery condition checked</label>
                     </div>
+                    ` : ''}
                     
                     <div class="form-group">
                         <label for="notes">Notes (Optional)</label>
@@ -887,10 +893,12 @@ function renderPostDepartureChecklist(booking, employee, boat) {
                 <div class="checklist-section">
                     <h3><i class="fas fa-ship"></i> Vessel Return Condition</h3>
                     
+                    ${isBBQBoat ? `
                     <div class="checklist-item">
                         <input type="checkbox" id="toiletPumped" name="toiletPumped">
                         <label for="toiletPumped">Toilet Pumped Out</label>
                     </div>
+                    ` : ''}
                     
                     <div class="checklist-item">
                         <input type="checkbox" id="rubbishRemoved" name="rubbishRemoved">
@@ -1299,8 +1307,8 @@ async function handleChecklistSubmission(req, res) {
                         ...(data.waterLevel && data.waterLevel !== 'N/A' ? {'Water Tank Level': data.waterLevel} : {}),
                         
                         // Cleanliness
-                        'BBQ Cleaned': data.bbqCleaned || false,
-                        'Toilet Cleaned': data.toiletCleaned || false,
+                        ...(data.bbqCleaned !== undefined ? {'BBQ Cleaned': data.bbqCleaned || false} : {}),
+                        ...(data.toiletCleaned !== undefined ? {'Toilet Cleaned': data.toiletCleaned || false} : {}),
                         'Deck Washed': data.deckWashed || false,
                         
                         // Safety equipment
@@ -1311,7 +1319,7 @@ async function handleChecklistSubmission(req, res) {
                         // Vessel condition
                         'Overall Vessel Condition': data.overallCondition || null,
                         'Anchor Secured': data.anchorSecured || false,
-                        'Lights Working': data.lightsWorking || false,
+                        ...(data.lightsWorking !== undefined ? {'Lights Working': data.lightsWorking || false} : {}),
                         
                         // Refill tracking
                         'Fuel Refilled': data.fuelRefilled || false,
@@ -1350,9 +1358,9 @@ async function handleChecklistSubmission(req, res) {
                         'Location Captured': data.gpsLatitude ? true : false,
                         
                         // Cleanliness and maintenance
-                        'Toilet Pumped Out': data.toiletPumped || false,
-                        'Toilet Cleaned': data.vessel_cleaned || false,
-                        'BBQ Cleaned': data.bbqCleaned || false,
+                        ...(data.toiletPumped !== undefined ? {'Toilet Pumped Out': data.toiletPumped || false} : {}),
+                        ...(data.vessel_cleaned !== undefined ? {'Toilet Cleaned': data.vessel_cleaned || false} : {}),
+                        ...(data.bbqCleaned !== undefined ? {'BBQ Cleaned': data.bbqCleaned || false} : {}),
                         'Deck Cleaned': data.deckCleaned || false,
                         'Rubbish Removed': data.rubbishRemoved || false,
                         
