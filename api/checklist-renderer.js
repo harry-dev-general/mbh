@@ -1294,8 +1294,9 @@ async function handleChecklistSubmission(req, res) {
                         
                         // Resource levels
                         'Fuel Level Check': data.fuelLevel || null,
-                        'Gas Bottle Check': (!data.gasLevel || data.gasLevel === 'N/A') ? 'N/A' : data.gasLevel,
-                        'Water Tank Level': (!data.waterLevel || data.waterLevel === 'N/A') ? 'N/A' : data.waterLevel,
+                        // Only include gas and water fields if they have valid values (not N/A)
+                        ...(data.gasLevel && data.gasLevel !== 'N/A' ? {'Gas Bottle Check': data.gasLevel} : {}),
+                        ...(data.waterLevel && data.waterLevel !== 'N/A' ? {'Water Tank Level': data.waterLevel} : {}),
                         
                         // Cleanliness
                         'BBQ Cleaned': data.bbqCleaned || false,
@@ -1314,8 +1315,9 @@ async function handleChecklistSubmission(req, res) {
                         
                         // Refill tracking
                         'Fuel Refilled': data.fuelRefilled || false,
-                        'Gas Bottle Replaced': data.gasReplaced || false,
-                        'Water Tank Refilled': data.waterRefilled || false,
+                        // Only include gas/water refill fields if they were actually tracked (not for non-BBQ boats)
+                        ...(data.gasLevel && data.gasLevel !== 'N/A' ? {'Gas Bottle Replaced': data.gasReplaced || false} : {}),
+                        ...(data.waterLevel && data.waterLevel !== 'N/A' ? {'Water Tank Refilled': data.waterRefilled || false} : {}),
                         
                         // Notes (include staff info)
                         'Notes': `${data.notes || ''}\n\nCompleted by: ${data.staffName || submittedBy || 'Unknown'} (${data.staffPhone || 'No phone provided'})`
@@ -1336,8 +1338,9 @@ async function handleChecklistSubmission(req, res) {
                         
                         // Resource levels after use
                         'Fuel Level After Use': data.fuelLevelAfter || null,
-                        'Gas Bottle Level After Use': (!data.gasLevelAfter || data.gasLevelAfter === 'N/A') ? 'N/A' : data.gasLevelAfter,
-                        'Water Tank Level After Use': (!data.waterLevelAfter || data.waterLevelAfter === 'N/A') ? 'N/A' : data.waterLevelAfter,
+                        // Only include gas and water fields if they have valid values (not N/A)
+                        ...(data.gasLevelAfter && data.gasLevelAfter !== 'N/A' ? {'Gas Bottle Level After Use': data.gasLevelAfter} : {}),
+                        ...(data.waterLevelAfter && data.waterLevelAfter !== 'N/A' ? {'Water Tank Level After Use': data.waterLevelAfter} : {}),
                         
                         // GPS fields
                         'GPS Latitude': data.gpsLatitude ? parseFloat(data.gpsLatitude) : null,
@@ -1364,8 +1367,9 @@ async function handleChecklistSubmission(req, res) {
                         
                         // Refill tracking
                         'Fuel Refilled': data.fuel_topped || false,
-                        'Gas Bottle Replaced': data.gasReplaced || false,
-                        'Water Tank Refilled': data.waterRefilled || false,
+                        // Only include gas/water refill fields if they were actually tracked (not for non-BBQ boats)
+                        ...(data.gasLevelAfter && data.gasLevelAfter !== 'N/A' ? {'Gas Bottle Replaced': data.gasReplaced || false} : {}),
+                        ...(data.waterLevelAfter && data.waterLevelAfter !== 'N/A' ? {'Water Tank Refilled': data.waterRefilled || false} : {}),
                         
                         // Damage report and notes (include staff info)
                         'Damage Report': `${data.notes || ''}\n\nCompleted by: ${data.staffName || submittedBy || 'Unknown'} (${data.staffPhone || 'No phone provided'})`
