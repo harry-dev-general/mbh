@@ -486,7 +486,8 @@
         }
         
         .fc .fc-timegrid-slot {
-            min-height: 25px; /* Ensure minimum readable height for 15-min slots */
+            min-height: 30px; /* Ensure minimum readable height for 15-min slots */
+            height: 30px; /* Fixed height for consistent Y-axis alignment */
         }
         
         .fc .fc-timegrid-slot-lane {
@@ -1684,9 +1685,9 @@
                 },
                 slotMinTime: '07:00:00',
                 slotMaxTime: '21:00:00',
-                slotDuration: isMobile ? '01:00:00' : '00:30:00', // 1-hour slots on mobile, 30-min on desktop
+                slotDuration: '00:15:00', // 15-minute slots for precise alignment
                 slotLabelInterval: '01:00:00', // Show labels every hour
-                snapDuration: '00:15:00', // Still allow 15-minute precision for dragging
+                snapDuration: '00:15:00', // 15-minute precision for dragging
                 slotLabelFormat: {
                     hour: 'numeric',
                     minute: '2-digit',
@@ -2395,11 +2396,13 @@
             const endDate = document.getElementById('taskEndDate').value;
             
             if (startDate) {
-                fields['Start date'] = new Date(startDate).toISOString();
+                const sydneyDate = localToSydneyDate(startDate);
+                fields['Start date'] = sydneyDate.toISOString();
             }
             
             if (endDate) {
-                fields['End date'] = new Date(endDate).toISOString();
+                const sydneyDate = localToSydneyDate(endDate);
+                fields['End date'] = sydneyDate.toISOString();
             }
             
             try {
@@ -2763,9 +2766,61 @@
         }
         
         // Utility functions
+        
+        // Convert a Date object to local datetime string for input fields
         function formatDateTimeLocal(date) {
+            // FullCalendar provides dates in Sydney timezone
+            // We need to convert them to local time for the datetime-local input
             const pad = (n) => n.toString().padStart(2, '0');
-            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+            
+            // Get the date in local timezone
+            const localDate = new Date(date);
+            return `${localDate.getFullYear()}-${pad(localDate.getMonth() + 1)}-${pad(localDate.getDate())}T${pad(localDate.getHours())}:${pad(localDate.getMinutes())}`;
+        }
+        
+        // Convert local datetime-local input to Sydney timezone Date
+        function localToSydneyDate(dateTimeLocalValue) {
+            if (!dateTimeLocalValue) return null;
+            
+            // The datetime-local input gives us a string like "2025-01-15T14:30"
+            // We need to interpret this as Sydney time
+            const [datePart, timePart] = dateTimeLocalValue.split('T');
+            const [year, month, day] = datePart.split('-').map(Number);
+            const [hours, minutes] = timePart.split(':').map(Number);
+            
+            // Create a date in Sydney timezone
+            const sydneyFormatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Australia/Sydney',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            // Find the UTC time that corresponds to the given Sydney time
+            // This is a bit tricky - we need to search for the right UTC time
+            let testDate = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`);
+            
+            // Adjust the date until we get the right Sydney time
+            for (let i = 0; i < 48; i++) { // Check up to 24 hours in both directions
+                const sydneyParts = sydneyFormatter.formatToParts(testDate);
+                const sydneyHour = parseInt(sydneyParts.find(p => p.type === 'hour').value);
+                const sydneyMinute = parseInt(sydneyParts.find(p => p.type === 'minute').value);
+                const sydneyDay = parseInt(sydneyParts.find(p => p.type === 'day').value);
+                
+                if (sydneyHour === hours && sydneyMinute === minutes && sydneyDay === day) {
+                    return testDate;
+                }
+                
+                // Try 30 minutes earlier or later
+                testDate = new Date(testDate.getTime() + (i % 2 === 0 ? -1 : 1) * Math.ceil(i / 2) * 30 * 60000);
+            }
+            
+            // Fallback - just use the input as local time
+            return new Date(dateTimeLocalValue);
         }
         
         function formatTimeRange(start, end) {
