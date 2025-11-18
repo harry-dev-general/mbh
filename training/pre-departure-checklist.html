@@ -542,7 +542,7 @@
                     
                     <div class="form-group">
                         <label for="lifeJackets">Life Jackets Count</label>
-                        <input type="number" class="form-control" id="lifeJackets" name="lifeJackets" min="0" max="50" required>
+                        <input type="number" class="form-control" id="lifeJackets" name="lifeJackets" min="0" max="50">
                     </div>
 
                     <div class="checklist-item">
@@ -1087,23 +1087,23 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
 
             try {
-                // Validate required fields
+                // Validate required fields - only Staff Name and Staff Phone Number are required
+                const staffName = document.getElementById('staffName')?.value;
+                const staffPhone = document.getElementById('staffPhone')?.value;
+                
+                if (!staffName || !staffPhone) {
+                    throw new Error('Please enter your name and phone number');
+                }
+                
+                // Get other field values (not required)
                 const fuelLevel = getSelectedValue('fuelLevel');
                 const overallCondition = getSelectedValue('overallCondition');
                 const lifeJackets = document.getElementById('lifeJackets').value;
                 
-                // Get gas and water levels - required only for BBQ boats
+                // Get gas and water levels - default to 'N/A' if not provided
                 const isBBQBoat = BBQ_BOAT_TYPES.includes(selectedBoatType);
-                const gasLevel = isBBQBoat ? getSelectedValue('gasLevel') : 'N/A';
-                const waterLevel = isBBQBoat ? getSelectedValue('waterLevel') : 'N/A';
-
-                if (!fuelLevel || !overallCondition || !lifeJackets) {
-                    throw new Error('Please complete all required fields');
-                }
-                
-                if (isBBQBoat && (!gasLevel || !waterLevel)) {
-                    throw new Error('Please complete gas and water levels for BBQ boats');
-                }
+                const gasLevel = isBBQBoat ? (getSelectedValue('gasLevel') || 'N/A') : 'N/A';
+                const waterLevel = isBBQBoat ? (getSelectedValue('waterLevel') || 'N/A') : 'N/A';
 
                 // Prepare checklist data
                 const checklistData = {

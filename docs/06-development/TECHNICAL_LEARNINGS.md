@@ -104,5 +104,45 @@ python3 -m http.server 8000
 3. Show loading states for better UX
 4. Validate client-side before API calls
 
+## 🚢 Boat Type Conditional Fields (November 2025)
+
+### Key Learning: SSR vs Client-Side
+**Problem**: SMS links use server-rendered versions (`*-ssr.html`), not client-side HTML files.
+```javascript
+// Client-side changes in .html files won't affect SMS links!
+// Must update api/checklist-renderer.js for SSR
+```
+
+### Airtable Single-Select Field Constraints
+**Problem**: Cannot submit values not in predefined options
+```javascript
+// ❌ Bad - Airtable rejects "N/A"
+'Gas Bottle Check': data.gasLevel === 'N/A' ? 'N/A' : data.gasLevel
+
+// ✅ Good - Omit field entirely
+...(data.gasLevel && data.gasLevel !== 'N/A' ? {'Gas Bottle Check': data.gasLevel} : {})
+```
+
+### Conditional Field Pattern
+```javascript
+// Effective pattern for optional Airtable fields
+const fields = {
+    'Required Field': value,
+    // Conditionally include optional fields
+    ...(isBBQBoat ? {
+        'Gas Bottle Check': data.gasLevel,
+        'Water Tank Level': data.waterLevel
+    } : {}),
+    // Handle undefined checkbox fields
+    ...(data.bbqCleaned !== undefined ? {'BBQ Cleaned': data.bbqCleaned || false} : {})
+};
+```
+
+### Boat Type Detection
+```javascript
+const BBQ_BOAT_TYPES = ['8 Person BBQ Boat', '12 Person BBQ Boat'];
+const isBBQBoat = BBQ_BOAT_TYPES.includes(boat?.fields?.['Boat Type']);
+```
+
 ---
 *Quick reference for MBH Staff Portal development* 

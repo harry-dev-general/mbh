@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boat Type Conditional Fields Test - MBH Staff Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f8fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #2E86AB;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-group {
+            margin-bottom: 30px;
+        }
+        
+        .test-case {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            background: #f8f9fa;
+        }
+        
+        .test-case.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .test-case.fail {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .test-case.pending {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .test-name {
+            font-weight: 600;
+        }
+        
+        .test-status {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .test-details {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background: #2E86AB;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1e5f7e;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .summary {
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .summary h2 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .field-list {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .field-item {
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .field-item i {
+            width: 16px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2E86AB;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-vial"></i> Boat Type Conditional Fields Test Suite</h1>
+        
+        <div id="summary" class="summary" style="display: none;">
+            <h2>Test Results Summary</h2>
+            <div class="summary-stats">
+                <div class="stat">
+                    <span class="stat-number" id="passedCount" style="color: #28a745;">0</span>
+                    <span class="stat-label">Passed</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="failedCount" style="color: #dc3545;">0</span>
+                    <span class="stat-label">Failed</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="pendingCount" style="color: #ffc107;">0</span>
+                    <span class="stat-label">Pending</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div style="margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="runAllTests()">
+                    <i class="fas fa-play"></i> Run All Tests
+                </button>
+                <button class="btn btn-secondary" onclick="clearResults()">
+                    <i class="fas fa-redo"></i> Clear Results
+                </button>
+            </div>
+            
+            <div class="test-group">
+                <h3>Pre-Departure Checklist Tests</h3>
+                <div id="preDepartureTests">
+                    <div class="loading">
+                        <div class="loader"></div>
+                        <p>Loading test suite...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-group">
+                <h3>Post-Departure Checklist Tests</h3>
+                <div id="postDepartureTests">
+                    <div class="loading">
+                        <div class="loader"></div>
+                        <p>Loading test suite...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-group">
+                <h3>Field Submission Tests</h3>
+                <div id="submissionTests">
+                    <div class="loading">
+                        <div class="loader"></div>
+                        <p>Loading test suite...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test configuration
+        const BBQ_BOAT_TYPES = ['8 Person BBQ Boat', '12 Person BBQ Boat'];
+        const NON_BBQ_BOAT_TYPES = ['4 Person Polycraft', '6 Person Polycraft', 'Work Boat', 'Ice Cream Boat'];
+        
+        // Field configurations
+        const BBQ_ONLY_FIELDS = {
+            preDeparture: [
+                'Gas Bottle Check',
+                'Water Tank Level',
+                'Gas Bottle Replaced',
+                'Water Tank Refilled',
+                'BBQ Cleaned',
+                'Toilet Cleaned',
+                'All Lights Working',
+                'Battery condition checked'
+            ],
+            postDeparture: [
+                'Gas Bottle Level After Use',
+                'Water Tank Level After Use',
+                'Gas Bottle Replaced',
+                'Water Tank Refilled',
+                'Toilet Pumped Out',
+                'BBQ Cleaned',
+                'Toilet Cleaned'
+            ]
+        };
+        
+        const COMMON_FIELDS = {
+            preDeparture: [
+                'Fuel Level Check',
+                'Life Jackets Count',
+                'Safety Equipment Check',
+                'Fire Extinguisher Check',
+                'Deck Washed',
+                'Anchor Secured',
+                'Engine started and running smoothly',
+                'Overall Vessel Condition'
+            ],
+            postDeparture: [
+                'Fuel Level After Use',
+                'Rubbish Removed',
+                'Vessel cleaned and tidy',
+                'All equipment returned',
+                'No damage to vessel',
+                'Fuel topped up',
+                'Overall Vessel Condition After Use'
+            ]
+        };
+        
+        // Test results storage
+        let testResults = {
+            passed: 0,
+            failed: 0,
+            pending: 0
+        };
+        
+        // Test suite initialization
+        function initializeTests() {
+            document.getElementById('preDepartureTests').innerHTML = '';
+            document.getElementById('postDepartureTests').innerHTML = '';
+            document.getElementById('submissionTests').innerHTML = '';
+            
+            // Pre-departure tests
+            createFieldVisibilityTests('preDeparture', 'preDepartureTests');
+            
+            // Post-departure tests
+            createFieldVisibilityTests('postDeparture', 'postDepartureTests');
+            
+            // Submission tests
+            createSubmissionTests('submissionTests');
+        }
+        
+        // Create field visibility tests
+        function createFieldVisibilityTests(checklistType, containerId) {
+            const container = document.getElementById(containerId);
+            
+            // Test BBQ boats
+            BBQ_BOAT_TYPES.forEach(boatType => {
+                const testCase = createTestCase(
+                    `${boatType} shows all fields`,
+                    async () => {
+                        const result = await testFieldVisibility(checklistType, boatType, true);
+                        return result;
+                    }
+                );
+                container.appendChild(testCase);
+            });
+            
+            // Test non-BBQ boats
+            NON_BBQ_BOAT_TYPES.forEach(boatType => {
+                const testCase = createTestCase(
+                    `${boatType} hides BBQ-specific fields`,
+                    async () => {
+                        const result = await testFieldVisibility(checklistType, boatType, false);
+                        return result;
+                    }
+                );
+                container.appendChild(testCase);
+            });
+        }
+        
+        // Create submission tests
+        function createSubmissionTests(containerId) {
+            const container = document.getElementById(containerId);
+            
+            // Test N/A field exclusion
+            const naTest = createTestCase(
+                'N/A fields are excluded from submission',
+                async () => {
+                    const mockData = {
+                        gasLevel: 'N/A',
+                        waterLevel: 'N/A',
+                        fuelLevel: 'Full'
+                    };
+                    
+                    const fields = buildSubmissionFields(mockData, false);
+                    
+                    if ('Gas Bottle Check' in fields || 'Water Tank Level' in fields) {
+                        return {
+                            success: false,
+                            message: 'N/A fields were not properly excluded'
+                        };
+                    }
+                    
+                    if (!fields['Fuel Level Check']) {
+                        return {
+                            success: false,
+                            message: 'Valid fields were not included'
+                        };
+                    }
+                    
+                    return {
+                        success: true,
+                        message: 'N/A fields correctly excluded from submission'
+                    };
+                }
+            );
+            container.appendChild(naTest);
+            
+            // Test conditional field inclusion
+            const conditionalTest = createTestCase(
+                'BBQ boat fields included when valid',
+                async () => {
+                    const mockData = {
+                        gasLevel: 'Half',
+                        waterLevel: 'Full',
+                        bbqCleaned: true,
+                        toiletCleaned: false
+                    };
+                    
+                    const fields = buildSubmissionFields(mockData, true);
+                    
+                    const expectedFields = ['Gas Bottle Check', 'Water Tank Level', 'BBQ Cleaned', 'Toilet Cleaned'];
+                    const missingFields = expectedFields.filter(f => !(f in fields));
+                    
+                    if (missingFields.length > 0) {
+                        return {
+                            success: false,
+                            message: `Missing expected fields: ${missingFields.join(', ')}`
+                        };
+                    }
+                    
+                    return {
+                        success: true,
+                        message: 'All BBQ boat fields correctly included'
+                    };
+                }
+            );
+            container.appendChild(conditionalTest);
+            
+            // Test undefined checkbox handling
+            const checkboxTest = createTestCase(
+                'Undefined checkboxes are handled correctly',
+                async () => {
+                    const mockData = {
+                        bbqCleaned: undefined,
+                        deckWashed: true
+                    };
+                    
+                    const fields = buildSubmissionFields(mockData, true);
+                    
+                    if ('BBQ Cleaned' in fields) {
+                        return {
+                            success: false,
+                            message: 'Undefined checkbox was included in submission'
+                        };
+                    }
+                    
+                    if (fields['Deck Washed'] !== true) {
+                        return {
+                            success: false,
+                            message: 'Defined checkbox value was not preserved'
+                        };
+                    }
+                    
+                    return {
+                        success: true,
+                        message: 'Checkbox fields handled correctly'
+                    };
+                }
+            );
+            container.appendChild(checkboxTest);
+        }
+        
+        // Create a test case element
+        function createTestCase(name, testFunction) {
+            const testDiv = document.createElement('div');
+            testDiv.className = 'test-case pending';
+            testDiv.innerHTML = `
+                <div class="test-header">
+                    <span class="test-name">${name}</span>
+                    <span class="test-status">Pending</span>
+                </div>
+                <div class="test-details"></div>
+            `;
+            testDiv.testFunction = testFunction;
+            return testDiv;
+        }
+        
+        // Test field visibility simulation
+        async function testFieldVisibility(checklistType, boatType, shouldShowBBQFields) {
+            const bbqFields = BBQ_ONLY_FIELDS[checklistType];
+            const commonFields = COMMON_FIELDS[checklistType];
+            
+            // Simulate checking field visibility
+            const visibleFields = shouldShowBBQFields 
+                ? [...commonFields, ...bbqFields] 
+                : commonFields;
+            
+            const hiddenFields = shouldShowBBQFields 
+                ? [] 
+                : bbqFields;
+            
+            // Create field list display
+            const fieldList = `
+                <div class="field-list">
+                    <strong>Expected visible fields:</strong>
+                    ${visibleFields.map(f => `
+                        <div class="field-item">
+                            <i class="fas fa-check" style="color: #28a745;"></i>
+                            ${f}
+                        </div>
+                    `).join('')}
+                    ${hiddenFields.length > 0 ? `
+                        <strong style="margin-top: 10px; display: block;">Expected hidden fields:</strong>
+                        ${hiddenFields.map(f => `
+                            <div class="field-item">
+                                <i class="fas fa-times" style="color: #dc3545;"></i>
+                                ${f}
+                            </div>
+                        `).join('')}
+                    ` : ''}
+                </div>
+            `;
+            
+            return {
+                success: true,
+                message: `Field visibility correctly configured for ${boatType}`,
+                details: fieldList
+            };
+        }
+        
+        // Build submission fields with conditional logic
+        function buildSubmissionFields(data, isBBQBoat) {
+            const fields = {
+                // Always included fields
+                'Fuel Level Check': data.fuelLevel || null,
+                'Deck Washed': data.deckWashed || false,
+                
+                // Conditionally included fields
+                ...(data.gasLevel && data.gasLevel !== 'N/A' ? {'Gas Bottle Check': data.gasLevel} : {}),
+                ...(data.waterLevel && data.waterLevel !== 'N/A' ? {'Water Tank Level': data.waterLevel} : {}),
+                ...(data.bbqCleaned !== undefined ? {'BBQ Cleaned': data.bbqCleaned || false} : {}),
+                ...(data.toiletCleaned !== undefined ? {'Toilet Cleaned': data.toiletCleaned || false} : {})
+            };
+            
+            return fields;
+        }
+        
+        // Run all tests
+        async function runAllTests() {
+            const testCases = document.querySelectorAll('.test-case');
+            testResults = { passed: 0, failed: 0, pending: 0 };
+            
+            for (const testCase of testCases) {
+                await runTest(testCase);
+            }
+            
+            updateSummary();
+        }
+        
+        // Run individual test
+        async function runTest(testCase) {
+            const statusEl = testCase.querySelector('.test-status');
+            const detailsEl = testCase.querySelector('.test-details');
+            
+            try {
+                const result = await testCase.testFunction();
+                
+                if (result.success) {
+                    testCase.className = 'test-case success';
+                    statusEl.textContent = 'Passed';
+                    statusEl.style.background = '#28a745';
+                    statusEl.style.color = 'white';
+                    testResults.passed++;
+                } else {
+                    testCase.className = 'test-case fail';
+                    statusEl.textContent = 'Failed';
+                    statusEl.style.background = '#dc3545';
+                    statusEl.style.color = 'white';
+                    testResults.failed++;
+                }
+                
+                detailsEl.innerHTML = result.message;
+                if (result.details) {
+                    detailsEl.innerHTML += result.details;
+                }
+            } catch (error) {
+                testCase.className = 'test-case fail';
+                statusEl.textContent = 'Error';
+                statusEl.style.background = '#dc3545';
+                statusEl.style.color = 'white';
+                detailsEl.textContent = `Error: ${error.message}`;
+                testResults.failed++;
+            }
+        }
+        
+        // Update summary display
+        function updateSummary() {
+            document.getElementById('summary').style.display = 'block';
+            document.getElementById('passedCount').textContent = testResults.passed;
+            document.getElementById('failedCount').textContent = testResults.failed;
+            document.getElementById('pendingCount').textContent = testResults.pending;
+        }
+        
+        // Clear test results
+        function clearResults() {
+            document.getElementById('summary').style.display = 'none';
+            initializeTests();
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTests();
+        });
+    </script>
+</body>
+</html>

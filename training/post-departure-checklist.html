@@ -1254,26 +1254,25 @@
                     throw new Error('This booking does not have a vessel assigned. Please contact management.');
                 }
 
-                // Validate required fields
+                // Validate required fields - only Staff Name and Staff Phone Number are required
+                const staffName = document.getElementById('staffName')?.value;
+                const staffPhone = document.getElementById('staffPhone')?.value;
+                
+                if (!staffName || !staffPhone) {
+                    throw new Error('Please enter your name and phone number');
+                }
+                
+                // Get other field values (not required)
                 const fuelLevelAfter = getSelectedValue('fuelLevelAfter');
                 const lightsCondition = getSelectedValue('lightsCondition');
                 const safetyEquipmentCondition = getSelectedValue('safetyEquipmentCondition');
                 const anchorCondition = getSelectedValue('anchorCondition');
                 const overallCondition = getSelectedValue('overallCondition');
                 
-                // Get gas and water levels - required only for BBQ boats
+                // Get gas and water levels - default to 'N/A' if not provided
                 const isBBQBoat = BBQ_BOAT_TYPES.includes(selectedBoatType);
-                const gasLevelAfter = isBBQBoat ? getSelectedValue('gasLevelAfter') : 'N/A';
-                const waterLevelAfter = isBBQBoat ? getSelectedValue('waterLevelAfter') : 'N/A';
-
-                if (!fuelLevelAfter || !lightsCondition || !safetyEquipmentCondition || 
-                    !anchorCondition || !overallCondition) {
-                    throw new Error('Please complete all required fields');
-                }
-                
-                if (isBBQBoat && (!gasLevelAfter || !waterLevelAfter)) {
-                    throw new Error('Please complete gas and water levels for BBQ boats');
-                }
+                const gasLevelAfter = isBBQBoat ? (getSelectedValue('gasLevelAfter') || 'N/A') : 'N/A';
+                const waterLevelAfter = isBBQBoat ? (getSelectedValue('waterLevelAfter') || 'N/A') : 'N/A';
 
                 // Generate Checklist ID: "Vessel name - Employee first name - date"
                 const today = new Date();

@@ -331,7 +331,7 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                     
                     <div class="form-group">
                         <label for="lifeJackets">Life Jackets Count</label>
-                        <input type="number" id="lifeJackets" name="lifeJackets" min="0" max="50" required
+                        <input type="number" id="lifeJackets" name="lifeJackets" min="0" max="50"
                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                     </div>
 
@@ -352,7 +352,7 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                     
                     <div class="form-group">
                         <label>Fuel Level Check</label>
-                        <select id="fuelLevel" name="fuelLevel" class="form-control" required 
+                        <select id="fuelLevel" name="fuelLevel" class="form-control"
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                             <option value="">Select Level</option>
                             <option value="Empty">Empty</option>
@@ -437,7 +437,7 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                     
                     <div class="form-group">
                         <label>Overall Vessel Condition</label>
-                        <select id="overallCondition" name="overallCondition" class="form-control" required
+                        <select id="overallCondition" name="overallCondition" class="form-control"
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                             <option value="">Select Condition</option>
                             <option value="Ready">Ready for Use</option>
@@ -458,7 +458,7 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                     ` : ''}
 
                     <div class="checklist-item">
-                        <input type="checkbox" id="engine" name="engine" required>
+                        <input type="checkbox" id="engine" name="engine">
                         <label for="engine">Engine started and running smoothly</label>
                     </div>
 
@@ -480,19 +480,19 @@ function renderPreDepartureChecklist(booking, employee, boat) {
                 <div class="checklist-section">
                     <h3>Customer Briefing</h3>
                     <div class="checklist-item">
-                        <input type="checkbox" id="safety_brief" name="safety_brief" required>
+                        <input type="checkbox" id="safety_brief" name="safety_brief">
                         <label for="safety_brief">Safety briefing completed</label>
                     </div>
                     <div class="checklist-item">
-                        <input type="checkbox" id="operation_demo" name="operation_demo" required>
+                        <input type="checkbox" id="operation_demo" name="operation_demo">
                         <label for="operation_demo">Vessel operation demonstrated</label>
                     </div>
                     <div class="checklist-item">
-                        <input type="checkbox" id="boundaries" name="boundaries" required>
+                        <input type="checkbox" id="boundaries" name="boundaries">
                         <label for="boundaries">Operating boundaries explained</label>
                     </div>
                     <div class="checklist-item">
-                        <input type="checkbox" id="return_time" name="return_time" required>
+                        <input type="checkbox" id="return_time" name="return_time">
                         <label for="return_time">Return time confirmed</label>
                     </div>
                 </div>
@@ -827,7 +827,7 @@ function renderPostDepartureChecklist(booking, employee, boat) {
                     
                     <div class="form-group">
                         <label>Fuel Level After Use</label>
-                        <select id="fuelLevelAfter" name="fuelLevelAfter" class="form-control" required
+                        <select id="fuelLevelAfter" name="fuelLevelAfter" class="form-control"
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                             <option value="">Select Level</option>
                             <option value="Empty">Empty</option>
@@ -906,28 +906,28 @@ function renderPostDepartureChecklist(booking, employee, boat) {
                     </div>
                     
                     <div class="checklist-item">
-                        <input type="checkbox" id="vessel_cleaned" name="vessel_cleaned" required>
+                        <input type="checkbox" id="vessel_cleaned" name="vessel_cleaned">
                         <label for="vessel_cleaned">Vessel cleaned and tidy</label>
                     </div>
                     
                     <div class="checklist-item">
-                        <input type="checkbox" id="equipment_returned" name="equipment_returned" required>
+                        <input type="checkbox" id="equipment_returned" name="equipment_returned">
                         <label for="equipment_returned">All equipment returned</label>
                     </div>
                     
                     <div class="checklist-item">
-                        <input type="checkbox" id="no_damage" name="no_damage" required>
+                        <input type="checkbox" id="no_damage" name="no_damage">
                         <label for="no_damage">No damage to vessel</label>
                     </div>
                     
                     <div class="checklist-item">
-                        <input type="checkbox" id="fuel_topped" name="fuel_topped" required>
+                        <input type="checkbox" id="fuel_topped" name="fuel_topped">
                         <label for="fuel_topped">Fuel topped up (if required)</label>
                     </div>
                     
                     <div class="form-group">
                         <label>Overall Vessel Condition After Use</label>
-                        <select id="overallConditionAfter" name="overallConditionAfter" class="form-control" required
+                        <select id="overallConditionAfter" name="overallConditionAfter" class="form-control"
                                 style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                             <option value="">Select Condition</option>
                             <option value="Good - Ready for Next Booking">Good - Ready for Next Booking</option>
@@ -940,11 +940,11 @@ function renderPostDepartureChecklist(booking, employee, boat) {
                 <div class="checklist-section">
                     <h3>Safety Equipment Check</h3>
                     <div class="checklist-item">
-                        <input type="checkbox" id="lifejackets_returned" name="lifejackets_returned" required>
+                        <input type="checkbox" id="lifejackets_returned" name="lifejackets_returned">
                         <label for="lifejackets_returned">All life jackets returned</label>
                     </div>
                     <div class="checklist-item">
-                        <input type="checkbox" id="safety_equipment_complete" name="safety_equipment_complete" required>
+                        <input type="checkbox" id="safety_equipment_complete" name="safety_equipment_complete">
                         <label for="safety_equipment_complete">All safety equipment accounted for</label>
                     </div>
                 </div>
@@ -952,11 +952,11 @@ function renderPostDepartureChecklist(booking, employee, boat) {
                 <div class="checklist-section">
                     <h3>Customer Feedback</h3>
                     <div class="checklist-item">
-                        <input type="checkbox" id="customer_satisfied" name="customer_satisfied" required>
+                        <input type="checkbox" id="customer_satisfied" name="customer_satisfied">
                         <label for="customer_satisfied">Customer satisfied with experience</label>
                     </div>
                     <div class="checklist-item">
-                        <input type="checkbox" id="no_incidents" name="no_incidents" required>
+                        <input type="checkbox" id="no_incidents" name="no_incidents">
                         <label for="no_incidents">No incidents reported</label>
                     </div>
                 </div>
