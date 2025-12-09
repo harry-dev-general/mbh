@@ -573,7 +573,19 @@ class CalendarEnhancements {
 
     setupLazyLoading() {
         // Override event rendering to load details on demand
-        const originalEventContent = this.calendar.options.eventContent;
+        // FullCalendar v6 compatibility: use getOption() instead of accessing options directly
+        if (!this.calendar || typeof this.calendar.getOption !== 'function') {
+            console.log('Calendar not ready for lazy loading setup, skipping...');
+            return;
+        }
+        
+        const originalEventContent = this.calendar.getOption('eventContent');
+        
+        // Only override if calendar supports setOption
+        if (typeof this.calendar.setOption !== 'function') {
+            console.log('Calendar does not support setOption, skipping lazy loading');
+            return;
+        }
         
         this.calendar.setOption('eventContent', (arg) => {
             const event = arg.event;

@@ -1733,6 +1733,10 @@
         let allocationsData = [];
         let boatsData = [];
         let calendar = null; // FullCalendar instance
+        
+        // Flags to prevent duplicate data loading
+        let isLoadingWeekData = false;
+        let lastLoadedWeek = null;
 
         // Week already initialized to Monday above
 
@@ -1921,8 +1925,27 @@
         }
 
         // Load all data for the week
-        async function loadWeekData() {
+        async function loadWeekData(forceReload = false) {
+            // Get the current week string to compare
+            const currentWeekString = formatLocalDate(currentWeekStart);
+            
+            // Prevent duplicate calls - skip if already loading or same week already loaded
+            if (isLoadingWeekData) {
+                console.log('Already loading week data, skipping duplicate call...');
+                return;
+            }
+            
+            // Skip if same week was just loaded (unless forced)
+            if (!forceReload && lastLoadedWeek === currentWeekString) {
+                console.log('Week data already loaded for:', currentWeekString, '- skipping duplicate load');
+                return;
+            }
+            
+            isLoadingWeekData = true;
+            
             try {
+                console.log('Loading week data for:', currentWeekString);
+                
                 // Load all data in parallel
                 await Promise.all([
                     loadStaffAvailability(),
@@ -1938,6 +1961,9 @@
                 renderBookingsList();  // Render bookings list in sidebar
                 // Calendar events are now rendered by FullCalendar
                 
+                // Mark this week as loaded
+                lastLoadedWeek = currentWeekString;
+                
                 console.log('All data loaded and rendered successfully');
             } catch (error) {
                 console.error('Error loading week data:', error);
@@ -1950,6 +1976,8 @@
                 } catch (calendarError) {
                     console.error('Error rendering calendar:', calendarError);
                 }
+            } finally {
+                isLoadingWeekData = false;
             }
         }
 
@@ -2044,24 +2072,27 @@
                 });
                 
                 // Filter for current week client-side
+                // FIX: Prevent duplicates by prioritizing Week Starting field
+                // Only use Date fallback when Week Starting is not set
                 rosterData = allRosterData.filter(record => {
                     const weekStarting = record.fields['Week Starting'];
                     const date = record.fields['Date'];
                     
-                    // Check if Week Starting matches
-                    if (weekStarting && weekStarting === weekString) {
-                        return true;
+                    // If Week Starting is set, ONLY use it for matching
+                    // This prevents duplicates where the same date exists in records 
+                    // with different Week Starting values
+                    if (weekStarting) {
+                        return weekStarting === weekString;
                     }
                     
-                    // Check if Date falls within the week
+                    // Fallback: Only check Date if Week Starting is NOT set
+                    // This handles legacy records that don't have Week Starting
                     if (date) {
                         const recordDate = new Date(date + 'T00:00:00');
                         const weekStartDate = new Date(weekString + 'T00:00:00');
                         const weekEndDate = new Date(weekEndString + 'T23:59:59');
                         
-                        if (recordDate >= weekStartDate && recordDate <= weekEndDate) {
-                            return true;
-                        }
+                        return recordDate >= weekStartDate && recordDate <= weekEndDate;
                     }
                     
                     return false;
@@ -2825,10 +2856,19 @@
                 
                 // Week navigation handlers
                 datesSet: function(dateInfo) {
-                    // Update currentWeekStart when navigating
-                    currentWeekStart = getMonday(dateInfo.start);
-                    // Reload data for the new week
-                    loadWeekData();
+                    // Calculate the new week start
+                    const newWeekStart = getMonday(dateInfo.start);
+                    const newWeekString = formatLocalDate(newWeekStart);
+                    const oldWeekString = formatLocalDate(currentWeekStart);
+                    
+                    // Update currentWeekStart
+                    currentWeekStart = newWeekStart;
+                    
+                    // Only reload if the week actually changed
+                    if (newWeekString !== oldWeekString) {
+                        console.log('Week changed from', oldWeekString, 'to', newWeekString, '- reloading data');
+                        loadWeekData();
+                    }
                 },
                 
                 // Custom button handlers
@@ -4005,8 +4045,8 @@
                 alert(message);
                 closeBookingAllocationModal();
                 
-                // Reload data to show updates
-                await loadWeekData();
+                // Reload data to show updates (force reload after user action)
+                await loadWeekData(true);
                 
                 // Only send SMS if staff is being newly assigned or changed
                 const isStaffChanging = selectedStaffId && selectedStaffId !== currentStaffId;
@@ -4236,8 +4276,8 @@
                 // Close modal and refresh
                 closeAllocationModal();
                 
-                // Reload the page data
-                await loadWeekData();
+                // Reload the page data (force reload after user action)
+                await loadWeekData(true);
                 
             } catch (error) {
                 console.error('Error deleting shift allocation:', error);
@@ -4571,8 +4611,8 @@
                     delete e.target.dataset.isEdit;
                     delete e.target.dataset.allocationId;
                     
-                    // Reload allocations to show updated data
-                    await loadWeekData();
+                    // Reload allocations to show updated data (force reload after user action)
+                    await loadWeekData(true);
                     
                     isSubmitting = false;
                     return;
@@ -4673,8 +4713,8 @@
                     document.getElementById('startTime').disabled = false;
                     document.getElementById('endTime').disabled = false;
                     
-                    // Reload allocations to show updated data
-                    await loadWeekData();
+                    // Reload allocations to show updated data (force reload after user action)
+                    await loadWeekData(true);
                     
                     isSubmitting = false;
                     if (submitBtn) {
