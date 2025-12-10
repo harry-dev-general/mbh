@@ -62,6 +62,12 @@ const checkfrontWebhook = require('./api/checkfront-webhook');
 // Import Checkfront reconciliation handler
 const checkfrontReconciliation = require('./api/checkfront-reconciliation');
 
+// Import reconciliation scheduler for automatic sync
+const reconciliationScheduler = require('./api/reconciliation-scheduler');
+
+// Import webhook audit log
+const webhookAuditLog = require('./api/webhook-audit-log');
+
 // Import add-ons management
 const addonsManagement = require('./api/addons-management');
 
@@ -1528,6 +1534,58 @@ app.get('/api/admin/booking-reminder-status', adminAuth, (req, res) => {
   });
 });
 
+// Admin endpoint for reconciliation scheduler status
+app.get('/api/admin/reconciliation-status', adminAuth, (req, res) => {
+  res.json({
+    success: true,
+    ...reconciliationScheduler.getReconciliationStatus()
+  });
+});
+
+// Admin endpoint to manually trigger reconciliation
+app.post('/api/admin/trigger-reconciliation', adminAuth, async (req, res) => {
+  try {
+    const daysBack = parseInt(req.body?.daysBack || req.query?.daysBack) || 14;
+    console.log(`Manual reconciliation triggered by admin (${daysBack} days)`);
+    
+    const result = await reconciliationScheduler.runReconciliation(daysBack);
+    res.json({
+      success: true,
+      message: 'Reconciliation completed',
+      result
+    });
+  } catch (error) {
+    console.error('Error in manual reconciliation:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Admin endpoint to view webhook audit logs
+app.get('/api/admin/webhook-logs', adminAuth, (req, res) => {
+  const limit = parseInt(req.query.limit) || 100;
+  const bookingCode = req.query.bookingCode;
+  const failedOnly = req.query.failedOnly === 'true';
+  
+  let logs;
+  if (bookingCode) {
+    logs = webhookAuditLog.getLogsForBooking(bookingCode);
+  } else if (failedOnly) {
+    logs = webhookAuditLog.getFailedLogs(limit);
+  } else {
+    logs = webhookAuditLog.getRecentLogs(limit);
+  }
+  
+  res.json({
+    success: true,
+    count: logs.length,
+    stats: webhookAuditLog.getWebhookStats(),
+    logs
+  });
+});
+
 // Admin endpoint to manually trigger booking reminder check
 app.post('/api/admin/trigger-booking-reminders', adminAuth, async (req, res) => {
   try {
@@ -1613,6 +1671,10 @@ server.listen(PORT, HOST, () => {
   // Start the reminder schedulers
   reminderScheduler.startReminderScheduler();
   bookingReminderScheduler.startBookingReminderScheduler();
+  
+  // Start the Checkfront-Airtable reconciliation scheduler
+  // This catches any bookings missed by webhook failures
+  reconciliationScheduler.startReconciliationScheduler();
 });
 
 // Graceful shutdown handling
@@ -1628,6 +1690,11 @@ function gracefulShutdown() {
   }
   if (bookingReminderScheduler && bookingReminderScheduler.stopBookingReminderScheduler) {
     bookingReminderScheduler.stopBookingReminderScheduler();
+  }
+  
+  // Stop the reconciliation scheduler
+  if (reconciliationScheduler && reconciliationScheduler.stopReconciliationScheduler) {
+    reconciliationScheduler.stopReconciliationScheduler();
   }
   
   // Close the HTTP server

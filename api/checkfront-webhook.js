@@ -4,6 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const webhookAuditLog = require('./webhook-audit-log');
 
 // Airtable configuration
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
@@ -521,14 +522,25 @@ router.post('/webhook', async (req, res) => {
     console.log('\n🚀 Checkfront webhook received');
     console.log('Headers:', req.headers);
     
+    let result = { success: false, action: 'none' };
+    let bookingCode = 'Unknown';
+    
     try {
         // Process the webhook data
         const recordData = await processCheckfrontWebhook(req.body);
+        bookingCode = recordData['Booking Code'] || 'Unknown';
         
         // Create or update Airtable record (and send SMS)
-        const result = await createOrUpdateAirtableRecord(recordData);
+        result = await createOrUpdateAirtableRecord(recordData);
         
         console.log(`✅ Successfully ${result.action} booking ${recordData['Booking Code']}${result.smsSent ? ' (SMS sent)' : ''}`);
+        
+        // Log successful webhook
+        await webhookAuditLog.logWebhook(req.body, {
+            success: true,
+            action: result.action,
+            recordId: result.recordId
+        });
         
         res.json({
             success: true,
@@ -540,6 +552,13 @@ router.post('/webhook', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Webhook processing error:', error);
+        
+        // Log failed webhook for audit trail
+        await webhookAuditLog.logWebhook(req.body, {
+            success: false,
+            action: 'failed',
+            error: error.message
+        });
         
         res.status(500).json({
             success: false,
