@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkfront-Airtable Reconciliation | MBH Staff Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --mbh-blue: #2E86AB;
+            --mbh-blue-dark: #1B4F72;
+            --success-green: #27ae60;
+            --warning-orange: #f39c12;
+            --error-red: #e74c3c;
+            --bg-light: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header h1 {
+            color: var(--mbh-blue);
+            font-size: 1.8em;
+        }
+        
+        header h1 i {
+            margin-right: 10px;
+        }
+        
+        .back-link {
+            color: var(--mbh-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .card h2 {
+            color: var(--mbh-blue-dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg-light);
+        }
+        
+        .card h2 i {
+            margin-right: 10px;
+        }
+        
+        /* Status Section */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            padding: 15px;
+            background: var(--bg-light);
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .status-item .label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .status-item .value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .status-item .value.success { color: var(--success-green); }
+        .status-item .value.warning { color: var(--warning-orange); }
+        .status-item .value.error { color: var(--error-red); }
+        
+        /* Form */
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--mbh-blue);
+            box-shadow: 0 0 0 3px rgba(46, 134, 171, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--mbh-blue);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--mbh-blue-dark);
+        }
+        
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #219a52;
+        }
+        
+        /* Admin Key Section */
+        .admin-key-section {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .admin-key-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .admin-key-section input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+        
+        /* Results */
+        .results-section {
+            display: none;
+        }
+        
+        .results-section.visible {
+            display: block;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .summary-card {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .summary-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        .summary-card .label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .summary-card.success { border-left: 4px solid var(--success-green); }
+        .summary-card.warning { border-left: 4px solid var(--warning-orange); }
+        .summary-card.error { border-left: 4px solid var(--error-red); }
+        
+        /* Tables */
+        .discrepancy-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .discrepancy-table th,
+        .discrepancy-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .discrepancy-table th {
+            background: var(--bg-light);
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .discrepancy-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        
+        .status-badge.paid { background: #d4edda; color: #155724; }
+        .status-badge.void { background: #f8d7da; color: #721c24; }
+        .status-badge.part { background: #fff3cd; color: #856404; }
+        .status-badge.pend { background: #cce5ff; color: #004085; }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading.visible {
+            display: block;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--bg-light);
+            border-top-color: var(--mbh-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Alert */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        
+        /* Collapsible sections */
+        .collapsible-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--bg-light);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .collapsible-header h3 {
+            margin: 0;
+            font-size: 1.1em;
+        }
+        
+        .collapsible-content {
+            display: none;
+            padding: 15px 0;
+        }
+        
+        .collapsible-content.expanded {
+            display: block;
+        }
+        
+        /* Sync button */
+        .sync-actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                min-width: 100%;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-sync-alt"></i> Checkfront-Airtable Reconciliation</h1>
+            <a href="/training/management-allocations.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Allocations
+            </a>
+        </header>
+        
+        <!-- Connection Status -->
+        <div class="card">
+            <h2><i class="fas fa-plug"></i> Connection Status</h2>
+            <div class="status-grid" id="statusGrid">
+                <div class="status-item">
+                    <div class="label">Checkfront API</div>
+                    <div class="value" id="checkfrontStatus">Checking...</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">Airtable API</div>
+                    <div class="value" id="airtableStatus">Checking...</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">Checkfront Host</div>
+                    <div class="value" id="checkfrontHost" style="font-size: 0.9em;">-</div>
+                </div>
+            </div>
+            <div id="connectionAlert" class="alert alert-info" style="display: none;"></div>
+        </div>
+        
+        <!-- Admin Authentication -->
+        <div class="card">
+            <h2><i class="fas fa-key"></i> Authentication</h2>
+            <div class="admin-key-section">
+                <label for="adminKey">
+                    <i class="fas fa-lock"></i> Admin API Key
+                </label>
+                <input type="password" id="adminKey" placeholder="Enter your admin API key">
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                    Required to access reconciliation features. Contact your administrator if you don't have this key.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Run Reconciliation -->
+        <div class="card">
+            <h2><i class="fas fa-search"></i> Run Reconciliation</h2>
+            <p style="margin-bottom: 20px; color: #666;">
+                Compare bookings between Checkfront and Airtable to identify any discrepancies.
+            </p>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="form-group" style="display: flex; align-items: flex-end;">
+                    <button class="btn btn-primary" id="runBtn" onclick="runReconciliation()">
+                        <i class="fas fa-play"></i> Run Comparison
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <button class="btn" style="background: #6c757d; color: white;" onclick="setLastWeek()">
+                    <i class="fas fa-calendar-week"></i> Last 7 Days
+                </button>
+                <button class="btn" style="background: #6c757d; color: white;" onclick="setLastMonth()">
+                    <i class="fas fa-calendar-alt"></i> Last 30 Days
+                </button>
+                <button class="btn" style="background: #6c757d; color: white;" onclick="setNextMonth()">
+                    <i class="fas fa-calendar-plus"></i> Next 30 Days
+                </button>
+            </div>
+        </div>
+        
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Comparing bookings between Checkfront and Airtable...</p>
+            <p style="color: #666; font-size: 0.9em;">This may take a moment depending on the date range.</p>
+        </div>
+        
+        <!-- Results -->
+        <div class="results-section" id="results">
+            <div class="card">
+                <h2><i class="fas fa-chart-bar"></i> Summary</h2>
+                <div class="summary-grid" id="summaryGrid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+            
+            <!-- Missing in Airtable -->
+            <div class="card" id="missingInAirtableCard" style="display: none;">
+                <div class="collapsible-header" onclick="toggleSection('missingInAirtable')">
+                    <h3><i class="fas fa-exclamation-triangle" style="color: var(--error-red);"></i> Missing in Airtable</h3>
+                    <span id="missingInAirtableCount" class="status-badge" style="background: var(--error-red); color: white;">0</span>
+                </div>
+                <div class="collapsible-content expanded" id="missingInAirtableContent">
+                    <p style="margin-bottom: 15px; color: #666;">
+                        These bookings exist in Checkfront but are not in Airtable. They may have been missed by the webhook.
+                    </p>
+                    <div id="missingInAirtableTable"></div>
+                    <div class="sync-actions" id="syncActions" style="display: none;">
+                        <button class="btn btn-success" onclick="syncMissingBookings()">
+                            <i class="fas fa-sync"></i> Sync Missing Bookings to Airtable
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Mismatches -->
+            <div class="card" id="statusMismatchCard" style="display: none;">
+                <div class="collapsible-header" onclick="toggleSection('statusMismatch')">
+                    <h3><i class="fas fa-exchange-alt" style="color: var(--warning-orange);"></i> Status Mismatches</h3>
+                    <span id="statusMismatchCount" class="status-badge" style="background: var(--warning-orange); color: white;">0</span>
+                </div>
+                <div class="collapsible-content" id="statusMismatchContent">
+                    <p style="margin-bottom: 15px; color: #666;">
+                        These bookings have different statuses between Checkfront and Airtable.
+                    </p>
+                    <div id="statusMismatchTable"></div>
+                </div>
+            </div>
+            
+            <!-- Amount Mismatches -->
+            <div class="card" id="amountMismatchCard" style="display: none;">
+                <div class="collapsible-header" onclick="toggleSection('amountMismatch')">
+                    <h3><i class="fas fa-dollar-sign" style="color: var(--warning-orange);"></i> Amount Mismatches</h3>
+                    <span id="amountMismatchCount" class="status-badge" style="background: var(--warning-orange); color: white;">0</span>
+                </div>
+                <div class="collapsible-content" id="amountMismatchContent">
+                    <p style="margin-bottom: 15px; color: #666;">
+                        These bookings have different amounts between Checkfront and Airtable.
+                    </p>
+                    <div id="amountMismatchTable"></div>
+                </div>
+            </div>
+            
+            <!-- Missing in Checkfront (unusual) -->
+            <div class="card" id="missingInCheckfrontCard" style="display: none;">
+                <div class="collapsible-header" onclick="toggleSection('missingInCheckfront')">
+                    <h3><i class="fas fa-question-circle" style="color: #6c757d;"></i> In Airtable Only</h3>
+                    <span id="missingInCheckfrontCount" class="status-badge" style="background: #6c757d; color: white;">0</span>
+                </div>
+                <div class="collapsible-content" id="missingInCheckfrontContent">
+                    <p style="margin-bottom: 15px; color: #666;">
+                        These bookings exist in Airtable but weren't found in Checkfront. They may have been manually created or deleted from Checkfront.
+                    </p>
+                    <div id="missingInCheckfrontTable"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize dates
+        document.addEventListener('DOMContentLoaded', function() {
+            setLastWeek();
+            checkConnectionStatus();
+            
+            // Load admin key from localStorage if saved
+            const savedKey = localStorage.getItem('mbh_admin_key');
+            if (savedKey) {
+                document.getElementById('adminKey').value = savedKey;
+            }
+            
+            // Save admin key when changed
+            document.getElementById('adminKey').addEventListener('change', function() {
+                localStorage.setItem('mbh_admin_key', this.value);
+            });
+        });
+        
+        function getAdminKey() {
+            return document.getElementById('adminKey').value;
+        }
+        
+        async function checkConnectionStatus() {
+            const adminKey = getAdminKey();
+            
+            if (!adminKey) {
+                document.getElementById('checkfrontStatus').textContent = 'Enter admin key';
+                document.getElementById('checkfrontStatus').className = 'value warning';
+                document.getElementById('airtableStatus').textContent = 'Enter admin key';
+                document.getElementById('airtableStatus').className = 'value warning';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/reconciliation/status?adminKey=${encodeURIComponent(adminKey)}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to check status');
+                }
+                
+                // Update Checkfront status
+                if (data.checkfront.success) {
+                    document.getElementById('checkfrontStatus').textContent = 'Connected';
+                    document.getElementById('checkfrontStatus').className = 'value success';
+                    document.getElementById('checkfrontHost').textContent = data.checkfront.host || '-';
+                } else if (data.checkfront.configured) {
+                    document.getElementById('checkfrontStatus').textContent = 'Error';
+                    document.getElementById('checkfrontStatus').className = 'value error';
+                    showAlert('connectionAlert', 'error', `Checkfront connection error: ${data.checkfront.error}`);
+                } else {
+                    document.getElementById('checkfrontStatus').textContent = 'Not Configured';
+                    document.getElementById('checkfrontStatus').className = 'value warning';
+                    showAlert('connectionAlert', 'info', 'Checkfront API credentials not configured. Add CHECKFRONT_HOST, CHECKFRONT_CONSUMER_KEY, and CHECKFRONT_CONSUMER_SECRET to Railway environment variables.');
+                }
+                
+                // Update Airtable status
+                if (data.airtable.configured) {
+                    document.getElementById('airtableStatus').textContent = 'Connected';
+                    document.getElementById('airtableStatus').className = 'value success';
+                } else {
+                    document.getElementById('airtableStatus').textContent = 'Not Configured';
+                    document.getElementById('airtableStatus').className = 'value warning';
+                }
+                
+            } catch (error) {
+                console.error('Status check error:', error);
+                document.getElementById('checkfrontStatus').textContent = 'Error';
+                document.getElementById('checkfrontStatus').className = 'value error';
+                
+                if (error.message.includes('Unauthorized')) {
+                    showAlert('connectionAlert', 'error', 'Invalid admin key. Please check your credentials.');
+                } else {
+                    showAlert('connectionAlert', 'error', error.message);
+                }
+            }
+        }
+        
+        function showAlert(elementId, type, message) {
+            const alert = document.getElementById(elementId);
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+            alert.style.display = 'block';
+        }
+        
+        function setLastWeek() {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - 7);
+            
+            document.getElementById('startDate').value = formatDate(start);
+            document.getElementById('endDate').value = formatDate(end);
+        }
+        
+        function setLastMonth() {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - 30);
+            
+            document.getElementById('startDate').value = formatDate(start);
+            document.getElementById('endDate').value = formatDate(end);
+        }
+        
+        function setNextMonth() {
+            const start = new Date();
+            const end = new Date();
+            end.setDate(end.getDate() + 30);
+            
+            document.getElementById('startDate').value = formatDate(start);
+            document.getElementById('endDate').value = formatDate(end);
+        }
+        
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+        
+        async function runReconciliation() {
+            const adminKey = getAdminKey();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!adminKey) {
+                alert('Please enter your admin API key');
+                return;
+            }
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').classList.add('visible');
+            document.getElementById('results').classList.remove('visible');
+            document.getElementById('runBtn').disabled = true;
+            
+            try {
+                const response = await fetch(
+                    `/api/reconciliation/compare?startDate=${startDate}&endDate=${endDate}&adminKey=${encodeURIComponent(adminKey)}`
+                );
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Reconciliation failed');
+                }
+                
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Reconciliation error:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                document.getElementById('loading').classList.remove('visible');
+                document.getElementById('runBtn').disabled = false;
+            }
+        }
+        
+        function displayResults(data) {
+            const summary = data.summary;
+            const discrepancies = data.discrepancies;
+            
+            // Build summary grid
+            const summaryGrid = document.getElementById('summaryGrid');
+            summaryGrid.innerHTML = `
+                <div class="summary-card">
+                    <div class="number">${summary.checkfrontTotal}</div>
+                    <div class="label">Checkfront Bookings</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number">${summary.airtableTotal}</div>
+                    <div class="label">Airtable Records</div>
+                </div>
+                <div class="summary-card success">
+                    <div class="number" style="color: var(--success-green);">${summary.matched}</div>
+                    <div class="label">Matched</div>
+                </div>
+                <div class="summary-card error">
+                    <div class="number" style="color: var(--error-red);">${summary.missingInAirtable}</div>
+                    <div class="label">Missing in Airtable</div>
+                </div>
+                <div class="summary-card warning">
+                    <div class="number" style="color: var(--warning-orange);">${summary.statusMismatches}</div>
+                    <div class="label">Status Mismatches</div>
+                </div>
+            `;
+            
+            // Display missing in Airtable
+            if (discrepancies.missingInAirtable.length > 0) {
+                document.getElementById('missingInAirtableCard').style.display = 'block';
+                document.getElementById('missingInAirtableCount').textContent = discrepancies.missingInAirtable.length;
+                document.getElementById('missingInAirtableTable').innerHTML = buildMissingTable(discrepancies.missingInAirtable);
+                document.getElementById('syncActions').style.display = 'block';
+                
+                // Store for sync
+                window.missingBookings = discrepancies.missingInAirtable;
+            } else {
+                document.getElementById('missingInAirtableCard').style.display = 'none';
+            }
+            
+            // Display status mismatches
+            if (discrepancies.statusMismatch.length > 0) {
+                document.getElementById('statusMismatchCard').style.display = 'block';
+                document.getElementById('statusMismatchCount').textContent = discrepancies.statusMismatch.length;
+                document.getElementById('statusMismatchTable').innerHTML = buildStatusMismatchTable(discrepancies.statusMismatch);
+            } else {
+                document.getElementById('statusMismatchCard').style.display = 'none';
+            }
+            
+            // Display amount mismatches
+            if (discrepancies.amountMismatch.length > 0) {
+                document.getElementById('amountMismatchCard').style.display = 'block';
+                document.getElementById('amountMismatchCount').textContent = discrepancies.amountMismatch.length;
+                document.getElementById('amountMismatchTable').innerHTML = buildAmountMismatchTable(discrepancies.amountMismatch);
+            } else {
+                document.getElementById('amountMismatchCard').style.display = 'none';
+            }
+            
+            // Display missing in Checkfront
+            if (discrepancies.missingInCheckfront.length > 0) {
+                document.getElementById('missingInCheckfrontCard').style.display = 'block';
+                document.getElementById('missingInCheckfrontCount').textContent = discrepancies.missingInCheckfront.length;
+                document.getElementById('missingInCheckfrontTable').innerHTML = buildMissingInCheckfrontTable(discrepancies.missingInCheckfront);
+            } else {
+                document.getElementById('missingInCheckfrontCard').style.display = 'none';
+            }
+            
+            document.getElementById('results').classList.add('visible');
+        }
+        
+        function buildMissingTable(bookings) {
+            if (bookings.length === 0) return '<p>No missing bookings found.</p>';
+            
+            return `
+                <table class="discrepancy-table">
+                    <thead>
+                        <tr>
+                            <th>Booking Code</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${bookings.map(b => `
+                            <tr>
+                                <td><strong>${b.bookingCode}</strong></td>
+                                <td>${b.customerName}</td>
+                                <td>${b.bookingDate}</td>
+                                <td><span class="status-badge ${b.status?.toLowerCase()}">${b.status}</span></td>
+                                <td>$${parseFloat(b.total || 0).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function buildStatusMismatchTable(mismatches) {
+            if (mismatches.length === 0) return '<p>No status mismatches found.</p>';
+            
+            return `
+                <table class="discrepancy-table">
+                    <thead>
+                        <tr>
+                            <th>Booking Code</th>
+                            <th>Customer</th>
+                            <th>Airtable Status</th>
+                            <th>Checkfront Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${mismatches.map(m => `
+                            <tr>
+                                <td><strong>${m.bookingCode}</strong></td>
+                                <td>${m.customerName}</td>
+                                <td><span class="status-badge ${m.airtableStatus?.toLowerCase()}">${m.airtableStatus}</span></td>
+                                <td><span class="status-badge ${m.checkfrontStatus?.toLowerCase()}">${m.checkfrontStatus}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function buildAmountMismatchTable(mismatches) {
+            if (mismatches.length === 0) return '<p>No amount mismatches found.</p>';
+            
+            return `
+                <table class="discrepancy-table">
+                    <thead>
+                        <tr>
+                            <th>Booking Code</th>
+                            <th>Customer</th>
+                            <th>Airtable Amount</th>
+                            <th>Checkfront Amount</th>
+                            <th>Difference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${mismatches.map(m => `
+                            <tr>
+                                <td><strong>${m.bookingCode}</strong></td>
+                                <td>${m.customerName}</td>
+                                <td>$${parseFloat(m.airtableAmount || 0).toFixed(2)}</td>
+                                <td>$${parseFloat(m.checkfrontAmount || 0).toFixed(2)}</td>
+                                <td style="color: ${m.difference > 0 ? 'var(--success-green)' : 'var(--error-red)'}">
+                                    ${m.difference > 0 ? '+' : ''}$${parseFloat(m.difference || 0).toFixed(2)}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function buildMissingInCheckfrontTable(bookings) {
+            if (bookings.length === 0) return '<p>No records found.</p>';
+            
+            return `
+                <table class="discrepancy-table">
+                    <thead>
+                        <tr>
+                            <th>Booking Code</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${bookings.map(b => `
+                            <tr>
+                                <td><strong>${b.bookingCode}</strong></td>
+                                <td>${b.customerName}</td>
+                                <td>${b.bookingDate}</td>
+                                <td><span class="status-badge ${b.status?.toLowerCase()}">${b.status}</span></td>
+                                <td>$${parseFloat(b.total || 0).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId + 'Content');
+            content.classList.toggle('expanded');
+        }
+        
+        async function syncMissingBookings() {
+            if (!window.missingBookings || window.missingBookings.length === 0) {
+                alert('No bookings to sync');
+                return;
+            }
+            
+            const adminKey = getAdminKey();
+            if (!adminKey) {
+                alert('Please enter your admin API key');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to sync ${window.missingBookings.length} missing booking(s) to Airtable?`)) {
+                return;
+            }
+            
+            const bookingCodes = window.missingBookings.map(b => b.bookingCode);
+            
+            try {
+                const response = await fetch('/api/reconciliation/sync', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Key': adminKey
+                    },
+                    body: JSON.stringify({ bookingCodes })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Sync failed');
+                }
+                
+                alert(`Successfully synced ${data.synced} booking(s)${data.failed > 0 ? `. ${data.failed} failed.` : ''}`);
+                
+                // Re-run reconciliation to refresh
+                runReconciliation();
+                
+            } catch (error) {
+                console.error('Sync error:', error);
+                alert('Sync error: ' + error.message);
+            }
+        }
+        
+        // Re-check status when admin key changes
+        document.getElementById('adminKey').addEventListener('blur', function() {
+            if (this.value) {
+                checkConnectionStatus();
+            }
+        });
+    </script>
+</body>
+</html>
+

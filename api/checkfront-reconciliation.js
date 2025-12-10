@@ -1,0 +1,502 @@
+// Checkfront-Airtable Reconciliation API
+// Compares bookings between Checkfront and Airtable to identify discrepancies
+// All credentials loaded from environment variables for security
+
+const express = require('express');
+const router = express.Router();
+const axios = require('axios');
+const checkfrontApi = require('./checkfront-api');
+
+// Airtable configuration (from environment)
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
+
+// Admin API key for protecting these endpoints
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || 'mbh-admin-2025';
+
+/**
+ * Middleware to verify admin authentication
+ */
+function requireAdmin(req, res, next) {
+    const providedKey = req.headers['x-admin-key'] || req.query.adminKey;
+    
+    if (providedKey !== ADMIN_API_KEY) {
+        return res.status(401).json({
+            success: false,
+            error: 'Unauthorized. Provide valid admin key via X-Admin-Key header or adminKey query param.'
+        });
+    }
+    
+    next();
+}
+
+/**
+ * Get all Airtable bookings within a date range
+ */
+async function getAirtableBookings(startDate, endDate) {
+    console.log(`📊 Fetching Airtable bookings from ${startDate} to ${endDate}...`);
+    
+    const allRecords = [];
+    let offset = null;
+    
+    do {
+        const params = {
+            filterByFormula: `AND(
+                IS_AFTER({Booking Date}, '${startDate}'),
+                IS_BEFORE({Booking Date}, '${endDate}')
+            )`,
+            pageSize: 100,
+            fields: [
+                'Booking Code',
+                'Customer Name',
+                'Customer Email',
+                'Phone Number',
+                'Booking Date',
+                'Start Time',
+                'Finish Time',
+                'Status',
+                'Total Amount',
+                'Booking Items',
+                'Add-ons',
+                'Created Date'
+            ]
+        };
+        
+        if (offset) {
+            params.offset = offset;
+        }
+        
+        try {
+            const response = await axios.get(
+                `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BOOKINGS_TABLE_ID}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    params
+                }
+            );
+            
+            allRecords.push(...response.data.records);
+            offset = response.data.offset;
+        } catch (error) {
+            console.error('Airtable fetch error:', error.response?.data || error.message);
+            throw new Error(`Failed to fetch Airtable bookings: ${error.message}`);
+        }
+    } while (offset);
+    
+    console.log(`✅ Retrieved ${allRecords.length} bookings from Airtable`);
+    return allRecords;
+}
+
+/**
+ * Compare Checkfront and Airtable bookings
+ */
+function compareBookings(checkfrontBookings, airtableRecords) {
+    // Create maps for easy lookup
+    const airtableByCode = new Map();
+    airtableRecords.forEach(record => {
+        const code = record.fields['Booking Code'];
+        if (code) {
+            // Handle duplicates - keep the one with PAID status or most recent
+            if (!airtableByCode.has(code)) {
+                airtableByCode.set(code, record);
+            } else {
+                const existing = airtableByCode.get(code);
+                if (record.fields['Status'] === 'PAID' && existing.fields['Status'] !== 'PAID') {
+                    airtableByCode.set(code, record);
+                }
+            }
+        }
+    });
+    
+    const checkfrontByCode = new Map();
+    checkfrontBookings.forEach(booking => {
+        if (booking.code) {
+            checkfrontByCode.set(booking.code, booking);
+        }
+    });
+    
+    // Find discrepancies
+    const missingInAirtable = []; // In Checkfront but not in Airtable
+    const missingInCheckfront = []; // In Airtable but not in Checkfront
+    const statusMismatch = []; // Different status between systems
+    const amountMismatch = []; // Different amounts between systems
+    const matched = []; // Successfully matched
+    
+    // Check each Checkfront booking
+    checkfrontBookings.forEach(cfBooking => {
+        const code = cfBooking.code;
+        const airtableRecord = airtableByCode.get(code);
+        
+        if (!airtableRecord) {
+            missingInAirtable.push({
+                bookingCode: code,
+                customerName: cfBooking.customer?.name || 'Unknown',
+                email: cfBooking.customer?.email || '',
+                bookingDate: cfBooking.start_date ? new Date(cfBooking.start_date * 1000).toISOString().split('T')[0] : 'Unknown',
+                status: cfBooking.status || 'Unknown',
+                total: cfBooking.order?.total || 0,
+                source: 'checkfront',
+                checkfrontData: {
+                    id: cfBooking.booking_id,
+                    code: code,
+                    status: cfBooking.status,
+                    total: cfBooking.order?.total,
+                    created: cfBooking.created_date ? new Date(cfBooking.created_date * 1000).toISOString() : null
+                }
+            });
+        } else {
+            // Check for mismatches
+            const atStatus = airtableRecord.fields['Status'];
+            const cfStatus = cfBooking.status;
+            const atAmount = parseFloat(airtableRecord.fields['Total Amount'] || 0);
+            const cfAmount = parseFloat(cfBooking.order?.total || 0);
+            
+            let hasMismatch = false;
+            
+            if (atStatus !== cfStatus) {
+                statusMismatch.push({
+                    bookingCode: code,
+                    customerName: cfBooking.customer?.name || airtableRecord.fields['Customer Name'],
+                    airtableStatus: atStatus,
+                    checkfrontStatus: cfStatus,
+                    airtableRecordId: airtableRecord.id
+                });
+                hasMismatch = true;
+            }
+            
+            // Allow small amount differences (rounding)
+            if (Math.abs(atAmount - cfAmount) > 1) {
+                amountMismatch.push({
+                    bookingCode: code,
+                    customerName: cfBooking.customer?.name || airtableRecord.fields['Customer Name'],
+                    airtableAmount: atAmount,
+                    checkfrontAmount: cfAmount,
+                    difference: cfAmount - atAmount,
+                    airtableRecordId: airtableRecord.id
+                });
+                hasMismatch = true;
+            }
+            
+            if (!hasMismatch) {
+                matched.push({
+                    bookingCode: code,
+                    customerName: airtableRecord.fields['Customer Name'],
+                    status: atStatus,
+                    amount: atAmount
+                });
+            }
+        }
+    });
+    
+    // Check for Airtable records not in Checkfront
+    airtableRecords.forEach(record => {
+        const code = record.fields['Booking Code'];
+        if (code && !checkfrontByCode.has(code)) {
+            missingInCheckfront.push({
+                bookingCode: code,
+                customerName: record.fields['Customer Name'],
+                bookingDate: record.fields['Booking Date'],
+                status: record.fields['Status'],
+                total: record.fields['Total Amount'],
+                airtableRecordId: record.id,
+                source: 'airtable'
+            });
+        }
+    });
+    
+    return {
+        summary: {
+            checkfrontTotal: checkfrontBookings.length,
+            airtableTotal: airtableRecords.length,
+            matched: matched.length,
+            missingInAirtable: missingInAirtable.length,
+            missingInCheckfront: missingInCheckfront.length,
+            statusMismatches: statusMismatch.length,
+            amountMismatches: amountMismatch.length
+        },
+        missingInAirtable,
+        missingInCheckfront,
+        statusMismatch,
+        amountMismatch,
+        matched
+    };
+}
+
+/**
+ * Format date for display
+ */
+function formatDate(date) {
+    return date.toLocaleDateString('en-AU', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'Australia/Sydney'
+    });
+}
+
+// ============== API ENDPOINTS ==============
+
+/**
+ * GET /api/reconciliation/status
+ * Check if Checkfront API is configured and connected
+ */
+router.get('/status', requireAdmin, async (req, res) => {
+    try {
+        const checkfrontStatus = await checkfrontApi.testConnection();
+        const airtableConfigured = !!(AIRTABLE_API_KEY && AIRTABLE_BASE_ID);
+        
+        res.json({
+            success: true,
+            checkfront: checkfrontStatus,
+            airtable: {
+                configured: airtableConfigured,
+                baseId: airtableConfigured ? AIRTABLE_BASE_ID : null
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/reconciliation/compare
+ * Compare bookings between Checkfront and Airtable
+ * Query params:
+ *   - startDate: YYYY-MM-DD (required)
+ *   - endDate: YYYY-MM-DD (required)
+ *   - includeMatched: boolean (default false) - include matched bookings in response
+ */
+router.get('/compare', requireAdmin, async (req, res) => {
+    const { startDate, endDate, includeMatched } = req.query;
+    
+    if (!startDate || !endDate) {
+        return res.status(400).json({
+            success: false,
+            error: 'startDate and endDate query parameters are required (YYYY-MM-DD format)'
+        });
+    }
+    
+    // Validate date format
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(startDate) || !dateRegex.test(endDate)) {
+        return res.status(400).json({
+            success: false,
+            error: 'Dates must be in YYYY-MM-DD format'
+        });
+    }
+    
+    try {
+        console.log(`\n🔄 Starting reconciliation for ${startDate} to ${endDate}...`);
+        
+        // Check Checkfront configuration
+        if (!checkfrontApi.isConfigured()) {
+            return res.status(400).json({
+                success: false,
+                error: 'Checkfront API not configured. Set CHECKFRONT_HOST, CHECKFRONT_CONSUMER_KEY, and CHECKFRONT_CONSUMER_SECRET environment variables.'
+            });
+        }
+        
+        // Fetch bookings from both systems in parallel
+        const [checkfrontBookings, airtableRecords] = await Promise.all([
+            checkfrontApi.getBookings(startDate, endDate),
+            getAirtableBookings(startDate, endDate)
+        ]);
+        
+        // Compare bookings
+        const comparison = compareBookings(checkfrontBookings, airtableRecords);
+        
+        // Build response
+        const response = {
+            success: true,
+            dateRange: { startDate, endDate },
+            summary: comparison.summary,
+            discrepancies: {
+                missingInAirtable: comparison.missingInAirtable,
+                missingInCheckfront: comparison.missingInCheckfront,
+                statusMismatch: comparison.statusMismatch,
+                amountMismatch: comparison.amountMismatch
+            }
+        };
+        
+        // Optionally include matched records
+        if (includeMatched === 'true') {
+            response.matched = comparison.matched;
+        }
+        
+        console.log(`✅ Reconciliation complete. Found ${comparison.missingInAirtable.length} missing in Airtable.`);
+        
+        res.json(response);
+        
+    } catch (error) {
+        console.error('❌ Reconciliation error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/reconciliation/sync
+ * Sync missing bookings from Checkfront to Airtable
+ * Body: { bookingCodes: ['CODE1', 'CODE2'] } or { syncAll: true }
+ */
+router.post('/sync', requireAdmin, async (req, res) => {
+    const { bookingCodes, syncAll, startDate, endDate } = req.body;
+    
+    if (!bookingCodes && !syncAll) {
+        return res.status(400).json({
+            success: false,
+            error: 'Provide either bookingCodes array or syncAll: true with startDate/endDate'
+        });
+    }
+    
+    try {
+        let bookingsToSync = [];
+        
+        if (syncAll && startDate && endDate) {
+            // Get comparison first
+            const checkfrontBookings = await checkfrontApi.getBookings(startDate, endDate);
+            const airtableRecords = await getAirtableBookings(startDate, endDate);
+            const comparison = compareBookings(checkfrontBookings, airtableRecords);
+            
+            bookingsToSync = comparison.missingInAirtable;
+        } else if (bookingCodes && Array.isArray(bookingCodes)) {
+            // Fetch specific bookings from Checkfront
+            for (const code of bookingCodes) {
+                const booking = await checkfrontApi.getBookingByCode(code);
+                if (booking) {
+                    bookingsToSync.push({
+                        checkfrontData: booking,
+                        bookingCode: code
+                    });
+                }
+            }
+        }
+        
+        if (bookingsToSync.length === 0) {
+            return res.json({
+                success: true,
+                message: 'No bookings to sync',
+                synced: 0
+            });
+        }
+        
+        // Import the webhook processor to create records
+        const { processCheckfrontWebhook, createOrUpdateAirtableRecord } = require('./checkfront-webhook-helpers');
+        
+        const results = {
+            synced: [],
+            failed: []
+        };
+        
+        for (const booking of bookingsToSync) {
+            try {
+                // Build webhook-like payload
+                const webhookPayload = {
+                    booking: booking.checkfrontData
+                };
+                
+                // Process and create record
+                const recordData = await processCheckfrontWebhook(webhookPayload);
+                const result = await createOrUpdateAirtableRecord(recordData, false); // Don't send SMS
+                
+                results.synced.push({
+                    bookingCode: booking.bookingCode,
+                    recordId: result.recordId,
+                    action: result.action
+                });
+            } catch (error) {
+                results.failed.push({
+                    bookingCode: booking.bookingCode,
+                    error: error.message
+                });
+            }
+        }
+        
+        res.json({
+            success: true,
+            message: `Synced ${results.synced.length} bookings`,
+            synced: results.synced.length,
+            failed: results.failed.length,
+            details: results
+        });
+        
+    } catch (error) {
+        console.error('❌ Sync error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/reconciliation/booking/:code
+ * Get a specific booking from both systems for comparison
+ */
+router.get('/booking/:code', requireAdmin, async (req, res) => {
+    const { code } = req.params;
+    
+    try {
+        // Fetch from both systems
+        const [checkfrontBooking, airtableResponse] = await Promise.all([
+            checkfrontApi.getBookingByCode(code),
+            axios.get(
+                `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BOOKINGS_TABLE_ID}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    params: {
+                        filterByFormula: `{Booking Code} = "${code}"`,
+                        maxRecords: 10
+                    }
+                }
+            ).catch(() => ({ data: { records: [] } }))
+        ]);
+        
+        res.json({
+            success: true,
+            bookingCode: code,
+            checkfront: checkfrontBooking ? {
+                found: true,
+                data: {
+                    id: checkfrontBooking.booking_id,
+                    code: checkfrontBooking.code,
+                    status: checkfrontBooking.status,
+                    customer: checkfrontBooking.customer,
+                    order: checkfrontBooking.order,
+                    startDate: checkfrontBooking.start_date ? new Date(checkfrontBooking.start_date * 1000).toISOString() : null,
+                    endDate: checkfrontBooking.end_date ? new Date(checkfrontBooking.end_date * 1000).toISOString() : null,
+                    createdDate: checkfrontBooking.created_date ? new Date(checkfrontBooking.created_date * 1000).toISOString() : null
+                }
+            } : { found: false },
+            airtable: airtableResponse.data.records.length > 0 ? {
+                found: true,
+                recordCount: airtableResponse.data.records.length,
+                records: airtableResponse.data.records.map(r => ({
+                    id: r.id,
+                    fields: r.fields
+                }))
+            } : { found: false }
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+module.exports = router;
+

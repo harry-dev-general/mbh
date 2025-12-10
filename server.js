@@ -59,6 +59,9 @@ const webhookLogger = require('./api/webhook-logger');
 // Import Checkfront webhook handler
 const checkfrontWebhook = require('./api/checkfront-webhook');
 
+// Import Checkfront reconciliation handler
+const checkfrontReconciliation = require('./api/checkfront-reconciliation');
+
 // Import add-ons management
 const addonsManagement = require('./api/addons-management');
 
@@ -459,6 +462,9 @@ app.use('/api', webhookLogger);
 
 // Add Checkfront webhook handler
 app.use('/api/checkfront', checkfrontWebhook);
+
+// Add Checkfront reconciliation handler (admin only)
+app.use('/api/reconciliation', checkfrontReconciliation);
 
 // Add Square webhook handler
 const squareWebhook = require('./api/square-webhook');
