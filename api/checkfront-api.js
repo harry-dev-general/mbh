@@ -60,17 +60,10 @@ async function apiRequest(endpoint, params = {}) {
         console.log(`📥 Checkfront Response Status: ${response.status}`);
         console.log(`📥 Checkfront Response Keys:`, Object.keys(response.data || {}));
         
-        // Log a sample of the response for debugging
-        if (response.data) {
-            if (response.data.booking) {
-                const bookingKeys = Object.keys(response.data.booking);
-                console.log(`📚 Found ${bookingKeys.length} booking entries`);
-                if (bookingKeys.length > 0) {
-                    console.log(`📚 First booking ID: ${bookingKeys[0]}`);
-                }
-            } else {
-                console.log(`⚠️ Response has no 'booking' key. Full response:`, JSON.stringify(response.data).substring(0, 500));
-            }
+        // Log booking data if present (Checkfront returns under 'booking/index' key)
+        if (response.data && response.data['booking/index']) {
+            const bookingKeys = Object.keys(response.data['booking/index']);
+            console.log(`📚 Found ${bookingKeys.length} booking entries`);
         }
 
         return response.data;

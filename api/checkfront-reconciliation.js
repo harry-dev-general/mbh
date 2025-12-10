@@ -41,10 +41,12 @@ async function getAirtableBookings(startDate, endDate) {
     let offset = null;
     
     do {
+        // Use >= and <= logic for inclusive date range
+        // IS_AFTER/IS_BEFORE are exclusive, so we use OR with IS_SAME to include boundary dates
         const params = {
             filterByFormula: `AND(
-                IS_AFTER({Booking Date}, '${startDate}'),
-                IS_BEFORE({Booking Date}, '${endDate}')
+                OR(IS_SAME({Booking Date}, '${startDate}'), IS_AFTER({Booking Date}, '${startDate}')),
+                OR(IS_SAME({Booking Date}, '${endDate}'), IS_BEFORE({Booking Date}, '${endDate}'))
             )`,
             pageSize: 100,
             fields: [
