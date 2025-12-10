@@ -466,6 +466,11 @@ app.use('/api/checkfront', checkfrontWebhook);
 // Add Checkfront reconciliation handler (admin only)
 app.use('/api/reconciliation', checkfrontReconciliation);
 
+// Explicit route for reconciliation page (supports /training/ prefix)
+app.get('/training/checkfront-reconciliation.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'training', 'checkfront-reconciliation.html'));
+});
+
 // Add Square webhook handler
 const squareWebhook = require('./api/square-webhook');
 app.use('/api', squareWebhook);
