@@ -43,21 +43,42 @@ async function apiRequest(endpoint, params = {}) {
         throw new Error('Checkfront API credentials not configured.');
     }
 
+    const url = `https://${CHECKFRONT_HOST}/api/3.0/${endpoint}`;
+    console.log(`🔗 Checkfront API Request: ${url}`);
+    console.log(`📦 Parameters:`, JSON.stringify(params, null, 2));
+
     try {
-        const response = await axios.get(
-            `https://${CHECKFRONT_HOST}/api/3.0/${endpoint}`,
-            {
-                headers: {
-                    'Authorization': getAuthHeader(),
-                    'Accept': 'application/json'
-                },
-                params
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': getAuthHeader(),
+                'Accept': 'application/json'
+            },
+            params
+        });
+
+        // Log the full response structure for debugging
+        console.log(`📥 Checkfront Response Status: ${response.status}`);
+        console.log(`📥 Checkfront Response Keys:`, Object.keys(response.data || {}));
+        
+        // Log a sample of the response for debugging
+        if (response.data) {
+            if (response.data.booking) {
+                const bookingKeys = Object.keys(response.data.booking);
+                console.log(`📚 Found ${bookingKeys.length} booking entries`);
+                if (bookingKeys.length > 0) {
+                    console.log(`📚 First booking ID: ${bookingKeys[0]}`);
+                }
+            } else {
+                console.log(`⚠️ Response has no 'booking' key. Full response:`, JSON.stringify(response.data).substring(0, 500));
             }
-        );
+        }
 
         return response.data;
     } catch (error) {
-        console.error(`Checkfront API error for ${endpoint}:`, error.response?.data || error.message);
+        console.error(`❌ Checkfront API error for ${endpoint}:`);
+        console.error(`   Status: ${error.response?.status}`);
+        console.error(`   Data:`, error.response?.data);
+        console.error(`   Message: ${error.message}`);
         throw error;
     }
 }
@@ -67,10 +88,17 @@ async function apiRequest(endpoint, params = {}) {
  * @param {string} startDate - Start date in YYYY-MM-DD format
  * @param {string} endDate - End date in YYYY-MM-DD format
  * @param {string} status - Optional status filter (e.g., 'PAID', 'PART', 'VOID')
+ * 
+ * Note: Checkfront API v3.0 uses the /booking/index endpoint for listing bookings
+ * The booking endpoint expects date parameters in different formats depending on version
  */
 async function getBookings(startDate, endDate, status = null) {
     console.log(`📅 Fetching Checkfront bookings from ${startDate} to ${endDate}...`);
+    console.log(`🏠 Using host: ${CHECKFRONT_HOST}`);
 
+    // Try multiple parameter formats as Checkfront API can be inconsistent
+    // Format 1: Checkfront v3.0 uses start_date/end_date for the booking date range
+    // Format 2: Some implementations use date_start/date_end
     const params = {
         start_date: startDate,
         end_date: endDate,
@@ -78,7 +106,7 @@ async function getBookings(startDate, endDate, status = null) {
     };
 
     if (status) {
-        params.status = status;
+        params.status_id = status; // Some versions use status_id instead of status
     }
 
     let allBookings = [];
@@ -89,22 +117,55 @@ async function getBookings(startDate, endDate, status = null) {
         params.page = page;
         
         try {
-            const response = await apiRequest('booking', params);
+            // Try the booking/index endpoint which lists all bookings
+            const response = await apiRequest('booking/index', params);
+            
+            console.log(`📄 Page ${page} response type:`, typeof response.booking);
             
             if (response.booking && typeof response.booking === 'object') {
                 // Checkfront returns bookings as an object with booking IDs as keys
-                const bookings = Object.values(response.booking);
+                const bookingEntries = Object.entries(response.booking);
+                console.log(`📄 Page ${page}: Found ${bookingEntries.length} booking entries`);
+                
+                // Filter out non-booking entries (like metadata)
+                const bookings = bookingEntries
+                    .filter(([key, value]) => !isNaN(parseInt(key)) && typeof value === 'object')
+                    .map(([key, value]) => value);
+                
                 allBookings = allBookings.concat(bookings);
                 
                 // Check if there are more pages
-                const totalPages = response.request?.pages || 1;
+                const totalPages = response.request?.pages || response.pages || 1;
+                const currentPage = response.request?.page || response.page || page;
+                console.log(`📄 Pagination: Page ${currentPage} of ${totalPages}`);
+                
                 hasMore = page < totalPages;
                 page++;
+            } else if (Array.isArray(response.bookings)) {
+                // Some API versions return bookings as an array
+                allBookings = allBookings.concat(response.bookings);
+                hasMore = false;
             } else {
+                console.log(`⚠️ Unexpected response structure. Keys: ${Object.keys(response).join(', ')}`);
                 hasMore = false;
             }
         } catch (error) {
-            console.error(`Error fetching page ${page}:`, error.message);
+            console.error(`❌ Error fetching page ${page}:`, error.message);
+            
+            // If booking/index fails, try the base booking endpoint
+            if (page === 1) {
+                console.log(`🔄 Trying alternative endpoint: booking`);
+                try {
+                    const altResponse = await apiRequest('booking', params);
+                    if (altResponse.booking && typeof altResponse.booking === 'object') {
+                        const bookings = Object.values(altResponse.booking)
+                            .filter(b => typeof b === 'object' && b.booking_id);
+                        allBookings = bookings;
+                    }
+                } catch (altError) {
+                    console.error(`❌ Alternative endpoint also failed:`, altError.message);
+                }
+            }
             hasMore = false;
         }
     }
@@ -156,10 +217,34 @@ async function testConnection() {
     }
 
     try {
-        // Try to fetch account info or a small amount of data to verify access
-        // Using the /api/3.0/booking endpoint with minimal params
+        // First try the ping endpoint to verify authentication
+        console.log('🔍 Testing Checkfront connection...');
+        
+        try {
+            const pingResponse = await apiRequest('ping');
+            console.log('✅ Ping successful:', pingResponse);
+        } catch (pingError) {
+            console.log('⚠️ Ping endpoint not available, trying account endpoint...');
+        }
+        
+        // Try to fetch account info to verify we have proper access
+        try {
+            const accountResponse = await apiRequest('account');
+            console.log('✅ Account info retrieved:', accountResponse.account?.name || 'Unknown');
+            
+            return {
+                success: true,
+                configured: true,
+                host: CHECKFRONT_HOST,
+                accountName: accountResponse.account?.name
+            };
+        } catch (accountError) {
+            console.log('⚠️ Account endpoint failed, trying booking endpoint...');
+        }
+        
+        // Fallback: Try to fetch a small amount of booking data
         const today = new Date().toISOString().split('T')[0];
-        await apiRequest('booking', { 
+        const response = await apiRequest('booking/index', { 
             start_date: today, 
             end_date: today,
             limit: 1 
@@ -168,7 +253,8 @@ async function testConnection() {
         return {
             success: true,
             configured: true,
-            host: CHECKFRONT_HOST
+            host: CHECKFRONT_HOST,
+            responseKeys: Object.keys(response || {})
         };
     } catch (error) {
         return {
@@ -176,7 +262,38 @@ async function testConnection() {
             configured: true,
             error: error.response?.data?.error || error.message,
             host: CHECKFRONT_HOST,
-            statusCode: error.response?.status
+            statusCode: error.response?.status,
+            fullError: error.response?.data
+        };
+    }
+}
+
+/**
+ * Debug function to test raw API response
+ * Returns the raw response from a booking query
+ */
+async function debugApiCall(endpoint, params = {}) {
+    if (!isConfigured()) {
+        return { error: 'Not configured' };
+    }
+    
+    try {
+        const response = await apiRequest(endpoint, params);
+        return {
+            success: true,
+            endpoint,
+            params,
+            responseKeys: Object.keys(response || {}),
+            data: response
+        };
+    } catch (error) {
+        return {
+            success: false,
+            endpoint,
+            params,
+            error: error.message,
+            statusCode: error.response?.status,
+            responseData: error.response?.data
         };
     }
 }
@@ -188,6 +305,7 @@ module.exports = {
     getBookings,
     getBooking,
     getBookingByCode,
-    testConnection
+    testConnection,
+    debugApiCall
 };
 

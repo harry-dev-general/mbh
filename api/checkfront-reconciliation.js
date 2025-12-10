@@ -439,6 +439,76 @@ router.post('/sync', requireAdmin, async (req, res) => {
 });
 
 /**
+ * GET /api/reconciliation/debug
+ * Debug endpoint to test raw Checkfront API responses
+ * Query params:
+ *   - endpoint: API endpoint to test (default: 'booking/index')
+ *   - startDate: YYYY-MM-DD
+ *   - endDate: YYYY-MM-DD
+ */
+router.get('/debug', requireAdmin, async (req, res) => {
+    const { endpoint = 'booking/index', startDate, endDate } = req.query;
+    
+    try {
+        // Test basic connection first
+        console.log('\n🔍 Debug: Testing Checkfront API...');
+        
+        const connectionTest = await checkfrontApi.testConnection();
+        console.log('Connection test result:', JSON.stringify(connectionTest, null, 2));
+        
+        // If dates provided, test a booking query
+        let bookingQuery = null;
+        if (startDate && endDate) {
+            console.log(`\n🔍 Debug: Querying ${endpoint} from ${startDate} to ${endDate}...`);
+            
+            const params = {
+                start_date: startDate,
+                end_date: endDate,
+                limit: 10
+            };
+            
+            bookingQuery = await checkfrontApi.debugApiCall(endpoint, params);
+        }
+        
+        // Also test a few different endpoints to see what works
+        const endpointsToTest = ['ping', 'account', 'booking', 'booking/index'];
+        const endpointTests = {};
+        
+        for (const ep of endpointsToTest) {
+            try {
+                const result = await checkfrontApi.debugApiCall(ep, { limit: 1 });
+                endpointTests[ep] = {
+                    success: result.success,
+                    responseKeys: result.responseKeys,
+                    error: result.error
+                };
+            } catch (error) {
+                endpointTests[ep] = { success: false, error: error.message };
+            }
+        }
+        
+        res.json({
+            success: true,
+            debug: {
+                host: process.env.CHECKFRONT_HOST,
+                hasConsumerKey: !!process.env.CHECKFRONT_CONSUMER_KEY,
+                hasConsumerSecret: !!process.env.CHECKFRONT_CONSUMER_SECRET,
+                connectionTest,
+                endpointTests,
+                bookingQuery
+            }
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
+/**
  * GET /api/reconciliation/booking/:code
  * Get a specific booking from both systems for comparison
  */
