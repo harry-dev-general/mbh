@@ -120,24 +120,44 @@ async function getBookings(startDate, endDate, status = null) {
             // Try the booking/index endpoint which lists all bookings
             const response = await apiRequest('booking/index', params);
             
-            console.log(`📄 Page ${page} response type:`, typeof response.booking);
+            // Checkfront API v3.0 returns bookings under 'booking/index' key (not 'booking')
+            const bookingData = response['booking/index'] || response.booking;
             
-            if (response.booking && typeof response.booking === 'object') {
+            console.log(`📄 Page ${page} - Response keys:`, Object.keys(response).join(', '));
+            console.log(`📄 Page ${page} - Booking data type:`, typeof bookingData);
+            
+            if (bookingData && typeof bookingData === 'object') {
                 // Checkfront returns bookings as an object with booking IDs as keys
-                const bookingEntries = Object.entries(response.booking);
+                const bookingEntries = Object.entries(bookingData);
                 console.log(`📄 Page ${page}: Found ${bookingEntries.length} booking entries`);
                 
-                // Filter out non-booking entries (like metadata)
+                // Filter out non-booking entries (like metadata) - booking IDs are numeric
                 const bookings = bookingEntries
-                    .filter(([key, value]) => !isNaN(parseInt(key)) && typeof value === 'object')
-                    .map(([key, value]) => value);
+                    .filter(([key, value]) => !isNaN(parseInt(key)) && typeof value === 'object' && value.booking_id)
+                    .map(([key, value]) => ({
+                        ...value,
+                        // Normalize field names for consistency
+                        code: value.code,
+                        status: value.status_id,
+                        customer: {
+                            id: value.customer_id,
+                            name: value.customer_name,
+                            email: value.customer_email
+                        },
+                        order: {
+                            total: value.total,
+                            paid: value.paid_total,
+                            tax: value.tax_total
+                        }
+                    }));
                 
                 allBookings = allBookings.concat(bookings);
                 
-                // Check if there are more pages
-                const totalPages = response.request?.pages || response.pages || 1;
-                const currentPage = response.request?.page || response.page || page;
-                console.log(`📄 Pagination: Page ${currentPage} of ${totalPages}`);
+                // Check if there are more pages - pagination info is in request object
+                const totalPages = response.request?.pages || 1;
+                const currentPage = response.request?.page || page;
+                const totalRecords = response.request?.total_records || 0;
+                console.log(`📄 Pagination: Page ${currentPage} of ${totalPages} (${totalRecords} total records)`);
                 
                 hasMore = page < totalPages;
                 page++;
@@ -146,26 +166,11 @@ async function getBookings(startDate, endDate, status = null) {
                 allBookings = allBookings.concat(response.bookings);
                 hasMore = false;
             } else {
-                console.log(`⚠️ Unexpected response structure. Keys: ${Object.keys(response).join(', ')}`);
+                console.log(`⚠️ No booking data found. Response keys: ${Object.keys(response).join(', ')}`);
                 hasMore = false;
             }
         } catch (error) {
             console.error(`❌ Error fetching page ${page}:`, error.message);
-            
-            // If booking/index fails, try the base booking endpoint
-            if (page === 1) {
-                console.log(`🔄 Trying alternative endpoint: booking`);
-                try {
-                    const altResponse = await apiRequest('booking', params);
-                    if (altResponse.booking && typeof altResponse.booking === 'object') {
-                        const bookings = Object.values(altResponse.booking)
-                            .filter(b => typeof b === 'object' && b.booking_id);
-                        allBookings = bookings;
-                    }
-                } catch (altError) {
-                    console.error(`❌ Alternative endpoint also failed:`, altError.message);
-                }
-            }
             hasMore = false;
         }
     }

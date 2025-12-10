@@ -131,36 +131,54 @@ function compareBookings(checkfrontBookings, airtableRecords) {
         const code = cfBooking.code;
         const airtableRecord = airtableByCode.get(code);
         
+        // Get customer info - handle both normalized and raw formats
+        const customerName = cfBooking.customer?.name || cfBooking.customer_name || 'Unknown';
+        const customerEmail = cfBooking.customer?.email || cfBooking.customer_email || '';
+        
+        // Get status - handle both formats
+        const cfStatus = cfBooking.status || cfBooking.status_id || 'Unknown';
+        
+        // Get total amount - handle both formats
+        const cfTotal = cfBooking.order?.total || cfBooking.total || 0;
+        
+        // Get booking date - handle both formats
+        let bookingDate = 'Unknown';
+        if (cfBooking.start_date) {
+            bookingDate = new Date(cfBooking.start_date * 1000).toISOString().split('T')[0];
+        } else if (cfBooking.date_desc) {
+            bookingDate = cfBooking.date_desc;
+        }
+        
         if (!airtableRecord) {
             missingInAirtable.push({
                 bookingCode: code,
-                customerName: cfBooking.customer?.name || 'Unknown',
-                email: cfBooking.customer?.email || '',
-                bookingDate: cfBooking.start_date ? new Date(cfBooking.start_date * 1000).toISOString().split('T')[0] : 'Unknown',
-                status: cfBooking.status || 'Unknown',
-                total: cfBooking.order?.total || 0,
+                customerName: customerName,
+                email: customerEmail,
+                bookingDate: bookingDate,
+                status: cfStatus,
+                total: cfTotal,
                 source: 'checkfront',
                 checkfrontData: {
                     id: cfBooking.booking_id,
                     code: code,
-                    status: cfBooking.status,
-                    total: cfBooking.order?.total,
+                    status: cfStatus,
+                    total: cfTotal,
+                    summary: cfBooking.summary || '',
                     created: cfBooking.created_date ? new Date(cfBooking.created_date * 1000).toISOString() : null
                 }
             });
         } else {
             // Check for mismatches
             const atStatus = airtableRecord.fields['Status'];
-            const cfStatus = cfBooking.status;
             const atAmount = parseFloat(airtableRecord.fields['Total Amount'] || 0);
-            const cfAmount = parseFloat(cfBooking.order?.total || 0);
+            const cfAmount = parseFloat(cfTotal || 0);
             
             let hasMismatch = false;
             
             if (atStatus !== cfStatus) {
                 statusMismatch.push({
                     bookingCode: code,
-                    customerName: cfBooking.customer?.name || airtableRecord.fields['Customer Name'],
+                    customerName: customerName || airtableRecord.fields['Customer Name'],
                     airtableStatus: atStatus,
                     checkfrontStatus: cfStatus,
                     airtableRecordId: airtableRecord.id
@@ -172,7 +190,7 @@ function compareBookings(checkfrontBookings, airtableRecords) {
             if (Math.abs(atAmount - cfAmount) > 1) {
                 amountMismatch.push({
                     bookingCode: code,
-                    customerName: cfBooking.customer?.name || airtableRecord.fields['Customer Name'],
+                    customerName: customerName || airtableRecord.fields['Customer Name'],
                     airtableAmount: atAmount,
                     checkfrontAmount: cfAmount,
                     difference: cfAmount - atAmount,
