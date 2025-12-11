@@ -77,8 +77,11 @@ Welcome to the MBH Staff Portal documentation. This documentation is organized f
 
 ## 📅 Current Context
 
-- **Date**: September 2025
+- **Date**: December 2025
 - **Latest Features**: 
+  - Checkfront-Airtable automatic reconciliation system
+  - Webhook reliability improvements with audit logging
+  - Admin API endpoints for system monitoring
   - Square integration for ice cream sales
   - Performance optimizations
   - Add-on indicators on calendars
@@ -107,4 +110,4 @@ Welcome to the MBH Staff Portal documentation. This documentation is organized f
 
 ---
 
-*Documentation last reorganized: September 26, 2025*
+*Documentation last updated: December 11, 2025*

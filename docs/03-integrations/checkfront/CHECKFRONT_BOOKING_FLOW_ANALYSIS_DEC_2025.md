@@ -298,3 +298,5 @@ curl -X POST https://mbh-production-f0d1.up.railway.app/api/checkfront/webhook \
 4. **Review Add-on Mapping**: Ensure all Checkfront add-ons are mapped correctly
 5. **Analyze Calendar Refresh**: Determine if real-time updates are working
 
+
+

@@ -270,3 +270,5 @@ curl -H "X-Admin-Key: YOUR_KEY" \
 - [Checkfront Booking Flow Analysis](./CHECKFRONT_BOOKING_FLOW_ANALYSIS_DEC_2025.md)
 - [Webhook Integration](./WEBHOOK_INTEGRATION.md)
 
+
+

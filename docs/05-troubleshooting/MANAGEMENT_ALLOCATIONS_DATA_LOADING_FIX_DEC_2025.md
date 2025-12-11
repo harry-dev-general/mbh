@@ -260,3 +260,5 @@ The Checkfront webhook integration should be analyzed next to understand:
 2. How booking records appear on the management-allocations calendar
 3. Any potential issues with booking data accuracy or timing
 
+
+
