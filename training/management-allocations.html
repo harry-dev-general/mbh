@@ -1600,6 +1600,12 @@
                         <span id="summaryCustomerName"></span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: 500;">Phone:</span>
+                        <span id="summaryPhoneNumber">
+                            <a id="summaryPhoneLink" href="#" style="color: #2E86AB; text-decoration: none;"></a>
+                        </span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
                         <span style="font-weight: 500;">Booking Date:</span>
                         <span id="summaryBookingDate"></span>
                     </div>
@@ -2309,7 +2315,7 @@
                 const response = await fetchWithRetry(
                     `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
                     `filterByFormula=${filter}&pageSize=100&` +
-                    `fields[]=Booking Code&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time&` +
+                    `fields[]=Booking Code&fields[]=Customer Name&fields[]=Phone Number&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time&` +
                     `fields[]=Status&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Duration&` +
                     `fields[]=Add-ons&` +
                     `fields[]=Onboarding Time&fields[]=Deloading Time&fields[]=Boat&fields[]=Booked Boat Type&` +
@@ -2338,7 +2344,7 @@
                     const nextResponse = await fetchWithRetry(
                         `https://api.airtable.com/v0/${BASE_ID}/${BOOKINGS_TABLE_ID}?` +
                         `filterByFormula=${filter}&pageSize=100&offset=${offset}&` +
-                        `fields[]=Booking Code&fields[]=Customer Name&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time&` +
+                        `fields[]=Booking Code&fields[]=Customer Name&fields[]=Phone Number&fields[]=Booking Date&fields[]=Start Time&fields[]=Finish Time&` +
                         `fields[]=Status&fields[]=Onboarding Employee&fields[]=Deloading Employee&fields[]=Duration&` +
                         `fields[]=Add-ons&` +
                         `fields[]=Onboarding Time&fields[]=Deloading Time&fields[]=Boat&fields[]=Booked Boat Type&` +
@@ -3521,6 +3527,7 @@
         function openBookingAllocationModal(bookingRecord, allocationType) {
             const booking = bookingRecord.fields;
             const customerName = booking['Customer Name'] || 'Unknown Customer';
+            const phoneNumber = booking['Phone Number'] || '';
             const bookingDate = booking['Booking Date'];
             const startTime = booking['Start Time'] || '';
             const finishTime = booking['Finish Time'] || '';
@@ -3530,6 +3537,19 @@
             
             // Populate summary section
             document.getElementById('summaryCustomerName').textContent = customerName;
+            
+            // Populate phone number with clickable link
+            const phoneLink = document.getElementById('summaryPhoneLink');
+            if (phoneNumber) {
+                phoneLink.textContent = phoneNumber;
+                phoneLink.href = `tel:${phoneNumber.replace(/\s/g, '')}`;
+                phoneLink.style.display = 'inline';
+            } else {
+                phoneLink.textContent = 'Not provided';
+                phoneLink.href = '#';
+                phoneLink.style.color = '#999';
+            }
+            
             document.getElementById('summaryBookingDate').textContent = formatDisplayDate(bookingDate);
             document.getElementById('summaryBookingTime').textContent = `${startTime} - ${finishTime}`;
             document.getElementById('summaryBoatType').textContent = bookedBoatType;
