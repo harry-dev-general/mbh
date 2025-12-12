@@ -332,6 +332,74 @@ async function processCheckfrontWebhook(webhookData) {
     return recordData;
 }
 
+// Utility function to parse add-ons string to array
+function parseAddOns(addOnsString) {
+    if (!addOnsString || addOnsString.trim() === '') return [];
+    
+    try {
+        return addOnsString.split(',').map(item => {
+            const trimmedItem = item.trim();
+            // Handle formats: "Item - $XX.XX" or "N x Item - $XX.XX"
+            const match = trimmedItem.match(/^(?:(\d+)\s*x\s*)?(.+?)\s*-\s*\$(\d+(?:\.\d{2})?)$/);
+            
+            if (match) {
+                return {
+                    quantity: match[1] ? parseInt(match[1]) : 1,
+                    name: match[2].trim(),
+                    price: parseFloat(match[3]),
+                    original: trimmedItem
+                };
+            }
+            
+            // Handle items without price
+            return {
+                quantity: 1,
+                name: trimmedItem,
+                price: 0,
+                original: trimmedItem
+            };
+        }).filter(item => item.name); // Remove empty items
+    } catch (error) {
+        console.error('Error parsing add-ons:', error);
+        return [];
+    }
+}
+
+// Utility function to format add-ons array to string
+function formatAddOns(addOnsArray) {
+    if (!Array.isArray(addOnsArray) || addOnsArray.length === 0) return '';
+    
+    return addOnsArray
+        .filter(item => item && item.name)
+        .map(item => {
+            const price = typeof item.price === 'number' ? item.price : 0;
+            const qty = item.quantity && item.quantity > 1 ? `${item.quantity} x ` : '';
+            return `${qty}${item.name} - $${price.toFixed(2)}`;
+        })
+        .join(', ');
+}
+
+// Utility function to merge add-ons arrays (avoiding duplicates)
+function mergeAddOns(existingAddOns, newAddOns) {
+    // Create a map of existing add-ons by normalized name
+    const addOnsMap = new Map();
+    
+    // Add existing add-ons to map
+    existingAddOns.forEach(addon => {
+        const key = addon.name.toLowerCase().replace(/\s+/g, ' ').trim();
+        addOnsMap.set(key, addon);
+    });
+    
+    // Add/update with new add-ons (new ones take precedence for price/quantity)
+    newAddOns.forEach(addon => {
+        const key = addon.name.toLowerCase().replace(/\s+/g, ' ').trim();
+        // New add-ons override existing ones (Checkfront is source of truth for items it sends)
+        addOnsMap.set(key, addon);
+    });
+    
+    return Array.from(addOnsMap.values());
+}
+
 // Find existing booking in Airtable
 async function findExistingBooking(bookingCode) {
     if (!bookingCode) return null;
@@ -347,7 +415,8 @@ async function findExistingBooking(bookingCode) {
                 params: {
                     filterByFormula: `{Booking Code} = "${bookingCode}"`,
                     maxRecords: 10,
-                    fields: ['Booking Code', 'Status', 'Total Amount', 'Onboarding Employee', 'Deloading Employee']
+                    // Include Add-ons field to enable merging
+                    fields: ['Booking Code', 'Status', 'Total Amount', 'Onboarding Employee', 'Deloading Employee', 'Add-ons']
                 }
             }
         );
@@ -426,6 +495,18 @@ async function createOrUpdateAirtableRecord(recordData) {
             }
             if (existingRecord.fields['Deloading Employee']) {
                 recordData['Deloading Employee'] = existingRecord.fields['Deloading Employee'];
+            }
+            
+            // Merge add-ons: combine existing add-ons with new ones from webhook
+            // This preserves manually-added add-ons while updating with Checkfront data
+            const existingAddOns = parseAddOns(existingRecord.fields['Add-ons'] || '');
+            const newAddOns = parseAddOns(recordData['Add-ons'] || '');
+            
+            if (existingAddOns.length > 0 || newAddOns.length > 0) {
+                const mergedAddOns = mergeAddOns(existingAddOns, newAddOns);
+                recordData['Add-ons'] = formatAddOns(mergedAddOns);
+                console.log(`🔀 Merged add-ons: ${existingAddOns.length} existing + ${newAddOns.length} new = ${mergedAddOns.length} total`);
+                console.log(`   Result: ${recordData['Add-ons']}`);
             }
             
             const response = await axios.patch(
