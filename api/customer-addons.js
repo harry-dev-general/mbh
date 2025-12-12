@@ -13,70 +13,78 @@ const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
 
 // Available add-ons with Checkfront item IDs
-// Confirmed from Checkfront API and existing booking data
+// Prices confirmed from Checkfront API (December 2025)
 const ADDON_ITEMS = {
-    // Water Sports
+    // Water Sports - Limited availability (requires time slot)
     'lillypad': { 
         itemId: '8',
         name: 'Lilly Pad', 
-        price: 55.00, 
+        price: 55.00,  // Confirmed from booking data
         description: 'Floating platform for swimming and relaxing',
-        category: 'Water Sports'
+        category: 'Water Sports',
+        limitedStock: true  // Only 2 available at a time
     },
     
     // Fishing
     'fishingrods': { 
         itemId: '9',
         name: 'Fishing Rod (Rigged)', 
-        price: 20.00, 
+        price: 20.00,  // Confirmed from API
         description: 'Rigged fishing rod ready to use',
-        category: 'Fishing'
+        category: 'Fishing',
+        limitedStock: true  // 5 available at a time
     },
     'fishingbait-squidpack200g': { 
         itemId: '14',
         name: 'Fishing Bait - Squid Pack (200g)', 
-        price: 20.00, 
+        price: 20.00,  // Confirmed from API
         description: 'Fresh squid bait pack',
-        category: 'Fishing'
+        category: 'Fishing',
+        limitedStock: false
     },
     'fishingbait-pilchardpack500g': { 
         itemId: '15',
         name: 'Fishing Bait - Pilchard Pack (500g)', 
-        price: 40.00, 
+        price: 40.00,  // Confirmed from API
         description: 'Fresh pilchard bait pack',
-        category: 'Fishing'
+        category: 'Fishing',
+        limitedStock: false
     },
     
     // Comfort
     'icebag': { 
         itemId: '11',
         name: 'Ice Bag', 
-        price: 12.50, 
+        price: 12.50,  // Confirmed from API
         description: 'Bag of ice for your cooler',
-        category: 'Comfort'
+        category: 'Comfort',
+        limitedStock: false
     },
     
-    // Food & BBQ
+    // Food & BBQ - Prices corrected from Checkfront API
     'largebbqmeatplatter': { 
         itemId: '16',
         name: 'Large BBQ Meat Platter', 
-        price: 120.00, 
+        price: 280.00,  // Confirmed from API (was incorrectly $120)
         description: 'Large meat platter for BBQ (serves 10-12)',
-        category: 'Food'
+        category: 'Food',
+        limitedStock: false
     },
     'mediumbbqmeatplatter': { 
         itemId: '17',
         name: 'Medium BBQ Meat Platter', 
-        price: 85.00, 
+        price: 180.00,  // Confirmed from API (was incorrectly $85)
         description: 'Medium meat platter for BBQ (serves 6-8)',
-        category: 'Food'
+        category: 'Food',
+        limitedStock: false
     },
     'smallbbqmeatplatter': { 
         itemId: '18',
         name: 'Small BBQ Meat Platter', 
-        price: 55.00, 
+        price: 140.00,  // Confirmed from API (was incorrectly $55)
         description: 'Small meat platter for BBQ (serves 4-5)',
-        category: 'Food'
+        category: 'Food',
+        limitedStock: false
     }
 };
 
@@ -250,26 +258,58 @@ router.get('/available/:code', async (req, res) => {
             if (checkfrontApi.isConfigured()) {
                 const addons = await checkfrontApi.getAddOns(checkfrontDate, checkfrontDate);
                 
-                availableAddons = addons.map(item => {
-                    // Find matching catalog item for price fallback
-                    const catalogItem = ADDON_ITEMS[item.sku] || 
-                        Object.values(ADDON_ITEMS).find(ci => ci.name.toLowerCase() === item.name.toLowerCase());
-                    
-                    // Use live price if available, otherwise catalog price
-                    const livePrice = parseFloat(item.rate?.price || item.price || 0);
-                    const catalogPrice = catalogItem?.price || 0;
-                    
-                    return {
-                        id: item.item_id,
-                        sku: item.sku,
-                        name: item.name,
-                        price: livePrice > 0 ? livePrice : catalogPrice,
-                        description: catalogItem?.description || item.description || '',
-                        category: catalogItem?.category || 'Other',
-                        available: item.rate?.status !== 'UNAVAILABLE',
-                        alreadyAdded: existingNames.includes(item.name.toLowerCase())
-                    };
-                });
+                // Get detailed pricing and availability for each item
+                for (const item of addons) {
+                    try {
+                        // Find matching catalog item
+                        const catalogItem = ADDON_ITEMS[item.sku] || 
+                            Object.values(ADDON_ITEMS).find(ci => ci.name.toLowerCase() === item.name.toLowerCase());
+                        
+                        // Get SLIP to confirm availability and price
+                        const slipResult = await checkfrontApi.getItemSlip(item.item_id, checkfrontDate, checkfrontDate, { qty: 1 });
+                        
+                        // Parse price from sub_total (numeric) or catalog
+                        const livePrice = slipResult?.item?.rate?.sub_total 
+                            ? parseFloat(slipResult.item.rate.sub_total) 
+                            : (catalogItem?.price || 0);
+                        
+                        // Get availability count
+                        const stockAvailable = slipResult?.item?.rate?.available || 0;
+                        const isUnlimited = stockAvailable >= 1000000; // Checkfront uses large number for unlimited
+                        const isAvailable = slipResult?.available && stockAvailable > 0;
+                        
+                        availableAddons.push({
+                            id: item.item_id,
+                            sku: item.sku,
+                            name: item.name,
+                            price: livePrice,
+                            description: catalogItem?.description || item.description || '',
+                            category: catalogItem?.category || 'Other',
+                            available: isAvailable,
+                            stockAvailable: isUnlimited ? 'Unlimited' : stockAvailable,
+                            limitedStock: !isUnlimited,
+                            alreadyAdded: existingNames.includes(item.name.toLowerCase())
+                        });
+                    } catch (err) {
+                        console.log(`Error getting details for ${item.sku}:`, err.message);
+                        // Fall back to catalog data
+                        const catalogItem = ADDON_ITEMS[item.sku];
+                        if (catalogItem) {
+                            availableAddons.push({
+                                id: item.item_id,
+                                sku: item.sku,
+                                name: item.name,
+                                price: catalogItem.price,
+                                description: catalogItem.description,
+                                category: catalogItem.category,
+                                available: true,
+                                stockAvailable: 'Unknown',
+                                limitedStock: catalogItem.limitedStock || false,
+                                alreadyAdded: existingNames.includes(item.name.toLowerCase())
+                            });
+                        }
+                    }
+                }
             }
         } catch (error) {
             console.log('Could not fetch live add-ons from Checkfront:', error.message);
@@ -285,6 +325,8 @@ router.get('/available/:code', async (req, res) => {
                 description: item.description,
                 category: item.category,
                 available: true,
+                stockAvailable: item.limitedStock ? 'Limited' : 'Unlimited',
+                limitedStock: item.limitedStock || false,
                 alreadyAdded: existingNames.includes(item.name.toLowerCase())
             }));
         }
