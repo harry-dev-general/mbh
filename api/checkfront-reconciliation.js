@@ -364,6 +364,70 @@ router.get('/compare', requireAdmin, async (req, res) => {
 });
 
 /**
+ * Sync a single booking from Checkfront data to Airtable
+ * Creates a simplified record - does NOT send SMS notifications
+ */
+async function syncBookingToAirtable(booking) {
+    // Prepare Airtable record from Checkfront data
+    const recordData = {
+        'Booking Code': booking.code,
+        'Customer Name': booking.customer_name || booking.customer?.name || 'Unknown',
+        'Customer Email': booking.customer_email || booking.customer?.email || '',
+        'Status': booking.status || booking.status_id || 'PAID',
+        'Total Amount': parseFloat(booking.total) || 0,
+        'Booking Date': booking.start_date 
+            ? new Date(booking.start_date * 1000).toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0],
+        'Created Date': booking.created_date
+            ? new Date(booking.created_date * 1000).toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0]
+    };
+
+    // Add start/end times if available
+    if (booking.start_date) {
+        const startDt = new Date(booking.start_date * 1000);
+        recordData['Start Time'] = startDt.toLocaleTimeString('en-AU', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: 'Australia/Sydney'
+        });
+    }
+
+    if (booking.finish_date || booking.end_date) {
+        const endDt = new Date((booking.finish_date || booking.end_date) * 1000);
+        recordData['Finish Time'] = endDt.toLocaleTimeString('en-AU', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: 'Australia/Sydney'
+        });
+    }
+
+    // Add booking summary/items if available
+    if (booking.summary) {
+        recordData['Booking Items'] = booking.summary;
+    }
+
+    // Create record in Airtable
+    const response = await axios.post(
+        `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BOOKINGS_TABLE_ID}`,
+        { fields: recordData },
+        {
+            headers: {
+                'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+
+    return {
+        recordId: response.data.id,
+        action: 'created'
+    };
+}
+
+/**
  * POST /api/reconciliation/sync
  * Sync missing bookings from Checkfront to Airtable
  * Body: { bookingCodes: ['CODE1', 'CODE2'] } or { syncAll: true }
@@ -387,16 +451,20 @@ router.post('/sync', requireAdmin, async (req, res) => {
             const airtableRecords = await getAirtableBookings(startDate, endDate);
             const comparison = compareBookings(checkfrontBookings, airtableRecords);
             
-            bookingsToSync = comparison.missingInAirtable;
+            // Get the full Checkfront data for each missing booking
+            bookingsToSync = comparison.missingInAirtable.map(missing => ({
+                ...missing.checkfrontData,
+                customer_name: missing.customerName,
+                customer_email: missing.email
+            }));
         } else if (bookingCodes && Array.isArray(bookingCodes)) {
             // Fetch specific bookings from Checkfront
             for (const code of bookingCodes) {
                 const booking = await checkfrontApi.getBookingByCode(code);
                 if (booking) {
-                    bookingsToSync.push({
-                        checkfrontData: booking,
-                        bookingCode: code
-                    });
+                    bookingsToSync.push(booking);
+                } else {
+                    console.log(`⚠️ Booking ${code} not found in Checkfront`);
                 }
             }
         }
@@ -409,8 +477,7 @@ router.post('/sync', requireAdmin, async (req, res) => {
             });
         }
         
-        // Import the webhook processor to create records
-        const { processCheckfrontWebhook, createOrUpdateAirtableRecord } = require('./checkfront-webhook-helpers');
+        console.log(`📥 Syncing ${bookingsToSync.length} bookings to Airtable...`);
         
         const results = {
             synced: [],
@@ -419,27 +486,24 @@ router.post('/sync', requireAdmin, async (req, res) => {
         
         for (const booking of bookingsToSync) {
             try {
-                // Build webhook-like payload
-                const webhookPayload = {
-                    booking: booking.checkfrontData
-                };
+                const result = await syncBookingToAirtable(booking);
                 
-                // Process and create record
-                const recordData = await processCheckfrontWebhook(webhookPayload);
-                const result = await createOrUpdateAirtableRecord(recordData, false); // Don't send SMS
-                
+                console.log(`   ✅ Synced: ${booking.code}`);
                 results.synced.push({
-                    bookingCode: booking.bookingCode,
+                    bookingCode: booking.code,
                     recordId: result.recordId,
                     action: result.action
                 });
             } catch (error) {
+                console.error(`   ❌ Failed to sync ${booking.code}:`, error.message);
                 results.failed.push({
-                    bookingCode: booking.bookingCode,
+                    bookingCode: booking.code,
                     error: error.message
                 });
             }
         }
+        
+        console.log(`📊 Sync complete: ${results.synced.length} synced, ${results.failed.length} failed`);
         
         res.json({
             success: true,

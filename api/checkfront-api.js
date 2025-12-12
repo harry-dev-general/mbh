@@ -186,13 +186,16 @@ async function getBooking(bookingId) {
 }
 
 /**
- * Get booking by code (searches recent bookings)
+ * Get booking by code (searches past and future bookings)
  */
 async function getBookingByCode(bookingCode) {
-    // Search in last 6 months
-    const endDate = new Date();
+    // Search from 6 months ago to 6 months in the future
+    // This ensures we find both past bookings and upcoming future bookings
+    const today = new Date();
     const startDate = new Date();
-    startDate.setMonth(startDate.getMonth() - 6);
+    const endDate = new Date();
+    startDate.setMonth(today.getMonth() - 6);
+    endDate.setMonth(today.getMonth() + 6);
 
     const startStr = startDate.toISOString().split('T')[0];
     const endStr = endDate.toISOString().split('T')[0];

@@ -110,9 +110,10 @@ function formatDate(date) {
 
 /**
  * Run the reconciliation check
- * Compares bookings from the last N days
+ * Compares bookings from daysBack in the past to daysForward in the future
+ * This ensures we catch bookings that are upcoming (not just past bookings)
  */
-async function runReconciliation(daysBack = 14) {
+async function runReconciliation(daysBack = 14, daysForward = 14) {
     console.log('\n🔄 Running scheduled Checkfront-Airtable reconciliation...');
 
     // Check if Checkfront API is configured
@@ -124,14 +125,16 @@ async function runReconciliation(daysBack = 14) {
         };
     }
 
-    const endDate = new Date();
+    const today = new Date();
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - daysBack);
+    const endDate = new Date();
+    startDate.setDate(today.getDate() - daysBack);
+    endDate.setDate(today.getDate() + daysForward);
 
     const startDateStr = formatDate(startDate);
     const endDateStr = formatDate(endDate);
 
-    console.log(`📅 Checking bookings from ${startDateStr} to ${endDateStr}...`);
+    console.log(`📅 Checking bookings from ${startDateStr} to ${endDateStr} (${daysBack} days back, ${daysForward} days forward)...`);
 
     try {
         // Fetch from both systems
@@ -294,7 +297,7 @@ async function autoSyncMissingBookings(missingBookings) {
 function startReconciliationScheduler() {
     console.log('🚀 Starting Checkfront-Airtable reconciliation scheduler...');
     console.log('   - Running every 6 hours');
-    console.log('   - Checking last 14 days of bookings');
+    console.log('   - Checking 14 days back AND 14 days forward');
     console.log('   - Auto-syncing missing PAID/PART bookings');
 
     // Run immediately on startup (after a short delay to let other services initialize)
@@ -335,7 +338,8 @@ function getReconciliationStatus() {
         lastResult: lastReconciliationResult,
         config: {
             checkInterval: '6 hours',
-            daysToCheck: 14,
+            daysBack: 14,
+            daysForward: 14,
             autoSync: true,
             adminSmsEnabled: !!(TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM_NUMBER)
         }
