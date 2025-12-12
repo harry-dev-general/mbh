@@ -111,7 +111,7 @@ Add selected add-ons to an existing booking.
 |------|---------|
 | `/api/customer-addons.js` | Backend API for customer add-ons |
 | `/api/checkfront-api.js` | Extended with `addItemsToBooking()` |
-| `/public/add-extras.html` | Customer-facing UI |
+| `/training/add-extras.html` | Customer-facing UI |
 
 ## Checkfront API Integration
 
