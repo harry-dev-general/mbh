@@ -364,10 +364,39 @@ router.get('/compare', requireAdmin, async (req, res) => {
 });
 
 /**
+ * Parse date_desc string (e.g., "Sat Dec 13, 2025") to YYYY-MM-DD format
+ */
+function parseDateDesc(dateDesc) {
+    if (!dateDesc) return null;
+    try {
+        // Parse the date description string
+        const parsed = new Date(dateDesc);
+        if (!isNaN(parsed.getTime())) {
+            return parsed.toISOString().split('T')[0];
+        }
+    } catch (e) {
+        console.log(`⚠️ Could not parse date_desc: ${dateDesc}`);
+    }
+    return null;
+}
+
+/**
  * Sync a single booking from Checkfront data to Airtable
  * Creates a simplified record - does NOT send SMS notifications
  */
 async function syncBookingToAirtable(booking) {
+    // Determine booking date - try start_date first, then date_desc
+    let bookingDate;
+    if (booking.start_date) {
+        bookingDate = new Date(booking.start_date * 1000).toISOString().split('T')[0];
+    } else if (booking.date_desc) {
+        bookingDate = parseDateDesc(booking.date_desc);
+    }
+    if (!bookingDate) {
+        bookingDate = new Date().toISOString().split('T')[0];
+        console.log(`⚠️ No booking date found for ${booking.code}, using today`);
+    }
+
     // Prepare Airtable record from Checkfront data
     const recordData = {
         'Booking Code': booking.code,
@@ -375,9 +404,7 @@ async function syncBookingToAirtable(booking) {
         'Customer Email': booking.customer_email || booking.customer?.email || '',
         'Status': booking.status || booking.status_id || 'PAID',
         'Total Amount': parseFloat(booking.total) || 0,
-        'Booking Date': booking.start_date 
-            ? new Date(booking.start_date * 1000).toISOString().split('T')[0]
-            : new Date().toISOString().split('T')[0],
+        'Booking Date': bookingDate,
         'Created Date': booking.created_date
             ? new Date(booking.created_date * 1000).toISOString().split('T')[0]
             : new Date().toISOString().split('T')[0]
