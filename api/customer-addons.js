@@ -488,4 +488,117 @@ router.get('/catalog', (req, res) => {
     });
 });
 
+/**
+ * GET /api/customer-addons/debug/item/:itemId
+ * Debug endpoint to check Checkfront item details including price and availability
+ */
+router.get('/debug/item/:itemId', async (req, res) => {
+    const { itemId } = req.params;
+    const { date } = req.query; // Optional: YYYY-MM-DD format
+    
+    try {
+        // Use provided date or default to tomorrow
+        const targetDate = date || new Date(Date.now() + 24*60*60*1000).toISOString().split('T')[0];
+        const checkfrontDate = formatDateCheckfront(targetDate);
+        
+        if (!checkfrontApi.isConfigured()) {
+            return res.status(503).json({
+                success: false,
+                error: 'Checkfront API not configured'
+            });
+        }
+        
+        // Get item details with rate/availability
+        const slipResult = await checkfrontApi.getItemSlip(itemId, checkfrontDate, checkfrontDate, { qty: 1 });
+        
+        res.json({
+            success: true,
+            itemId,
+            date: targetDate,
+            checkfrontDate,
+            slipResult,
+            // Extract key info
+            summary: slipResult ? {
+                name: slipResult.item?.name,
+                price: slipResult.price,
+                available: slipResult.available,
+                status: slipResult.item?.rate?.status,
+                hasSlip: !!slipResult.slip
+            } : null
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/customer-addons/debug/all-items
+ * Debug endpoint to get all items with their current prices and availability
+ */
+router.get('/debug/all-items', async (req, res) => {
+    const { date } = req.query; // Optional: YYYY-MM-DD format
+    
+    try {
+        // Use provided date or default to tomorrow
+        const targetDate = date || new Date(Date.now() + 24*60*60*1000).toISOString().split('T')[0];
+        const checkfrontDate = formatDateCheckfront(targetDate);
+        
+        if (!checkfrontApi.isConfigured()) {
+            return res.status(503).json({
+                success: false,
+                error: 'Checkfront API not configured'
+            });
+        }
+        
+        // Get all add-on items
+        const items = await checkfrontApi.getAddOns(checkfrontDate, checkfrontDate);
+        
+        // Get detailed pricing for each item
+        const detailedItems = [];
+        for (const item of items) {
+            try {
+                const slipResult = await checkfrontApi.getItemSlip(item.item_id, checkfrontDate, checkfrontDate, { qty: 1 });
+                detailedItems.push({
+                    id: item.item_id,
+                    sku: item.sku,
+                    name: item.name,
+                    categoryId: item.category_id,
+                    // Pricing from rate query
+                    price: slipResult?.price || 0,
+                    available: slipResult?.available ?? true,
+                    status: slipResult?.item?.rate?.status || 'UNKNOWN',
+                    hasSlip: !!slipResult?.slip,
+                    // Raw data for debugging
+                    rawRate: slipResult?.item?.rate
+                });
+            } catch (err) {
+                detailedItems.push({
+                    id: item.item_id,
+                    sku: item.sku,
+                    name: item.name,
+                    error: err.message
+                });
+            }
+        }
+        
+        res.json({
+            success: true,
+            date: targetDate,
+            checkfrontDate,
+            itemCount: detailedItems.length,
+            items: detailedItems
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
