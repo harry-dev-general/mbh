@@ -13,56 +13,70 @@ const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const BOOKINGS_TABLE_ID = 'tblRe0cDmK3bG2kPf';
 
 // Available add-ons with Checkfront item IDs
-// These need to be configured based on your Checkfront items
+// Confirmed from Checkfront API and existing booking data
 const ADDON_ITEMS = {
+    // Water Sports
     'lillypad': { 
-        itemId: '8', // Checkfront item ID
+        itemId: '8',
         name: 'Lilly Pad', 
         price: 55.00, 
         description: 'Floating platform for swimming and relaxing',
-        image: '/images/addons/lillypad.jpg'
+        category: 'Water Sports'
     },
-    'kayak': { 
-        itemId: '9', // Placeholder - needs actual ID
-        name: 'Kayak', 
-        price: 45.00, 
-        description: 'Single person kayak',
-        image: '/images/addons/kayak.jpg'
-    },
-    'sup': { 
-        itemId: '10', // Placeholder - needs actual ID
-        name: 'Stand Up Paddleboard', 
-        price: 65.00, 
-        description: 'Stand up paddleboard for exploring',
-        image: '/images/addons/sup.jpg'
-    },
+    
+    // Fishing
     'fishingrods': { 
-        itemId: '11', // Placeholder - needs actual ID
-        name: 'Fishing Rods', 
+        itemId: '9',
+        name: 'Fishing Rod (Rigged)', 
         price: 20.00, 
-        description: 'Rigged fishing rods ready to use',
-        image: '/images/addons/fishing.jpg'
+        description: 'Rigged fishing rod ready to use',
+        category: 'Fishing'
     },
-    'baitpack': { 
-        itemId: '12', // Placeholder - needs actual ID
-        name: 'Bait Pack', 
-        price: 15.00, 
-        description: 'Fresh bait pack for fishing',
-        image: '/images/addons/bait.jpg'
+    'fishingbait-squidpack200g': { 
+        itemId: '14',
+        name: 'Fishing Bait - Squid Pack (200g)', 
+        price: 20.00, 
+        description: 'Fresh squid bait pack',
+        category: 'Fishing'
     },
-    'esky': { 
-        itemId: '13', // Placeholder - needs actual ID
-        name: 'Esky/Cooler', 
-        price: 25.00, 
-        description: 'Keep your drinks and food cold',
-        image: '/images/addons/esky.jpg'
+    'fishingbait-pilchardpack500g': { 
+        itemId: '15',
+        name: 'Fishing Bait - Pilchard Pack (500g)', 
+        price: 40.00, 
+        description: 'Fresh pilchard bait pack',
+        category: 'Fishing'
     },
+    
+    // Comfort
     'icebag': { 
-        itemId: '14', // Placeholder - needs actual ID
+        itemId: '11',
         name: 'Ice Bag', 
         price: 12.50, 
         description: 'Bag of ice for your cooler',
-        image: '/images/addons/ice.jpg'
+        category: 'Comfort'
+    },
+    
+    // Food & BBQ
+    'largebbqmeatplatter': { 
+        itemId: '16',
+        name: 'Large BBQ Meat Platter', 
+        price: 120.00, 
+        description: 'Large meat platter for BBQ (serves 10-12)',
+        category: 'Food'
+    },
+    'mediumbbqmeatplatter': { 
+        itemId: '17',
+        name: 'Medium BBQ Meat Platter', 
+        price: 85.00, 
+        description: 'Medium meat platter for BBQ (serves 6-8)',
+        category: 'Food'
+    },
+    'smallbbqmeatplatter': { 
+        itemId: '18',
+        name: 'Small BBQ Meat Platter', 
+        price: 55.00, 
+        description: 'Small meat platter for BBQ (serves 4-5)',
+        category: 'Food'
     }
 };
 
@@ -447,14 +461,18 @@ router.get('/catalog', (req, res) => {
         ...item
     }));
     
+    // Group by category
+    const categorized = {};
+    catalog.forEach(item => {
+        const cat = item.category || 'Other';
+        if (!categorized[cat]) categorized[cat] = [];
+        categorized[cat].push(item.sku);
+    });
+    
     res.json({
         success: true,
         catalog,
-        categories: {
-            'Water Sports': ['lillypad', 'kayak', 'sup'],
-            'Fishing': ['fishingrods', 'baitpack'],
-            'Comfort': ['esky', 'icebag']
-        }
+        categories: categorized
     });
 });
 
