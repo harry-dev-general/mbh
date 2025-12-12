@@ -4,9 +4,9 @@
 
 This document provides a comprehensive guide for LLMs and developers investigating issues with Checkfront webhook reliability and booking data synchronization to Airtable. It covers the full investigation journey, including approaches tried, technical discoveries made, and the final solution implemented.
 
-**Investigation Dates**: December 10-11, 2025  
+**Investigation Dates**: December 10-12, 2025  
 **Status**: RESOLVED ✅  
-**Final Result**: 0 missing PAID/PART bookings in Airtable
+**Final Result**: 0 missing PAID/PART bookings in Airtable (including future bookings)
 
 ---
 
@@ -18,8 +18,9 @@ This document provides a comprehensive guide for LLMs and developers investigati
 4. [Technical Discoveries](#technical-discoveries)
 5. [Final Solution](#final-solution)
 6. [Verification Results](#verification-results)
-7. [Files Created/Modified](#files-createdmodified)
-8. [For Future LLMs](#for-future-llms)
+7. [December 12 Update: Future Bookings Fix](#december-12-update-future-bookings-fix)
+8. [Files Created/Modified](#files-createdmodified)
+9. [For Future LLMs](#for-future-llms)
 
 ---
 
@@ -371,9 +372,146 @@ All endpoints require `X-Admin-Key` header.
 
 ---
 
+## December 12 Update: Future Bookings Fix
+
+### New Issue Discovered
+
+On December 12, 2025, another missing booking was reported: `MTAH-041125` (Syed, booking date December 13, 2025). Despite the reconciliation system showing "0 missing bookings", this booking was not in Airtable.
+
+### Root Cause Analysis
+
+**Issue 1: Reconciliation Only Checked Past Dates**
+
+The scheduler was configured to check `today - 14 days` to `today`, missing all **future bookings**.
+
+```javascript
+// BROKEN - Only checked past dates
+const endDate = new Date();  // Today (Dec 12)
+startDate.setDate(startDate.getDate() - 14);  // Nov 28
+
+// MTAH-041125 was for Dec 13 (tomorrow) - NEVER CHECKED!
+```
+
+**Issue 2: Synced Bookings Missing Data Fields**
+
+When reconciliation synced bookings, they were missing:
+- Phone Number
+- Start Time  
+- Finish Time
+- Duration
+
+**Root Cause**: The `/booking/index` endpoint returns limited data. Full details require fetching `/booking/{id}`.
+
+**Issue 3: Different API Response Formats**
+
+The individual booking endpoint returns a DIFFERENT structure than webhooks:
+
+| Field | Webhook Format | API `/booking/{id}` Format |
+|-------|---------------|---------------------------|
+| Booking code | `booking.code` | `booking.id` |
+| Status | `booking.status` | `booking.status_id` |
+| Customer | `booking.customer.phone` | `booking.customer_phone` |
+| Items | `booking.order.items.item[]` | `booking.items{}` (object) |
+
+### Fixes Implemented
+
+**Fix 1: Extended Date Range**
+```javascript
+// NOW - Checks past AND future (14 days each direction)
+async function runReconciliation(daysBack = 14, daysForward = 14) {
+    const today = new Date();
+    startDate.setDate(today.getDate() - daysBack);
+    endDate.setDate(today.getDate() + daysForward);
+}
+```
+
+**Fix 2: Fetch Full Booking Details**
+```javascript
+// Now fetches complete data before syncing
+const fullBooking = await checkfrontApi.getBooking(indexBooking.booking_id);
+```
+
+**Fix 3: Handle Both API Formats**
+```javascript
+// Handles flat (API) and nested (webhook) structures
+const customerPhone = booking.customer_phone || booking.customer?.phone || '';
+const bookingCode = booking.id || booking.code;
+```
+
+**Fix 4: Parse `date_desc` String**
+```javascript
+// Parses "Sat Dec 13, 2025" when start_date timestamp unavailable
+function parseDateDesc(dateDesc) {
+    const parsed = new Date(dateDesc);
+    return parsed.toISOString().split('T')[0];
+}
+```
+
+### Technical Discovery: Full Booking API Response
+
+The `/booking/{id}` endpoint returns complete data:
+
+```json
+{
+  "id": "MTAH-041125",
+  "booking_id": 2620,
+  "status_id": "PAID",
+  "customer_name": "Syed",
+  "customer_phone": "+61417270996",
+  "start_date": 1765589400,
+  "end_date": 1765603800,
+  "items": {
+    "1": {
+      "sku": "8personbbqboat-halfday",
+      "name": "1/2 Day 8 Person BBQ Boat",
+      "category_id": 2
+    }
+  }
+}
+```
+
+### Verification Results (Dec 12)
+
+```
+MTAH-041125 (Syed) - After Fix:
+  ✅ Phone: +61417270996
+  ✅ Start Time: 12:30 pm
+  ✅ Finish Time: 04:30 pm
+  ✅ Duration: 4 hours 0 minutes
+  ✅ Booking Date: 2025-12-13
+
+Reconciliation Config:
+  daysBack: 14
+  daysForward: 14  (NEW!)
+  
+Full System Status:
+  Checkfront: 95 bookings
+  Airtable: 94 bookings
+  Missing PAID/PART: 0 ✅
+```
+
+### New Debug Endpoint
+
+Added `/api/reconciliation/booking-debug/:id` to view raw Checkfront API responses:
+
+```bash
+curl -H "X-Admin-Key: mbh-admin-2025" \
+  https://mbh-production-f0d1.up.railway.app/api/reconciliation/booking-debug/2620
+```
+
+### December 12 Commits
+
+1. `e8acc25` - Fix reconciliation to include future bookings
+2. `c0719a1` - Fix booking date parsing for /booking/index endpoint
+3. `249adb3` - Fetch full booking details for sync
+4. `2b603d1` - Fix sync to handle Checkfront API response format
+5. `cce3745` - Fix booking endpoint to show correct customer data
+
+---
+
 ## Files Created/Modified
 
-### New Files
+### New Files (Dec 10-11)
 
 | File | Purpose |
 |------|---------|
@@ -385,12 +523,20 @@ All endpoints require `X-Admin-Key` header.
 | `/docs/03-integrations/checkfront/CHECKFRONT_API_SETUP.md` | API setup documentation |
 | `/docs/03-integrations/checkfront/WEBHOOK_RELIABILITY_SOLUTION.md` | Solution documentation |
 
-### Modified Files
+### Modified Files (Dec 10-11)
 
 | File | Changes |
 |------|---------|
 | `/server.js` | Added reconciliation routes, scheduler startup, admin endpoints |
 | `/api/checkfront-webhook.js` | Integrated webhook audit logging |
+
+### Modified Files (Dec 12)
+
+| File | Changes |
+|------|---------|
+| `/api/checkfront-api.js` | Added `getFullBookingByCode()`, extended date search range |
+| `/api/checkfront-reconciliation.js` | Full data sync, debug endpoint, API format handling |
+| `/api/reconciliation-scheduler.js` | Future dates, full data fetch, format handling |
 
 ---
 
@@ -400,6 +546,7 @@ All endpoints require `X-Admin-Key` header.
 - **Issue**: Checkfront webhooks occasionally fail during Railway deployments
 - **Impact**: Bookings missing from Airtable
 - **Solution**: Automatic reconciliation every 6 hours catches and syncs missing bookings
+- **Dec 12 Fix**: Now checks FUTURE bookings too, not just past dates
 
 ### Key Environment Variables
 ```
@@ -412,7 +559,7 @@ ADMIN_API_KEY=<secure key for admin endpoints>
 ### Common Commands
 
 ```bash
-# Check reconciliation status
+# Check reconciliation status (verify daysForward is set!)
 curl -H "X-Admin-Key: YOUR_KEY" \
   https://mbh-production-f0d1.up.railway.app/api/admin/reconciliation-status
 
@@ -423,15 +570,25 @@ curl -X POST -H "X-Admin-Key: YOUR_KEY" \
 # View webhook logs
 curl -H "X-Admin-Key: YOUR_KEY" \
   https://mbh-production-f0d1.up.railway.app/api/admin/webhook-logs
+
+# Check specific booking with full details
+curl -H "X-Admin-Key: YOUR_KEY" \
+  https://mbh-production-f0d1.up.railway.app/api/reconciliation/booking/BOOKING_CODE
+
+# Debug raw Checkfront data by booking ID
+curl -H "X-Admin-Key: YOUR_KEY" \
+  https://mbh-production-f0d1.up.railway.app/api/reconciliation/booking-debug/BOOKING_ID
 ```
 
 ### If Bookings Are Missing Again
 
 1. **Check scheduler status**: Is it running? When did it last run?
-2. **Check Railway logs**: Look for reconciliation output
-3. **Manually trigger**: Use the trigger endpoint
-4. **Check Airtable**: Verify "Bookings Dashboard" table
-5. **Check Checkfront API**: Use debug endpoint to verify API is responding
+2. **Verify date range**: Does config show `daysForward: 14`?
+3. **Check if booking is FUTURE**: Scheduler now checks ±14 days from today
+4. **Check Railway logs**: Look for reconciliation output
+5. **Manually trigger**: Use the trigger endpoint
+6. **Check Airtable**: Verify "Bookings Dashboard" table
+7. **Use debug endpoint**: `/api/reconciliation/booking-debug/{id}` for raw data
 
 ### API Quirks to Remember
 
@@ -439,6 +596,17 @@ curl -H "X-Admin-Key: YOUR_KEY" \
 2. **Response key**: Bookings are in `response['booking/index']`, not `response.booking`
 3. **Status field**: It's `status_id`, not `status`
 4. **Airtable dates**: Use `IS_SAME()` combined with `IS_AFTER()`/`IS_BEFORE()` for inclusive ranges
+5. **Future bookings**: Reconciliation must check dates AHEAD of today
+6. **Full details**: `/booking/index` has LIMITED data - fetch `/booking/{id}` for phone/times
+7. **API vs Webhook format**: Different field structures (see Dec 12 section)
+8. **Timestamps**: Can be strings OR numbers - always `parseInt()`
+
+### Two Checkfront Endpoints to Know
+
+| Endpoint | Returns | Use For |
+|----------|---------|---------|
+| `/booking/index` | Limited data (no phone, no timestamps) | Listing bookings |
+| `/booking/{id}` | Full data (phone, times, items) | Getting complete details |
 
 ---
 
@@ -448,6 +616,7 @@ curl -H "X-Admin-Key: YOUR_KEY" \
 - [Webhook Reliability Solution](../03-integrations/checkfront/WEBHOOK_RELIABILITY_SOLUTION.md)
 - [Checkfront Booking Flow Analysis](../03-integrations/checkfront/CHECKFRONT_BOOKING_FLOW_ANALYSIS_DEC_2025.md)
 - [Checkfront Webhook Flow](../03-integrations/checkfront/CHECKFRONT_WEBHOOK_FLOW.md)
+- [Dec 12 Session Summary](../07-handover/session-summaries/DECEMBER_12_2025_RECONCILIATION_FUTURE_BOOKINGS_FIX.md)
 
 ---
 
@@ -481,6 +650,6 @@ curl -H "X-Admin-Key: YOUR_KEY" \
 ---
 
 *Document created: December 11, 2025*  
-*Last updated: December 11, 2025*
+*Last updated: December 12, 2025*
 
 

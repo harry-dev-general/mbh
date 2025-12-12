@@ -16,6 +16,8 @@ You're working on the MBH Staff Portal, a booking management system for a boat h
 3. Auto-syncs missing PAID/PART bookings
 4. Sends SMS alerts for discrepancies
 
+**December 12 Update**: Fixed to check **FUTURE bookings** too (customers book ahead of time!)
+
 ---
 
 ## Key Files
@@ -40,14 +42,56 @@ You're working on the MBH Staff Portal, a booking management system for a boat h
 const credentials = Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString('base64');
 headers: { 'Authorization': `Basic ${credentials}` }
 
-// CORRECT endpoint
+// CORRECT endpoint for listing bookings
 '/api/3.0/booking/index'  // NOT '/booking'
 
 // CORRECT response parsing
 const bookings = response['booking/index'];  // NOT response.booking
 ```
 
-### Environment Variables
+### Two Different Endpoints - Two Different Data Structures!
+
+| Endpoint | Data Included | Use Case |
+|----------|--------------|----------|
+| `/api/3.0/booking/index` | Limited (name, email, date_desc) | List bookings |
+| `/api/3.0/booking/{id}` | Complete (phone, timestamps, items) | Full details |
+
+### API Response Format vs Webhook Format
+
+The `/booking/{id}` endpoint returns **DIFFERENT** field names than webhooks:
+
+| Data | Webhook Format | API `/booking/{id}` Format |
+|------|---------------|---------------------------|
+| Booking code | `booking.code` | `booking.id` |
+| Status | `booking.status` | `booking.status_id` |
+| Customer phone | `booking.customer.phone` | `booking.customer_phone` |
+| Items | `order.items.item[]` | `items{}` (object with numeric keys) |
+
+### Handling Timestamps
+
+Timestamps from the API can be numbers OR strings - always parse:
+```javascript
+let timestamp = booking.start_date;
+if (typeof timestamp === 'string') timestamp = parseInt(timestamp);
+const date = new Date(timestamp * 1000);
+```
+
+### Date Range - Must Include Future!
+
+```javascript
+// CORRECT - Checks past AND future
+runReconciliation(daysBack = 14, daysForward = 14)
+
+// Config should show:
+{
+  "daysBack": 14,
+  "daysForward": 14  // MUST have this!
+}
+```
+
+---
+
+## Environment Variables
 
 ```
 CHECKFRONT_HOST=boat-hire-manly.checkfront.com
@@ -56,24 +100,41 @@ CHECKFRONT_CONSUMER_SECRET=<secret>
 ADMIN_API_KEY=<admin key for endpoints>
 ```
 
-### Admin Endpoints
+---
+
+## Admin Endpoints
 
 ```bash
-# Check status
-curl -H "X-Admin-Key: KEY" https://mbh-production-f0d1.up.railway.app/api/admin/reconciliation-status
+# Check status (verify daysForward is set!)
+curl -H "X-Admin-Key: KEY" \
+  https://mbh-production-f0d1.up.railway.app/api/admin/reconciliation-status
 
 # Trigger reconciliation
-curl -X POST -H "X-Admin-Key: KEY" https://mbh-production-f0d1.up.railway.app/api/admin/trigger-reconciliation
+curl -X POST -H "X-Admin-Key: KEY" \
+  https://mbh-production-f0d1.up.railway.app/api/admin/trigger-reconciliation
+
+# Check specific booking with full data
+curl -H "X-Admin-Key: KEY" \
+  https://mbh-production-f0d1.up.railway.app/api/reconciliation/booking/MTAH-041125
+
+# Debug raw Checkfront data by ID
+curl -H "X-Admin-Key: KEY" \
+  https://mbh-production-f0d1.up.railway.app/api/reconciliation/booking-debug/2620
+
+# Compare date range
+curl -H "X-Admin-Key: KEY" \
+  "https://mbh-production-f0d1.up.railway.app/api/reconciliation/compare?startDate=2025-12-13&endDate=2025-12-15"
 ```
 
 ---
 
 ## If You Need To Debug
 
-1. **Check scheduler is running**: Look for startup logs with "🚀 Starting Checkfront-Airtable reconciliation scheduler"
-2. **Use debug endpoint**: `GET /api/reconciliation/debug?adminKey=KEY`
-3. **Check Railway logs**: Look for reconciliation output every 6 hours
-4. **Verify API response structure**: Bookings are in `response['booking/index']`
+1. **Check scheduler is running**: Look for "🚀 Starting Checkfront-Airtable reconciliation scheduler"
+2. **Verify date range**: Config must show `daysForward: 14`
+3. **Use debug endpoint**: `/api/reconciliation/booking-debug/{id}` for raw API response
+4. **Check full booking data**: `/api/reconciliation/booking/{code}` shows both systems
+5. **Verify API response structure**: Bookings are in `response['booking/index']`
 
 ---
 
@@ -83,6 +144,29 @@ curl -X POST -H "X-Admin-Key: KEY" https://mbh-production-f0d1.up.railway.app/ap
 2. **Checkfront status field**: It's `status_id`, not `status`
 3. **Response parsing**: Bookings keyed by ID in object, not array
 4. **Pagination**: Use `response.request.pages` for total page count
+5. **Future bookings**: MUST check dates ahead of today!
+6. **Full data**: `/booking/index` is LIMITED - fetch `/booking/{id}` for phone/times
+7. **Format differences**: API and webhook return different structures
+
+---
+
+## Synced Booking Should Have These Fields
+
+When a booking is synced correctly, Airtable should have:
+
+| Field | Source |
+|-------|--------|
+| Booking Code | ✓ From index |
+| Customer Name | ✓ From index |
+| Customer Email | ✓ From index |
+| Phone Number | ✓ From `/booking/{id}` |
+| Start Time | ✓ From `/booking/{id}` |
+| Finish Time | ✓ From `/booking/{id}` |
+| Duration | ✓ Calculated |
+| Booking Date | ✓ From timestamps or date_desc |
+| Booking Items | ✓ From summary or items |
+| Status | ✓ From index |
+| Total Amount | ✓ From index |
 
 ---
 
@@ -91,10 +175,9 @@ curl -X POST -H "X-Admin-Key: KEY" https://mbh-production-f0d1.up.railway.app/ap
 - [Complete Investigation Guide](../../05-troubleshooting/CHECKFRONT_AIRTABLE_RECONCILIATION_DEC_2025.md)
 - [Webhook Reliability Solution](./WEBHOOK_RELIABILITY_SOLUTION.md)
 - [API Setup Guide](./CHECKFRONT_API_SETUP.md)
-- [Session Summary](../../07-handover/session-summaries/DECEMBER_10_11_2025_CHECKFRONT_RECONCILIATION.md)
+- [Dec 10-11 Session](../../07-handover/session-summaries/DECEMBER_10_11_2025_CHECKFRONT_RECONCILIATION.md)
+- [Dec 12 Session](../../07-handover/session-summaries/DECEMBER_12_2025_RECONCILIATION_FUTURE_BOOKINGS_FIX.md)
 
 ---
 
-*Created: December 11, 2025*
-
-
+*Last updated: December 12, 2025*
