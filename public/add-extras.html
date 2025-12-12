@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Extras to Your Booking | Manly Boat Hire</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .card-section {
+            padding: 24px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .card-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+        
+        /* Booking lookup form */
+        .lookup-form {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .lookup-form input {
+            flex: 1;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+        
+        .lookup-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .lookup-form button {
+            padding: 14px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .lookup-form button:hover {
+            background: #5a6fd6;
+        }
+        
+        .lookup-form button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        /* Booking details */
+        .booking-details {
+            display: none;
+        }
+        
+        .booking-details.visible {
+            display: block;
+        }
+        
+        .booking-info {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .booking-info h3 {
+            color: #333;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e8e8ff;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #666;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Add-ons list */
+        .addons-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .addon-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .addon-item:hover {
+            background: #f0f4ff;
+        }
+        
+        .addon-item.selected {
+            background: #e8f0ff;
+            border-color: #667eea;
+        }
+        
+        .addon-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .addon-item.selected .addon-checkbox {
+            background: #667eea;
+            border-color: #667eea;
+        }
+        
+        .addon-item.selected .addon-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .addon-info {
+            flex: 1;
+        }
+        
+        .addon-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .addon-description {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .addon-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .addon-item.already-added {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .addon-item.already-added .addon-checkbox {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+        
+        .addon-item.already-added .addon-checkbox::after {
+            content: '✓';
+            color: white;
+        }
+        
+        /* Existing add-ons */
+        .existing-addons {
+            background: #e8ffe8;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .existing-addons h4 {
+            color: #2e7d32;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .existing-addons ul {
+            list-style: none;
+            color: #333;
+        }
+        
+        .existing-addons li {
+            padding: 4px 0;
+        }
+        
+        /* Summary */
+        .summary {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+        
+        .summary-row.total {
+            border-top: 2px solid #667eea;
+            margin-top: 8px;
+            padding-top: 16px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .summary-row.total .summary-value {
+            color: #667eea;
+        }
+        
+        /* Submit button */
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Messages */
+        .message {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .message.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .message.info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading.visible {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+        
+        .footer a {
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .lookup-form {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚤 Add Extras to Your Booking</h1>
+            <p>Make your boat trip even more enjoyable!</p>
+        </div>
+        
+        <div class="card">
+            <!-- Booking Lookup -->
+            <div class="card-section" id="lookupSection">
+                <div class="section-title">Find Your Booking</div>
+                <form class="lookup-form" id="lookupForm">
+                    <input type="text" id="bookingCode" placeholder="Enter your booking code (e.g., ABCD-121225)" required>
+                    <button type="submit" id="lookupBtn">Find</button>
+                </form>
+            </div>
+            
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Loading your booking...</p>
+            </div>
+            
+            <!-- Error Message -->
+            <div id="errorMessage" class="card-section" style="display: none;">
+                <div class="message error" id="errorText"></div>
+            </div>
+            
+            <!-- Booking Details -->
+            <div class="booking-details" id="bookingDetails">
+                <div class="card-section">
+                    <div class="section-title">Your Booking</div>
+                    <div class="booking-info">
+                        <h3 id="customerGreeting">Hi there!</h3>
+                        <div class="info-row">
+                            <span class="info-label">Booking Code</span>
+                            <span class="info-value" id="displayCode">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Date</span>
+                            <span class="info-value" id="displayDate">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Time</span>
+                            <span class="info-value" id="displayTime">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Boat</span>
+                            <span class="info-value" id="displayBoat">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Existing Add-ons -->
+                <div class="card-section" id="existingAddonsSection" style="display: none;">
+                    <div class="existing-addons">
+                        <h4>✅ Already Added</h4>
+                        <ul id="existingAddonsList"></ul>
+                    </div>
+                </div>
+                
+                <!-- Available Add-ons -->
+                <div class="card-section" id="addonsSection">
+                    <div class="section-title">Available Extras</div>
+                    <div class="addons-list" id="addonsList">
+                        <!-- Add-ons will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Summary -->
+                <div class="card-section" id="summarySection" style="display: none;">
+                    <div class="summary">
+                        <div class="section-title">Order Summary</div>
+                        <div id="summaryItems"></div>
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span class="summary-value" id="summaryTotal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submit -->
+                <div class="card-section">
+                    <button class="submit-btn" id="submitBtn" disabled>
+                        Add Extras & Pay
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Success -->
+            <div id="successSection" class="card-section" style="display: none;">
+                <div class="message success">
+                    <h3>🎉 Extras Added Successfully!</h3>
+                    <p id="successMessage">Your booking has been updated. You'll receive a confirmation email shortly.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Need help? Call us at <a href="tel:+61299771223">02 9977 1223</a></p>
+            <p style="margin-top: 8px;"><a href="https://manlyboathire.com.au">manlyboathire.com.au</a></p>
+        </div>
+    </div>
+    
+    <script>
+        // State
+        let currentBooking = null;
+        let availableAddons = [];
+        let selectedAddons = new Set();
+        
+        // DOM Elements
+        const lookupForm = document.getElementById('lookupForm');
+        const bookingCodeInput = document.getElementById('bookingCode');
+        const lookupBtn = document.getElementById('lookupBtn');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const bookingDetails = document.getElementById('bookingDetails');
+        const addonsList = document.getElementById('addonsList');
+        const summarySection = document.getElementById('summarySection');
+        const summaryItems = document.getElementById('summaryItems');
+        const summaryTotal = document.getElementById('summaryTotal');
+        const submitBtn = document.getElementById('submitBtn');
+        const successSection = document.getElementById('successSection');
+        
+        // Check for booking code in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeFromUrl = urlParams.get('code') || urlParams.get('booking');
+        if (codeFromUrl) {
+            bookingCodeInput.value = codeFromUrl.toUpperCase();
+            // Auto-submit after a short delay
+            setTimeout(() => lookupForm.dispatchEvent(new Event('submit')), 500);
+        }
+        
+        // Lookup booking
+        lookupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const code = bookingCodeInput.value.trim().toUpperCase();
+            if (!code) return;
+            
+            showLoading(true);
+            hideError();
+            bookingDetails.classList.remove('visible');
+            
+            try {
+                // Fetch booking details
+                const response = await fetch(`/api/customer-addons/booking/${code}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    showError(data.message || data.error);
+                    return;
+                }
+                
+                currentBooking = data.booking;
+                
+                // Fetch available add-ons
+                const addonsResponse = await fetch(`/api/customer-addons/available/${code}`);
+                const addonsData = await addonsResponse.json();
+                
+                if (addonsData.success) {
+                    availableAddons = addonsData.availableAddons || [];
+                    displayExistingAddons(addonsData.existingAddons || []);
+                }
+                
+                displayBooking(currentBooking);
+                displayAddons(availableAddons);
+                
+                bookingDetails.classList.add('visible');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Unable to find your booking. Please check the code and try again.');
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        function showLoading(show) {
+            loading.classList.toggle('visible', show);
+            lookupBtn.disabled = show;
+        }
+        
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+        
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+        
+        function displayBooking(booking) {
+            document.getElementById('customerGreeting').textContent = 
+                `Hi ${booking.customerFirstName || 'there'}! 👋`;
+            document.getElementById('displayCode').textContent = booking.code;
+            document.getElementById('displayDate').textContent = formatDate(booking.bookingDate);
+            document.getElementById('displayTime').textContent = 
+                `${booking.startTime} - ${booking.finishTime}`;
+            document.getElementById('displayBoat').textContent = booking.boatType;
+        }
+        
+        function displayExistingAddons(addons) {
+            const section = document.getElementById('existingAddonsSection');
+            const list = document.getElementById('existingAddonsList');
+            
+            if (addons.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            list.innerHTML = addons.map(addon => 
+                `<li>• ${addon.quantity > 1 ? addon.quantity + ' x ' : ''}${addon.name} - $${addon.price.toFixed(2)}</li>`
+            ).join('');
+            
+            section.style.display = 'block';
+        }
+        
+        function displayAddons(addons) {
+            if (addons.length === 0) {
+                addonsList.innerHTML = `
+                    <div class="message info">
+                        All available extras have already been added to your booking! 🎉
+                    </div>
+                `;
+                submitBtn.style.display = 'none';
+                return;
+            }
+            
+            submitBtn.style.display = 'block';
+            
+            addonsList.innerHTML = addons.map(addon => `
+                <div class="addon-item ${addon.alreadyAdded ? 'already-added' : ''}" 
+                     data-sku="${addon.sku}" 
+                     data-price="${addon.price}"
+                     data-name="${addon.name}"
+                     ${addon.alreadyAdded ? '' : 'onclick="toggleAddon(this)"'}>
+                    <div class="addon-checkbox"></div>
+                    <div class="addon-info">
+                        <div class="addon-name">${addon.name}</div>
+                        <div class="addon-description">${addon.description || ''}</div>
+                    </div>
+                    <div class="addon-price">$${addon.price.toFixed(2)}</div>
+                </div>
+            `).join('');
+        }
+        
+        function toggleAddon(element) {
+            const sku = element.dataset.sku;
+            
+            if (selectedAddons.has(sku)) {
+                selectedAddons.delete(sku);
+                element.classList.remove('selected');
+            } else {
+                selectedAddons.add(sku);
+                element.classList.add('selected');
+            }
+            
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            if (selectedAddons.size === 0) {
+                summarySection.style.display = 'none';
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Select Extras to Continue';
+                return;
+            }
+            
+            let total = 0;
+            let itemsHtml = '';
+            
+            selectedAddons.forEach(sku => {
+                const addon = availableAddons.find(a => a.sku === sku);
+                if (addon) {
+                    total += addon.price;
+                    itemsHtml += `
+                        <div class="summary-row">
+                            <span>${addon.name}</span>
+                            <span>$${addon.price.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+            });
+            
+            summaryItems.innerHTML = itemsHtml;
+            summaryTotal.textContent = `$${total.toFixed(2)}`;
+            summarySection.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.textContent = `Add Extras & Pay $${total.toFixed(2)}`;
+        }
+        
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-AU', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+        
+        // Submit add-ons
+        submitBtn.addEventListener('click', async () => {
+            if (selectedAddons.size === 0 || !currentBooking) return;
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            
+            const addons = Array.from(selectedAddons).map(sku => {
+                const addon = availableAddons.find(a => a.sku === sku);
+                return {
+                    sku: sku,
+                    itemId: addon?.id,
+                    name: addon?.name,
+                    quantity: 1
+                };
+            });
+            
+            try {
+                const response = await fetch('/api/customer-addons/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        bookingCode: currentBooking.code,
+                        addons: addons
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    bookingDetails.classList.remove('visible');
+                    document.getElementById('successMessage').innerHTML = `
+                        <p>Your booking has been updated with:</p>
+                        <ul style="margin: 12px 0; padding-left: 20px;">
+                            ${data.addedItems.map(item => 
+                                `<li>${item.name} - $${item.price?.toFixed(2) || '0.00'}</li>`
+                            ).join('')}
+                        </ul>
+                        <p>You'll receive a confirmation email shortly.</p>
+                        ${data.paymentUrl ? `<p><a href="${data.paymentUrl}" style="color: #667eea;">Complete Payment →</a></p>` : ''}
+                    `;
+                    successSection.style.display = 'block';
+                } else {
+                    showError(data.message || 'Failed to add extras. Please try again.');
+                    submitBtn.disabled = false;
+                    updateSummary();
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Unable to process your request. Please try again or contact us.');
+                submitBtn.disabled = false;
+                updateSummary();
+            }
+        });
+    </script>
+</body>
+</html>

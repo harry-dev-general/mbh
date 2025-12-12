@@ -341,15 +341,201 @@ async function debugApiCall(endpoint, params = {}) {
     }
 }
 
+/**
+ * Make a POST request to Checkfront API
+ */
+async function apiPost(endpoint, data = {}) {
+    if (!isConfigured()) {
+        throw new Error('Checkfront API credentials not configured.');
+    }
+
+    const url = `https://${CHECKFRONT_HOST}/api/3.0/${endpoint}`;
+    console.log(`🔗 Checkfront API POST: ${url}`);
+    console.log(`📦 Data:`, JSON.stringify(data, null, 2));
+
+    try {
+        const response = await axios.post(url, data, {
+            headers: {
+                'Authorization': getAuthHeader(),
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        console.log(`📥 Checkfront POST Response Status: ${response.status}`);
+        return response.data;
+    } catch (error) {
+        console.error(`❌ Checkfront API POST error for ${endpoint}:`);
+        console.error(`   Status: ${error.response?.status}`);
+        console.error(`   Data:`, error.response?.data);
+        throw error;
+    }
+}
+
+/**
+ * Get available items/add-ons from Checkfront
+ * @param {string} startDate - Start date YYYYMMDD format
+ * @param {string} endDate - End date YYYYMMDD format
+ * @param {number} categoryId - Optional category ID (7 = add-ons typically)
+ */
+async function getItems(startDate, endDate, categoryId = null) {
+    console.log(`📦 Fetching available items for ${startDate} to ${endDate}...`);
+    
+    const params = {
+        start_date: startDate,
+        end_date: endDate
+    };
+    
+    if (categoryId) {
+        params.category_id = categoryId;
+    }
+    
+    try {
+        const response = await apiRequest('item', params);
+        const items = response.items || response.item || {};
+        
+        // Convert object to array
+        const itemsArray = Object.values(items).filter(item => item && item.item_id);
+        console.log(`✅ Found ${itemsArray.length} items`);
+        
+        return itemsArray;
+    } catch (error) {
+        console.error('Error fetching items:', error.message);
+        return [];
+    }
+}
+
+/**
+ * Get SLIP (Secure Line Item Parameter) for an item
+ * Required to add items to a booking session
+ * @param {string} itemId - The item ID
+ * @param {string} startDate - Start date YYYYMMDD format
+ * @param {string} endDate - End date YYYYMMDD format
+ * @param {object} params - Additional parameters (qty, guests, etc.)
+ */
+async function getItemSlip(itemId, startDate, endDate, params = {}) {
+    console.log(`🎫 Getting SLIP for item ${itemId}...`);
+    
+    const queryParams = {
+        start_date: startDate,
+        end_date: endDate,
+        ...params
+    };
+    
+    try {
+        const response = await apiRequest(`item/${itemId}`, queryParams);
+        
+        if (response.item && response.item.rate && response.item.rate.slip) {
+            console.log(`✅ Got SLIP for item ${itemId}`);
+            return {
+                slip: response.item.rate.slip,
+                price: response.item.rate.price || response.item.rate.summary?.price,
+                available: response.item.rate.status === 'AVAILABLE',
+                item: response.item
+            };
+        }
+        
+        console.log(`⚠️ No SLIP available for item ${itemId}`, response);
+        return null;
+    } catch (error) {
+        console.error(`Error getting SLIP for item ${itemId}:`, error.message);
+        return null;
+    }
+}
+
+/**
+ * Create a booking session with items
+ * @param {string[]} slips - Array of SLIPs to add to the session
+ */
+async function createBookingSession(slips) {
+    console.log(`📋 Creating booking session with ${slips.length} items...`);
+    
+    // Build the slip array for the request
+    const data = new URLSearchParams();
+    slips.forEach(slip => {
+        data.append('slip[]', slip);
+    });
+    
+    try {
+        const response = await apiPost('booking/session', data);
+        
+        if (response.booking && response.booking.session) {
+            console.log(`✅ Session created: ${response.booking.session.id}`);
+            return response.booking.session;
+        }
+        
+        return response;
+    } catch (error) {
+        console.error('Error creating booking session:', error.message);
+        throw error;
+    }
+}
+
+/**
+ * Add items to an existing booking
+ * @param {string} bookingId - The existing booking ID
+ * @param {string[]} slips - Array of SLIPs to add
+ */
+async function addItemsToBooking(bookingId, slips) {
+    console.log(`➕ Adding ${slips.length} items to booking ${bookingId}...`);
+    
+    // First create a session with the new items
+    const session = await createBookingSession(slips);
+    
+    if (!session || !session.id) {
+        throw new Error('Failed to create booking session');
+    }
+    
+    // Now update the booking with the new session
+    const data = new URLSearchParams();
+    data.append('session_id', session.id);
+    
+    try {
+        const response = await apiPost(`booking/${bookingId}/update`, data);
+        console.log(`✅ Booking ${bookingId} updated with new items`);
+        return response;
+    } catch (error) {
+        console.error(`Error updating booking ${bookingId}:`, error.message);
+        throw error;
+    }
+}
+
+/**
+ * Get add-ons category items (typically category 7 for MBH)
+ */
+async function getAddOns(startDate, endDate) {
+    // Add-ons are typically in categories 4, 5, 6, 7
+    const addOnCategories = [4, 5, 6, 7];
+    const allAddOns = [];
+    
+    for (const categoryId of addOnCategories) {
+        try {
+            const items = await getItems(startDate, endDate, categoryId);
+            allAddOns.push(...items);
+        } catch (error) {
+            console.log(`⚠️ Could not fetch category ${categoryId}`);
+        }
+    }
+    
+    return allAddOns;
+}
+
 module.exports = {
     isConfigured,
     getAuthHeader,
     apiRequest,
+    apiPost,
     getBookings,
     getBooking,
     getBookingByCode,
     getFullBookingByCode,
     testConnection,
-    debugApiCall
+    debugApiCall,
+    // New add-on functions
+    getItems,
+    getItemSlip,
+    createBookingSession,
+    addItemsToBooking,
+    getAddOns
 };
 

@@ -71,6 +71,9 @@ const webhookAuditLog = require('./api/webhook-audit-log');
 // Import add-ons management
 const addonsManagement = require('./api/addons-management');
 
+// Import customer add-ons portal
+const customerAddons = require('./api/customer-addons');
+
 // Import checklist API
 const checklistApi = require('./api/checklist-api');
 
@@ -483,6 +486,9 @@ app.use('/api', squareWebhook);
 
 // Add add-ons management routes
 app.use('/api/addons', addonsManagement);
+
+// Add customer add-ons portal routes (public - no auth required)
+app.use('/api/customer-addons', customerAddons);
 
 // Add checklist API routes
 app.use('/api/checklist', checklistApi);
