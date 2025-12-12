@@ -253,6 +253,11 @@ function formatDateAEST(date) {
 /**
  * Auto-sync missing bookings to Airtable
  * Fetches FULL booking details to get phone, times, items
+ * 
+ * Note: The individual /booking/{id} endpoint returns a different structure:
+ * - customer_name, customer_email, customer_phone (not nested)
+ * - items object (not order.items.item)
+ * - id field contains booking code (not code)
  */
 async function autoSyncMissingBookings(missingBookings) {
     console.log(`\n📥 Auto-syncing ${missingBookings.length} missing bookings...`);
@@ -278,18 +283,30 @@ async function autoSyncMissingBookings(missingBookings) {
             
             // Use full booking data if available, otherwise fall back to index data
             const booking = fullBooking || indexBooking;
+            
+            // Handle both API format (flat) and webhook format (nested)
             const customer = booking.customer || {};
             const order = booking.order || {};
             
-            // Extract customer info
-            const customerName = customer.name || indexBooking.customer_name || 'Unknown';
-            const customerEmail = customer.email || indexBooking.customer_email || '';
-            const customerPhone = customer.phone || '';
+            // Extract customer info - try API format first, then webhook format
+            const customerName = booking.customer_name || customer.name || indexBooking.customer_name || 'Unknown';
+            const customerEmail = booking.customer_email || customer.email || indexBooking.customer_email || '';
+            const customerPhone = booking.customer_phone || customer.phone || '';
+            
+            // Get booking code - API returns as 'id', webhook as 'code'
+            const bookingCode = indexBooking.code || booking.id || booking.code;
+            
+            // Parse timestamps - could be number or string
+            let startTimestamp = booking.start_date;
+            if (typeof startTimestamp === 'string') startTimestamp = parseInt(startTimestamp);
+            
+            let endTimestamp = booking.end_date;
+            if (typeof endTimestamp === 'string') endTimestamp = parseInt(endTimestamp);
             
             // Determine booking date
             let bookingDate, startDateTime, endDateTime;
-            if (booking.start_date) {
-                startDateTime = new Date(booking.start_date * 1000);
+            if (startTimestamp) {
+                startDateTime = new Date(startTimestamp * 1000);
                 bookingDate = formatDateAEST(startDateTime);
             } else if (indexBooking.date_desc) {
                 bookingDate = parseDateDesc(indexBooking.date_desc);
@@ -299,36 +316,42 @@ async function autoSyncMissingBookings(missingBookings) {
                 console.log(`   ⚠️ No booking date, using today`);
             }
             
-            if (booking.end_date) {
-                endDateTime = new Date(booking.end_date * 1000);
+            if (endTimestamp) {
+                endDateTime = new Date(endTimestamp * 1000);
             }
             
-            // Process order items
+            // Process items - API uses 'items' object, webhook uses 'order.items.item' array
             let boatSKU = indexBooking.summary || '';
             const addOnsArray = [];
             
+            const items = booking.items || {};
+            const itemsArray = Object.values(items).filter(item => item && item.sku);
+            
             if (order.items && order.items.item) {
-                const itemsArray = Array.isArray(order.items.item) ? order.items.item : [order.items.item];
-                itemsArray.forEach(item => {
-                    const sku = item.sku || '';
-                    const categoryId = item.category_id || '';
-                    const quantity = parseInt(item.qty) || 1;
-                    const price = parseFloat(item.total || 0);
-                    
-                    const isBoat = categoryId === '2' || categoryId === '3' || 
-                                   sku.toLowerCase().includes('boat') || 
-                                   sku.toLowerCase().includes('polycraft');
-                    
-                    if (isBoat && !boatSKU) {
-                        boatSKU = sku;
-                    } else if (!isBoat && sku) {
-                        let addOnStr = sku.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                        if (quantity > 1) addOnStr = `${quantity} x ${addOnStr}`;
-                        if (price > 0) addOnStr += ` - $${price.toFixed(2)}`;
-                        addOnsArray.push(addOnStr);
-                    }
-                });
+                const webhookItems = Array.isArray(order.items.item) ? order.items.item : [order.items.item];
+                itemsArray.push(...webhookItems);
             }
+            
+            itemsArray.forEach(item => {
+                const sku = item.sku || '';
+                const name = item.name || sku;
+                const categoryId = String(item.category_id || '');
+                const quantity = parseInt(item.qty) || 1;
+                const price = parseFloat(item.total || 0);
+                
+                const isBoat = categoryId === '2' || categoryId === '3' || 
+                               sku.toLowerCase().includes('boat') || 
+                               sku.toLowerCase().includes('polycraft');
+                
+                if (isBoat) {
+                    boatSKU = name || sku;
+                } else if (sku && !isBoat) {
+                    let addOnStr = name || sku.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    if (quantity > 1) addOnStr = `${quantity} x ${addOnStr}`;
+                    if (price > 0) addOnStr += ` - $${price.toFixed(2)}`;
+                    addOnsArray.push(addOnStr);
+                }
+            });
             
             // Calculate duration
             let duration = '';
@@ -338,19 +361,27 @@ async function autoSyncMissingBookings(missingBookings) {
                 const minutes = Math.floor((durationMs / (1000 * 60)) % 60);
                 duration = `${hours} hours ${minutes} minutes`;
             }
+            
+            // Get created date
+            let createdTimestamp = booking.created_date;
+            if (typeof createdTimestamp === 'string') createdTimestamp = parseInt(createdTimestamp);
+            const createdDate = createdTimestamp 
+                ? new Date(createdTimestamp * 1000).toISOString().split('T')[0]
+                : new Date().toISOString().split('T')[0];
+            
+            // Get total
+            const totalAmount = parseFloat(booking.total || order.total || indexBooking.total) || 0;
 
             // Prepare Airtable record
             const recordData = {
-                'Booking Code': booking.code || indexBooking.code,
+                'Booking Code': bookingCode,
                 'Customer Name': customerName,
                 'Customer Email': customerEmail,
-                'Status': booking.status || indexBooking.status_id || 'PAID',
-                'Total Amount': parseFloat(order.total || booking.total || indexBooking.total) || 0,
+                'Status': booking.status_id || booking.status || indexBooking.status_id || 'PAID',
+                'Total Amount': totalAmount,
                 'Booking Date': bookingDate,
                 'Booking Items': boatSKU,
-                'Created Date': booking.created_date
-                    ? new Date(booking.created_date * 1000).toISOString().split('T')[0]
-                    : new Date().toISOString().split('T')[0]
+                'Created Date': createdDate
             };
             
             // Add optional fields
@@ -378,9 +409,9 @@ async function autoSyncMissingBookings(missingBookings) {
                 }
             );
 
-            console.log(`   ✅ Synced: ${indexBooking.code}`);
+            console.log(`   ✅ Synced: ${bookingCode}`);
             results.synced.push({
-                code: indexBooking.code,
+                code: bookingCode,
                 airtableId: response.data.id
             });
 
