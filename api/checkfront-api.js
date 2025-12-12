@@ -173,16 +173,58 @@ async function getBookings(startDate, endDate, status = null) {
 }
 
 /**
- * Get a single booking by ID or code
+ * Get a single booking by ID - returns FULL booking details
+ * This endpoint returns more data than /booking/index including:
+ * - customer.phone
+ * - start_date/end_date timestamps
+ * - order.items (detailed breakdown)
  */
 async function getBooking(bookingId) {
     try {
+        console.log(`📋 Fetching full booking details for ID: ${bookingId}`);
         const response = await apiRequest(`booking/${bookingId}`);
+        
+        if (response.booking) {
+            console.log(`✅ Got full booking: ${response.booking.code}`);
+            console.log(`   Customer phone: ${response.booking.customer?.phone || 'N/A'}`);
+            console.log(`   Start date: ${response.booking.start_date ? new Date(response.booking.start_date * 1000).toISOString() : 'N/A'}`);
+        }
+        
         return response.booking || null;
     } catch (error) {
         console.error(`Error fetching booking ${bookingId}:`, error.message);
         return null;
     }
+}
+
+/**
+ * Get full booking details by booking code
+ * First finds the booking ID from the index, then fetches full details
+ */
+async function getFullBookingByCode(bookingCode) {
+    console.log(`🔍 Looking up full details for booking code: ${bookingCode}`);
+    
+    // First, find the booking in the index to get the ID
+    const today = new Date();
+    const startDate = new Date();
+    const endDate = new Date();
+    startDate.setMonth(today.getMonth() - 6);
+    endDate.setMonth(today.getMonth() + 6);
+
+    const startStr = startDate.toISOString().split('T')[0];
+    const endStr = endDate.toISOString().split('T')[0];
+
+    const bookings = await getBookings(startStr, endStr);
+    const indexBooking = bookings.find(b => b.code === bookingCode);
+    
+    if (!indexBooking) {
+        console.log(`⚠️ Booking ${bookingCode} not found in index`);
+        return null;
+    }
+    
+    // Now fetch full details using the booking ID
+    const fullBooking = await getBooking(indexBooking.booking_id);
+    return fullBooking;
 }
 
 /**
@@ -306,6 +348,7 @@ module.exports = {
     getBookings,
     getBooking,
     getBookingByCode,
+    getFullBookingByCode,
     testConnection,
     debugApiCall
 };

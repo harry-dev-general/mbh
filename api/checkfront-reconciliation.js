@@ -381,60 +381,152 @@ function parseDateDesc(dateDesc) {
 }
 
 /**
- * Sync a single booking from Checkfront data to Airtable
- * Creates a simplified record - does NOT send SMS notifications
+ * Format time in Sydney timezone
  */
-async function syncBookingToAirtable(booking) {
+function formatTimeAEST(date) {
+    return date.toLocaleTimeString('en-AU', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Australia/Sydney'
+    });
+}
+
+/**
+ * Format date in Sydney timezone (YYYY-MM-DD)
+ */
+function formatDateAEST(date) {
+    return date.toLocaleDateString('en-AU', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'Australia/Sydney'
+    }).split('/').reverse().join('-');
+}
+
+/**
+ * Sync a single booking from Checkfront data to Airtable
+ * Fetches FULL booking details to get phone, times, items
+ * Does NOT send SMS notifications
+ */
+async function syncBookingToAirtable(indexBooking) {
+    console.log(`📋 Syncing booking ${indexBooking.code} to Airtable...`);
+    
+    // Try to fetch full booking details using the booking ID
+    let fullBooking = null;
+    if (indexBooking.booking_id) {
+        try {
+            fullBooking = await checkfrontApi.getBooking(indexBooking.booking_id);
+        } catch (err) {
+            console.log(`⚠️ Could not fetch full details for ${indexBooking.code}: ${err.message}`);
+        }
+    }
+    
+    // Use full booking data if available, otherwise fall back to index data
+    const booking = fullBooking || indexBooking;
+    const customer = booking.customer || {};
+    const order = booking.order || {};
+    
+    // Extract customer info
+    const customerName = customer.name || booking.customer_name || 'Unknown';
+    const customerEmail = customer.email || booking.customer_email || '';
+    const customerPhone = customer.phone || '';
+    
     // Determine booking date - try start_date first, then date_desc
-    let bookingDate;
+    let bookingDate, startDateTime, endDateTime;
     if (booking.start_date) {
-        bookingDate = new Date(booking.start_date * 1000).toISOString().split('T')[0];
-    } else if (booking.date_desc) {
-        bookingDate = parseDateDesc(booking.date_desc);
+        startDateTime = new Date(booking.start_date * 1000);
+        bookingDate = formatDateAEST(startDateTime);
+    } else if (indexBooking.date_desc) {
+        bookingDate = parseDateDesc(indexBooking.date_desc);
     }
     if (!bookingDate) {
         bookingDate = new Date().toISOString().split('T')[0];
         console.log(`⚠️ No booking date found for ${booking.code}, using today`);
     }
-
-    // Prepare Airtable record from Checkfront data
+    
+    if (booking.end_date) {
+        endDateTime = new Date(booking.end_date * 1000);
+    }
+    
+    // Process order items for booking items and add-ons
+    let boatSKU = indexBooking.summary || '';
+    const addOnsArray = [];
+    
+    if (order.items && order.items.item) {
+        const itemsArray = Array.isArray(order.items.item) ? order.items.item : [order.items.item];
+        
+        itemsArray.forEach(item => {
+            const sku = item.sku || '';
+            const categoryId = item.category_id || '';
+            const quantity = parseInt(item.qty) || 1;
+            const price = parseFloat(item.total || 0);
+            
+            // Category 2, 3 are boats; 4, 5, 6, 7 are add-ons
+            const isBoat = categoryId === '2' || categoryId === '3' || 
+                           sku.toLowerCase().includes('boat') || 
+                           sku.toLowerCase().includes('polycraft');
+            
+            if (isBoat && !boatSKU) {
+                boatSKU = sku;
+            } else if (!isBoat && sku) {
+                let addOnStr = sku.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                if (quantity > 1) addOnStr = `${quantity} x ${addOnStr}`;
+                if (price > 0) addOnStr += ` - $${price.toFixed(2)}`;
+                addOnsArray.push(addOnStr);
+            }
+        });
+    }
+    
+    // Calculate duration
+    let duration = '';
+    if (startDateTime && endDateTime) {
+        const durationMs = endDateTime - startDateTime;
+        const hours = Math.floor(durationMs / (1000 * 60 * 60));
+        const minutes = Math.floor((durationMs / (1000 * 60)) % 60);
+        duration = `${hours} hours ${minutes} minutes`;
+    }
+    
+    // Prepare Airtable record
     const recordData = {
-        'Booking Code': booking.code,
-        'Customer Name': booking.customer_name || booking.customer?.name || 'Unknown',
-        'Customer Email': booking.customer_email || booking.customer?.email || '',
-        'Status': booking.status || booking.status_id || 'PAID',
-        'Total Amount': parseFloat(booking.total) || 0,
+        'Booking Code': booking.code || indexBooking.code,
+        'Customer Name': customerName,
+        'Customer Email': customerEmail,
+        'Status': booking.status || booking.status_id || indexBooking.status_id || 'PAID',
+        'Total Amount': parseFloat(order.total || booking.total || indexBooking.total) || 0,
         'Booking Date': bookingDate,
+        'Booking Items': boatSKU,
         'Created Date': booking.created_date
             ? new Date(booking.created_date * 1000).toISOString().split('T')[0]
             : new Date().toISOString().split('T')[0]
     };
-
-    // Add start/end times if available
-    if (booking.start_date) {
-        const startDt = new Date(booking.start_date * 1000);
-        recordData['Start Time'] = startDt.toLocaleTimeString('en-AU', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-            timeZone: 'Australia/Sydney'
-        });
+    
+    // Add optional fields only if we have the data
+    if (customerPhone) {
+        recordData['Phone Number'] = customerPhone;
     }
-
-    if (booking.finish_date || booking.end_date) {
-        const endDt = new Date((booking.finish_date || booking.end_date) * 1000);
-        recordData['Finish Time'] = endDt.toLocaleTimeString('en-AU', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-            timeZone: 'Australia/Sydney'
-        });
+    
+    if (startDateTime) {
+        recordData['Start Time'] = formatTimeAEST(startDateTime);
     }
-
-    // Add booking summary/items if available
-    if (booking.summary) {
-        recordData['Booking Items'] = booking.summary;
+    
+    if (endDateTime) {
+        recordData['Finish Time'] = formatTimeAEST(endDateTime);
+        recordData['End Date'] = formatDateAEST(endDateTime);
     }
+    
+    if (duration) {
+        recordData['Duration'] = duration;
+    }
+    
+    if (addOnsArray.length > 0) {
+        recordData['Add-ons'] = addOnsArray.join(', ');
+    }
+    
+    console.log(`   Customer: ${customerName}`);
+    console.log(`   Phone: ${customerPhone || 'N/A'}`);
+    console.log(`   Date: ${bookingDate}`);
+    console.log(`   Time: ${recordData['Start Time'] || 'N/A'} - ${recordData['Finish Time'] || 'N/A'}`);
 
     // Create record in Airtable
     const response = await axios.post(
@@ -627,9 +719,9 @@ router.get('/booking/:code', requireAdmin, async (req, res) => {
     const { code } = req.params;
     
     try {
-        // Fetch from both systems
+        // Fetch from both systems - use getFullBookingByCode for complete data
         const [checkfrontBooking, airtableResponse] = await Promise.all([
-            checkfrontApi.getBookingByCode(code),
+            checkfrontApi.getFullBookingByCode(code),
             axios.get(
                 `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BOOKINGS_TABLE_ID}`,
                 {

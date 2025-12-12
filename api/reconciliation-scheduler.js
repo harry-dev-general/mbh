@@ -227,7 +227,32 @@ function parseDateDesc(dateDesc) {
 }
 
 /**
+ * Format time in Sydney timezone
+ */
+function formatTimeAEST(date) {
+    return date.toLocaleTimeString('en-AU', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Australia/Sydney'
+    });
+}
+
+/**
+ * Format date in Sydney timezone (YYYY-MM-DD)
+ */
+function formatDateAEST(date) {
+    return date.toLocaleDateString('en-AU', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'Australia/Sydney'
+    }).split('/').reverse().join('-');
+}
+
+/**
  * Auto-sync missing bookings to Airtable
+ * Fetches FULL booking details to get phone, times, items
  */
 async function autoSyncMissingBookings(missingBookings) {
     console.log(`\n📥 Auto-syncing ${missingBookings.length} missing bookings...`);
@@ -237,58 +262,109 @@ async function autoSyncMissingBookings(missingBookings) {
         failed: []
     };
 
-    for (const booking of missingBookings) {
+    for (const indexBooking of missingBookings) {
         try {
-            // Determine booking date - try start_date first, then date_desc
-            let bookingDate;
+            console.log(`📋 Syncing booking ${indexBooking.code}...`);
+            
+            // Try to fetch full booking details using the booking ID
+            let fullBooking = null;
+            if (indexBooking.booking_id) {
+                try {
+                    fullBooking = await checkfrontApi.getBooking(indexBooking.booking_id);
+                } catch (err) {
+                    console.log(`   ⚠️ Could not fetch full details: ${err.message}`);
+                }
+            }
+            
+            // Use full booking data if available, otherwise fall back to index data
+            const booking = fullBooking || indexBooking;
+            const customer = booking.customer || {};
+            const order = booking.order || {};
+            
+            // Extract customer info
+            const customerName = customer.name || indexBooking.customer_name || 'Unknown';
+            const customerEmail = customer.email || indexBooking.customer_email || '';
+            const customerPhone = customer.phone || '';
+            
+            // Determine booking date
+            let bookingDate, startDateTime, endDateTime;
             if (booking.start_date) {
-                bookingDate = new Date(booking.start_date * 1000).toISOString().split('T')[0];
-            } else if (booking.date_desc) {
-                bookingDate = parseDateDesc(booking.date_desc);
+                startDateTime = new Date(booking.start_date * 1000);
+                bookingDate = formatDateAEST(startDateTime);
+            } else if (indexBooking.date_desc) {
+                bookingDate = parseDateDesc(indexBooking.date_desc);
             }
             if (!bookingDate) {
                 bookingDate = new Date().toISOString().split('T')[0];
-                console.log(`⚠️ No booking date found for ${booking.code}, using today`);
+                console.log(`   ⚠️ No booking date, using today`);
+            }
+            
+            if (booking.end_date) {
+                endDateTime = new Date(booking.end_date * 1000);
+            }
+            
+            // Process order items
+            let boatSKU = indexBooking.summary || '';
+            const addOnsArray = [];
+            
+            if (order.items && order.items.item) {
+                const itemsArray = Array.isArray(order.items.item) ? order.items.item : [order.items.item];
+                itemsArray.forEach(item => {
+                    const sku = item.sku || '';
+                    const categoryId = item.category_id || '';
+                    const quantity = parseInt(item.qty) || 1;
+                    const price = parseFloat(item.total || 0);
+                    
+                    const isBoat = categoryId === '2' || categoryId === '3' || 
+                                   sku.toLowerCase().includes('boat') || 
+                                   sku.toLowerCase().includes('polycraft');
+                    
+                    if (isBoat && !boatSKU) {
+                        boatSKU = sku;
+                    } else if (!isBoat && sku) {
+                        let addOnStr = sku.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        if (quantity > 1) addOnStr = `${quantity} x ${addOnStr}`;
+                        if (price > 0) addOnStr += ` - $${price.toFixed(2)}`;
+                        addOnsArray.push(addOnStr);
+                    }
+                });
+            }
+            
+            // Calculate duration
+            let duration = '';
+            if (startDateTime && endDateTime) {
+                const durationMs = endDateTime - startDateTime;
+                const hours = Math.floor(durationMs / (1000 * 60 * 60));
+                const minutes = Math.floor((durationMs / (1000 * 60)) % 60);
+                duration = `${hours} hours ${minutes} minutes`;
             }
 
-            // Prepare Airtable record from Checkfront data
+            // Prepare Airtable record
             const recordData = {
-                'Booking Code': booking.code,
-                'Customer Name': booking.customer_name || 'Unknown',
-                'Customer Email': booking.customer_email || '',
-                'Status': booking.status || booking.status_id || 'PAID',
-                'Total Amount': parseFloat(booking.total) || 0,
+                'Booking Code': booking.code || indexBooking.code,
+                'Customer Name': customerName,
+                'Customer Email': customerEmail,
+                'Status': booking.status || indexBooking.status_id || 'PAID',
+                'Total Amount': parseFloat(order.total || booking.total || indexBooking.total) || 0,
                 'Booking Date': bookingDate,
+                'Booking Items': boatSKU,
                 'Created Date': booking.created_date
                     ? new Date(booking.created_date * 1000).toISOString().split('T')[0]
                     : new Date().toISOString().split('T')[0]
             };
-
-            // Add booking summary if available (from booking/index endpoint)
-            if (booking.summary) {
-                recordData['Booking Items'] = booking.summary;
+            
+            // Add optional fields
+            if (customerPhone) recordData['Phone Number'] = customerPhone;
+            if (startDateTime) recordData['Start Time'] = formatTimeAEST(startDateTime);
+            if (endDateTime) {
+                recordData['Finish Time'] = formatTimeAEST(endDateTime);
+                recordData['End Date'] = formatDateAEST(endDateTime);
             }
+            if (duration) recordData['Duration'] = duration;
+            if (addOnsArray.length > 0) recordData['Add-ons'] = addOnsArray.join(', ');
 
-            // Add start/end times if available
-            if (booking.start_date) {
-                const startDt = new Date(booking.start_date * 1000);
-                recordData['Start Time'] = startDt.toLocaleTimeString('en-AU', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true,
-                    timeZone: 'Australia/Sydney'
-                });
-            }
-
-            if (booking.finish_date || booking.end_date) {
-                const endDt = new Date((booking.finish_date || booking.end_date) * 1000);
-                recordData['Finish Time'] = endDt.toLocaleTimeString('en-AU', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true,
-                    timeZone: 'Australia/Sydney'
-                });
-            }
+            console.log(`   Customer: ${customerName}, Phone: ${customerPhone || 'N/A'}`);
+            console.log(`   Time: ${recordData['Start Time'] || 'N/A'} - ${recordData['Finish Time'] || 'N/A'}`);
 
             // Create record in Airtable
             const response = await axios.post(
@@ -302,9 +378,9 @@ async function autoSyncMissingBookings(missingBookings) {
                 }
             );
 
-            console.log(`   ✅ Synced: ${booking.code}`);
+            console.log(`   ✅ Synced: ${indexBooking.code}`);
             results.synced.push({
-                code: booking.code,
+                code: indexBooking.code,
                 airtableId: response.data.id
             });
 
