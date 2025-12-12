@@ -250,15 +250,26 @@ router.get('/available/:code', async (req, res) => {
             if (checkfrontApi.isConfigured()) {
                 const addons = await checkfrontApi.getAddOns(checkfrontDate, checkfrontDate);
                 
-                availableAddons = addons.map(item => ({
-                    id: item.item_id,
-                    sku: item.sku,
-                    name: item.name,
-                    price: parseFloat(item.rate?.price || item.price || 0),
-                    description: item.description || '',
-                    available: item.rate?.status === 'AVAILABLE',
-                    alreadyAdded: existingNames.includes(item.name.toLowerCase())
-                }));
+                availableAddons = addons.map(item => {
+                    // Find matching catalog item for price fallback
+                    const catalogItem = ADDON_ITEMS[item.sku] || 
+                        Object.values(ADDON_ITEMS).find(ci => ci.name.toLowerCase() === item.name.toLowerCase());
+                    
+                    // Use live price if available, otherwise catalog price
+                    const livePrice = parseFloat(item.rate?.price || item.price || 0);
+                    const catalogPrice = catalogItem?.price || 0;
+                    
+                    return {
+                        id: item.item_id,
+                        sku: item.sku,
+                        name: item.name,
+                        price: livePrice > 0 ? livePrice : catalogPrice,
+                        description: catalogItem?.description || item.description || '',
+                        category: catalogItem?.category || 'Other',
+                        available: item.rate?.status !== 'UNAVAILABLE',
+                        alreadyAdded: existingNames.includes(item.name.toLowerCase())
+                    };
+                });
             }
         } catch (error) {
             console.log('Could not fetch live add-ons from Checkfront:', error.message);
@@ -272,6 +283,7 @@ router.get('/available/:code', async (req, res) => {
                 name: item.name,
                 price: item.price,
                 description: item.description,
+                category: item.category,
                 available: true,
                 alreadyAdded: existingNames.includes(item.name.toLowerCase())
             }));
