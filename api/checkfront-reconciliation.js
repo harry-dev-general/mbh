@@ -793,6 +793,13 @@ router.get('/booking/:code', requireAdmin, async (req, res) => {
             ).catch(() => ({ data: { records: [] } }))
         ]);
         
+        // Handle both API format (flat) and webhook format (nested)
+        const parseTimestamp = (ts) => {
+            if (!ts) return null;
+            const num = typeof ts === 'string' ? parseInt(ts) : ts;
+            return new Date(num * 1000).toISOString();
+        };
+        
         res.json({
             success: true,
             bookingCode: code,
@@ -800,13 +807,18 @@ router.get('/booking/:code', requireAdmin, async (req, res) => {
                 found: true,
                 data: {
                     id: checkfrontBooking.booking_id,
-                    code: checkfrontBooking.code,
-                    status: checkfrontBooking.status,
-                    customer: checkfrontBooking.customer,
-                    order: checkfrontBooking.order,
-                    startDate: checkfrontBooking.start_date ? new Date(checkfrontBooking.start_date * 1000).toISOString() : null,
-                    endDate: checkfrontBooking.end_date ? new Date(checkfrontBooking.end_date * 1000).toISOString() : null,
-                    createdDate: checkfrontBooking.created_date ? new Date(checkfrontBooking.created_date * 1000).toISOString() : null
+                    code: checkfrontBooking.id || checkfrontBooking.code, // API uses 'id' for booking code
+                    status: checkfrontBooking.status_id || checkfrontBooking.status,
+                    customer: {
+                        name: checkfrontBooking.customer_name || checkfrontBooking.customer?.name,
+                        email: checkfrontBooking.customer_email || checkfrontBooking.customer?.email,
+                        phone: checkfrontBooking.customer_phone || checkfrontBooking.customer?.phone
+                    },
+                    total: checkfrontBooking.total,
+                    items: checkfrontBooking.items,
+                    startDate: parseTimestamp(checkfrontBooking.start_date),
+                    endDate: parseTimestamp(checkfrontBooking.end_date),
+                    createdDate: parseTimestamp(checkfrontBooking.created_date)
                 }
             } : { found: false },
             airtable: airtableResponse.data.records.length > 0 ? {
