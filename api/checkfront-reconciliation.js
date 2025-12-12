@@ -715,6 +715,28 @@ router.get('/debug', requireAdmin, async (req, res) => {
  * GET /api/reconciliation/booking/:code
  * Get a specific booking from both systems for comparison
  */
+/**
+ * GET /api/reconciliation/booking-debug/:id
+ * Debug endpoint to see raw Checkfront booking data by ID
+ */
+router.get('/booking-debug/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const rawBooking = await checkfrontApi.getBooking(id);
+        res.json({
+            success: true,
+            bookingId: id,
+            rawData: rawBooking
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 router.get('/booking/:code', requireAdmin, async (req, res) => {
     const { code } = req.params;
     
